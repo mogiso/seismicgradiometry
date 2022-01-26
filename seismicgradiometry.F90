@@ -1,6 +1,8 @@
 program seismicgradiometry
-  use nrtype, only : dp
+  use nrtype, only : fp
   use constants, only : pi
+  use read_sacfile, only : read_sachdr, read_sacdata
+  use grdfile_io, only : write_grdfile_fp_2d
 #ifdef MKL
   use lapack95
 #else
@@ -11,45 +13,49 @@ program seismicgradiometry
 
 
   type location
-    real(kind = dp) :: lon, lat, x_east, y_north
+    real(kind = fp) :: lon, lat, x_east, y_north
   end type location
 
-  real(kind = dp), parameter :: x_start = -100.0_dp, y_start = -100.0_dp, &
-  &                             x_end = 100.0_dp, y_end = 100.0_dp
-  real(kind = dp), parameter :: center_lon = 142.5_dp, center_lat = 42.0_dp
-  real(kind = dp), parameter :: dgrid_x = 5.0_dp, dgrid_y = 5.0_dp
-  real(kind = dp), parameter :: cutoff_dist = 50.0_dp
-  real(kind = dp), parameter :: sigma_x_east = 30.0_dp ** 2, sigma_y_north = 50.0_dp ** 2, theta = 90.0_dp * pi / 180.0_dp
-  real(kind = dp), parameter :: dt = 0.1_dp
+  real(kind = fp), parameter :: x_start = -100.0_fp, y_start = -100.0_fp, &
+  &                             x_end = 100.0_fp, y_end = 100.0_fp
+  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 42.0_fp
+  real(kind = fp), parameter :: dgrid_x = 5.0_fp, dgrid_y = 5.0_fp
+  real(kind = fp), parameter :: cutoff_dist = 50.0_fp
+  real(kind = fp), parameter :: sigma_x_east = 30.0_fp ** 2, sigma_y_north = 50.0_fp ** 2, theta = 90.0_fp * pi / 180.0_fp
+  real(kind = fp), parameter :: dt = 0.1_fp
 
-  real(kind = dp), parameter :: fl = 1.0_dp / 1800.0_dp, fh = 1.0_dp / 50.0_dp, fs = 1.0_dp / 20.0_dp, &
-  &                             ap = 0.5_dp, as = 5.0_dp
+  real(kind = fp), parameter :: fl = 1.0_fp / 1800.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
+  &                             ap = 0.5_fp, as = 5.0_fp
 
-  integer, parameter :: ndata_slowness = 51, ntime_slowness2 = (ntime_slowness - 1) / 2
+  integer, parameter :: ntime_slowness = 51, ntime_slowness2 = (ntime_slowness - 1) / 2
   integer, parameter :: nsta_grid_max = 15, nsta_grid_min = 3
-  integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = dp)) + 1
-  integer, parameter :: ngrid_y = int((y_end - y_start) / real(dgrid_y, kind = dp)) + 1
+  integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = fp)) + 1
+  integer, parameter :: ngrid_y = int((y_end - y_start) / real(dgrid_y, kind = fp)) + 1
+  integer, parameter :: ntime = 1
 
 
-  integer :: nsta, ntime, info, i, j, ii, jj, kk, m, n
+  integer :: nsta, npts_tmp, info, i, j, ii, jj, kk, m, n
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
   type(location), allocatable :: location_sta(:)
-  real(kind = dp), allocatable :: waveform_obs(:, :)         !!(1 : ntime, 1 : nsta)
-  real(kind = dp), allocatable :: waveform_est(:, :, :, :)   !!(1 : 3 (u, dudx, dudy), 1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
-  real(kind = dp), allocatable :: waveform_est_diff(:, :, :) !!(1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
-  real(kind = dp), allocatable :: h(:)
-  real(kind = dp) :: dist_grid_sta(1 : nsta_grid_max), g(1 : nsta_grid_max, 1 : 3), dist_tmp, &
+  real(kind = fp), allocatable :: begin(:)
+  real(kind = fp), allocatable :: waveform_obs(:, :)         !!(1 : ntime, 1 : nsta)
+  real(kind = fp), allocatable :: waveform_est(:, :, :, :)   !!(1 : 3 (u, dudx, dudy), 1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
+  real(kind = fp), allocatable :: waveform_est_diff(:, :, :) !!(1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
+  real(kind = fp), allocatable :: h(:)
+  real(kind = fp) :: dist_grid_sta(1 : nsta_grid_max), g(1 : nsta_grid_max, 1 : 3), dist_tmp, &
   &                  dist_x_tmp, dist_y_tmp, weight(1 : nsta_grid_max, 1 : nsta_grid_max), g_tmp(1 : 3, 1 : 3), &
   &                  kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), obs_vector(1 : nsta_grid_max), &
-  &                  slowness(1 : ngrid_x, 1 : ngrid_y), &
+  &                  slowness_x(1 : ngrid_x, 1 : ngrid_y), slowness_y(1 : ngrid_x, 1 : ngrid_y), &
   &                  waveform_est_tmp(-ntime_slowness2 : ntime_slowness2), &
-  &                  waveform_est_diff_tmp(-ntime_slowness2 : ntime_slonwess2), &
-  &                  waveform_est_dx(-ntime_slowness2 : ntime_slonwess2), &
-  &                  waveform_est_dy(-ntime_slowness2 : ntime_slonwess2), &
+  &                  waveform_est_diff_tmp(-ntime_slowness2 : ntime_slowness2), &
+  &                  waveform_est_dx(-ntime_slowness2 : ntime_slowness2), &
+  &                  waveform_est_dy(-ntime_slowness2 : ntime_slowness2), &
   &                  c, gn
-  integer :: grid_stationindex(1 : nsta_grid_max), ipiv(3)
+  integer :: grid_stationindex(1 : nsta_grid_max), nsta_count(1 : ngrid_x, 1 : ngrid_y), ipiv(3)
   logical :: grid_enough_sta(1 : ngrid_x, 1 : ngrid_y)
   character(len = 129), allocatable :: sacfile(:)
+  character(len = 129) :: outfile
+  character(len = 4) :: time_index
 
 
   nsta = iargc()
@@ -61,7 +67,7 @@ program seismicgradiometry
 
   !!read sac-formatted waveforms
   do i = 1, nsta
-    call read_sachdr(sacfile(i), begin = begin(i), npts = npts_tmp, stlo = location_sta(i)%lon, stla = location_sta(i)%lat)
+    call read_sachdr(sacfile(i), begin = begin(i), npts = npts_tmp, stlon = location_sta(i)%lon, stlat = location_sta(i)%lat)
     call read_sacdata(sacfile(i), ntime, waveform_obs(:, i))
   enddo
 
@@ -82,8 +88,8 @@ program seismicgradiometry
   !!set grid location
   do j = 1, ngrid_y
     do i = 1, ngrid_x
-      location_grid(i, j)%x_east = x_start + dgrid_x * real(i - 1, kind = dp)
-      location_grid(i, j)%y_north = y_start + dgrid_y * real(j - 1, kind = dp)
+      location_grid(i, j)%x_east = x_start + dgrid_x * real(i - 1, kind = fp)
+      location_grid(i, j)%y_north = y_start + dgrid_y * real(j - 1, kind = fp)
     enddo
   enddo
   !!convert station longitude/latitude to x_east/y_north
@@ -103,17 +109,17 @@ program seismicgradiometry
 
       !!count usable stations for each grid
       do ii = 1, nsta
-        dist_grid_sta_tmp = sqrt((location_sta(ii)%x_east  - location_grid(jj, kk)%x_east)  ** 2 &
-        &                      + (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) ** 2)
-        if(dist_grid_sta_tmp .gt. cutoff_dist) cycle
+        dist_tmp = sqrt((location_sta(ii)%x_east  - location_grid(jj, kk)%x_east)  ** 2 &
+        &             + (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) ** 2)
+        if(dist_tmp .gt. cutoff_dist) cycle
         nsta_count(jj, kk) = nsta_count(jj, kk) + 1
         do j = 1, nsta_grid_max
-          if(dist_grid_sta_tmp .le. dist_grid_sta(j)) then
+          if(dist_tmp .le. dist_grid_sta(j)) then
             do i = nsta_grid_max, j + 1, -1
               dist_grid_sta(i) = dist_grid_sta(i - 1)
               grid_stationindex(i) = grid_stationindex(i - 1)
             enddo
-            dist_grid_sta(j) = dist_grid_sta_tmp
+            dist_grid_sta(j) = dist_tmp
             grid_stationindex(j) = ii
             exit
           endif
@@ -122,19 +128,19 @@ program seismicgradiometry
       if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
 
 
-      g(1 : nsta_grid_max, 1 : 3) = 0.0_dp
-      weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_dp
+      g(1 : nsta_grid_max, 1 : 3) = 0.0_fp
+      weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_fp
       do i = 1, nsta_count(jj, kk)
-        g(i, 1) = 1.0_dp
+        g(i, 1) = 1.0_fp
         g(i, 2) = location_sta(grid_stationindex(i))%x_east - location_grid(jj, kk)%x_east
         g(i, 3) = location_sta(grid_stationindex(i))%y_north - location_grid(jj, kk)%y_north
         dist_x_tmp = g(i, 2) * cos(theta) + g(i, 3) * sin(theta)
         dist_y_tmp = -g(i, 2) * sin(theta) + g(i, 3) * cos(theta)
         dist_tmp = (dist_x_tmp ** 2) / sigma_x_east + (dist_y_tmp ** 2) / sigma_y_north
-        if(dist_tmp .lt. 4.0_dp) then
-          weight(i, i) = exp(-0.5_dp * dist_tmp)
+        if(dist_tmp .lt. 1.0_fp) then
+          weight(i, i) = exp(-0.5_fp * dist_tmp)
         else
-          weight(i, i) = 0.0_dp
+          weight(i, i) = 0.0_fp
         endif
       enddo
       g_tmp = matmul(transpose(g), matmul(weight, g))
@@ -156,9 +162,13 @@ program seismicgradiometry
 
   !!calculate amplitude and its spatial derivatives at each grid
   do j = 1, ntime
+    write(time_index, *) j
+    do i = 1, 4
+      if(time_index(i : i) .eq. " ") time_index(i : i) = "0"
+    enddo
     do jj = 1, ngrid_y
       do ii = 1, ngrid_x
-        obs_vector(1 : nsta_grid_max) = 0.0_dp
+        obs_vector(1 : nsta_grid_max) = 0.0_fp
         do i = 1, nsta_count(ii, jj)
           obs_vector(i) = waveform_obs(j, grid_stationindex(i))
         enddo
@@ -166,6 +176,8 @@ program seismicgradiometry
         &  = matmul(kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk), obs_vector(1 : nsta_grid_max))
       enddo
     enddo
+    outfile = "amplitude_gradiometry_" // trim(time_index) // ".grd"
+    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est(1, :, :, j), outfile)
   enddo
 
   !!calculate time derivatives of estimated wavefield
@@ -177,7 +189,7 @@ program seismicgradiometry
         elseif(i .eq. ntime) then
           waveform_est_diff(ii, jj, i) = (waveform_est(1, ii, jj, i) - waveform_est(1, ii, jj, i - 1)) / dt
         else
-          waveform_est_diff(ii, jj, i) = (waveform_est(1, ii, jj, i + 1) - waveform_est(1, ii, jj, i - 1)) / dt * 0.5_dp
+          waveform_est_diff(ii, jj, i) = (waveform_est(1, ii, jj, i + 1) - waveform_est(1, ii, jj, i - 1)) / dt * 0.5_fp
         endif
       enddo
     enddo
@@ -195,15 +207,15 @@ program seismicgradiometry
           waveform_est_dy(i) = waveform_est(3, ii, jj, i + j)
         enddo
         slowness_x(ii, jj) &
-        &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_est_dx, waveform_diff_tmp)) &
-        &  -  (dot_product(waveform_est_tmp, waveform_diff_tmp) * dot_product(waveform_est_dx, waveform_est_tmp))) &
-        &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_diff_tmp, waveform_diff_tmp)) &
-        &  -  (dot_product(waveform_est_tmp, waveform_diff_tmp) * dot_product(waveform_est_tmp, waveform_diff_tmp)))
+        &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_est_dx, waveform_est_diff_tmp)) &
+        &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dx, waveform_est_tmp))) &
+        &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
+        &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp)))
         slowness_y(ii, jj) &
-        &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_est_dy, waveform_diff_tmp)) &
-        &  -  (dot_product(waveform_est_tmp, waveform_diff_tmp) * dot_product(waveform_est_dy, waveform_est_tmp))) &
-        &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_diff_tmp, waveform_diff_tmp)) &
-        &  -  (dot_product(waveform_est_tmp, waveform_diff_tmp) * dot_product(waveform_est_tmp, waveform_diff_tmp)))
+        &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_est_dy, waveform_est_diff_tmp)) &
+        &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dy, waveform_est_tmp))) &
+        &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)  * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
+        &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp)))
       enddo
     enddo
   enddo 

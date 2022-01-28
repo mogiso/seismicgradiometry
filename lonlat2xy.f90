@@ -1,16 +1,14 @@
 subroutine lonlat2xy(lon, lat, lon0, lat0, x, y)
+  use constants, only : pi, r1, r2, ec
   implicit none
   !!Œo“xEˆÜ“x‚ğ—^‚¦‚Ä•½–Ê’¼ŠpÀ•WŒn‚Åx(“Œ+), y(–k+)‚ğ•Ô‚·
   real*8, intent(in) :: lon, lat
   real*8, intent(in) :: lon0, lat0
   real*8, intent(out) :: x, y
 
-  real*8, parameter :: pi = 4.0d0 * atan(1.0d0)
-  real*8, parameter :: f = 1.0d0 / 298.257222101d0
-  real*8, parameter :: e = sqrt(2.0d0 * f - f ** 2)            !!‘æˆê—£S—¦
+  real*8, parameter :: e = sqrt(2.0d0 * ec - ec ** 2)            !!‘æˆê—£S—¦
   real*8, parameter :: et = sqrt(e ** 2 / (1.0d0 - e ** 2))    !!‘æ“ñ—£S—¦
-  real*8, parameter :: b = r1 * sqrt(1.0d0 - e ** 2)            !!’Z”¼Œa
-  real*8, parameter :: c = a ** 2 / b                          !!‹É‚Å‚Ì‹È—¦”¼Œa
+  real*8, parameter :: c = r1 ** 2 / r2                         !!‹É‚Å‚Ì‹È—¦”¼Œa
   real*8, parameter :: m0 = 0.9999d0                       !!Œ´“_‚Å‚ÌkÚŒW”
   real*8 :: m, n, r, w, v
 

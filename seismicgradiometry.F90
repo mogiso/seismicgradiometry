@@ -3,6 +3,7 @@ program seismicgradiometry
   use constants, only : pi
   use read_sacfile, only : read_sachdr, read_sacdata
   use grdfile_io, only : write_grdfile_fp_2d
+  use lonlat_xy_conv, only : bl2xy
 #ifdef MKL
   use lapack95
 #else
@@ -16,22 +17,22 @@ program seismicgradiometry
     real(kind = fp) :: lon, lat, x_east, y_north
   end type location
 
-  real(kind = fp), parameter :: x_start = -100.0_fp, y_start = -100.0_fp, &
-  &                             x_end = 100.0_fp, y_end = 100.0_fp
-  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 42.0_fp
+  real(kind = fp), parameter :: x_start = -200.0_fp, y_start = -200.0_fp, &
+  &                             x_end = 200.0_fp, y_end = 200.0_fp
+  real(kind = fp), parameter :: center_lon = 138.0_fp, center_lat = 35.0_fp
   real(kind = fp), parameter :: dgrid_x = 5.0_fp, dgrid_y = 5.0_fp
   real(kind = fp), parameter :: cutoff_dist = 50.0_fp
   real(kind = fp), parameter :: sigma_x_east = 30.0_fp ** 2, sigma_y_north = 50.0_fp ** 2, theta = 90.0_fp * pi / 180.0_fp
   real(kind = fp), parameter :: dt = 0.1_fp
 
-  real(kind = fp), parameter :: fl = 1.0_fp / 1800.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
+  real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
   &                             ap = 0.5_fp, as = 5.0_fp
 
   integer, parameter :: ntime_slowness = 51, ntime_slowness2 = (ntime_slowness - 1) / 2
   integer, parameter :: nsta_grid_max = 15, nsta_grid_min = 3
   integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = fp)) + 1
   integer, parameter :: ngrid_y = int((y_end - y_start) / real(dgrid_y, kind = fp)) + 1
-  integer, parameter :: ntime = 1
+  integer, parameter :: ntime = 60
 
 
   integer :: nsta, npts_tmp, info, i, j, ii, jj, kk, m, n
@@ -62,8 +63,11 @@ program seismicgradiometry
 
   allocate(waveform_obs(1 : ntime, 1 : nsta), waveform_est_diff(1 : ngrid_x, 1 : ngrid_y, 1 : ntime), &
   &        waveform_est(1 : 3, 1 : ngrid_x, 1 : ngrid_y, 1 : ntime))
-  allocate(location_sta(1 : nsta), sacfile(1 : nsta))
+  allocate(location_sta(1 : nsta), sacfile(1 : nsta), begin(1 : nsta))
 
+  do i = 1, nsta
+    call getarg(i, sacfile(i))
+  enddo
 
   !!read sac-formatted waveforms
   do i = 1, nsta
@@ -73,16 +77,16 @@ program seismicgradiometry
 
 
   !!calculate filter parameter
-  call calc_bpf_order(fl, fh, fs, ap, as, dt, m, n, c)
-  allocate(h(4 * m))
-  call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
+  !call calc_bpf_order(fl, fh, fs, ap, as, dt, m, n, c)
+  !allocate(h(4 * m))
+  !call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   !!apply filter
-  do i = 1, nsta
-    call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1)
-    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
-    call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
-    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
-  enddo
+  !do i = 1, nsta
+  !  call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1)
+  !  waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
+  !  call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
+  !  waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
+  !enddo
 
 
   !!set grid location
@@ -94,8 +98,8 @@ program seismicgradiometry
   enddo
   !!convert station longitude/latitude to x_east/y_north
   do i = 1, nsta
-    call lonlat2xy(location_sta(i)%lon, location_sta(i)%lat, center_lon, center_lat, &
-    &              location_sta(i)%x_east, location_sta(i)%y_north)
+    call bl2xy(location_sta(i)%lon, location_sta(i)%lat, center_lon, center_lat, &
+    &          location_sta(i)%y_north, location_sta(i)%x_east)
   enddo
 
 
@@ -104,7 +108,7 @@ program seismicgradiometry
     do jj = 1, ngrid_x
       nsta_count(jj, kk) = 0
       grid_enough_sta(jj, kk) = .false.
-      dist_grid_sta(1 : nsta_grid_max) = 1.0e+10
+      dist_grid_sta(1 : nsta_grid_max) = 1.0e+15
       grid_stationindex(1 : nsta_grid_max) = 0
 
       !!count usable stations for each grid
@@ -162,7 +166,7 @@ program seismicgradiometry
 
   !!calculate amplitude and its spatial derivatives at each grid
   do j = 1, ntime
-    write(time_index, *) j
+    write(time_index, '(i4)') j
     do i = 1, 4
       if(time_index(i : i) .eq. " ") time_index(i : i) = "0"
     enddo
@@ -173,7 +177,7 @@ program seismicgradiometry
           obs_vector(i) = waveform_obs(j, grid_stationindex(i))
         enddo
         waveform_est(1 : 3, ii, jj, j) &
-        &  = matmul(kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk), obs_vector(1 : nsta_grid_max))
+        &  = matmul(kernel_matrix(1 : 3, 1 : nsta_grid_max, ii, jj), obs_vector(1 : nsta_grid_max))
       enddo
     enddo
     outfile = "amplitude_gradiometry_" // trim(time_index) // ".grd"

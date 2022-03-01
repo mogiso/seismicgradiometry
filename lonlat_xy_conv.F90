@@ -1,6 +1,8 @@
 module lonlat_xy_conv
   use nrtype, only : fp
   implicit none
+  private
+  public :: bl2xy, xy2bl
 
   real(kind = fp), parameter :: inv_f        = 298.2572222_fp   !!GRS1980
   real(kind = fp), parameter :: major_radius = 6378137.0_fp     !!GRS1980

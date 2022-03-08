@@ -8,7 +8,7 @@ program sac_deconvolv
   real(kind = fp), parameter :: damping_constant = 0.7_fp, natural_freq = 1.0_fp
   real(kind = fp), parameter :: fl = 0.02_fp, fh = 0.05_fp, fs = 0.1_fp, ap = 0.5_fp, as = 5.0_fp
   integer, parameter :: decimate = 100
-  integer, parameter :: nmean = 100 * 10
+  integer, parameter :: nmean = 100 * 15
   
   integer :: i, j, nfile, npts
   character(len = 4) :: sachdr_char(1 : 158)
@@ -47,6 +47,13 @@ program sac_deconvolv
 
     write(0, '(a)') "Doing deconvolution"
     call deconvolution(waveform_org, npts, sampling, 1.0_fp, damping_constant, natural_freq, waveform_acc)
+
+    mean = 0.0_dp
+    do i = 1, nmean
+      mean = mean + waveform_acc(i)
+    enddo
+    mean = mean / real(nmean, kind = dp)
+    waveform_acc(1 : npts) = waveform_acc(1 : npts) - mean
 
     write(0, '(a)') "Appling band-pass filter"
     call calc_bpf_order(fl, fh, fs, ap, as, sampling, m, n, c)

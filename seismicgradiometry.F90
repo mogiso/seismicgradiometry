@@ -15,27 +15,33 @@ program seismicgradiometry
 
 
   type location
-    real(kind = fp) :: lon, lat, x_east, y_north
+    real(kind = fp) :: lon, lat, x_east, y_north, depth
   end type location
 
-  real(kind = fp), parameter :: x_start = -700.0_fp, y_start = -400.0_fp, &
-  &                             x_end = 500.0_fp, y_end = 700.0_fp
-  real(kind = fp), parameter :: center_lon = 138.0_fp, center_lat = 35.0_fp
-  real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp
-  real(kind = fp), parameter :: cutoff_dist = 50.0_fp
+  real(kind = fp), parameter :: x_start = -300.0_fp, y_start = -700.0_fp, &
+  &                             x_end = 400.0_fp, y_end = 700.0_fp
+  !real(kind = fp), parameter :: center_lon = 138.0_fp, center_lat = 35.0_fp
+  !real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp
+  !real(kind = fp), parameter :: cutoff_dist = 50.0_fp
+  !real(kind = fp), parameter :: order = 1.0e+6_fp
+  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 37.5_fp   !!S-net
+  real(kind = fp), parameter :: dgrid_x = 40.0_fp, dgrid_y = 40.0_fp          !!S-net test
+  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
+  real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
   real(kind = fp), parameter :: sigma_x_east = 30.0_fp ** 2, sigma_y_north = 50.0_fp ** 2, theta = 90.0_fp * pi / 180.0_fp
-  real(kind = fp), parameter :: order = 1.0e+6_fp
-  real(kind = fp), parameter :: az_diff_max = 135.0_fp * deg2rad
+  real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
   real(kind = fp), parameter :: eps = 1.0e-5_fp
 
-  real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
-  &                             ap = 0.5_fp, as = 5.0_fp
+  !real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
+  !&                             ap = 0.5_fp, as = 5.0_fp
+  real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
+  &                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!S-net test
 
-  integer, parameter :: ntime_slowness = 51, ntime_slowness2 = (ntime_slowness - 1) / 2
+  integer, parameter :: ntime_slowness = 101, ntime_slowness2 = (ntime_slowness - 1) / 2
   integer, parameter :: nsta_grid_max = 40, nsta_grid_min = 4
   integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = fp)) + 1
   integer, parameter :: ngrid_y = int((y_end - y_start) / real(dgrid_y, kind = fp)) + 1
-  integer, parameter :: ntime = 400
+  integer, parameter :: ntime = 510
 
 
   integer :: nsta, npts_tmp, info, i, j, ii, jj, kk, m, n, icount
@@ -78,23 +84,23 @@ program seismicgradiometry
   !!read sac-formatted waveforms
   do i = 1, nsta
     call read_sachdr(sacfile(i), begin = begin(i), delta = dt, npts = npts_tmp, &
-    &                stlon = location_sta(i)%lon, stlat = location_sta(i)%lat)
+    &                stlon = location_sta(i)%lon, stlat = location_sta(i)%lat, stdp = location_sta(i)%depth)
     call read_sacdata(sacfile(i), ntime, waveform_obs(:, i))
     waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * order
   enddo
 
 
   !!calculate filter parameter
-  !call calc_bpf_order(fl, fh, fs, ap, as, dt, m, n, c)
-  !allocate(h(4 * m))
-  !call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
-  !!apply filter
-  !do i = 1, nsta
-  !  call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1)
-  !  waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
-  !  call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
-  !  waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
-  !enddo
+  call calc_bpf_order(fl, fh, fs, ap, as, dt, m, n, c)
+  allocate(h(4 * m))
+  call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
+  !apply filter
+  do i = 1, nsta
+    call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1)
+    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
+    call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
+    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
+  enddo
 
 
   !!set grid location
@@ -105,13 +111,16 @@ program seismicgradiometry
     enddo
   enddo
   !!convert station longitude/latitude to x_east/y_north
+  open(unit = 12, file = "station_location.txt")
   do i = 1, nsta
     call bl2xy(location_sta(i)%lon, location_sta(i)%lat, center_lon, center_lat, &
     &          location_sta(i)%y_north, location_sta(i)%x_east)
     location_sta(i)%y_north = location_sta(i)%y_north / 1000.0_fp
     location_sta(i)%x_east = location_sta(i)%x_east / 1000.0_fp
+    write(12, '(5(e15.7, 1x))') location_sta(i)%x_east, location_sta(i)%y_north, location_sta(i)%lon, location_sta(i)%lat, &
+    &                           location_sta(i)%depth
   enddo
-
+  close(12)
 
   !!make kernel matrix for each grid
   do kk = 1, ngrid_y

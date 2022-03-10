@@ -1,4 +1,5 @@
 subroutine calc_bpf_order(fl, fh, fs, ap, as, sample, m, n, c)
+  use nrtype, only : fp
   use constants, only : pi
   implicit none
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -24,11 +25,11 @@ subroutine calc_bpf_order(fl, fh, fs, ap, as, sample, m, n, c)
   !!!                             digital filters, Geophysical Exploration, 31(4), 240-263 (In Japanese)
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  real*8, intent(IN) :: fl,fh, fs, ap, as, sample
+  real(kind = fp), intent(IN) :: fl,fh, fs, ap, as, sample
   integer, intent(OUT) :: m, n
-  real*8, intent(OUT) :: c
+  real(kind = fp), intent(OUT) :: c
 
-  real*8 :: sigma_fl, sigma_fh, sigma_fs, op, os
+  real(kind = fp) :: sigma_fl, sigma_fh, sigma_fs, op, os
 
   sigma_fl = pi * fl * sample
   sigma_fh = pi * fh * sample
@@ -37,9 +38,9 @@ subroutine calc_bpf_order(fl, fh, fs, ap, as, sample, m, n, c)
   op = sin(sigma_fh - sigma_fl) / (cos(sigma_fl) * cos(sigma_fh))
   os = abs(tan(sigma_fs) - tan(sigma_fh) * tan(sigma_fl) / tan(sigma_fs))
 
-  n = max(2, ifix(abs(real(log(as / ap) / log(op / os))) + 0.5))
+  n = max(2, int(abs(real(log(as / ap) / log(op / os), kind = fp)) + 0.5_fp))
   m = n
-  c = sqrt(exp(log(ap * as) / dble(n)) / (op * os))
+  c = sqrt(exp(log(ap * as) / real(n, kind = fp)) / (op * os))
 
   return
 end subroutine calc_bpf_order

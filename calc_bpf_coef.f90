@@ -1,4 +1,5 @@
 subroutine calc_bpf_coef(fl, fh, sample, m, n, h, c, gn)
+  use nrtype, only : fp
   use constants, only : pi
   implicit none
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -16,26 +17,26 @@ subroutine calc_bpf_coef(fl, fh, sample, m, n, h, c, gn)
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   integer, intent(IN) :: m, n
-  real*8, intent(IN) :: c, fl, fh, sample
-  real*8, intent(OUT) :: h(4 * m)
-  real*8, intent(OUT) :: gn
+  real(kind = fp), intent(IN) :: c, fl, fh, sample
+  real(kind = fp), intent(OUT) :: h(4 * m)
+  real(kind = fp), intent(OUT) :: gn
 
-  real*8 :: g, fj, a1, dp, sigma_fl, sigma_fh, re, ri, wpc, wmc, clh
-  complex*16 :: oj, r(2), cq
+  real(kind = fp) :: g, fj, a1, dp, sigma_fl, sigma_fh, re, ri, wpc, wmc, clh
+  complex(kind = fp) :: oj, r(2), cq
   integer :: i, j, k
 
-  dp = pi / 2.0d0 / dble(n)
+  dp = pi / 2.0_fp / dble(n)
   sigma_fl = pi * fl * sample
   sigma_fh = pi * fh * sample
 
-  clh = 1.0d0 / (cos(sigma_fl) * cos(sigma_fh))
-  g = 1.0d0
-  fj = 1.0d0
+  clh = 1.0_fp / (cos(sigma_fl) * cos(sigma_fh))
+  g = 1.0_fp
+  fj = 1.0_fp
   k = 0
 
   do j = 1, int(n / 2)
-    oj = dcmplx(cos(dp * fj), sin(dp * fj)) * 0.5d0
-    fj = fj + 2.0d0
+    oj = dcmplx(cos(dp * fj), sin(dp * fj)) * 0.5_fp
+    fj = fj + 2.0_fp
     cq = sqrt(oj ** 2 + c ** 2 * tan(sigma_fl) * tan(sigma_fh))
     r(1) = oj + cq
     r(2) = oj - cq
@@ -43,11 +44,11 @@ subroutine calc_bpf_coef(fl, fh, sample, m, n, h, c, gn)
     do i = 1, 2
       re = dble(r(i)) ** 2
       ri = imag(r(i))
-      a1 = 1.0d0 / ((c + ri) ** 2 + re)
+      a1 = 1.0_fp / ((c + ri) ** 2 + re)
       g = g * a1
-      h(k + 1) = 0.0d0
-      h(k + 2) = -1.0d0
-      h(k + 3) = 2.0d0 * ((ri - c) * (ri + c) + re) * a1
+      h(k + 1) = 0.0_fp
+      h(k + 2) = -1.0_fp
+      h(k + 3) = 2.0_fp * ((ri - c) * (ri + c) + re) * a1
       h(k + 4) = ((ri - c) ** 2 + re) * a1
       k = k + 4
     enddo
@@ -56,11 +57,11 @@ subroutine calc_bpf_coef(fl, fh, sample, m, n, h, c, gn)
   if(n .ne. 2 * int(n / 2)) then
     wpc = c ** 2 * cos(sigma_fh - sigma_fl) * clh
     wmc = - c ** 2 * cos(sigma_fh + sigma_fl) * clh
-    a1 = 1.0d0 / (wpc + c)
+    a1 = 1.0_fp / (wpc + c)
     gn = g * c * a1
-    h(k + 1) = 0.0d0
-    h(k + 2) = -1.0d0
-    h(k + 3) = 2.0d0 * wmc * a1
+    h(k + 1) = 0.0_fp
+    h(k + 2) = -1.0_fp
+    h(k + 3) = 2.0_fp * wmc * a1
     h(k + 4) = (wpc - c) * a1
   endif
 

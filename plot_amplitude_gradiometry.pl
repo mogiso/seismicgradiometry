@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use Math::Trig qw(pi rad2deg);
 use Parallel::ForkManager;
-$MAX_PROCESS = 10;
+$MAX_PROCESS = 16;
 
 $in_dir = $ARGV[0];
 $index_begin = $ARGV[1];
@@ -37,7 +37,9 @@ $cpt_y = -1.0;
 $cpt_len = $size_x;
 $cpt_width = "0.3ch";
 $slowness_length = 0.3;
-$decimate = 1;
+$decimate = 2;
+$dgrid_x = 20;
+$dgrid_y = 20;
 
 system "gmt set PS_LINE_JOIN round";
 system "gmt set FONT_LABEL 13p,Helvetica";
@@ -121,7 +123,8 @@ foreach $index (@index_array){
       read IN, $buf, 4;
       $slowness_y = unpack "f", $buf;
       $read_filesize = $read_filesize + 4 * 4;
-      if($slowness_x != 0.0 && $slowness_y != 0.0 && $x_east % $decimate == 0 && $y_north % $decimate == 0){
+      if($slowness_x != 0.0 && $slowness_y != 0.0 && 
+         $x_east % ($decimate * $dgrid_x) == 0 && $y_north % ($decimate * $dgrid_y) == 0){
         $app_vel = 1.0 / sqrt($slowness_x * $slowness_x + $slowness_y * $slowness_y) * 1000.0;
         $direction = rad2deg(atan2($slowness_y, $slowness_x));
         #print stdout "$x_east $y_north $direction $slowness_length $slowness\n";

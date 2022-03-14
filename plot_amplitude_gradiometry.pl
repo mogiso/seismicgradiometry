@@ -133,7 +133,11 @@ foreach $index (@index_array){
       $slowness_x = unpack "f", $buf;
       read IN, $buf, 4;
       $slowness_y = unpack "f", $buf;
-      $read_filesize = $read_filesize + 4 * 4;
+      read IN, $buf, 4;
+      $sigma_slowness_x = unpack "f", $buf;
+      read IN, $buf, 4;
+      $sigma_slowness_y = unpack "f", $buf;
+      $read_filesize = $read_filesize + 4 * 6;
       if($slowness_x != 0.0 && $slowness_y != 0.0 && 
          $x_east % ($decimate * $dgrid_x) == 0 && $y_north % ($decimate * $dgrid_y) == 0){
         $app_vel = 1.0 / sqrt($slowness_x * $slowness_x + $slowness_y * $slowness_y) * 1000.0;

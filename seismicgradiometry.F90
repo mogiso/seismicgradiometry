@@ -18,15 +18,19 @@ program seismicgradiometry
     real(kind = fp) :: lon, lat, x_east, y_north, depth
   end type location
 
-  real(kind = fp), parameter :: x_start = -300.0_fp, y_start = -700.0_fp, &
-  &                             x_end = 400.0_fp, y_end = 700.0_fp
+  real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
+  &                             x_end = 150.0_fp, y_end = 100.0_fp
   !real(kind = fp), parameter :: center_lon = 138.0_fp, center_lat = 35.0_fp
   !real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp
   !real(kind = fp), parameter :: cutoff_dist = 50.0_fp
   !real(kind = fp), parameter :: order = 1.0e+6_fp
-  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 37.5_fp   !!S-net
-  real(kind = fp), parameter :: dgrid_x = 40.0_fp, dgrid_y = 40.0_fp          !!S-net test
-  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
+  !real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 37.5_fp   !!S-net
+  !real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
+  !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
+  real(kind = fp), parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp   !!DONET test
+  real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
+  !real(kind = fp), parameter :: cutoff_dist = 20.0_fp                         !!DONET test 6-20min
+  real(kind = fp), parameter :: cutoff_dist = 60.0_fp                         !!DONET 20-60min
   real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
   real(kind = fp), parameter :: sigma_x_east = 30.0_fp ** 2, sigma_y_north = 50.0_fp ** 2, theta = 90.0_fp * pi / 180.0_fp
   real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
@@ -36,6 +40,8 @@ program seismicgradiometry
   !&                             ap = 0.5_fp, as = 5.0_fp
   real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
   &                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!S-net test
+  !real(kind = fp), parameter :: fl = 1.0_fp / (20.0_fp * 60.0_fp), fh = 1.0_fp / (6.0_fp * 60.0_fp), &
+  !&                             fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 10.0_fp  !!DONET short-period test
 
   integer, parameter :: ntime_slowness = 101, ntime_slowness2 = (ntime_slowness - 1) / 2
   integer, parameter :: nsta_grid_max = 40, nsta_grid_min = 4
@@ -253,14 +259,17 @@ program seismicgradiometry
 
   !!calculate slownesses at each grid
   do j = 1, ntime
-    if(j - ntime_slowness2 .lt. 1 .or. j + ntime_slowness2 .gt. ntime) cycle
     write(time_index, '(i4)') j
     do i = 1, 4
       if(time_index(i : i) .eq. " ") time_index(i : i) = "0"
     enddo
     write(0, '(a)') "calculate slowness distribution for time " // time_index
     outfile = "slowness_gradiometry_" // trim(time_index) // ".dat"
-    open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 4)
+    open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 4, status = "replace")
+    if(j - ntime_slowness2 .lt. 1 .or. j + ntime_slowness2 .gt. ntime) then
+      close(10)
+      cycle
+    endif
     icount = 1
     do jj = 1, ngrid_y
       do ii = 1, ngrid_x

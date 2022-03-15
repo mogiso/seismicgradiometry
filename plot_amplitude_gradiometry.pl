@@ -104,19 +104,6 @@ foreach $index (@index_array){
   if (-f $coastline){
     system "gmt psxy $coastline -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W0.8p,black -O -K -P >> $out";
   }
-  if (-f "station_location.txt"){
-    open OUT, " | gmt psxy -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.1 -C$app_vel_cpt -W0.5p,black -O -K -P >> $out";
-    open IN, "<", "station_location.txt";
-    while(<IN>){
-      chomp $_;
-      $_ =~ s/^\s*(.*?)\s*$/$1/;
-      @tmp = split /\s+/, $_;
-      $app_vel = sqrt(9.8 * $tmp[4] * 1000.0);
-      print OUT "$tmp[0] $tmp[1] $app_vel\n";
-    }
-    close IN;
-    close OUT;
-  }
 
   if(-f $in2){
     $filesize = -s $in2;
@@ -137,7 +124,15 @@ foreach $index (@index_array){
       $sigma_slowness_x = unpack "f", $buf;
       read IN, $buf, 4;
       $sigma_slowness_y = unpack "f", $buf;
-      $read_filesize = $read_filesize + 4 * 6;
+      read IN, $buf, 4;
+      $ampterm_x = unpack "f", $buf;
+      read IN, $buf, 4;
+      $ampterm_y = unpack "f", $buf;
+      read IN, $buf, 4;
+      $sigma_ampterm_x = unpack "f", $buf;
+      read IN, $buf, 4;
+      $sigma_ampterm_y = unpack "f", $buf;
+      $read_filesize = $read_filesize + 4 * 10;
       if($slowness_x != 0.0 && $slowness_y != 0.0 && 
          $x_east % ($decimate * $dgrid_x) == 0 && $y_north % ($decimate * $dgrid_y) == 0){
         $app_vel = 1.0 / sqrt($slowness_x * $slowness_x + $slowness_y * $slowness_y) * 1000.0;
@@ -149,6 +144,20 @@ foreach $index (@index_array){
     close IN;
     close OUT;
 
+  }
+
+  if (-f "station_location.txt"){
+    open OUT, " | gmt psxy -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.1 -C$app_vel_cpt -W0.5p,black -O -K -P >> $out";
+    open IN, "<", "station_location.txt";
+    while(<IN>){
+      chomp $_;
+      $_ =~ s/^\s*(.*?)\s*$/$1/;
+      @tmp = split /\s+/, $_;
+      $app_vel = sqrt(9.8 * $tmp[4] * 1000.0);
+      print OUT "$tmp[0] $tmp[1] $app_vel\n";
+    }
+    close IN;
+    close OUT;
   }
 
   system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -Ba50+l\"Velocity (m/s)\" -C$app_vel_cpt -O -K -P >> $out";

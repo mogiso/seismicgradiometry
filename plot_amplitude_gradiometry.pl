@@ -11,36 +11,54 @@ $coastline = $ARGV[3];
 $ref_yr = "2022";
 $ref_mo = "1";
 $ref_dy = 15;
-$ref_hh = 18;
+$ref_hh = 9;
 $ref_mm = 30;
 $ref_ss = 0;
 $dt = 60;
 
 $ref_sec = $ref_hh * 3600 + $ref_mm * 60 + $ref_ss;
 
+#S-net ref: 142.5E, 38.25N
+#$dgrid_x = 20;
+#$dgrid_y = 20;
+#$min_x = -350;
+#$max_x = 350;
+#$min_y = -600;
+#$max_y = 600;
+#$size_x = 7;
+#$size_y = 12;
+
+#DONET ref: 135.75E, 33.2N
+$dgrid_x = 10;
+$dgrid_y = 10;
 $min_x = -150;
 $max_x = 150;
 $min_y = -100;
 $max_y = 100;
+$size_x = 7;
+$size_y = 4.7;
 
-$size_x = 8;
-$size_y = 5;
 $dx = $size_x + 0.8;
 
+
+$ngrid_x = int(($max_x - $min_x) / $dgrid_x) + 1;
+$ngrid_y = int(($max_y - $min_y) / $dgrid_y) + 1;
 
 $cpt = "amplitude_gradiometry_OBP.cpt";
 $app_vel_cpt = "app_vel_gradiometry_OBP.cpt";
 
-$txt_x = 0.0;
-$txt_y = $size_y + 0.3;
+$txt_x = 0.15;
+$txt_y = $size_y - 0.15;
 $cpt_x = $size_x / 2.0;
 $cpt_y = -1.7;
 $cpt_len = $size_x;
 $cpt_width = "0.3ch";
-$slowness_length = 0.3;
-$decimate = 1;
-$dgrid_x = 10;
-$dgrid_y = 10;
+$slowness_length = 0.35;
+$decimate = 2;
+
+$txt_x2 = -1.9;
+$txt_x3 = -0.2;
+$txt_y2 = $size_y + 0.3;
 
 system "gmt set PS_LINE_JOIN round";
 system "gmt set FONT_LABEL 13p,Helvetica";
@@ -87,12 +105,16 @@ foreach $index (@index_array){
   if (-f $coastline){
     system "gmt psxy $coastline -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W0.8p,black -O -K -P >> $out";
   }
+  open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -Gwhite -O -K -P >> $out";
+    print OUT "$txt_x $txt_y 14p,Helvetica,black 0 LT $current_yr/$current_mo/$current_dy $current_hh:$current_mm:$current_ss\n";
+    print OUT "$txt_x2 $txt_y2 14p,Helvetica,black 0 LB (a)\n";
+  close OUT;
   open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -O -K -P >> $out";
-    print OUT "$txt_x $txt_y 14p,Helvetica,black 0 LB $current_yr/$current_mo/$current_dy $current_hh:$current_mm:$current_ss\n";
+    print OUT "$txt_x2 $txt_y2 14p,Helvetica,black 0 LB (a)\n";
   close OUT;
 
-  if (-f "station_location.txt"){
-    system "gmt psxy station_location.txt -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.1 -W0.5p,black -O -K -P >> $out";
+  if (-f "$in_dir/station_location.txt"){
+    system "gmt psxy $in_dir/station_location.txt -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.12 -W0.5p,black -O -K -P >> $out";
   }
 
   system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -B+l\"Amplitude (hPa)\" -C$cpt -O -K -P >> $out";
@@ -105,13 +127,34 @@ foreach $index (@index_array){
     system "gmt psxy $coastline -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W0.8p,black -O -K -P >> $out";
   }
 
+  if (-f "$in_dir/station_location.txt"){
+    open OUT, " | gmt psxy -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.12 -W0.5p,black -O -K -P >> $out";
+    open IN, "<", "$in_dir/station_location.txt";
+    while(<IN>){
+      chomp $_;
+      $_ =~ s/^\s*(.*?)\s*$/$1/;
+      @tmp = split /\s+/, $_;
+      $app_vel = sqrt(9.8 * $tmp[4] * 1000.0);
+      print OUT "$tmp[0] $tmp[1] $app_vel\n";
+    }
+    close IN;
+    close OUT;
+  }
+
   if(-f $in2){
     $filesize = -s $in2;
     $read_filesize = 0;
     open OUT, " | gmt psxy -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y \\
-                  -Svb0.08c/0.12c/0.125c -W0.5p,black -C$app_vel_cpt -O -K -P >> $out";
+                  -Svb0.12c/0.16c/0.16c -W0.5p,black -C$app_vel_cpt -O -K -P >> $out";
     open IN, "<", $in2;
+    $count_x = 0;
+    $count_y = 0;
     while($read_filesize < $filesize){
+      $count_x++;
+      if($count_x == $ngrid_x){
+        $count_y++;
+        $count_x = 0;
+      }
       read IN, $buf, 4;
       $x_east = unpack "f", $buf;
       read IN, $buf, 4;
@@ -133,12 +176,13 @@ foreach $index (@index_array){
       read IN, $buf, 4;
       $sigma_ampterm_y = unpack "f", $buf;
       $read_filesize = $read_filesize + 4 * 10;
-      if($slowness_x != 0.0 && $slowness_y != 0.0 && 
-         $x_east % ($decimate * $dgrid_x) == 0 && $y_north % ($decimate * $dgrid_y) == 0){
+      if($slowness_x != 0.0 && $slowness_y != 0.0){
         $app_vel = 1.0 / sqrt($slowness_x * $slowness_x + $slowness_y * $slowness_y) * 1000.0;
         $direction = rad2deg(atan2($slowness_y, $slowness_x));
-        #print stdout "$x_east $y_north $direction $slowness_length $slowness\n";
-        print OUT "$x_east $y_north $app_vel $direction $slowness_length\n";
+        if($count_x % $decimate == 0 && %count_y % $decimate == 0){
+          #print stdout "$x_east $y_north $app_vel $direction $slowness_length\n";
+          print OUT "$x_east $y_north $app_vel $direction $slowness_length\n";
+        }
       }
     }
     close IN;
@@ -146,21 +190,11 @@ foreach $index (@index_array){
 
   }
 
-  if (-f "station_location.txt"){
-    open OUT, " | gmt psxy -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.1 -C$app_vel_cpt -W0.5p,black -O -K -P >> $out";
-    open IN, "<", "station_location.txt";
-    while(<IN>){
-      chomp $_;
-      $_ =~ s/^\s*(.*?)\s*$/$1/;
-      @tmp = split /\s+/, $_;
-      $app_vel = sqrt(9.8 * $tmp[4] * 1000.0);
-      print OUT "$tmp[0] $tmp[1] $app_vel\n";
-    }
-    close IN;
-    close OUT;
-  }
+  open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -O -K -P >> $out";
+    print OUT "$txt_x3 $txt_y2 14p,Helvetica,black 0 LB (b)\n";
+  close OUT;
 
-  system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -Ba50+l\"Velocity (m/s)\" -C$app_vel_cpt -O -K -P >> $out";
+  system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -B+l\"Apparent velocity (m/s)\" -C$app_vel_cpt -O -K -P >> $out";
   system "cat /dev/null | gmt psxy -JX1c -R0/1/0/1 -Sc0.1 -O -P >> $out";
   system "gmt psconvert $out -Tg -A";
 

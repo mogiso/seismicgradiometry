@@ -8,7 +8,7 @@ program conv_xy2lonlat
   character(len = 129) :: x_east_t, y_north_t, center_lon_t, center_lat_t
 
   call getarg(1, x_east_t); read(x_east_t, *) x_east
-  call getarg(1, y_north_t); read(y_north_t, *) y_north
+  call getarg(2, y_north_t); read(y_north_t, *) y_north
   call getarg(3, center_lon_t); read(center_lon_t, *) center_lon
   call getarg(4, center_lat_t); read(center_lat_t, *) center_lat
   call xy2bl(y_north / order, x_east / order, center_lon, center_lat, lon, lat)

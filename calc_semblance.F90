@@ -20,14 +20,16 @@ program calc_semblance
   !real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
   !&                             ap = 0.5_fp, as = 5.0_fp
   !real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
-  !&                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!S-net test
+  !&                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!DONET long-period
+  !integer, parameter :: ntime_slowness = 241                                                 !!DONET long-period
   real(kind = fp), parameter :: fl = 1.0_fp / (20.0_fp * 60.0_fp), fh = 1.0_fp / (6.0_fp * 60.0_fp), &
   &                             fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 10.0_fp  !!DONET short-period test
+  integer, parameter :: ntime_slowness = 121                                                 !!DONET short-period
 
-  integer, parameter :: ntime_slowness = 101, ntime_slowness2 = (ntime_slowness - 1) / 2
+  integer, parameter :: ntime_slowness2 = (ntime_slowness - 1) / 2
   integer, parameter :: ngrid_x = int((sx_max - sx_min) / real(dgrid_x, kind = fp)) + 1
   integer, parameter :: ngrid_y = int((sy_max - sy_min) / real(dgrid_y, kind = fp)) + 1
-  integer, parameter :: ntime = 501
+  integer, parameter :: ntime = 630
   integer, parameter :: ntime_decimate = 4
 
 
@@ -106,7 +108,7 @@ program calc_semblance
           denominator_tmp = 0.0_fp
           do i = 1, nsta
             delta_t = location_sta(i)%x_east * slowness_x + location_sta(i)%y_north * slowness_y
-            delta_t_int = int(delta_t / dt)
+            delta_t_int = -int(delta_t / dt)
             if(ntime_decimate * (k - 1) + 1 + j + delta_t_int .ge. 1 &
             &  .and. ntime_decimate * (k - 1) + 1 + j + delta_t_int .le. ntime * ntime_decimate) then
               numerator_tmp = numerator_tmp + waveform_obs(ntime_decimate * (k - 1) + 1 + j + delta_t_int, i)

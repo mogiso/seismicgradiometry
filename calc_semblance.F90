@@ -134,9 +134,9 @@ program calc_semblance
     azimuth = (pi / 2.0_fp - atan2(slowness_y, slowness_x)) * rad2deg
     if(azimuth .gt. 180.0_fp) azimuth = azimuth - 360.0_fp
     if(azimuth .lt. -180.0_fp) azimuth = azimuth + 360.0_fp
-    write(0, '(4(e15.7, 1x))') begin + real((k - 1) * ntime_decimate + 1, kind = fp) * dt, &
+    write(0, '(4(e15.7, 1x))') begin + real((k - 1) * ntime_decimate, kind = fp) * dt, &
     &                          velocity, azimuth, semblance_maxval
-    write(10, '(4(e15.7, 1x))') begin + real((k - 1) * ntime_decimate + 1, kind = fp) * dt, &
+    write(10, '(4(e15.7, 1x))') begin + real((k - 1) * ntime_decimate, kind = fp) * dt, &
     &                          velocity, azimuth, semblance_maxval
   enddo 
   close(10)

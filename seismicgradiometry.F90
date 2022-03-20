@@ -200,7 +200,8 @@ program seismicgradiometry
         !else
         !  weight(i, i) = 0.0_fp
         !endif
-        weight(i, i) = 1.0_fp / ((dist_x_tmp ** 2 + dist_y_tmp ** 2) / 10.0_fp)
+        !weight(i, i) = 1.0_fp / ((dist_x_tmp ** 2 + dist_y_tmp ** 2) / 10.0_fp)
+        weight(i, i) = exp(-(dist_x_tmp ** 2 + dist_y_tmp ** 2) / (cutoff_dist ** 2))
       enddo
       g_tmp = matmul(transpose(g), matmul(weight, g))
 #ifdef MKL

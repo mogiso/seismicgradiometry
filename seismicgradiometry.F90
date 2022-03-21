@@ -18,19 +18,19 @@ program seismicgradiometry
     real(kind = fp) :: lon, lat, x_east, y_north, depth
   end type location
 
-  !real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
-  !&                             x_end = 350.0_fp, y_end = 600.0_fp
-  !real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
-  !real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
-  !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
+  real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
+  &                             x_end = 350.0_fp, y_end = 600.0_fp
+  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
+  real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
+  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
 
 
-  real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
-  &                             x_end = 150.0_fp, y_end = 100.0_fp
-  real(kind = fp), parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp   !!DONET test
-  real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
+  !real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
+  !&                             x_end = 150.0_fp, y_end = 100.0_fp
+  !real(kind = fp), parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp   !!DONET test
+  !real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
   !real(kind = fp), parameter :: cutoff_dist = 30.0_fp                         !!DONET test 6-20min
-  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!DONET 20-60min
+  !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!DONET 20-60min
 
   real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
   real(kind = fp), parameter :: sigma_x_east = 30.0_fp ** 2, sigma_y_north = 50.0_fp ** 2, theta = 90.0_fp * pi / 180.0_fp

@@ -109,9 +109,6 @@ foreach $index (@index_array){
     print OUT "$txt_x $txt_y 14p,Helvetica,black 0 LT $current_yr/$current_mo/$current_dy $current_hh:$current_mm:$current_ss\n";
     print OUT "$txt_x2 $txt_y2 14p,Helvetica,black 0 LB (a)\n";
   close OUT;
-  open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -O -K -P >> $out";
-    print OUT "$txt_x2 $txt_y2 14p,Helvetica,black 0 LB (a)\n";
-  close OUT;
 
   if (-f "$in_dir/station_location.txt"){
     system "gmt psxy $in_dir/station_location.txt -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Sc0.12 -W0.5p,black -O -K -P >> $out";

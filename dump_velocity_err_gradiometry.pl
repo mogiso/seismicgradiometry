@@ -72,14 +72,14 @@ for($i = 0; $i <= $#x_east; $i++){
                         / $slowness_sq);
   $velocity_err = $velocity_err / $velocity * 100.0;
   $velocity_err = sprintf "%.2f", $velocity_err;
-  $az = rad2deg(atan2($slowness_y[$i], $slowness_x[$i]));
+  $az = 90.0 - rad2deg(atan2($slowness_y[$i], $slowness_x[$i]));
   $az = sprintf "%.2f", $az;
   $az_err = 1.0 / $slowness_sq * 
                   sqrt(($sigma_slowness_x[$i] * $slowness_y[$i]) ** 2 + ($sigma_slowness_y[$i] * $slowness_x[$i]) ** 2);
   $az_err = rad2deg($az_err);
   $az_err = sprintf "%.2f", $az_err;
   if($count_x % $decimate == 0 && $count_y % $decimate == 0){
-    print stdout "$x_east[$i] $y_north[$i] $velocity $velocity_err $velocity $az $az_err\n";
+    print stdout "$x_east[$i] $y_north[$i] $velocity $velocity_err $az $az_err\n";
   }
 }
 

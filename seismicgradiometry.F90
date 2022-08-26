@@ -18,18 +18,18 @@ program seismicgradiometry
     real(kind = fp) :: lon, lat, x_east, y_north, depth
   end type location
 
-  !real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
-  !&                             x_end = 350.0_fp, y_end = 600.0_fp
-  !real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
-  !real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
-  !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
+  real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
+  &                             x_end = 350.0_fp, y_end = 600.0_fp
+  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
+  real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
+  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
 
 
-  real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
-  &                             x_end = 150.0_fp, y_end = 100.0_fp
-  real(kind = fp), parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp   !!DONET test
-  real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
-  real(kind = fp), parameter :: cutoff_dist = 30.0_fp                         !!DONET test 6-20min
+  !real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
+  !&                             x_end = 150.0_fp, y_end = 100.0_fp
+  !real(kind = fp), parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp   !!DONET test
+  !real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
+  !real(kind = fp), parameter :: cutoff_dist = 30.0_fp                         !!DONET test 6-20min
   !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!DONET 20-60min
 
   real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
@@ -37,12 +37,12 @@ program seismicgradiometry
   real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
   real(kind = fp), parameter :: eps = 1.0e-5_fp
 
-  !real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
-  !&                             ap = 0.5_fp, as = 5.0_fp
+  real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
+  &                             ap = 0.5_fp, as = 5.0_fp
   !real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
   !&                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!S-net test
-  real(kind = fp), parameter :: fl = 1.0_fp / (20.0_fp * 60.0_fp), fh = 1.0_fp / (6.0_fp * 60.0_fp), &
-  &                             fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 10.0_fp  !!DONET short-period test
+  !real(kind = fp), parameter :: fl = 1.0_fp / (20.0_fp * 60.0_fp), fh = 1.0_fp / (6.0_fp * 60.0_fp), &
+  !&                             fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 10.0_fp  !!DONET short-period test
 
   integer, parameter :: ntime_slowness = 61, ntime_slowness2 = (ntime_slowness - 1) / 2
   integer, parameter :: nsta_grid_max = 40, nsta_grid_min = 5
@@ -88,15 +88,14 @@ program seismicgradiometry
   character(len = 129) :: outfile
   character(len = 4) :: time_index
 
-
-  nsta = iargc()
+  nsta = command_argument_count()
 
   allocate(waveform_obs(1 : ntime, 1 : nsta), waveform_est_diff(1 : ngrid_x, 1 : ngrid_y, 1 : ntime), &
   &        waveform_est(1 : 3, 1 : ngrid_x, 1 : ngrid_y, 1 : ntime))
   allocate(location_sta(1 : nsta), sacfile(1 : nsta), begin(1 : nsta))
 
   do i = 1, nsta
-    call getarg(i, sacfile(i))
+    call get_command_argument(i, value = sacfile(i))
   enddo
 
   !!read sac-formatted waveforms

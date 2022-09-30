@@ -5,7 +5,8 @@ module grdfile_io
   !!License  : MIT License https://opensource.org/licenses/MIT
 
   private
-  public :: read_grdfile_2d, write_grdfile_2d, write_grdfile_fp_2d
+  public :: read_grdfile_2d, read_grdfile_1d_varname, read_grdfile_2d_varname, read_grdfile_3d_varname, &
+  &         write_grdfile_2d, write_grdfile_fp_2d
 
   contains
 
@@ -39,6 +40,101 @@ module grdfile_io
 
     return
   end subroutine read_grdfile_2d
+
+  subroutine read_grdfile_1d_varname(netcdf_file, varname, xval)
+    use netcdf
+    use nrtype, only : fp
+    implicit none
+    character(len = *),           intent(in)  :: netcdf_file
+    character(len = *),           intent(in)  :: varname
+    real(kind = fp), allocatable, intent(out) :: xval(:)
+
+    integer :: ncstatus, ncid, varid, varlen
+
+    !!open netcdf-format grd file
+    write(0, '(2a)') "reading netcdf-format grdfile ", trim(netcdf_file)
+    ncstatus = nf90_open(netcdf_file, nf90_nowrite, ncid)
+    call get_varinfo(ncid, trim(varname), varid = varid, varlen = varlen)
+
+    allocate(xval(varlen))
+
+    !!read variables
+    ncstatus = nf90_get_var(ncid, varid, xval)
+
+    !!close file
+    ncstatus = nf90_close(ncid)
+
+    return
+  end subroutine read_grdfile_1d_varname
+
+  subroutine read_grdfile_2d_varname(netcdf_file, varname, xval, yval, zval)
+    use netcdf
+    use nrtype, only : fp
+    implicit none
+    character(len = *),           intent(in)  :: netcdf_file
+    character(len = *),           intent(in)  :: varname(3)
+    real(kind = fp), allocatable, intent(out) :: xval(:), yval(:)
+    real(kind = fp), allocatable, intent(out) :: zval(:, :)
+
+    integer :: ncstatus, ncid, varid_x, varid_y, varid_z, varlen_x, varlen_y
+
+    !!open netcdf-format grd file
+    write(0, '(2a)') "reading netcdf-format grdfile ", trim(netcdf_file)
+    ncstatus = nf90_open(netcdf_file, nf90_nowrite, ncid)
+    
+    call get_varinfo(ncid, trim(varname(1)), varid = varid_x, varlen = varlen_x)
+    call get_varinfo(ncid, trim(varname(2)), varid = varid_y, varlen = varlen_y)
+    call get_varinfo(ncid, trim(varname(3)), varid = varid_z)
+
+    allocate(xval(varlen_x), yval(varlen_y), zval(varlen_x, varlen_y))
+
+    !!read variables
+    ncstatus = nf90_get_var(ncid, varid_x, xval)
+    ncstatus = nf90_get_var(ncid, varid_y, yval)
+    ncstatus = nf90_get_var(ncid, varid_z, zval)
+
+    !!close file
+    ncstatus = nf90_close(ncid)
+
+    return
+  end subroutine read_grdfile_2d_varname
+
+  subroutine read_grdfile_3d_varname(netcdf_file, varname, xval, yval, zval, wval)
+    use netcdf
+    use nrtype, only : fp
+    implicit none
+    character(len = *),           intent(in)  :: netcdf_file
+    character(len = *),           intent(in)  :: varname(4)
+    real(kind = fp), allocatable, intent(out) :: xval(:), yval(:), zval(:)
+    real(kind = fp), allocatable, intent(out) :: wval(:, :, :)
+
+    integer :: i, ncstatus, ncid, varid(4), varlen(4)
+
+    !!open netcdf-format grd file
+    write(0, '(2a)') "reading netcdf-format grdfile ", trim(netcdf_file)
+    ncstatus = nf90_open(netcdf_file, nf90_nowrite, ncid)
+    
+    do i = 1, 4
+      if(i .ne. 4) then
+        call get_varinfo(ncid, trim(varname(i)), varid = varid(i), varlen = varlen(i))
+      else
+        call get_varinfo(ncid, trim(varname(i)), varid = varid(i))
+      endif
+    enddo
+
+    allocate(xval(varlen(1)), yval(varlen(2)), zval(varlen(3)), wval(varlen(1), varlen(2), varlen(3)))
+
+    !!read variables
+    ncstatus = nf90_get_var(ncid, varid(1), xval)
+    ncstatus = nf90_get_var(ncid, varid(2), yval)
+    ncstatus = nf90_get_var(ncid, varid(3), zval)
+    ncstatus = nf90_get_var(ncid, varid(4), wval)
+
+    !!close file
+    ncstatus = nf90_close(ncid)
+
+    return
+  end subroutine read_grdfile_3d_varname
 
   subroutine write_grdfile_2d(xmin, ymin, dx, dy, nx, ny, zval, netcdf_file, nanval)
     use iso_fortran_env

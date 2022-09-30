@@ -1,4 +1,5 @@
 subroutine tandem1(x, y, n, h, m, nml)
+  use nrtype, only : fp
   implicit none
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!! nml => 0: Normal filtering
@@ -15,11 +16,11 @@ subroutine tandem1(x, y, n, h, m, nml)
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   integer, intent(IN) :: n, m, nml
-  real*8, intent(IN) :: x(n), h(4 * m)
-  real*8, intent(OUT) :: y(n)
+  real(kind = fp), intent(IN) :: x(n), h(4 * m)
+  real(kind = fp), intent(OUT) :: y(n)
   
   integer :: i, j
-  real*8 :: tmp_h(4)
+  real(kind = fp) :: tmp_h(4)
 
 
   do j = 1, 4
@@ -41,13 +42,14 @@ subroutine tandem1(x, y, n, h, m, nml)
 end subroutine tandem1
 
 subroutine recfil1(x, y, n, h, nml)
+  use nrtype, only : fp
   implicit none
   integer, intent(IN) :: n, nml
-  real*8, intent(IN) :: x(n), h(4)
-  real*8, intent(OUT) :: y(n)
+  real(kind = fp), intent(IN) :: x(n), h(4)
+  real(kind = fp), intent(OUT) :: y(n)
 
   integer :: j, jd, i
-  real*8 :: a, aa, b, bb, u1, u2, u3, v1, v2, v3
+  real(kind = fp) :: a, aa, b, bb, u1, u2, u3, v1, v2, v3
 
   if(nml .ge. 0) then
     j = 1
@@ -61,10 +63,10 @@ subroutine recfil1(x, y, n, h, nml)
   aa = h(2)
   b = h(3)
   bb = h(4)
-  u1 = 0.0d0
-  u2 = 0.0d0
-  v1 = 0.0d0
-  v2 = 0.0d0
+  u1 = 0.0_fp
+  u2 = 0.0_fp
+  v1 = 0.0_fp
+  v2 = 0.0_fp
 
   do i = 1, n
     u3 = u2
@@ -81,12 +83,13 @@ subroutine recfil1(x, y, n, h, nml)
 end subroutine recfil1
 
 subroutine tandem2(x, y, n, h, m, nml, uv)
+  use nrtype, only : fp
   implicit none
 
   integer, intent(IN) :: n, m, nml
-  real*8, intent(IN) :: x(n), h(4 * m)
-  real*8, intent(OUT) :: y(n)
-  real*8, intent(INOUT) :: uv(4 * m)
+  real(kind = fp), intent(IN) :: x(n), h(4 * m)
+  real(kind = fp), intent(OUT) :: y(n)
+  real(kind = fp), intent(INOUT) :: uv(4 * m)
   
   integer :: i, j
   real*8 :: tmp_h(4), tmp_uv(4)
@@ -115,14 +118,15 @@ subroutine tandem2(x, y, n, h, m, nml, uv)
 end subroutine tandem2
 
 subroutine recfil2(x, y, n, h, nml, uv1)
+  use nrtype, only : fp
   implicit none
   integer, intent(IN) :: n, nml
-  real*8, intent(IN) :: x(n), h(4)
-  real*8, intent(OUT) :: y(n)
-  real*8, intent(INOUT) :: uv1(4)
+  real(kind = fp), intent(IN) :: x(n), h(4)
+  real(kind = fp), intent(OUT) :: y(n)
+  real(kind = fp), intent(INOUT) :: uv1(4)
 
   integer :: j, jd, i
-  real*8 :: a, aa, b, bb, u1, u2, u3, v1, v2, v3
+  real(kind = fp) :: a, aa, b, bb, u1, u2, u3, v1, v2, v3
 
   if(nml .ge. 0) then
     j = 1

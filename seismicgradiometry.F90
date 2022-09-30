@@ -3,7 +3,7 @@ program seismicgradiometry
   use constants, only : pi, deg2rad, rad2deg
   use read_sacfile, only : read_sachdr, read_sacdata
   use grdfile_io, only : write_grdfile_fp_2d
-  use lonlat_xy_conv, only : bl2xy
+  use lonlat_xy_conv, only : bl2xy, xy2bl
   use sort, only : bubblesort
 #ifdef MKL
   use lapack95
@@ -18,12 +18,15 @@ program seismicgradiometry
     real(kind = fp) :: lon, lat, x_east, y_north, depth
   end type location
 
+  real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
+  real(kind = fp), parameter :: eps = 1.0e-5_fp
+
+  !!For S-net/DONET OBP
   real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
   &                             x_end = 350.0_fp, y_end = 600.0_fp
   real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
   real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
   real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
-
 
   !real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
   !&                             x_end = 150.0_fp, y_end = 100.0_fp
@@ -31,27 +34,34 @@ program seismicgradiometry
   !real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
   !real(kind = fp), parameter :: cutoff_dist = 30.0_fp                         !!DONET test 6-20min
   !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!DONET 20-60min
-
-  real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
-  real(kind = fp), parameter :: sigma_x_east = 30.0_fp ** 2, sigma_y_north = 50.0_fp ** 2, theta = 90.0_fp * pi / 180.0_fp
-  real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
-  real(kind = fp), parameter :: eps = 1.0e-5_fp
-
-  real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
-  &                             ap = 0.5_fp, as = 5.0_fp
+  !real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
+  !real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
+  !&                             ap = 0.5_fp, as = 5.0_fp
   !real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
   !&                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!S-net test
   !real(kind = fp), parameter :: fl = 1.0_fp / (20.0_fp * 60.0_fp), fh = 1.0_fp / (6.0_fp * 60.0_fp), &
   !&                             fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 10.0_fp  !!DONET short-period test
 
+  !integer, parameter :: ntime_slowness = 61, ntime_slowness2 = (ntime_slowness - 1) / 2
+  !integer, parameter :: nsta_grid_max = 40, nsta_grid_min = 5  !!For S-net/DONET OBPG array
+  !integer, parameter :: ntime = 630
+  !integer, parameter :: ntime = 1024 !!testdata
+
+  !!For SK-net Long-period motion
+  real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
+  &                             x_end = 350.0_fp, y_end = 600.0_fp
+  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
+  real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
+  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
+  real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
+  integer, parameter :: nsta_grid_max = 8, nsta_grid_min = 4
   integer, parameter :: ntime_slowness = 61, ntime_slowness2 = (ntime_slowness - 1) / 2
-  integer, parameter :: nsta_grid_max = 40, nsta_grid_min = 5
+  real(kind = fp), parameter :: fl = 1.0_fp / 100.0_fp, fh = 1.0_fp / 50.0_fp, fs = 1.0_fp / 20.0_fp, &
+  &                             ap = 0.5_fp, as = 5.0_fp
+
+
   integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = fp)) + 1
   integer, parameter :: ngrid_y = int((y_end - y_start) / real(dgrid_y, kind = fp)) + 1
-  !integer, parameter :: ntime = 630
-  integer, parameter :: ntime = 1024 !!testdata
-
-
   integer :: nsta, npts_tmp, info, i, j, ii, jj, kk, i3, j3, m, n, icount, jcount
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
   type(location), allocatable :: location_sta(:)
@@ -88,6 +98,13 @@ program seismicgradiometry
   character(len = 129) :: outfile
   character(len = 4) :: time_index
 
+#ifdef ELLIPSE
+  real(kind = fp), parameter :: sigma_radial = cutoff_dist ** 2, sigma_trans = (cutoff_dist * 2.0_fp) ** 2
+                                !!Radial: should be minor axis, transverse: major axis
+  real(kind = fp), parameter :: evlon = 137.8910_fp, evlat = 36.6928_fp
+  real(kind = fp)            :: propagation_direction
+#endif
+
   nsta = command_argument_count()
 
   allocate(waveform_obs(1 : ntime, 1 : nsta), waveform_est_diff(1 : ngrid_x, 1 : ngrid_y, 1 : ntime), &
@@ -119,12 +136,13 @@ program seismicgradiometry
     waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
   enddo
 
-
   !!set grid location
   do j = 1, ngrid_y
     do i = 1, ngrid_x
       location_grid(i, j)%x_east = x_start + dgrid_x * real(i - 1, kind = fp)
       location_grid(i, j)%y_north = y_start + dgrid_y * real(j - 1, kind = fp)
+      call xy2bl(location_grid(i, j)%y_north / 1000.0_fp, location_grid(i, j)%x_east / 1000.0_fp, &
+      &          center_lon, center_lat, location_grid(i, j)%lon, location_grid(i, j)%lat)
     enddo
   enddo
   !!convert station longitude/latitude to x_east/y_north
@@ -147,6 +165,41 @@ program seismicgradiometry
       dist_grid_sta(1 : nsta_grid_max) = 1.0e+15
       grid_stationindex(1 : nsta_grid_max, jj, kk) = 0
       azimuth_grid_sta(1 : nsta_grid_max, jj, kk) = 1.0e+15
+
+#ifdef ELLIPSE
+      call greatcircle_dist(evlat, evlon, location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
+      &                     backazimuth = propagation_direction)
+      propagation_direction = pi * 0.5_fp - propagation_direction
+      do ii = 1, nsta
+        dist_x_tmp = (location_sta(ii)%x_east - location_grid(jj, kk)%x_east) * cos(propagation_direction) &
+        &          - (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) * sin(propagation_direction)
+        dist_y_tmp = (location_sta(ii)%x_east - location_grid(jj, kk)%x_east) * sin(propagation_direction) &
+        &          + (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) * cos(propagation_direction)
+        dist_tmp = sqrt(dist_x_tmp ** 2 + dist_y_tmp ** 2)
+        weight_tmp = exp(-0.5_fp * (dist_x_tmp / sigma_radial) ** 2 + (dist_y_tmp / sigma_trans) ** 2)
+        if(weight_tmp .lt. exp(-2.0_fp)) cycle
+        if(dist_tmp .gt. 2.0_fp * cutoff_dist) cycle
+
+        nsta_count(jj, kk) = nsta_count(jj, kk) + 1
+        do j = 1, nsta_grid_max
+          if(dist_tmp .ge. dist_grid_sta(j)) then
+            do i = nsta_grid_max, j + 1, -1
+              dist_grid_sta(i) = dist_grid_sta(i - 1)
+              grid_stationindex(i, jj, kk) = grid_stationindex(i - 1, jj, kk)
+              azimuth_grid_sta(i, jj, kk) = azimuth_grid_sta(i - 1, jj, kk)
+            enddo
+            dist_grid_sta(j) = dist_tmp
+            grid_stationindex(j, jj, kk) = ii
+            azimuth_grid_sta(i, jj, kk) = atan2(location_sta(ii)%y_north - location_grid(jj, kk)%y_north, &
+            &                                   location_sta(ii)%x_east - location_grid(jj, kk)%x_east)
+            exit
+          endif
+        enddo
+      enddo
+      if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
+      if(nsta_count(jj, kk) .gt. nsta_grid_max) nsta_count(jj, kk) = nsta_grid_max
+ 
+#else
 
       !!count usable stations for each grid
       do ii = 1, nsta
@@ -171,6 +224,7 @@ program seismicgradiometry
       enddo
       if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
       if(nsta_count(jj, kk) .gt. nsta_grid_max) nsta_count(jj, kk) = nsta_grid_max
+#endif
 
       allocate(azimuth_order(1 : nsta_count(jj, kk)))
       azimuth_order(1 : nsta_count(jj, kk)) = azimuth_grid_sta(1 : nsta_count(jj, kk), jj, kk)
@@ -185,23 +239,25 @@ program seismicgradiometry
       deallocate(azimuth_order)
  
 
-
       g(1 : nsta_grid_max, 1 : 3) = 0.0_fp
       weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_fp
       do i = 1, nsta_count(jj, kk)
         g(i, 1) = 1.0_fp
         g(i, 2) = location_sta(grid_stationindex(i, jj, kk))%x_east - location_grid(jj, kk)%x_east
         g(i, 3) = location_sta(grid_stationindex(i, jj, kk))%y_north - location_grid(jj, kk)%y_north
-        dist_x_tmp = g(i, 2) * cos(theta) + g(i, 3) * sin(theta)
-        dist_y_tmp = -g(i, 2) * sin(theta) + g(i, 3) * cos(theta)
-        !dist_tmp = (dist_x_tmp ** 2) / sigma_x_east + (dist_y_tmp ** 2) / sigma_y_north
-        !if(dist_tmp .lt. 1.0_fp) then
-        !  weight(i, i) = exp(-0.5_fp * dist_tmp)
-        !else
-        !  weight(i, i) = 0.0_fp
-        !endif
-        !weight(i, i) = 1.0_fp / ((dist_x_tmp ** 2 + dist_y_tmp ** 2) / 10.0_fp)
-        weight(i, i) = exp(-(dist_x_tmp ** 2 + dist_y_tmp ** 2) / (cutoff_dist ** 2))
+#ifdef ELLIPSE
+        dist_x_tmp = (location_sta(grid_stationindex(i, jj, kk))%x_east - location_grid(jj, kk)%x_east) &
+        &          * cos(propagation_direction) &
+        &          - (location_sta(grid_stationindex(i, jj, kk))%y_north - location_grid(jj, kk)%y_north) &
+        &          * sin(propagation_direction)
+        dist_y_tmp = (location_sta(grid_stationindex(i, jj, kk))%x_east - location_grid(jj, kk)%x_east) &
+        &          * sin(propagation_direction) &
+        &          + (location_sta(grid_stationindex(i, jj, kk))%y_north - location_grid(jj, kk)%y_north) &
+        &          * cos(propagation_direction)
+        weight(i, i) = exp(-0.5_fp * (dist_x_tmp / sigma_radial) ** 2 + (dist_y_tmp / sigma_trans) ** 2)
+#else
+        weight(i, i) = exp(-(g(i, 2) ** 2 + g(i, 3) ** 2) / (cutoff_dist ** 2))
+#endif
       enddo
       g_tmp = matmul(transpose(g), matmul(weight, g))
 #ifdef MKL

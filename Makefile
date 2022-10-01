@@ -6,9 +6,9 @@
 FC = ifort
 FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo
 DEFS = -DDOUBLE -DMKL
-LIBS = -liomp5 -lmkl_core -lmkl_intel_thread -lmkl_intel_lp64 -lmkl_lapack95_lp64 -lmkl_blas95_lp64 -lnetcdff -lnetcdf -lhdf5
+LIBS = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 -lmkl_blas95_lp64 -lnetcdff -lnetcdf -lhdf5
 LIBDIR = -L${MKLROOT}/lib/intel64 -L/usr/local/netcdff-4.5.2/lib -L/usr/local/netcdf-4.7.4/lib -L/usr/local/hdf5-1.12/lib
-INCDIR = -I. -I${MKLROOT}/include/intel64/lp64 -I/usr/local/netcdff-4.5.2/include
+INCDIR = -I. -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include -I/usr/local/netcdff-4.5.2/include
 
 
 
@@ -83,15 +83,13 @@ $(o_sac_decimation): $(sac_decimation) $(mod_nrtype) $(mod_constants) $(mod_read
 $(o_sac_deconvolve): $(sac_deconvolve) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile)
 $(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile)
 $(o_grdfile_io): $(grdfile_io) $(mod_nrtype)
-	$(FC) $(DEFS) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $< -c -o $@
 $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
 	$(mod_lonlat_xy_conv) $(mod_sort)
-	$(FC) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS) $< -c -o $@
 
 .F90.o:
-	$(FC) $(DEFS) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $< -c -o $@
+	$(FC) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS) $< -c -o $@
 .f90.o:
-	$(FC) $(DEFS) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $< -c -o $@
+	$(FC) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS) $< -c -o $@
 .F90.mod:
 	@:
 .f90.mod:

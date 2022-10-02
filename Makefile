@@ -4,11 +4,11 @@
 .SUFFIXES: .F90 .f90 .o
 
 FC = ifort
-FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo
+FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -mkl=sequential
 DEFS = -DDOUBLE -DMKL
-LIBS = -lmkl_core -lmkl_sequential -lmkl_intel_lp64 -lmkl_lapack95_lp64 -lmkl_blas95_lp64 -lnetcdff -lnetcdf -lhdf5
-LIBDIR = -L${MKLROOT}/lib/intel64 -L/usr/local/netcdff-4.5.2/lib -L/usr/local/netcdf-4.7.4/lib -L/usr/local/hdf5-1.12/lib
-INCDIR = -I. -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include -I/usr/local/netcdff-4.5.2/include
+LIBS = -lnetcdff -lmkl_lapack95_lp64
+LIBDIR = -L/usr/local/netcdff-4.5.2/lib
+INCDIR = -I. -I/usr/local/netcdff-4.5.2/include
 
 
 
@@ -32,10 +32,10 @@ tandem = tandem.f90
 grdfile_io = grdfile_io.F90
 
 ##Module
+mod_nrtype = $(nrtype:.F90=.mod)
 mod_constants = $(constants:.F90=.mod)
 mod_greatcircle = $(greatcircle:.f90=.mod)
 mod_lonlat_xy_conv = $(lonlat_xy_conv:.F90=.mod)
-mod_nrtype = $(nrtype:.F90=.mod)
 mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_grdfile_io = $(grdfile_io:.F90=.mod)
 
@@ -87,9 +87,9 @@ $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(
 	$(mod_lonlat_xy_conv) $(mod_sort)
 
 .F90.o:
-	$(FC) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS) $< -c -o $@
+	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 .f90.o:
-	$(FC) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS) $< -c -o $@
+	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 .F90.mod:
 	@:
 .f90.mod:
@@ -97,7 +97,7 @@ $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(
 
 seismicgradiometry: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) $(o_lonlat_xy_conv) \
 	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_seismicgradiometry)
-	$(FC) $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS) $^ -o $@
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 clean:
 	rm -f *.o *.mod

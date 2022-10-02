@@ -13,7 +13,6 @@ program seismicgradiometry
 
   implicit none
 
-
   type location
     real(kind = fp) :: lon, lat, x_east, y_north, depth
   end type location
@@ -262,9 +261,9 @@ program seismicgradiometry
       enddo
       g_tmp = matmul(transpose(g), matmul(weight, g))
 #ifdef MKL
-      call getrf(g_tmp, ipiv, info)
+      call getrf(g_tmp, ipiv = ipiv, info = info)
       !write(0, '(a, i0)') "GETRF info = ", info
-      call getri(g_tmp, ipiv, info)
+      call getri(g_tmp, ipiv, info = info)
       !write(0, '(a, i0)') "GETRI info = ", info
 #else
       call LA_GETRF(g_tmp, ipiv, info = info)

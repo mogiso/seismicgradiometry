@@ -4,11 +4,11 @@
 .SUFFIXES: .F90 .f90 .o
 
 FC = ifort
-FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -mkl=sequential
+FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl
 DEFS = -DDOUBLE -DMKL
-LIBS = -lnetcdff -lmkl_lapack95_lp64
-LIBDIR = -L/usr/local/netcdff-4.5.2/lib
-INCDIR = -I. -I/usr/local/netcdff-4.5.2/include
+LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64 -lhdf5
+LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
+INCDIR = -I. -I${NETCDF_FORTRAN_INC}
 
 
 calc_bpf_coef = calc_bpf_coef.f90

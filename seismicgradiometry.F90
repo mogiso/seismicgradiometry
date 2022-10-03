@@ -51,13 +51,13 @@ program seismicgradiometry
   &                             x_end = 205.0_fp, y_end = 165.0_fp
   real(kind = fp), parameter :: center_lon = 139.0_fp, center_lat = 36.0_fp   !!
   real(kind = fp), parameter :: dgrid_x = 5.0_fp, dgrid_y = 5.0_fp          !!
-  real(kind = fp), parameter :: cutoff_dist = 10.0_fp                         !!
+  real(kind = fp), parameter :: cutoff_dist = 7.0_fp                         !!
   real(kind = fp), parameter :: order = 1.0e-3_fp                             !!nm/s -> um/s
   integer, parameter :: nsta_grid_max = 10, nsta_grid_min = 4
   integer, parameter :: ntime_slowness = 21, ntime_slowness2 = (ntime_slowness - 1) / 2
   real(kind = fp), parameter :: fl = 1.0_fp / 10.0_fp, fh = 1.0_fp / 5.0_fp, fs = 1.0_fp, &
   &                             ap = 0.5_fp, as = 5.0_fp
-  integer, parameter :: ntime = 2000
+  integer, parameter :: ntime = 2100
 
 
   integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = fp)) + 1

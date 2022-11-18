@@ -1,4 +1,6 @@
 function angle ( xa, ya, xb, yb, xc, yc )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -30,27 +32,26 @@ function angle ( xa, ya, xb, yb, xc, yc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XA, YA, XB, YB, XC, YC, the coordinates of the 
+!    Input, real ( kind = fp ) XA, YA, XB, YB, XC, YC, the coordinates of the 
 !    vertices.
 !
-!    Output, real ( kind = 8 ) ANGLE, the interior angle formed by
+!    Output, real ( kind = fp ) ANGLE, the interior angle formed by
 !    the vertex, in radians, between 0 and 2*PI.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) t
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) xa
-  real ( kind = 8 ) xb
-  real ( kind = 8 ) xc
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) ya
-  real ( kind = 8 ) yb
-  real ( kind = 8 ) yc
+  real ( kind = fp ) angle
+  real ( kind = fp ) t
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) xa
+  real ( kind = fp ) xb
+  real ( kind = fp ) xc
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) ya
+  real ( kind = fp ) yb
+  real ( kind = fp ) yc
 
   x1 = xa - xb
   y1 = ya - yb
@@ -59,28 +60,29 @@ function angle ( xa, ya, xb, yb, xc, yc )
 
   t = sqrt ( ( x1 * x1 + y1 * y1 ) * ( x2 * x2 + y2 * y2 ) )
 
-  if ( t == 0.0D+00 ) then
+  if ( t == 0.0_fp ) then
     angle = pi
     return
   end if
 
   t = ( x1 * x2 + y1 * y2 ) / t
 
-  if ( t < -1.0D+00 ) then
-    t = -1.0D+00
-  else if ( 1.0D+00 < t ) then
-    t = 1.0D+00
+  if ( t < -1.0_fp ) then
+    t = -1.0_fp
+  else if ( 1.0_fp < t ) then
+    t = 1.0_fp
   end if
 
   angle = acos ( t )
 
-  if ( x2 * y1 - y2 * x1 < 0.0D+00 ) then
-    angle = 2.0D+00 * pi - angle
+  if ( x2 * y1 - y2 * x1 < 0.0_fp ) then
+    angle = 2.0_fp * pi - angle
   end if
 
   return
 end
 function areapg ( nvrt, xc, yc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -108,10 +110,10 @@ function areapg ( nvrt, xc, yc )
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices on the boundary of 
 !    the polygon.  N must be at least 3.
 !
-!    Input, real ( kind = 8 ) XC(NVRT), YC(NVRT), the X and Y coordinates 
+!    Input, real ( kind = fp ) XC(NVRT), YC(NVRT), the X and Y coordinates 
 !    of the vertices.
 !
-!    Output, real ( kind = 8 ) AREAPG, twice the signed area of the polygon,
+!    Output, real ( kind = fp ) AREAPG, twice the signed area of the polygon,
 !    which will be positive if the vertices were listed in counter clockwise
 !    order, and negative otherwise.
 !
@@ -119,11 +121,11 @@ function areapg ( nvrt, xc, yc )
 
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) areapg
+  real ( kind = fp ) areapg
   integer ( kind = 4 ) i
-  real ( kind = 8 ) sum2
-  real ( kind = 8 ) xc(nvrt)
-  real ( kind = 8 ) yc(nvrt)
+  real ( kind = fp ) sum2
+  real ( kind = fp ) xc(nvrt)
+  real ( kind = fp ) yc(nvrt)
 
   sum2 = xc(1) * ( yc(2) - yc(nvrt) )
 
@@ -138,6 +140,7 @@ function areapg ( nvrt, xc, yc )
   return
 end
 function areatr ( xa, ya, xb, yb, xc, yc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -162,22 +165,22 @@ function areatr ( xa, ya, xb, yb, xc, yc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XA, YA, XB, YB, XC, YC, the coordinates of the 
+!    Input, real ( kind = fp ) XA, YA, XB, YB, XC, YC, the coordinates of the 
 !    vertices.
 !
-!    Output, real ( kind = 8 ) AREATR, twice the signed area of the triangle.
+!    Output, real ( kind = fp ) AREATR, twice the signed area of the triangle.
 !    This will be positive if the vertices are listed in counter clockwise 
 !    order.
 !
   implicit none
 
-  real ( kind = 8 ) areatr 
-  real ( kind = 8 ) xa
-  real ( kind = 8 ) xb
-  real ( kind = 8 ) xc
-  real ( kind = 8 ) ya
-  real ( kind = 8 ) yb
-  real ( kind = 8 ) yc
+  real ( kind = fp ) areatr 
+  real ( kind = fp ) xa
+  real ( kind = fp ) xb
+  real ( kind = fp ) xc
+  real ( kind = fp ) ya
+  real ( kind = fp ) yb
+  real ( kind = fp ) yc
 
   areatr = ( xb - xa ) * ( yc - ya ) - ( xc - xa ) * ( yb - ya )
 
@@ -185,6 +188,8 @@ function areatr ( xa, ya, xb, yb, xc, yc )
 end
 subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
   ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -226,10 +231,10 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
 !    Input, integer ( kind = 4 ) MAXVC, the maximum size available for 
 !    VCL array.
 !
-!    Input, real ( kind = 8 ) H(1:NPOLG), the spacing of mesh vertices for 
+!    Input, real ( kind = fp ) H(1:NPOLG), the spacing of mesh vertices for 
 !    convex polygons.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input, integer ( kind = 4 ) HVL(1:NPOLG, the head vertex list.
 !
@@ -250,11 +255,11 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
   integer ( kind = 4 ) npolg
   integer ( kind = 4 ) nvert
 
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
   integer ( kind = 4 ), parameter :: edgv = 4
-  real ( kind = 8 ) h(npolg)
-  real ( kind = 8 ) hh
+  real ( kind = fp ) h(npolg)
+  real ( kind = fp ) hh
   integer ( kind = 4 ) hvl(npolg)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ia
@@ -262,7 +267,7 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) l
-  real ( kind = 8 ) leng
+  real ( kind = fp ) leng
   integer ( kind = 4 ), parameter :: loc = 1
   integer ( kind = 4 ) m
   integer ( kind = 4 ) nvc
@@ -273,9 +278,9 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
   integer ( kind = 4 ) v
   integer ( kind = 4 ) vstart(nvert)
   integer ( kind = 4 ) vnum(nvert)
-  real ( kind = 8 ) vcl(2,maxvc)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) vcl(2,maxvc)
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 
   ierror = 0
   vstart(1:nvert) = -1
@@ -303,7 +308,7 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
           hh = sqrt ( h(k) * h(pvl(polg,ia)) )
         end if
 
-        if ( hh == 0.0D+00 ) then
+        if ( hh == 0.0_fp ) then
           write ( *, '(a)' ) ' '
           write ( *, '(a)' ) 'BEDGMV - Fatal error!'
           write ( *, '(a)' ) '  HH = 0.'
@@ -312,8 +317,8 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
 
         l = int ( leng / hh )
 
-        if ( real ( l, kind = 8 ) / real ( 2 * l + 1, kind = 8 ) &
-          < ( leng / hh ) - real ( l, kind = 8 ) ) then
+        if ( real ( l, kind = fp ) / real ( 2 * l + 1, kind = fp ) &
+          < ( leng / hh ) - real ( l, kind = fp ) ) then
           l = l + 1
         end if
 
@@ -324,8 +329,8 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
 
         else
 
-          dx = ( vcl(1,v) - x ) / real ( l, kind = 8 )
-          dy = ( vcl(2,v) - y ) / real ( l, kind = 8 )
+          dx = ( vcl(1,v) - x ) / real ( l, kind = fp )
+          dy = ( vcl(2,v) - y ) / real ( l, kind = fp )
           l = l - 1
 
           if ( maxvc < nvc + l ) then
@@ -369,6 +374,8 @@ subroutine bedgmv ( nvc, npolg, nvert, maxvc, h, vcl, hvl, pvl, vstart, vnum, &
   return
 end
 subroutine bnsrt2 ( binexp, n, a, map, bin, iwk )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -403,7 +410,7 @@ subroutine bnsrt2 ( binexp, n, a, map, bin, iwk )
 !
 !    Input, integer ( kind = 4 ) N, the number of points.
 !
-!    Input, real ( kind = 8 ) A(2,*), the points to be binned.
+!    Input, real ( kind = fp ) A(2,*), the points to be binned.
 !
 !    Input/output, integer ( kind = 4 ) MAP(N); on input, the points of A with
 !    indices MAP(1), MAP(2), ..., MAP(N) are to be sorted.  On output, MAP has
@@ -417,11 +424,11 @@ subroutine bnsrt2 ( binexp, n, a, map, bin, iwk )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(2,*)
+  real ( kind = fp ) a(2,*)
   integer ( kind = 4 ) bin(n)
-  real ( kind = 8 ) binexp
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
+  real ( kind = fp ) binexp
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
   integer ( kind = 4 ) i
   integer ( kind = 4 ) iwk(n)
   integer ( kind = 4 ) j
@@ -429,12 +436,12 @@ subroutine bnsrt2 ( binexp, n, a, map, bin, iwk )
   integer ( kind = 4 ) l
   integer ( kind = 4 ) map(n)
   integer ( kind = 4 ) nside
-  real ( kind = 8 ) xmax
-  real ( kind = 8 ) xmin
-  real ( kind = 8 ) ymax
-  real ( kind = 8 ) ymin
+  real ( kind = fp ) xmax
+  real ( kind = fp ) xmin
+  real ( kind = fp ) ymax
+  real ( kind = fp ) ymin
 
-  nside = int ( real ( n, kind = 8 )**( binexp / 2.0D+00 ) + 0.5D+00 )
+  nside = int ( real ( n, kind = fp )**( binexp / 2.0_fp ) + 0.5_fp )
 
   if ( nside <= 1 ) then
     return
@@ -452,15 +459,15 @@ subroutine bnsrt2 ( binexp, n, a, map, bin, iwk )
     ymax = max ( ymax, a(2,j) )
   end do
 
-  dx = 1.0001D+00 * ( xmax - xmin ) / real ( nside, kind = 8 )
-  dy = 1.0001D+00 * ( ymax - ymin ) / real ( nside, kind = 8 )
+  dx = 1.0001_fp * ( xmax - xmin ) / real ( nside, kind = fp )
+  dy = 1.0001_fp * ( ymax - ymin ) / real ( nside, kind = fp )
 
-  if ( dx == 0.0D+00 ) then
-    dx = 1.0D+00
+  if ( dx == 0.0_fp ) then
+    dx = 1.0_fp
   end if
 
-  if ( dy == 0.0D+00 ) then
-    dy = 1.0D+00
+  if ( dy == 0.0_fp ) then
+    dy = 1.0_fp
   end if
 
   do i = 1, n
@@ -487,6 +494,7 @@ subroutine bnsrt2 ( binexp, n, a, map, bin, iwk )
   return
 end
 function cmcirc ( x0, y0, x1, y1, x2, y2, x3, y3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -511,10 +519,10 @@ function cmcirc ( x0, y0, x1, y1, x2, y2, x3, y3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X0, Y0, the coordinates of the point to
+!    Input, real ( kind = fp ) X0, Y0, the coordinates of the point to
 !    be tested.
 !
-!    Input, real ( kind = 8 ) X1, Y1, X2, Y2, X3, Y3, the coordinates of
+!    Input, real ( kind = fp ) X1, Y1, X2, Y2, X3, Y3, the coordinates of
 !    three points that define a circle.
 !
 !    Output, integer ( kind = 4 ) CMCIRC, reports the test results:
@@ -523,30 +531,30 @@ function cmcirc ( x0, y0, x1, y1, x2, y2, x3, y3 )
 !     0, if (X0,Y0) is on the circle,
 !    -1, if (X0,Y0) is outside the circle.
 !
-  real ( kind = 8 ) a11
-  real ( kind = 8 ) a12
-  real ( kind = 8 ) a21
-  real ( kind = 8 ) a22
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
+  real ( kind = fp ) a11
+  real ( kind = fp ) a12
+  real ( kind = fp ) a21
+  real ( kind = fp ) a22
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
   integer ( kind = 4 ) cmcirc
-  real ( kind = 8 ) det
-  real ( kind = 8 ) diff
-  real ( kind = 8 ) rsq
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
-  real ( kind = 8 ) xc
-  real ( kind = 8 ) yc
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) x3
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) y3
+  real ( kind = fp ) det
+  real ( kind = fp ) diff
+  real ( kind = fp ) rsq
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
+  real ( kind = fp ) xc
+  real ( kind = fp ) yc
+  real ( kind = fp ) x0
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) x3
+  real ( kind = fp ) y0
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) y3
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
   cmcirc = 2
   a11 = x2 - x1
   a12 = y2 - y1
@@ -561,7 +569,7 @@ function cmcirc ( x0, y0, x1, y1, x2, y2, x3, y3 )
 
   b1 = a11 * a11 + a12 * a12
   b2 = a21 * a21 + a22 * a22
-  det = 2.0D+00 * det
+  det = 2.0_fp * det
   xc = ( b1 * a22 - b2 * a12 ) / det
   yc = ( b2 * a11 - b1 * a21 ) / det
   rsq = xc * xc + yc * yc
@@ -580,6 +588,8 @@ function cmcirc ( x0, y0, x1, y1, x2, y2, x3, y3 )
 end
 subroutine cvdec2 ( angspc, angtol, nvc, npolg, nvert, maxvc, maxhv, &
   maxpv, maxiw, maxwk, vcl, regnum, hvl, pvl, iang, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -611,11 +621,11 @@ subroutine cvdec2 ( angspc, angtol, nvc, npolg, nvert, maxvc, maxhv, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter in radians 
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter in radians 
 !    used in controlling vertices to be considered as an endpoint of a
 !    separator.
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter in radians 
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter in radians 
 !    used in accepting separator(s).
 !
 !    Input/output, integer ( kind = 4 ) NVC, the number of vertex coordinates 
@@ -645,20 +655,20 @@ subroutine cvdec2 ( angspc, angtol, nvc, npolg, nvert, maxvc, maxhv, &
 !    Input, integer ( kind = 4 ) MAXWK, the maximum size available for WK 
 !    array; should be about 5 times maximum number of vertices in any polygon.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) REGNUM(1:NPOLG), region numbers.
 !
 !    Input/output, integer ( kind = 4 ) HVL(1:NPOLG), the head vertex list.
 !
-!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) 
+!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) 
 !    IANG(1:NVERT), the polygon vertex list and interior angles; see routine 
 !    DSPGDC for more details.  Note that the data structures should be as 
 !    output from routine SPDEC2.
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  For abnormal return,
 !    IERROR is set to 3, 4, 5, 6, 7, 206, 207, 208, 209, 210, or 212.
@@ -669,28 +679,27 @@ subroutine cvdec2 ( angspc, angtol, nvc, npolg, nvert, maxvc, maxhv, &
   integer ( kind = 4 ) maxvc
   integer ( kind = 4 ) maxwk
 
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) angtol
+  real ( kind = fp ) angspc
+  real ( kind = fp ) angtol
   integer ( kind = 4 ) hvl(maxhv)
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) iwk(maxiw)
   integer ( kind = 4 ) npolg
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvert
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) piptol
+  real ( kind = fp ) piptol
   integer ( kind = 4 ) pvl(4,maxpv)
   integer ( kind = 4 ) regnum(maxhv)
-  real ( kind = 8 ) tol
+  real ( kind = fp ) tol
   integer ( kind = 4 ) v
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) w1
   integer ( kind = 4 ) w2
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) wk(maxwk)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  For each reflex vertex, resolve it with one or two separators
 !  and update VCL, HVL, PVL, IANG.
@@ -738,6 +747,8 @@ subroutine cvdec2 ( angspc, angtol, nvc, npolg, nvert, maxvc, maxhv, &
   return
 end
 subroutine cvdtri ( inter, ldv, nt, vcl, til, tedg, sptr, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -807,7 +818,7 @@ subroutine cvdtri ( inter, ldv, nt, vcl, til, tedg, sptr, ierror )
   integer ( kind = 4 ) tedg(3,nt)
   integer ( kind = 4 ) til(3,nt)
   integer ( kind = 4 ) top
-  real ( kind = 8 ) vcl(ldv,*)
+  real ( kind = fp ) vcl(ldv,*)
 
   ierror = 0
   sflag = .true.
@@ -851,36 +862,9 @@ subroutine cvdtri ( inter, ldv, nt, vcl, til, tedg, sptr, ierror )
 
   return
 end
-function degrees_to_radians ( angle )
-
-!*****************************************************************************80
-!
-!! DEGREES_TO_RADIANS converts an angle from degrees to radians.
-!
-!  Modified:
-!
-!    10 July 1999
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, real ( kind = 8 ) ANGLE, an angle in degrees.
-!
-!    Output, real ( kind = 8 ) DEGREES_TO_RADIANS, the equivalent angle
-!    in radians.
-!
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-
-  degrees_to_radians = ( angle / 180.0D+00 ) * pi
-
-  return
-end
 subroutine delaunay_print ( num_pts, xc, num_tri, nodtri, tnbr )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -898,7 +882,7 @@ subroutine delaunay_print ( num_pts, xc, num_tri, nodtri, tnbr )
 !
 !    Input, integer ( kind = 4 ) NUM_PTS, the number of points.
 !
-!    Input, real ( kind = 8 ) XC(2,NUM_PTS), the point coordinates.
+!    Input, real ( kind = fp ) XC(2,NUM_PTS), the point coordinates.
 !
 !    Input, integer ( kind = 4 ) NUM_TRI, the number of triangles.
 !
@@ -921,7 +905,7 @@ subroutine delaunay_print ( num_pts, xc, num_tri, nodtri, tnbr )
   integer ( kind = 4 ) s
   integer ( kind = 4 ) t
   integer ( kind = 4 ) tnbr(3,num_tri)
-  real ( kind = 8 ) xc(2,num_pts)
+  real ( kind = fp ) xc(2,num_pts)
 
   write ( *, '(a)' ) ' '
   write ( *, '(a)' ) 'DELAUNAY_PRINT'
@@ -982,6 +966,8 @@ subroutine delaunay_print ( num_pts, xc, num_tri, nodtri, tnbr )
   return
 end
 subroutine dhpsrt ( k, n, lda, a, map )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -1019,7 +1005,7 @@ subroutine dhpsrt ( k, n, lda, a, map )
 !    Input, integer ( kind = 4 ) LDA, the leading dimension of array A in the 
 !    calling routine; LDA should be at least K.
 !
-!    Input, real ( kind = 8 ) A(LDA,N); A(I,J) contains the I-th coordinate
+!    Input, real ( kind = fp ) A(LDA,N); A(I,J) contains the I-th coordinate
 !    of point J.
 !
 !    Input/output, integer ( kind = 4 ) MAP(N).
@@ -1033,7 +1019,7 @@ subroutine dhpsrt ( k, n, lda, a, map )
   integer ( kind = 4 ) lda
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(lda,*)
+  real ( kind = fp ) a(lda,*)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) k
   integer ( kind = 4 ) map(n)
@@ -1050,6 +1036,7 @@ subroutine dhpsrt ( k, n, lda, a, map )
   return
 end
 function diaedg ( x0, y0, x1, y1, x2, y2, x3, y3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1091,7 +1078,7 @@ function diaedg ( x0, y0, x1, y1, x2, y2, x3, y3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X0, Y0, X1, Y1, X2, Y2, X3, Y3, the points.
+!    Input, real ( kind = fp ) X0, Y0, X1, Y1, X2, Y2, X3, Y3, the points.
 !
 !    Output, integer ( kind = 4 ) DIAEDG, chooses a diagonal:
 !    +1, choose edge 0--2;
@@ -1100,31 +1087,31 @@ function diaedg ( x0, y0, x1, y1, x2, y2, x3, y3 )
 !
   implicit none
 
-  real ( kind = 8 ) ca
-  real ( kind = 8 ) cb
+  real ( kind = fp ) ca
+  real ( kind = fp ) cb
   integer ( kind = 4 ) diaedg
-  real ( kind = 8 ) dx10
-  real ( kind = 8 ) dx12
-  real ( kind = 8 ) dx30
-  real ( kind = 8 ) dx32
-  real ( kind = 8 ) dy10
-  real ( kind = 8 ) dy12
-  real ( kind = 8 ) dy30
-  real ( kind = 8 ) dy32
-  real ( kind = 8 ) s
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tola
-  real ( kind = 8 ) tolb
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) x3
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) y3
+  real ( kind = fp ) dx10
+  real ( kind = fp ) dx12
+  real ( kind = fp ) dx30
+  real ( kind = fp ) dx32
+  real ( kind = fp ) dy10
+  real ( kind = fp ) dy12
+  real ( kind = fp ) dy30
+  real ( kind = fp ) dy32
+  real ( kind = fp ) s
+  real ( kind = fp ) tol
+  real ( kind = fp ) tola
+  real ( kind = fp ) tolb
+  real ( kind = fp ) x0
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) x3
+  real ( kind = fp ) y0
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) y3
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   dx10 = x1 - x0
   dy10 = y1 - y0
@@ -1171,6 +1158,8 @@ function diaedg ( x0, y0, x1, y1, x2, y2, x3, y3 )
   return
 end
 subroutine diam2 ( nvrt, xc, yc, i1, i2, diamsq, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -1202,13 +1191,13 @@ subroutine diam2 ( nvrt, xc, yc, i1, i2, diamsq, ierror )
 !
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices.
 !
-!    Input, real ( kind = 8 ) XC(NVRT),YC(NVRT), the vertex coordinates in 
+!    Input, real ( kind = fp ) XC(NVRT),YC(NVRT), the vertex coordinates in 
 !    counter-clockwise order.
 !
 !    Output, integer ( kind = 4 ) I1, I2 , indices in XC, YC of the diameter 
 !    edge; the diameter is from (XC(I1),YC(I1)) to (XC(I2),YC(I2)).
 !
-!    Output, real ( kind = 8 ) DIAMSQ, the square of the diameter.
+!    Output, real ( kind = fp ) DIAMSQ, the square of the diameter.
 !
 !    Output, integer ( kind = 4 ) IERROR, an error flag.
 !    0, no error was detected.
@@ -1216,13 +1205,13 @@ subroutine diam2 ( nvrt, xc, yc, i1, i2, diamsq, ierror )
 !
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) area1
-  real ( kind = 8 ) area2
-  real ( kind = 8 ) areatr
-  real ( kind = 8 ) c1mtol
-  real ( kind = 8 ) c1ptol
-  real ( kind = 8 ) diamsq
-  real ( kind = 8 ) dist
+  real ( kind = fp ) area1
+  real ( kind = fp ) area2
+  real ( kind = fp ) areatr
+  real ( kind = fp ) c1mtol
+  real ( kind = fp ) c1ptol
+  real ( kind = fp ) diamsq
+  real ( kind = fp ) dist
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
   integer ( kind = 4 ) ierror
@@ -1231,18 +1220,18 @@ subroutine diam2 ( nvrt, xc, yc, i1, i2, diamsq, ierror )
   integer ( kind = 4 ) k
   integer ( kind = 4 ) kp1
   integer ( kind = 4 ) m
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) xc(nvrt)
-  real ( kind = 8 ) yc(nvrt)
+  real ( kind = fp ) tol
+  real ( kind = fp ) xc(nvrt)
+  real ( kind = fp ) yc(nvrt)
 !
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Find the first vertex which is farthest from the edge connecting
 !  vertices with indices NVRT, 1.
 !
-  c1mtol = 1.0D+00 - tol
-  c1ptol = 1.0D+00 + tol
+  c1mtol = 1.0_fp - tol
+  c1ptol = 1.0_fp + tol
   j = nvrt
   jp1 = 1
   k = 2
@@ -1262,7 +1251,7 @@ subroutine diam2 ( nvrt, xc, yc, i1, i2, diamsq, ierror )
   end do
 
   m = k
-  diamsq = 0.0D+00
+  diamsq = 0.0_fp
 !
 !  Find diameter = maximum distance of antipodal pairs.
 !
@@ -1316,6 +1305,7 @@ subroutine diam2 ( nvrt, xc, yc, i1, i2, diamsq, ierror )
   return
 end
 function dless ( k, p, q )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1346,20 +1336,20 @@ function dless ( k, p, q )
 !
 !    Input, integer ( kind = 4 ) K, the spatial dimension of the points.
 !
-!    Input, real ( kind = 8 ) P(K), Q(K), the points to be compared.
+!    Input, real ( kind = fp ) P(K), Q(K), the points to be compared.
 !
 !    Output, logical RLESS, is TRUE if P < Q, FALSE otherwise.
 !
   integer ( kind = 4 ) k
 
-  real ( kind = 8 ) cmax
+  real ( kind = fp ) cmax
   logical dless
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(k)
-  real ( kind = 8 ) q(k)
-  real ( kind = 8 ) tol
+  real ( kind = fp ) p(k)
+  real ( kind = fp ) q(k)
+  real ( kind = fp ) tol
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   do i = 1, k
 
@@ -1383,6 +1373,8 @@ function dless ( k, p, q )
   return
 end
 subroutine dsftdw ( l, u, k, lda, a, map )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -1415,7 +1407,7 @@ subroutine dsftdw ( l, u, k, lda, a, map )
 !    Input, integer ( kind = 4 ) LDA, the leading dimension of A in the calling
 !    routine.
 !
-!    Input, real ( kind = 8 ) A(LDA,N); A(I,J) contains the I-th coordinate
+!    Input, real ( kind = fp ) A(LDA,N); A(I,J) contains the I-th coordinate
 !    of point J.
 !
 !    Input/output, integer ( kind = 4 ) MAP(N).
@@ -1428,7 +1420,7 @@ subroutine dsftdw ( l, u, k, lda, a, map )
 !
   integer ( kind = 4 ) lda
 
-  real ( kind = 8 ) a(lda,*)
+  real ( kind = fp ) a(lda,*)
   logical dless
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
@@ -1466,6 +1458,8 @@ subroutine dsftdw ( l, u, k, lda, a, map )
 end
 subroutine dsmcpr ( nhole, nvbc, vcl, maxhv, maxpv, maxho, nvc, npolg, &
   nvert, nhola, regnum, hvl, pvl, iang, holv, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -1501,7 +1495,7 @@ subroutine dsmcpr ( nhole, nvbc, vcl, maxhv, maxpv, maxho, nvc, npolg, &
 !    Input, integer ( kind = 4 ) NVBC(1:NHOLE+1), the number of vertices per 
 !    boundary curve; first boundary curve is the outer boundary of the region.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinates of 
+!    Input, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinates of 
 !    boundary curves in counter clockwise order; 
 !    NVC = NVBC(1) + ... + NVBC(NHOLE+1); 
 !    positions 1 to NVBC(1) of VCL contain the vertex coordinates of the
@@ -1555,10 +1549,10 @@ subroutine dsmcpr ( nhole, nvbc, vcl, maxhv, maxpv, maxho, nvc, npolg, &
   integer ( kind = 4 ) maxpv
   integer ( kind = 4 ) nhole
 
-  real ( kind = 8 ) angle
+  real ( kind = fp ) angle
   integer ( kind = 4 ), parameter :: edgv = 4
   integer ( kind = 4 ) i
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) iv
   integer ( kind = 4 ) ivs
@@ -1581,7 +1575,7 @@ subroutine dsmcpr ( nhole, nvbc, vcl, maxhv, maxpv, maxho, nvc, npolg, &
   integer ( kind = 4 ) pvl(4,maxpv)
   integer ( kind = 4 ) regnum(1)
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) vcl(2,*)
+  real ( kind = fp ) vcl(2,*)
 
   ierror = 0
   nvc = sum ( nvbc(1:nhole+1) )
@@ -1679,6 +1673,8 @@ subroutine dsmcpr ( nhole, nvbc, vcl, maxhv, maxpv, maxho, nvc, npolg, &
 end
 subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
   xivrt, widsq, edgval, vrtval, area, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -1727,7 +1723,7 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
 !
 !    Input, integer ( kind = 4 ) HVL(1:NPOLG), the head vertex list.
 !
-!    Input, integer ( kind = 4 ) PVL(1:4,1:*), real ( kind = 8 ) IANG(1:*), the 
+!    Input, integer ( kind = 4 ) PVL(1:4,1:*), real ( kind = fp ) IANG(1:*), the 
 !    polygon vertex list, interior angles.
 !
 !    Output, integer ( kind = 4 ) IVRT(1:*), the indices of polygon vertices in
@@ -1738,18 +1734,18 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
 !    in IVRT; vertices of polygon K are IVRT(I) for I from
 !    XIVRT(K) to XIVRT(K+1)-1.  For heuristic MDF data structure.
 !
-!    Output, real ( kind = 8 ) WIDSQ(1:NPOLG), the square of width of convex 
+!    Output, real ( kind = fp ) WIDSQ(1:NPOLG), the square of width of convex 
 !    polygons.  For heuristic MDF data structure.
 !
-!    Output, real ( kind = 8 ) EDGVAL(1:*), the value associated with each 
+!    Output, real ( kind = fp ) EDGVAL(1:*), the value associated with each 
 !    edge of decomposition; same size as PVL.  For heuristic MDF data structure.
 !
-!    Output, real ( kind = 8 ) VRTVAL(1:NVC), the value associated with each 
+!    Output, real ( kind = fp ) VRTVAL(1:NVC), the value associated with each 
 !    vertex of decomposition.  For heuristic MDF data structure.
 !
-!    Output, real ( kind = 8 ) AREA(1:NPOLG), the area of convex polygons.
+!    Output, real ( kind = fp ) AREA(1:NPOLG), the area of convex polygons.
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 7 or 201.
@@ -1758,14 +1754,14 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
   integer ( kind = 4 ) npolg
   integer ( kind = 4 ) nvc
 
-  real ( kind = 8 ) area(npolg)
-  real ( kind = 8 ) areapg
+  real ( kind = fp ) area(npolg)
+  real ( kind = fp ) areapg
   integer ( kind = 4 ), parameter :: edgv = 4
-  real ( kind = 8 ) edgval(*)
+  real ( kind = fp ) edgval(*)
   logical hflag
   integer ( kind = 4 ) hvl(npolg)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) iang(*)
+  real ( kind = fp ) iang(*)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) il
   integer ( kind = 4 ) ivrt(*)
@@ -1776,23 +1772,22 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
   integer ( kind = 4 ), parameter :: loc = 1
   integer ( kind = 4 ) m
   integer ( kind = 4 ) nvrt
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) pimtol
+  real ( kind = fp ) pimtol
   integer ( kind = 4 ), parameter :: polg = 2
   integer ( kind = 4 ) pvl(4,*)
-  real ( kind = 8 ) s
+  real ( kind = fp ) s
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,nvc)
-  real ( kind = 8 ) vrtval(nvc)
-  real ( kind = 8 ) widsq(npolg)
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,nvc)
+  real ( kind = fp ) vrtval(nvc)
+  real ( kind = fp ) widsq(npolg)
+  real ( kind = fp ) wk(maxwk)
   integer ( kind = 4 ) xc
   integer ( kind = 4 ) xivrt(npolg+1)
   integer ( kind = 4 ) yc
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Compute area and square of width of polygons.
 !
@@ -1848,7 +1843,7 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
 
     xc = 1
     yc = xc + nvrt
-    area(k) = areapg ( nvrt, wk(xc), wk(yc) ) * 0.5D+00
+    area(k) = areapg ( nvrt, wk(xc), wk(yc) ) * 0.5_fp
 
     if ( hflag ) then
 
@@ -1913,7 +1908,7 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
     return
   end if
 
-  vrtval(1:nvc) = 0.0D+00
+  vrtval(1:nvc) = 0.0_fp
 
   do k = 1, npolg
 
@@ -1924,7 +1919,7 @@ subroutine dsmdf2 ( hflag, nvc, npolg, maxwk, vcl, hvl, pvl, iang, ivrt, &
 
       il = ivrt(i)
 
-      if ( vrtval(il) == 0.0D+00 ) then
+      if ( vrtval(il) == 0.0_fp ) then
         vrtval(il) = min ( edgval(i), edgval(j) )
       else
         vrtval(il) = min ( vrtval(il), edgval(i), edgval(j) )
@@ -1941,6 +1936,8 @@ end
 subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
   maxho, npolg, nvert, nhole, nhola, regnum, hvl, pvl, iang, holv, htsiz,  &
   maxedg, ht, edge, map, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -1974,7 +1971,7 @@ subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
 !
 !    Input, integer ( kind = 4 ) NVC, the number of distinct vertex coordinates in region.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinates of 
+!    Input, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinates of 
 !    boundary curves in arbitrary order.
 !
 !    Input, integer ( kind = 4 ) INCR, a positive integer greater than or equal to NVC, 
@@ -2064,7 +2061,7 @@ subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
 !    NHOLE positions contain the head vertex of a hole or
 !    hole interface in which vertices are in CW order in PVL.
 !
-!    Output, PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT), the polygon 
+!    Output, PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT), the polygon 
 !    vertex list and interior angles; contains the 5 'arrays' LOC, POLG, SUCC
 !    EDGV, IANG (the first 4 are integer arrays, the last
 !    is a double precision array); the vertices of each
@@ -2111,7 +2108,7 @@ subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
   integer ( kind = 4 ) maxpv
   integer ( kind = 4 ) ncur
 
-  real ( kind = 8 ) angle
+  real ( kind = fp ) angle
   integer ( kind = 4 ) edge(4,maxedg)
   integer ( kind = 4 ), parameter :: edgv = 4
   logical first
@@ -2120,7 +2117,7 @@ subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
   integer ( kind = 4 ) ht(0:htsiz-1)
   integer ( kind = 4 ) hvl(maxhv)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) icur(ncur)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) incr
@@ -2159,13 +2156,13 @@ subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
   integer ( kind = 4 ) pvl(4,maxpv)
   integer ( kind = 4 ) regnum(maxhv)
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) vcl(2,nvc)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) xmax
-  real ( kind = 8 ) xmin
-  real ( kind = 8 ) y
-  real ( kind = 8 ) ymax
-  real ( kind = 8 ) ymin
+  real ( kind = fp ) vcl(2,nvc)
+  real ( kind = fp ) x
+  real ( kind = fp ) xmax
+  real ( kind = fp ) xmin
+  real ( kind = fp ) y
+  real ( kind = fp ) ymax
+  real ( kind = fp ) ymin
 
   ierror = 0
   nhola = 0
@@ -2535,6 +2532,8 @@ subroutine dspgdc ( nvc, vcl, incr, ncur, nvbc, icur, ivrt, maxhv, maxpv,  &
   return
 end
 subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -2578,7 +2577,7 @@ subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
 !
 !    Input, integer ( kind = 4 ) NPT, the number of vertices.
 !
-!    Input, real ( kind = 8 ) VCL(2,NPT), the coordinates of the vertices.
+!    Input, real ( kind = fp ) VCL(2,NPT), the coordinates of the vertices.
 !
 !    Input/output, integer ( kind = 4 ) IND(NPT), the indices in VCL of the vertices 
 !    to be triangulated.  On output, IND has been permuted by the sort.
@@ -2601,7 +2600,7 @@ subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
 !
   integer ( kind = 4 ) npt
 
-  real ( kind = 8 ) cmax
+  real ( kind = fp ) cmax
   integer ( kind = 4 ) e
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ierror
@@ -2625,14 +2624,14 @@ subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
   integer ( kind = 4 ) t
   integer ( kind = 4 ) til(3,npt*2)
   integer ( kind = 4 ) tnbr(3,npt*2)
-  real ( kind = 8 ) tol
+  real ( kind = fp ) tol
   integer ( kind = 4 ) top
-  real ( kind = 8 ) vcl(2,npt)
+  real ( kind = fp ) vcl(2,npt)
 
   maxst = npt
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   ierror = 0
 !
@@ -2691,7 +2690,7 @@ subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
 
     m = ind(j)
     lr = lrline ( vcl(1,m), vcl(2,m), vcl(1,m1), vcl(2,m1), vcl(1,m2), &
-      vcl(2,m2), 0.0D+00 )
+      vcl(2,m2), 0.0_fp )
 
     if ( lr /= 0 ) then
       exit
@@ -2793,7 +2792,7 @@ subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
     end if
 
     lr = lrline ( vcl(1,m), vcl(2,m), vcl(1,m1), vcl(2,m1), vcl(1,m2), &
-      vcl(2,m2), 0.0D+00 )
+      vcl(2,m2), 0.0_fp )
 
     if ( 0 < lr ) then
       rtri = ltri
@@ -2883,6 +2882,8 @@ subroutine dtris2 ( npt, vcl, ind, ntri, til, tnbr, ierror )
   return
 end
 subroutine dtriw2 ( npt, maxst, vcl, ind, ntri, til, tnbr, stack, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -2920,7 +2921,7 @@ subroutine dtriw2 ( npt, maxst, vcl, ind, ntri, til, tnbr, stack, ierror )
 !    Input, integer ( kind = 4 ) MAXST, the maximum size available for STACK array; should 
 !    be about NPT to be safe, but MAX(10,2*LOG2(NPT)) usually enough.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the coordinates of 2D vertices.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the coordinates of 2D vertices.
 !
 !    Input, integer ( kind = 4 ) IND(1:NPT), indices in VCL of vertices to be triangulated;
 !    vertices are inserted in order given by this array.
@@ -2948,7 +2949,7 @@ subroutine dtriw2 ( npt, maxst, vcl, ind, ntri, til, tnbr, stack, ierror )
 
   integer ( kind = 4 ) bedg
   integer ( kind = 4 ) btri
-  real ( kind = 8 ) cmax
+  real ( kind = fp ) cmax
   integer ( kind = 4 ) e
   integer ( kind = 4 ) em1
   integer ( kind = 4 ) ep1
@@ -2976,11 +2977,11 @@ subroutine dtriw2 ( npt, maxst, vcl, ind, ntri, til, tnbr, stack, ierror )
   integer ( kind = 4 ) til(3,npt*2)
   integer ( kind = 4 ) tnbr(3,npt*2)
   integer ( kind = 4 ) top
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,*)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,*)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Determine the initial triangle.
 !
@@ -3010,7 +3011,7 @@ subroutine dtriw2 ( npt, maxst, vcl, ind, ntri, til, tnbr, stack, ierror )
 
   m = ind(i3)
   lr = lrline ( vcl(1,m), vcl(2,m), vcl(1,m1), vcl(2,m1), vcl(1,m2), &
-    vcl(2,m2), 0.0D+00 )
+    vcl(2,m2), 0.0_fp )
 
   if ( lr == 0 ) then
     i3 = i3 + 1
@@ -3436,6 +3437,8 @@ subroutine dtriw2 ( npt, maxst, vcl, ind, ntri, til, tnbr, stack, ierror )
 end
 subroutine edght ( a, b, v, n, htsiz, maxedg, hdfree, last, ht, edge, w, &
   ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -3607,6 +3610,8 @@ end
 subroutine eqdis2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   nvc, npolg, nvert, maxvc, maxhv, maxpv, maxiw, maxwk, vcl, regnum, hvl,  &
   pvl, iang, area, psi, h, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -3650,16 +3655,16 @@ subroutine eqdis2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !      double precision x
 !      double precision y
 !
-!    Input, real ( kind = 8 ) KAPPA, the mesh smoothness parameter in 
+!    Input, real ( kind = fp ) KAPPA, the mesh smoothness parameter in 
 !    the interval [0.0,1.0].
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter in radians
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter in radians
 !    used to determine extra points as possible endpoints of separators.
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter in radians
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter in radians
 !    used in accepting separators.
 !
-!    Input, real ( kind = 8 ) DMIN, a parameter used to determine if variation 
+!    Input, real ( kind = fp ) DMIN, a parameter used to determine if variation 
 !    of mdf in polygon is 'sufficiently high'.
 !
 !    Input, integer ( kind = 4 ) NMIN, a parameter used to determine if 'sufficiently large'
@@ -3700,29 +3705,29 @@ subroutine eqdis2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !    be greater than or equal to 
 !      NVC + NVERT + 2*NPOLG + 3*(NVRT + INT(2*PI/ANGSPC)).
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) REGNUM(1:NPOLG), the region numbers.
 !
-!    Input/output, real ( kind = 8 ) HVL(1:NPOLG), head vertex list.
+!    Input/output, real ( kind = fp ) HVL(1:NPOLG), head vertex list.
 !
-!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT), 
+!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT), 
 !    the polygon vertex list and interior angles; see routine DSPGDC for more 
 !    details.  Note that the data structures should be as output from routine
 !    CVDEC2.
 !
-!    Output, real ( kind = 8 ) AREA(1:NPOLG), the area of convex polygons 
+!    Output, real ( kind = fp ) AREA(1:NPOLG), the area of convex polygons 
 !    in the decomposition.
 !
-!    Output, real ( kind = 8 ) PSI(1:NPOLG), the smoothed mean mdf 
+!    Output, real ( kind = fp ) PSI(1:NPOLG), the smoothed mean mdf 
 !    values in the convex polygons.
 !
-!    Output, real ( kind = 8 ) H(1:NPOLG), the triangle size for convex
+!    Output, real ( kind = fp ) H(1:NPOLG), the triangle size for convex
 !    polygons.
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  For abnormal return,
 !    IERROR is set to 3, 4, 5, 6, 7, 200, 201, or 222.
@@ -3733,19 +3738,19 @@ subroutine eqdis2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   integer ( kind = 4 ) maxvc
   integer ( kind = 4 ) maxwk
 
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) area(maxhv)
-  real ( kind = 8 ) dmin
+  real ( kind = fp ) angspc
+  real ( kind = fp ) angtol
+  real ( kind = fp ) area(maxhv)
+  real ( kind = fp ) dmin
   integer ( kind = 4 ) edgval
-  real ( kind = 8 ) h(maxhv)
+  real ( kind = fp ) h(maxhv)
   logical hflag
   integer ( kind = 4 ) hvl(maxhv)
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) ivrt
   integer ( kind = 4 ) iwk(maxiw)
-  real ( kind = 8 ) kappa
+  real ( kind = fp ) kappa
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
   integer ( kind = 4 ) nmin
@@ -3753,15 +3758,15 @@ subroutine eqdis2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   integer ( kind = 4 ) ntrid
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvert
-  real ( kind = 8 ) psi(maxhv)
+  real ( kind = fp ) psi(maxhv)
   integer ( kind = 4 ) pvl(4,maxpv)
   integer ( kind = 4 ) regnum(maxhv)
-  real ( kind = 8 ) umdf
+  real ( kind = fp ) umdf
   external umdf
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) vrtval
   integer ( kind = 4 ) widsq
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) wk(maxwk)
   integer ( kind = 4 ) xivrt
 
   ierror = 0
@@ -3837,6 +3842,8 @@ subroutine eqdis2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 end
 subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
   vcl, pvl, iang, angsep, i1, i2, wkang )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -3869,14 +3876,14 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGAC1, the angle tolerance parameter used 
+!    Input, real ( kind = fp ) ANGAC1, the angle tolerance parameter used 
 !    for preference in accepting one separator.
 !
-!    Input, real ( kind = 8 ) XR, YR, the coordinates of reflex vertex.
+!    Input, real ( kind = fp ) XR, YR, the coordinates of reflex vertex.
 !
 !    Input, integer ( kind = 4 ) NVRT, (number of vertices) - 1.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
 !    of possible endpoints of a separator.
 !
 !    Input, integer ( kind = 4 ) IVIS(0:NVRT), contains information about the vertices of
@@ -3886,7 +3893,7 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
 !    the edge joining vertices with indices -IVIS(I) and
 !    SUCC(-IVIS(I)) in PVL.
 !
-!    Input, real ( kind = 8 ) THETA(0:NVRT), the polar angles of vertices 
+!    Input, real ( kind = fp ) THETA(0:NVRT), the polar angles of vertices 
 !    in increasing order; THETA(NVRT) is the interior angle of reflex vertex;
 !    THETA(I), 0 <= I, is the polar angle of (XC(I),YC(I))
 !    with respect to reflex vertex.
@@ -3898,27 +3905,27 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
 !    considered as endpoint of a separator; angle between
 !    consecutive vertices is assumed to be < 180 degrees.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
-!    Input, integer ( kind = 4 ) PVL(1:4,1:*), real ( kind = 8 ) IANG(1:*), the polygon 
+!    Input, integer ( kind = 4 ) PVL(1:4,1:*), real ( kind = fp ) IANG(1:*), the polygon 
 !    vertex list, interior angles.
 !
-!    Output, real ( kind = 8 ) ANGSEP, the minimum of the 4 or 7 angles at the
+!    Output, real ( kind = fp ) ANGSEP, the minimum of the 4 or 7 angles at the
 !    boundary resulting from 1 or 2 separators, respectively.
 !
 !    Output, integer ( kind = 4 ) I1, I2, the indices of endpoints of separators in XC, 
 !    YC arrays; I2 = -1 if there is only one separator, else I1 < I2.
 !
-!    Workspace, real ( kind = 8 ) WKANG(0:NV).
+!    Workspace, real ( kind = fp ) WKANG(0:NV).
 !
-  real ( kind = 8 ) ang
-  real ( kind = 8 ) angac1
-  real ( kind = 8 ) angsep
-  real ( kind = 8 ) angsp2
+  real ( kind = fp ) ang
+  real ( kind = fp ) angac1
+  real ( kind = fp ) angsep
+  real ( kind = fp ) angsp2
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
-  real ( kind = 8 ) iang(*)
+  real ( kind = fp ) iang(*)
   integer ( kind = 4 ) ii
   integer ( kind = 4 ) k
   integer ( kind = 4 ) l
@@ -3929,23 +3936,22 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
   integer ( kind = 4 ) nvrt
   integer ( kind = 4 ) iv(0:nv)
   integer ( kind = 4 ) ivis(0:nvrt)
-  real ( kind = 8 ) minang
+  real ( kind = fp ) minang
   integer ( kind = 4 ) p
-  real ( kind = 8 ) phi
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
+  real ( kind = fp ) phi
   integer ( kind = 4 ) pvl(4,*)
   integer ( kind = 4 ) q
   integer ( kind = 4 ) r
-  real ( kind = 8 ) theta(0:nvrt)
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) wkang(0:nv)
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xr
-  real ( kind = 8 ) yc(0:nvrt)
-  real ( kind = 8 ) yr
+  real ( kind = fp ) theta(0:nvrt)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) wkang(0:nv)
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xr
+  real ( kind = fp ) yc(0:nvrt)
+  real ( kind = fp ) yr
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Determine the vertices in the inner cone - indices P to Q.
 !
@@ -4009,7 +4015,7 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
 
   do r = 0, p - 1
 
-    wkang(r) = 0.0D+00
+    wkang(r) = 0.0_fp
 
     if ( angsep < theta(iv(r)) ) then
 
@@ -4035,7 +4041,7 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
 
   do l = q+1, nv
 
-    wkang(l) = 0.0D+00
+    wkang(l) = 0.0_fp
 
     if ( theta(iv(l)) < phi ) then
 
@@ -4111,6 +4117,8 @@ subroutine fndsep ( angac1, xr, yr, nvrt, xc, yc, ivis, theta, nv, iv,  &
   return
 end
 subroutine fndtri ( iedg, mxtr, sflag, tedg, itr, ind, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -4247,67 +4255,9 @@ subroutine fndtri ( iedg, mxtr, sflag, tedg, itr, ind, ierror )
 
   return
 end
-subroutine get_unit ( iunit )
-
-!*****************************************************************************80
-!
-!! GET_UNIT returns a free FORTRAN unit number.
-!
-!  Discussion:
-!
-!    A "free" FORTRAN unit number is an integer between 1 and 99 which
-!    is not currently associated with an I/O device.  A free FORTRAN unit
-!    number is needed in order to open a file with the OPEN command.
-!
-!    If IUNIT = 0, then no free FORTRAN unit could be found, although
-!    all 99 units were checked (except for units 5, 6 and 9, which
-!    are commonly reserved for console I/O).
-!
-!    Otherwise, IUNIT is an integer between 1 and 99, representing a
-!    free FORTRAN unit.  Note that GET_UNIT assumes that units 5 and 6
-!    are special, and will never return those values.
-!
-!  Modified:
-!
-!    18 September 2005
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Output, integer ( kind = 4 ) IUNIT, the free unit number.
-!
-  implicit none
-
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ) ios
-  integer ( kind = 4 ) iunit
-  logical lopen
-
-  iunit = 0
-
-  do i = 1, 99
-
-    if ( i /= 5 .and. i /= 6 .and. i /= 9 ) then
-
-      inquire ( unit = i, opened = lopen, iostat = ios )
-
-      if ( ios == 0 ) then
-        if ( .not. lopen ) then
-          iunit = i
-          return
-        end if
-      end if
-
-    end if
-
-  end do
-
-  return
-end
 subroutine gtime ( time )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -4323,21 +4273,23 @@ subroutine gtime ( time )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) TIME, the current reading of the CPU clock
+!    Output, real ( kind = fp ) TIME, the current reading of the CPU clock
 !    in seconds.
 !
   integer ( kind = 4 ) clock_count
   integer ( kind = 4 ) clock_max
   integer ( kind = 4 ) clock_rate
-  real ( kind = 8 ) time
+  real ( kind = fp ) time
 
   call system_clock ( clock_count, clock_rate, clock_max )
 
-  time = real ( clock_count, kind = 8 ) / real ( clock_rate, kind = 8 )
+  time = real ( clock_count, kind = fp ) / real ( clock_rate, kind = fp )
 
   return
 end
 subroutine holvrt ( nhole, vcl, hvl, pvl, holv )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -4370,7 +4322,7 @@ subroutine holvrt ( nhole, vcl, hvl, pvl, holv )
 !
 !    Input, integer ( kind = 4 ) NHOLE, the number of holes in region(s).
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
 !    Input, integer ( kind = 4 ) HVL(1:NHOLE), the head vertex list; HVL(I) is index in 
 !    PVL of head vertex of Ith hole.
@@ -4397,13 +4349,13 @@ subroutine holvrt ( nhole, vcl, hvl, pvl, holv )
   integer ( kind = 4 ) nhp1
   integer ( kind = 4 ) pvl(4,*)
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) xmax
-  real ( kind = 8 ) xmin
-  real ( kind = 8 ) y
-  real ( kind = 8 ) ymax
-  real ( kind = 8 ) ymin
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) x
+  real ( kind = fp ) xmax
+  real ( kind = fp ) xmin
+  real ( kind = fp ) y
+  real ( kind = fp ) ymax
+  real ( kind = fp ) ymin
 !
 !  Determine top and bottom vertices of holes.
 !
@@ -4516,169 +4468,9 @@ subroutine holvrt ( nhole, vcl, hvl, pvl, holv )
 
   return
 end
-function i4_modp ( i, j )
-
-!*****************************************************************************80
-!
-!! I4_MODP returns the nonnegative remainder of integer division.
-!
-!  Formula:
-!
-!    If
-!      NREM = I4_MODP ( I, J )
-!      NMULT = ( I - NREM ) / J
-!    then
-!      I = J * NMULT + NREM
-!    where NREM is always nonnegative.
-!
-!  Comments:
-!
-!    The MOD function computes a result with the same sign as the
-!    quantity being divided.  Thus, suppose you had an angle A,
-!    and you wanted to ensure that it was between 0 and 360.
-!    Then mod(A,360) would do, if A was positive, but if A
-!    was negative, your result would be between -360 and 0.
-!
-!    On the other hand, I4_MODP(A,360) is between 0 and 360, always.
-!
-!  Examples:
-!
-!        I     J     MOD  I4_MODP    Factorization
-!
-!      107    50       7       7    107 =  2 *  50 + 7
-!      107   -50       7       7    107 = -2 * -50 + 7
-!     -107    50      -7      43   -107 = -3 *  50 + 43
-!     -107   -50      -7      43   -107 =  3 * -50 + 43
-!
-!  Modified:
-!
-!    02 March 1999
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, integer ( kind = 4 ) I, the number to be divided.
-!
-!    Input, integer ( kind = 4 ) J, the number that divides I.
-!
-!    Output, integer ( kind = 4 ) I4_MODP, the nonnegative remainder when I is
-!    divided by J.
-!
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ) i4_modp
-  integer ( kind = 4 ) j
-
-  if ( j == 0 ) then
-    write ( *, '(a)' ) ' '
-    write ( *, '(a)' ) 'I4_MODP - Fatal error!'
-    write ( *, '(a,i6)' ) '  I4_MODP ( I, J ) called with J = ', j
-    stop
-  end if
-
-  i4_modp = mod ( i, j )
-
-  if ( i4_modp < 0 ) then
-    i4_modp = i4_modp + abs ( j )
-  end if
-
-  return
-end
-subroutine i4_swap ( i, j )
-
-!*****************************************************************************80
-!
-!! I4_SWAP swaps two integer values.
-!
-!  Modified:
-!
-!    30 November 1998
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input/output, integer ( kind = 4 ) I, J.  On output, the values of I and
-!    J have been interchanged.
-!
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ) j
-  integer ( kind = 4 ) k
-
-  k = i
-  i = j
-  j = k
-
-  return
-end
-function i4_wrap ( ival, ilo, ihi )
-
-!*****************************************************************************80
-!
-!! I4_WRAP forces an integer to lie between given limits by wrapping.
-!
-!  Example:
-!
-!    ILO = 4, IHI = 8
-!
-!    I  I4_WRAP
-!
-!    -2     8
-!    -1     4
-!     0     5
-!     1     6
-!     2     7
-!     3     8
-!     4     4
-!     5     5
-!     6     6
-!     7     7
-!     8     8
-!     9     4
-!    10     5
-!    11     6
-!    12     7
-!    13     8
-!    14     4
-!
-!  Modified:
-!
-!    15 July 2000
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, integer ( kind = 4 ) IVAL, an integer value.
-!
-!    Input, integer ( kind = 4 ) ILO, IHI, the desired bounds for the integer value.
-!
-!    Output, integer ( kind = 4 ) I4_WRAP, a "wrapped" version of IVAL.
-!
-  integer ( kind = 4 ) i4_modp
-  integer ( kind = 4 ) i4_wrap
-  integer ( kind = 4 ) ihi
-  integer ( kind = 4 ) ilo
-  integer ( kind = 4 ) ival
-  integer ( kind = 4 ) wide
-
-  wide = ihi + 1 - ilo
-
-  if ( wide == 0 ) then
-    i4_wrap = ilo
-  else
-    i4_wrap = ilo + i4_modp ( ival-ilo, wide )
-  end if
-
-  return
-end
 subroutine ihpsrt ( k, n, lda, a, map )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -4747,6 +4539,7 @@ subroutine ihpsrt ( k, n, lda, a, map )
   return
 end
 function iless ( k, p, q )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4808,62 +4601,10 @@ function iless ( k, p, q )
 
   return
 end
-subroutine i4mat_print ( lda, m, n, a, title )
-
-!*****************************************************************************80
-!
-!! I4MAT_PRINT prints an I4MAT.
-!
-!  Modified:
-!
-!    08 July 2001
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, integer ( kind = 4 ) LDA, the leading dimension of A.
-!
-!    Input, integer ( kind = 4 ) M, the number of rows in A.
-!
-!    Input, integer ( kind = 4 ) N, the number of columns in A.
-!
-!    Input, integer ( kind = 4 ) A(LDA,N), the matrix to be printed.
-!
-!    Input, character ( len = * ) TITLE, a title.
-!
-  integer ( kind = 4 ) lda
-  integer ( kind = 4 ) n
-
-  integer ( kind = 4 ) a(lda,n)
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ) j
-  integer ( kind = 4 ) jhi
-  integer ( kind = 4 ) jlo
-  integer ( kind = 4 ) m
-  character ( len = * ) title
-
-  if ( title /= ' ' ) then
-    write ( *, '(a)' ) ' '
-    write ( *, '(a)' ) trim ( title )
-  end if
-
-  do jlo = 1, n, 10
-    jhi = min ( jlo + 9, n )
-    write ( *, '(a)' ) ' '
-    write ( *, '(6x,10(i7))' ) ( j, j = jlo, jhi )
-    write ( *, '(a)' ) ' '
-    do i = 1, m
-      write ( *, '(i6,10i7)' ) i, a(i,jlo:jhi)
-    end do
-  end do
-
-  return
-end
 subroutine insed2 ( v, w, npolg, nvert, maxhv, maxpv, vcl, regnum, &
   hvl, pvl, iang, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -4904,13 +4645,13 @@ subroutine insed2 ( v, w, npolg, nvert, maxhv, maxpv, vcl, regnum, &
 !
 !    Input, integer ( kind = 4 ) MAXPV, the maximum size available for PVL array.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) REGNUM(1:NPOLG), the region numbers.
 !
 !    Input/output, integer ( kind = 4 ) HVL(1:NPOLG), the head vertex list.
 !
-!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT), 
+!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT), 
 !    the polygon vertex list and interior angles.
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
@@ -4919,11 +4660,11 @@ subroutine insed2 ( v, w, npolg, nvert, maxhv, maxpv, vcl, regnum, &
   integer ( kind = 4 ) maxhv
   integer ( kind = 4 ) maxpv
 
-  real ( kind = 8 ) angle
+  real ( kind = fp ) angle
   integer ( kind = 4 ), parameter :: edgv = 4
   integer ( kind = 4 ) hvl(maxhv)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) l
   integer ( kind = 4 ), parameter :: loc = 1
@@ -4937,7 +4678,7 @@ subroutine insed2 ( v, w, npolg, nvert, maxhv, maxpv, vcl, regnum, &
   integer ( kind = 4 ) regnum(maxhv)
   integer ( kind = 4 ), parameter :: succ = 3
   integer ( kind = 4 ) v
-  real ( kind = 8 ) vcl(2,*)
+  real ( kind = fp ) vcl(2,*)
   integer ( kind = 4 ) vv
   integer ( kind = 4 ) w
   integer ( kind = 4 ) ww
@@ -5018,6 +4759,8 @@ subroutine insed2 ( v, w, npolg, nvert, maxhv, maxpv, vcl, regnum, &
 end
 subroutine insvr2 ( xi, yi, wp, nvc, nvert, maxvc, maxpv, vcl, pvl, &
   iang, w, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -5047,7 +4790,7 @@ subroutine insvr2 ( xi, yi, wp, nvc, nvert, maxvc, maxpv, vcl, pvl, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XI, YI, the coordinates of point to be inserted.
+!    Input, real ( kind = fp ) XI, YI, the coordinates of point to be inserted.
 !
 !    Input, integer ( kind = 4 ) WP, the index of vertex in PVL which is to be the
 !    predecessor vertex of the inserted vertex.
@@ -5060,9 +4803,9 @@ subroutine insvr2 ( xi, yi, wp, nvc, nvert, maxvc, maxpv, vcl, pvl, &
 !
 !    Input, integer ( kind = 4 ) MAXPV, the maximum size available for PVL array.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
-!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT),
+!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT),
 !    the polygon vertex list and interior angles.
 !
 !    Output, integer ( kind = 4 ) W, the index of inserted vertex in PVL.
@@ -5074,28 +4817,27 @@ subroutine insvr2 ( xi, yi, wp, nvc, nvert, maxvc, maxpv, vcl, pvl, &
   integer ( kind = 4 ) maxvc
 
   integer ( kind = 4 ), parameter :: edgv = 4
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ), parameter :: loc = 1
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvert
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
   integer ( kind = 4 ), parameter :: polg = 2
   integer ( kind = 4 ) pvl(4,maxpv)
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) w
   integer ( kind = 4 ) wp
   integer ( kind = 4 ) ws
   integer ( kind = 4 ) ww
   integer ( kind = 4 ) wwp
   integer ( kind = 4 ) wws
-  real ( kind = 8 ) xi
-  real ( kind = 8 ) yi
+  real ( kind = fp ) xi
+  real ( kind = fp ) yi
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   if ( maxvc <= nvc ) then
     ierror = 3
@@ -5144,6 +4886,8 @@ subroutine insvr2 ( xi, yi, wp, nvc, nvert, maxvc, maxpv, vcl, pvl, &
 end
 subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
   ifv, listev, ivrt, edgval, vrtval, vcl, mdfint, mean, stdv, mdftr )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -5175,14 +4919,14 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
 !
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices in polygon.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the coordinates of 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the coordinates of 
 !    polygon vertices in counter clockwise order, translated so that 
 !    centroid is at origin; (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
 !
-!    Input, real ( kind = 8 ) CTRX, CTRY, the coordinates of centroid 
+!    Input, real ( kind = fp ) CTRX, CTRY, the coordinates of centroid 
 !    before translation.
 !
-!    Input, real ( kind = 8 ) ARPOLY, the area of polygon.
+!    Input, real ( kind = fp ) ARPOLY, the area of polygon.
 !
 !    Input, logical HFLAG, is .TRUE. if heuristic mdf, .FALSE. if 
 !    user-supplied mdf.
@@ -5195,25 +4939,25 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
 !      double precision x
 !      double precision y
 !
-!    Input, real ( kind = 8 ) WSQ, the square of width of original polygon 
+!    Input, real ( kind = fp ) WSQ, the square of width of original polygon 
 !    of decomposition.
 !
 !    Input, integer ( kind = 4 ) NEV, integer IFV, integer LISTEV(1:NEV), output from 
 !    routine PRMDF2.
 !
-!    Input, IVRT(1:*), real ( kind = 8 ) EDGVAL(1:*), 
+!    Input, IVRT(1:*), real ( kind = fp ) EDGVAL(1:*), 
 !    double precision VRTVAL(1:*), arrays output from DSMDF2;
 !    if .NOT. HFLAG then only first array exists.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
-!    Output, real ( kind = 8 ) MDFINT, the integral of MDF in polygon.
+!    Output, real ( kind = fp ) MDFINT, the integral of MDF in polygon.
 !
-!    Output, real ( kind = 8 ) MEAN, the mean MDF value in polygon.
+!    Output, real ( kind = fp ) MEAN, the mean MDF value in polygon.
 !
-!    Output, real ( kind = 8 ) STDV, the standard deviation of MDF in polygon.
+!    Output, real ( kind = fp ) STDV, the standard deviation of MDF in polygon.
 !
-!    Output, real ( kind = 8 ) MDFTR(0:NVRT-1), the mean MDF value in each 
+!    Output, real ( kind = fp ) MDFTR(0:NVRT-1), the mean MDF value in each 
 !    triangle of polygon;  triangles are determined by polygon vertices 
 !    and centroid.
 !
@@ -5221,12 +4965,12 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
   integer ( kind = 4 ), parameter :: nqpt = 3
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) areatr
-  real ( kind = 8 ) arpoly
-  real ( kind = 8 ) ctrx
-  real ( kind = 8 ) ctry
-  real ( kind = 8 ) d
-  real ( kind = 8 ) edgval(*)
+  real ( kind = fp ) areatr
+  real ( kind = fp ) arpoly
+  real ( kind = fp ) ctrx
+  real ( kind = fp ) ctry
+  real ( kind = fp ) d
+  real ( kind = fp ) edgval(*)
   logical hflag
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ifv
@@ -5237,37 +4981,37 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
   integer ( kind = 4 ) l
   integer ( kind = 4 ) listev(nev)
   integer ( kind = 4 ) m
-  real ( kind = 8 ) mdfint
-  real ( kind = 8 ) mdfsqi
-  real ( kind = 8 ) mdftr(0:nvrt-1)
-  real ( kind = 8 ) mean
-  real ( kind = 8 ), save, dimension ( 3, nqpt ) :: qc = reshape ( (/ &
-    0.6666666666666666D+00, 0.1666666666666667D+00, 0.1666666666666667D+00, &
-    0.1666666666666667D+00, 0.6666666666666666D+00, 0.1666666666666667D+00, &
-    0.1666666666666667D+00, 0.1666666666666667D+00, 0.6666666666666666D+00/), &
+  real ( kind = fp ) mdfint
+  real ( kind = fp ) mdfsqi
+  real ( kind = fp ) mdftr(0:nvrt-1)
+  real ( kind = fp ) mean
+  real ( kind = fp ), save, dimension ( 3, nqpt ) :: qc = reshape ( (/ &
+    0.6666666666666666_fp, 0.1666666666666667_fp, 0.1666666666666667_fp, &
+    0.1666666666666667_fp, 0.6666666666666666_fp, 0.1666666666666667_fp, &
+    0.1666666666666667_fp, 0.1666666666666667_fp, 0.6666666666666666_fp/), &
     (/ 3, nqpt /) )
-  real ( kind = 8 ) s
-  real ( kind = 8 ) stdv
-  real ( kind = 8 ) sum1
-  real ( kind = 8 ) sum2
-  real ( kind = 8 ) temp
-  real ( kind = 8 ) umdf
-  real ( kind = 8 ) val
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) vrtval(*)
-  real ( kind = 8 ) wsq
-  real ( kind = 8 ), save, dimension ( nqpt ) :: wt = &
-    (/ 0.3333333333333333D+00, 0.3333333333333333D+00, 0.3333333333333333D+00 /)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xx
-  real ( kind = 8 ) y
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) yc(0:nvrt)
-  real ( kind = 8 ) yy
+  real ( kind = fp ) s
+  real ( kind = fp ) stdv
+  real ( kind = fp ) sum1
+  real ( kind = fp ) sum2
+  real ( kind = fp ) temp
+  real ( kind = fp ) umdf
+  real ( kind = fp ) val
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) vrtval(*)
+  real ( kind = fp ) wsq
+  real ( kind = fp ), save, dimension ( nqpt ) :: wt = &
+    (/ 0.3333333333333333_fp, 0.3333333333333333_fp, 0.3333333333333333_fp /)
+  real ( kind = fp ) x
+  real ( kind = fp ) x0
+  real ( kind = fp ) x1
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xx
+  real ( kind = fp ) y
+  real ( kind = fp ) y0
+  real ( kind = fp ) y1
+  real ( kind = fp ) yc(0:nvrt)
+  real ( kind = fp ) yy
 
   external umdf
 !
@@ -5275,14 +5019,14 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
 !  WT(I) is weight of Ith quadrature point.
 !  QC(1:3,I) are barycentric coordinates of Ith quadrature point.
 !
-  mdfint = 0.0D+00
-  mdfsqi = 0.0D+00
+  mdfint = 0.0_fp
+  mdfsqi = 0.0_fp
 
   do l = 0, nvrt-1
 
-    areatr = 0.5D+00 * ( xc(l) * yc(l+1) - xc(l+1) * yc(l) )
-    sum1 = 0.0D+00
-    sum2 = 0.0D+00
+    areatr = 0.5_fp * ( xc(l) * yc(l+1) - xc(l+1) * yc(l) )
+    sum1 = 0.0_fp
+    sum2 = 0.0_fp
 
     do m = 1, nqpt
 
@@ -5303,7 +5047,7 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
             if ( k < 0 ) then
                k = -k
                d = ( vcl(1,k) - x )**2 + ( vcl(2,k) - y )**2
-               d = max ( 0.25D+00 * d, vrtval(k) )
+               d = max ( 0.25_fp * d, vrtval(k) )
                s = min ( s, d )
             else
                kp1 = k + 1
@@ -5316,23 +5060,23 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
                x1 = vcl(1,ivrt(k)) - vcl(1,j)
                y1 = vcl(2,ivrt(k)) - vcl(2,j)
 
-               if ( x0 * x1 + y0 * y1 <= 0.0D+00 ) then
+               if ( x0 * x1 + y0 * y1 <= 0.0_fp ) then
                  d = x0**2 + y0**2
                else
                  x0 = x0 - x1
                  y0 = y0 - y1
-                 if ( 0.0D+00 <= x0 * x1 + y0 * y1 ) then
+                 if ( 0.0_fp <= x0 * x1 + y0 * y1 ) then
                    d = x0**2 + y0**2
                  else
                    d = ( x1 * y0 - y1 * x0 )**2 / ( x1**2 + y1**2 )
                  end if
                end if
 
-               d = max ( 0.25D+00 * d, edgval(k) )
+               d = max ( 0.25_fp * d, edgval(k) )
                s = min ( s, d )
             end if
            end do
-           val = 1.0D+00 / s
+           val = 1.0_fp / s
       else
         val = umdf ( xx+ctrx, yy+ctry )
       end if
@@ -5351,12 +5095,14 @@ subroutine intpg ( nvrt, xc, yc, ctrx, ctry, arpoly, hflag, umdf, wsq, nev, &
 
   mean = mdfint / arpoly
   stdv = mdfsqi / arpoly - mean**2
-  stdv = sqrt ( max ( stdv, 0.0D+00 ) )
+  stdv = sqrt ( max ( stdv, 0.0_fp ) )
 
   return
 end
 subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
   maxvc, maxti, maxcw, vcl, til, ncw, cwalk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -5390,15 +5136,15 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices on the boundary of
 !    convex polygon.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
 !    in counter clockwise order; (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
 !
-!    Input, real ( kind = 8 ) H, the spacing of mesh vertices in polygon.
+!    Input, real ( kind = fp ) H, the spacing of mesh vertices in polygon.
 !
 !    Input, integer ( kind = 4 ) IBOT, the index of bottom vertex; diameter contains vertices
 !    (XC(0),YC(0)) and (XC(IBOT),YC(IBOT)).
 !
-!    Input, real ( kind = 8 ) COSTH, SINTH; COS(THETA), SIN(THETA) where 
+!    Input, real ( kind = fp ) COSTH, SINTH; COS(THETA), SIN(THETA) where 
 !    THETA in [-PI,PI] is rotation angle to get diameter parallel to y-axis.
 !
 !    Input, integer ( kind = 4 ) LDV, the leading dimension of VCL in calling routine.
@@ -5416,7 +5162,7 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
 !    Input, integer ( kind = 4 ) MAXCW, the maximum size available for CWALK array; 
 !    assumed to be at least 6*(1 + INT((YC(0) - YC(IBOT))/H)).
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) TIL(1:3,1:NTRI), the triangle incidence list.
 !
@@ -5435,12 +5181,12 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
   integer ( kind = 4 ) maxvc
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) costh
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) costh
   integer ( kind = 4 ) cwalk(0:maxcw)
-  real ( kind = 8 ) cy
-  real ( kind = 8 ) h
+  real ( kind = fp ) cy
+  real ( kind = fp ) h
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ibot
   integer ( kind = 4 ) ierror
@@ -5464,27 +5210,27 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
   integer ( kind = 4 ) r0
   integer ( kind = 4 ) r1
   integer ( kind = 4 ) rw
-  real ( kind = 8 ) sinth
-  real ( kind = 8 ) sy
+  real ( kind = fp ) sinth
+  real ( kind = fp ) sy
   integer ( kind = 4 ) til(3,maxti)
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(ldv,maxvc)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xj
-  real ( kind = 8 ) xk
-  real ( kind = 8 ) xl
-  real ( kind = 8 ) xm1l
-  real ( kind = 8 ) xm1r
-  real ( kind = 8 ) xr
-  real ( kind = 8 ) y
-  real ( kind = 8 ) yc(0:nvrt)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(ldv,maxvc)
+  real ( kind = fp ) x
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xj
+  real ( kind = fp ) xk
+  real ( kind = fp ) xl
+  real ( kind = fp ) xm1l
+  real ( kind = fp ) xm1r
+  real ( kind = fp ) xr
+  real ( kind = fp ) y
+  real ( kind = fp ) yc(0:nvrt)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   n = int ( ( yc(0) - yc(ibot) ) / h )
-  y = yc(0) - 0.5D+00 * ( yc(0) - yc(ibot ) - real ( n, kind = 8 ) * h )
+  y = yc(0) - 0.5_fp * ( yc(0) - yc(ibot ) - real ( n, kind = fp ) * h )
   l = 0
   r = nvrt
 
@@ -5504,7 +5250,7 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
     xl = xc(l) + ( xc(l+1) - xc(l) ) * ( y - yc(l) ) / ( yc(l+1) - yc(l) )
     xr = xc(r) + ( xc(r-1) - xc(r) ) * ( y - yc(r) ) / ( yc(r-1) - yc(r) )
     m = int ( ( xr - xl ) / h )
-    x = xl + 0.5D+00 * ( xr - xl - real ( m, kind = 8 ) * h )
+    x = xl + 0.5_fp * ( xr - xl - real ( m, kind = fp ) * h )
 
     if ( maxvc < nvc + m + 1 ) then
       ierror = 3
@@ -5556,7 +5302,7 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
       l0 = im1l
       x = ( xm1l - xl ) / h
       j = int(x + tol)
-      if ( abs ( x - real ( j, kind = 8 ) ) <= tol ) then
+      if ( abs ( x - real ( j, kind = fp ) ) <= tol ) then
         j = j - 1
       end if
       if ( j < 0 ) then
@@ -5567,7 +5313,7 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
       l1 = il
       x = ( xl - xm1l ) / h
       j = int ( x + tol )
-      if ( abs ( x - real ( j, kind = 8 ) ) <= tol ) then
+      if ( abs ( x - real ( j, kind = fp ) ) <= tol ) then
         j = j - 1
       end if
       if ( j < 0 ) then
@@ -5580,7 +5326,7 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
       r0 = im1r
       x = ( xr - xm1r ) / h
       j = int ( x + tol )
-      if ( abs ( x - real ( j, kind = 8 ) ) <= tol ) then
+      if ( abs ( x - real ( j, kind = fp ) ) <= tol ) then
         j = j - 1
       end if
       if ( j < 0 ) then
@@ -5591,7 +5337,7 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
       r1 = ir
       x = ( xm1r - xr ) / h
       j = int ( x + tol )
-      if ( abs ( x - real ( j, kind = 8 ) ) <= tol ) then
+      if ( abs ( x - real ( j, kind = fp ) ) <= tol ) then
         j = j - 1
       end if
       if ( j < 0 ) then
@@ -5604,8 +5350,8 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
 
       j = l0
       k = l1
-      xj = xm1l + real ( j-im1l, kind = 8 ) * h
-      xk = xl + real ( k - il, kind = 8 ) * h
+      xj = xm1l + real ( j-im1l, kind = fp ) * h
+      xk = xl + real ( k - il, kind = fp ) * h
 
       do
 
@@ -5704,6 +5450,8 @@ subroutine inttri ( nvrt, xc, yc, h, ibot, costh, sinth, ldv, nvc, ntri,  &
   return
 end
 subroutine isftdw ( l, u, k, lda, a, map )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -5781,35 +5529,10 @@ subroutine isftdw ( l, u, k, lda, a, map )
 
   return
 end
-subroutine i4vec_indicator ( n, a )
-
-!*****************************************************************************80
-!
-!! I4VEC_INDICATOR sets an I4VEC to the indicator vector.
-!
-!  Modified:
-!
-!    09 November 2000
-!
-!  Parameters:
-!
-!    Input, integer ( kind = 4 ) N, the number of elements of A.
-!
-!    Output, integer ( kind = 4 ) A(N), the array to be initialized.
-!
-  integer ( kind = 4 ) n
-
-  integer ( kind = 4 ) a(n)
-  integer ( kind = 4 ) i
-
-  do i = 1, n
-    a(i) = i
-  end do
-
-  return
-end
 subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
   maxiw, maxwk, vcl, hvl, pvl, iang, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -5842,10 +5565,10 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
 !
 !    Input, integer ( kind = 4 ) ITOPHV, the index in PVL of top vertex of hole.
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter used in 
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter used in 
 !    controlling the vertices to be considered as an endpoint of a separator.
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter used 
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter used 
 !    in accepting separator(s).
 !
 !    Input/output, integer ( kind = 4 ) NVC, the number of positions used in VCL array.
@@ -5862,16 +5585,16 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
 !    Input, integer ( kind = 4 ) MAXWK, the maximum size available for WK array; should 
 !    be about 5 times number of vertices in outer polygon.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC),the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC),the vertex coordinate list.
 !
 !    Input, integer ( kind = 4 ) HVL(1:*), the head vertex list.
 !
-!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT), 
+!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT), 
 !    the polygon vertex list and interior angles.
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 3, 5, 6, 7, 206 to 210, 212, 218, or 219.
@@ -5881,14 +5604,14 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
   integer ( kind = 4 ) maxvc
   integer ( kind = 4 ) maxwk
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) dy
+  real ( kind = fp ) angle
+  real ( kind = fp ) angspc
+  real ( kind = fp ) angtol
+  real ( kind = fp ) dy
   integer ( kind = 4 ), parameter :: edgv = 4
   integer ( kind = 4 ) hv
   integer ( kind = 4 ) hvl(*)
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) ilft
   integer ( kind = 4 ) ipoly
@@ -5904,40 +5627,39 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
   integer ( kind = 4 ), parameter :: msglvl = 0
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvert
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
   integer ( kind = 4 ), parameter :: polg = 2
   integer ( kind = 4 ) pvl(4,maxpv)
-  real ( kind = 8 ) s
-  real ( kind = 8 ) slft
-  real ( kind = 8 ) srgt
+  real ( kind = fp ) s
+  real ( kind = fp ) slft
+  real ( kind = fp ) srgt
   integer ( kind = 4 ), parameter :: succ = 3
   integer ( kind = 4 ) succil
   integer ( kind = 4 ) succir
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) vp
   integer ( kind = 4 ) vr
   integer ( kind = 4 ) vs
   integer ( kind = 4 ) vv
   integer ( kind = 4 ) w
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) wk(maxwk)
   integer ( kind = 4 ) ww
-  real ( kind = 8 ) xint
-  real ( kind = 8 ) xlft
-  real ( kind = 8 ) xrgt
-  real ( kind = 8 ) xt
-  real ( kind = 8 ) xv
-  real ( kind = 8 ) xvs
-  real ( kind = 8 ) ylft
-  real ( kind = 8 ) yrgt
-  real ( kind = 8 ) yt
-  real ( kind = 8 ) ytmtol
-  real ( kind = 8 ) ytptol
-  real ( kind = 8 ) yv
-  real ( kind = 8 ) yvs
+  real ( kind = fp ) xint
+  real ( kind = fp ) xlft
+  real ( kind = fp ) xrgt
+  real ( kind = fp ) xt
+  real ( kind = fp ) xv
+  real ( kind = fp ) xvs
+  real ( kind = fp ) ylft
+  real ( kind = fp ) yrgt
+  real ( kind = fp ) yt
+  real ( kind = fp ) ytmtol
+  real ( kind = fp ) ytptol
+  real ( kind = fp ) yv
+  real ( kind = fp ) yvs
 !
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   if ( maxvc < nvc + 3 ) then
     ierror = 3
@@ -5962,7 +5684,7 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
   lv = pvl(loc,itophv)
   xt = vcl(1,lv)
   yt = vcl(2,lv)
-  dy = 0.0D+00
+  dy = 0.0_fp
   hv = hvl(ipoly)
   iv = hv
   yv = vcl(2,pvl(loc,iv))
@@ -5984,8 +5706,8 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
   ytptol = yt + tol * dy
   ilft = 0
   irgt = 0
-  xlft = 0.0D+00
-  xrgt = 0.0D+00
+  xlft = 0.0_fp
+  xrgt = 0.0_fp
   hv = hvl(ipoly)
   iv = hv
   lv = pvl(loc,iv)
@@ -6188,6 +5910,8 @@ subroutine jnhole ( itophv, angspc, angtol, nvc, nvert, maxvc, maxpv,  &
   return
 end
 subroutine lop ( itr, ind, mxedg, top, ldv, vcl, til, tedg, sptr )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -6228,7 +5952,7 @@ subroutine lop ( itr, ind, mxedg, top, ldv, vcl, til, tedg, sptr )
 !
 !    Input, integer ( kind = 4 ) LDV, the leading dimension of VCL in calling routine.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) TIL(1:3,1:*), the triangle incidence list.
 !
@@ -6260,7 +5984,7 @@ subroutine lop ( itr, ind, mxedg, top, ldv, vcl, til, tedg, sptr )
   integer ( kind = 4 ) sptr(*)
   integer ( kind = 4 ) tedg(3,*)
   integer ( kind = 4 ) til(3,*)
-  real ( kind = 8 ) vcl(ldv,*)
+  real ( kind = fp ) vcl(ldv,*)
 !
 !  Common edge is BC, other two vertices are A and D.
 !
@@ -6318,6 +6042,7 @@ subroutine lop ( itr, ind, mxedg, top, ldv, vcl, til, tedg, sptr )
   return
 end
 function lrline ( xu, yu, xv1, yv1, xv2, yv2, dv )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6347,13 +6072,13 @@ function lrline ( xu, yu, xv1, yv1, xv2, yv2, dv )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XU, YU, the coordinates of the point whose
+!    Input, real ( kind = fp ) XU, YU, the coordinates of the point whose
 !    position relative to the directed line is to be determined.
 !
-!    Input, real ( kind = 8 ) XV1, YV1, XV2, YV2, the coordinates of two points
+!    Input, real ( kind = fp ) XV1, YV1, XV2, YV2, the coordinates of two points
 !    that determine the directed base line.
 !
-!    Input, real ( kind = 8 ) DV, the signed distance of the directed line 
+!    Input, real ( kind = fp ) DV, the signed distance of the directed line 
 !    from the directed base line through the points (XV1,YV1) and (XV2,YV2).  
 !    DV is positive for a line to the left of the base line.
 ! 
@@ -6364,23 +6089,23 @@ function lrline ( xu, yu, xv1, yv1, xv2, yv2, dv )
 !
   implicit none
 
-  real ( kind = 8 ) dv
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dxu
-  real ( kind = 8 ) dy
-  real ( kind = 8 ) dyu
+  real ( kind = fp ) dv
+  real ( kind = fp ) dx
+  real ( kind = fp ) dxu
+  real ( kind = fp ) dy
+  real ( kind = fp ) dyu
   integer ( kind = 4 ) lrline
-  real ( kind = 8 ) t
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xv1
-  real ( kind = 8 ) xv2
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yv1
-  real ( kind = 8 ) yv2
+  real ( kind = fp ) t
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
+  real ( kind = fp ) xu
+  real ( kind = fp ) xv1
+  real ( kind = fp ) xv2
+  real ( kind = fp ) yu
+  real ( kind = fp ) yv1
+  real ( kind = fp ) yv2
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   dx = xv2 - xv1
   dy = yv2 - yv1
@@ -6403,6 +6128,8 @@ function lrline ( xu, yu, xv1, yv1, xv2, yv2, dv )
   return
 end
 subroutine lufac ( a, lda, n, tol, ipvt, singlr )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -6432,7 +6159,7 @@ subroutine lufac ( a, lda, n, tol, ipvt, singlr )
 !
 !  Parameters:
 !
-!    Input/output, real ( kind = 8 ) A(1:N,1:N), the matrix.  On input, 
+!    Input/output, real ( kind = fp ) A(1:N,1:N), the matrix.  On input, 
 !    the N by N matrix to be factored.  On output, the upper triangular 
 !    matrix U and multipliers of unit lower triangular matrix L (if matrix 
 !    A is nonsingular).
@@ -6452,7 +6179,7 @@ subroutine lufac ( a, lda, n, tol, ipvt, singlr )
   integer ( kind = 4 ) lda
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(lda,n)
+  real ( kind = fp ) a(lda,n)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ipvt(n-1)
   integer ( kind = 4 ) j
@@ -6460,9 +6187,9 @@ subroutine lufac ( a, lda, n, tol, ipvt, singlr )
   integer ( kind = 4 ) kp1
   integer ( kind = 4 ) m
   logical singlr
-  real ( kind = 8 ) t
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
+  real ( kind = fp ) t
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
 
   if ( n < 1 ) then
     return
@@ -6470,7 +6197,7 @@ subroutine lufac ( a, lda, n, tol, ipvt, singlr )
 
   singlr = .true.
 
-  t = 0.0D+00
+  t = 0.0_fp
   do j = 1, n
     do i = 1, n
       t = max ( t, abs ( a(i,j) ) )
@@ -6528,6 +6255,8 @@ subroutine lufac ( a, lda, n, tol, ipvt, singlr )
   return
 end
 subroutine lusol ( a, lda, n, ipvt, b )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -6557,7 +6286,7 @@ subroutine lusol ( a, lda, n, ipvt, b )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(1:N,1:N), contains factors L, U output 
+!    Input, real ( kind = fp ) A(1:N,1:N), contains factors L, U output 
 !    from routine LUFAC.
 !
 !    Input, integer ( kind = 4 ) LDA, the leading dimension of array A in calling routine.
@@ -6572,13 +6301,13 @@ subroutine lusol ( a, lda, n, ipvt, b )
   integer ( kind = 4 ) lda
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(lda,n)
-  real ( kind = 8 ) b(n)
+  real ( kind = fp ) a(lda,n)
+  real ( kind = fp ) b(n)
   integer ( kind = 4 ) ipvt(n-1)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) k
   integer ( kind = 4 ) m
-  real ( kind = 8 ) t
+  real ( kind = fp ) t
 !
 !  Forward elimination
 !
@@ -6613,6 +6342,7 @@ subroutine lusol ( a, lda, n, ipvt, b )
   return
 end
 function mdf2 ( x, y, wsq, nev, ifv, listev, ivrt, edgval, vrtval, vcl )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6637,28 +6367,28 @@ function mdf2 ( x, y, wsq, nev, ifv, listev, ivrt, edgval, vrtval, vcl )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X, Y, the coordinates of point.
+!    Input, real ( kind = fp ) X, Y, the coordinates of point.
 !
-!    Input, real ( kind = 8 ) WSQ, the square of the width of the polygon 
+!    Input, real ( kind = fp ) WSQ, the square of the width of the polygon 
 !    containing (X,Y).
 !
 !    Input, integer ( kind = 4 ) NEV, IFV, LISTEV(1:NEV), output from routine PRMDF2.
 !
 !    Input, integer ( kind = 4 ) IVRT(1:*), output from DSMDF2.
 !
-!    Input, real ( kind = 8 ) EDGVAL(1:*), output from DSMDF2.
+!    Input, real ( kind = fp ) EDGVAL(1:*), output from DSMDF2.
 !
-!    Input, real ( kind = 8 ) VRTVAL(1:*), output from DSMDF2.
+!    Input, real ( kind = fp ) VRTVAL(1:*), output from DSMDF2.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
-!    Output, real ( kind = 8 ) MDF2, the reciprocal of square of length 
+!    Output, real ( kind = fp ) MDF2, the reciprocal of square of length 
 !    scale at (X,Y).
 !
   integer ( kind = 4 ) nev
 
-  real ( kind = 8 ) d
-  real ( kind = 8 ) edgval(*)
+  real ( kind = fp ) d
+  real ( kind = fp ) edgval(*)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ifv
   integer ( kind = 4 ) ivrt(*)
@@ -6666,17 +6396,17 @@ function mdf2 ( x, y, wsq, nev, ifv, listev, ivrt, edgval, vrtval, vcl )
   integer ( kind = 4 ) k
   integer ( kind = 4 ) kp1
   integer ( kind = 4 ) listev(nev)
-  real ( kind = 8 ) mdf2
-  real ( kind = 8 ) s
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) vrtval(*)
-  real ( kind = 8 ) wsq
-  real ( kind = 8 ) x
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) y
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) y1
+  real ( kind = fp ) mdf2
+  real ( kind = fp ) s
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) vrtval(*)
+  real ( kind = fp ) wsq
+  real ( kind = fp ) x
+  real ( kind = fp ) x0
+  real ( kind = fp ) x1
+  real ( kind = fp ) y
+  real ( kind = fp ) y0
+  real ( kind = fp ) y1
 
   s = wsq
 
@@ -6687,7 +6417,7 @@ function mdf2 ( x, y, wsq, nev, ifv, listev, ivrt, edgval, vrtval, vcl )
     if ( k < 0 ) then
       k = -k
       d = ( vcl(1,k) - x )**2 + ( vcl(2,k) - y )**2
-      d = max ( 0.25D+00 * d, vrtval(k) )
+      d = max ( 0.25_fp * d, vrtval(k) )
       s = min ( s, d )
     else
       kp1 = k + 1
@@ -6700,32 +6430,34 @@ function mdf2 ( x, y, wsq, nev, ifv, listev, ivrt, edgval, vrtval, vcl )
       x1 = vcl(1,ivrt(k)) - vcl(1,j)
       y1 = vcl(2,ivrt(k)) - vcl(2,j)
 
-      if ( x0 * x1 + y0 * y1 <= 0.0D+00 ) then
+      if ( x0 * x1 + y0 * y1 <= 0.0_fp ) then
         d = x0**2 + y0**2
       else
         x0 = x0 - x1
         y0 = y0 - y1
-        if ( 0.0D+00 <= x0 * x1 + y0 * y1 ) then
+        if ( 0.0_fp <= x0 * x1 + y0 * y1 ) then
           d = x0**2 + y0**2
         else
           d = ( x1 * y0 - y1 * x0 )**2 / ( x1**2 + y1**2 )
         end if
       end if
 
-      d = max ( 0.25D+00 * d, edgval(k) )
+      d = max ( 0.25_fp * d, edgval(k) )
       s = min ( s, d )
 
     end if
 
   end do
 
-  mdf2 = 1.0D+00 / s
+  mdf2 = 1.0_fp / s
 
   return
 end
 subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   nvc, npolg, nvert, maxvc, maxhv, maxpv, maxiw, maxwk, vcl, regnum, hvl,  &
   pvl, iang, ivrt, xivrt, widsq, edgval, vrtval, area, psi, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -6766,16 +6498,16 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !      double precision x
 !      double precision y
 !
-!    Input, real ( kind = 8 ) KAPPA, the mesh smoothness parameter in 
+!    Input, real ( kind = fp ) KAPPA, the mesh smoothness parameter in 
 !    interval [0.0,1.0].
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter in radians 
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter in radians 
 !    used to determine extra points as possible endpoints of separators.
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter in 
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter in 
 !    radians used in accepting separators.
 !
-!    Input, real ( kind = 8 ) DMIN, a parameter used to determine if 
+!    Input, real ( kind = fp ) DMIN, a parameter used to determine if 
 !    variation of mdf in polygon is 'sufficiently high'.
 !
 !    Input, integer ( kind = 4 ) NMIN, a parameter used to determine if 'sufficiently large'
@@ -6806,7 +6538,7 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !    Input, integer ( kind = 4 ) MAXWK, the maximum size available for WK array; should 
 !    be about NPOLG + 3*(NVRT + INT(2*PI/ANGSPC)) + 2.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) REGNUM(1:NPOLG), the region numbers.
 !
@@ -6816,19 +6548,19 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !    interior angles.
 !
 !    Input, integer ( kind = 4 ) IVRT(1:NVERT), integer XIVRT(1:NPOLG+1), 
-!    double precision WIDSQ(1:NPOLG), real ( kind = 8 ) EDGVAL(1:NVERT),
+!    double precision WIDSQ(1:NPOLG), real ( kind = fp ) EDGVAL(1:NVERT),
 !    double precision VRTVAL(1:NVC), arrays output from routine DSMDF2;
 !    if .NOT. HFLAG then only first two arrays exist.
 !
-!    Input/output, real ( kind = 8 ) AREA(1:NPOLG), the area of convex polygons 
+!    Input/output, real ( kind = fp ) AREA(1:NPOLG), the area of convex polygons 
 !    in decomposition.
 !
-!    Output, real ( kind = 8 ) PSI(1:NPOLG), the mean mdf values in the
+!    Output, real ( kind = fp ) PSI(1:NPOLG), the mean mdf values in the
 !    convex polygons
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 3, 4, 5, 6, 7, 200, or 222.
@@ -6841,91 +6573,90 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvert
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) angsp2
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) area(maxhv)
-  real ( kind = 8 ) areapg
-  real ( kind = 8 ) arearg
-  real ( kind = 8 ) c1
-  real ( kind = 8 ) c2
-  real ( kind = 8 ) cosalp
-  real ( kind = 8 ) ctrx
-  real ( kind = 8 ) ctry
-  real ( kind = 8 ) delta
-  real ( kind = 8 ) dmin
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
-  real ( kind = 8 ) edgval(nvert)
+  real ( kind = fp ) alpha
+  real ( kind = fp ) angsp2
+  real ( kind = fp ) angspc
+  real ( kind = fp ) angtol
+  real ( kind = fp ) area(maxhv)
+  real ( kind = fp ) areapg
+  real ( kind = fp ) arearg
+  real ( kind = fp ) c1
+  real ( kind = fp ) c2
+  real ( kind = fp ) cosalp
+  real ( kind = fp ) ctrx
+  real ( kind = fp ) ctry
+  real ( kind = fp ) delta
+  real ( kind = fp ) dmin
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
+  real ( kind = fp ) edgval(nvert)
   logical hflag
   integer ( kind = 4 ) hvl(maxhv)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) ifv
   integer ( kind = 4 ) ii
   integer ( kind = 4 ) inc
   integer ( kind = 4 ) indpvl
-  real ( kind = 8 ) intreg
+  real ( kind = fp ) intreg
   integer ( kind = 4 ) ivrt(nvert)
   integer ( kind = 4 ) iwk(maxiw)
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
-  real ( kind = 8 ) kappa
+  real ( kind = fp ) kappa
   integer ( kind = 4 ) l
   integer ( kind = 4 ) listev
   integer ( kind = 4 ), parameter :: loc = 1
   integer ( kind = 4 ) m
   integer ( kind = 4 ) maxn
-  real ( kind = 8 ) mdfint
+  real ( kind = fp ) mdfint
   integer ( kind = 4 ) mdftr
-  real ( kind = 8 ) mean
+  real ( kind = fp ) mean
   integer ( kind = 4 ) nev
   integer ( kind = 4 ) nmin
   integer ( kind = 4 ) np
   integer ( kind = 4 ) npolg
   integer ( kind = 4 ) ntrid
-  real ( kind = 8 ) numer
+  real ( kind = fp ) numer
   integer ( kind = 4 ) nvrt
-  real ( kind = 8 ) nwarea
+  real ( kind = fp ) nwarea
   integer ( kind = 4 ) p
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) pi2
-  real ( kind = 8 ) psi(maxhv)
+  real ( kind = fp ) pi2
+  real ( kind = fp ) psi(maxhv)
   integer ( kind = 4 ) pvl(4,maxpv)
-  real ( kind = 8 ) r
+  real ( kind = fp ) r
   integer ( kind = 4 ) regnum(maxhv)
-  real ( kind = 8 ) sinalp
-  real ( kind = 8 ) stdv
+  real ( kind = fp ) sinalp
+  real ( kind = fp ) stdv
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) sumx
-  real ( kind = 8 ) sumy
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) umdf
+  real ( kind = fp ) sumx
+  real ( kind = fp ) sumy
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
+  real ( kind = fp ) tol
+  real ( kind = fp ) umdf
   integer ( kind = 4 ) v
-  real ( kind = 8 ) vcl(2,maxvc)
-  real ( kind = 8 ) vrtval(nvc)
+  real ( kind = fp ) vcl(2,maxvc)
+  real ( kind = fp ) vrtval(nvc)
   integer ( kind = 4 ) w
-  real ( kind = 8 ) widsq(npolg)
-  real ( kind = 8 ) wk(maxwk)
-  real ( kind = 8 ) wsq
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
+  real ( kind = fp ) widsq(npolg)
+  real ( kind = fp ) wk(maxwk)
+  real ( kind = fp ) wsq
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
   integer ( kind = 4 ) xc
   integer ( kind = 4 ) xivrt(npolg+1)
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
   integer ( kind = 4 ) yc
 
   external umdf
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  WK(1:NPOLG) is used for MDF standard deviation in polygons.
 !  Compute AREARG = area of region and INTREG = estimated integral
@@ -6950,8 +6681,8 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   xc = npolg + 1
   yc = xc + nvrt + 1
   mdftr = yc + nvrt + 1
-  arearg = 0.0D+00
-  intreg = 0.0D+00
+  arearg = 0.0_fp
+  intreg = 0.0_fp
   nev = -1
 
   do i = 1, npolg
@@ -6962,16 +6693,16 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
     end if
 
     if ( nev == 0 ) then
-      psi(i) = 1.0D+00 / wsq
-      wk(i) = 0.0D+00
+      psi(i) = 1.0_fp / wsq
+      wk(i) = 0.0_fp
       mdfint = psi(i) * area(i)
     else
 
       nvrt = xivrt(i+1) - xivrt(i)
       k = xivrt(i)
 
-      sumx = 0.0D+00
-      sumy = 0.0D+00
+      sumx = 0.0_fp
+      sumy = 0.0_fp
       do j = 0, nvrt-1
         l = ivrt(k)
         wk(xc+j) = vcl(1,l)
@@ -6981,8 +6712,8 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
         k = k + 1
       end do
 
-      ctrx = sumx / real ( nvrt, kind = 8 )
-      ctry = sumy / real ( nvrt, kind = 8 )
+      ctrx = sumx / real ( nvrt, kind = fp )
+      ctry = sumy / real ( nvrt, kind = fp )
 
       do j = 0, nvrt-1
         wk(xc+j) = wk(xc+j) - ctrx
@@ -7008,11 +6739,11 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !  be further subdivided (indicated by negative PSI(I) value).
 !
   if ( hflag ) then
-    c1 = ( 1.0D+00 - kappa ) / intreg
+    c1 = ( 1.0_fp - kappa ) / intreg
     c2 = kappa / arearg
   else
-    c1 = 1.0D+00 / intreg
-    c2 = 0.0D+00
+    c1 = 1.0_fp / intreg
+    c2 = 0.0_fp
   end if
 
   do i = 1, npolg
@@ -7030,8 +6761,8 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 !  Further subdivide polygons for which DMIN < STDV/MEAN and
 !  NMIN < (estimated number of triangles).
 !
-  angsp2 = 2.0D+00 * angspc
-  pi2 = 2.0D+00 * pi
+  angsp2 = 2.0_fp * angspc
+  pi2 = 2.0_fp * pi
   inc = int ( pi2 / angspc )
   nev = 0
   np = npolg
@@ -7039,7 +6770,7 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 
   do i = 1, np
 
-    if ( psi(i) < 0.0D+00 ) then
+    if ( psi(i) < 0.0_fp ) then
 
       if ( hflag ) then
         wsq = widsq(i)
@@ -7059,13 +6790,13 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 
 70       continue
 
-         if ( 0.0D+00 <= psi(k) ) then
+         if ( 0.0_fp <= psi(k) ) then
            go to 120
          end if
 
           nvrt = 0
-          sumx = 0.0D+00
-          sumy = 0.0D+00
+          sumx = 0.0_fp
+          sumy = 0.0_fp
           j = hvl(k)
 
           do
@@ -7082,8 +6813,8 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 
           end do
 
-          ctrx = sumx / real ( nvrt, kind = 8 )
-          ctry = sumy / real ( nvrt, kind = 8 )
+          ctrx = sumx / real ( nvrt, kind = fp )
+          ctry = sumy / real ( nvrt, kind = fp )
           maxn = nvrt + inc
 
           if ( maxiw < nev + maxn + 1 ) then
@@ -7124,7 +6855,7 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
              if ( angsp2 <= delta ) then
 
                m = int ( delta / angspc )
-               delta = delta / real ( m, kind = 8 )
+               delta = delta / real ( m, kind = fp )
                dx = x2 - x1
                dy = y2 - y1
                numer = x1 * dy - y1 * dx
@@ -7235,7 +6966,7 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
 
           end do
 
-          nwarea = areapg ( nvrt, wk(xc), wk(yc) ) * 0.5D+00
+          nwarea = areapg ( nvrt, wk(xc), wk(yc) ) * 0.5_fp
           area(npolg) = area(k) - nwarea
           area(k) = nwarea
           psi(k) = -psi(k)
@@ -7266,6 +6997,7 @@ subroutine mfdec2 ( hflag, umdf, kappa, angspc, angtol, dmin, nmin, ntrid,  &
   return
 end
 function minang ( xr, yr, xs, ys, ind, alpha, theta, vcl, pvl, iang )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7296,46 +7028,45 @@ function minang ( xr, yr, xs, ys, ind, alpha, theta, vcl, pvl, iang )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XR, YR, the coordinates of the reflex vertex.
+!    Input, real ( kind = fp ) XR, YR, the coordinates of the reflex vertex.
 !
-!    Input, real ( kind = 8 ) XS, YS, the coordinates of other endpoint of 
+!    Input, real ( kind = fp ) XS, YS, the coordinates of other endpoint of 
 !    possible separator.
 !
 !    Input, integer ( kind = 4 ) IND, if positive then (XS,YS) has index IND in PVL; else
 !    (XS,YS) is on edge joining vertices with indices -IND
 !    and SUCC(-IND) in PVL.
 !
-!    Input, real ( kind = 8 ) ALPHA, the polar angle of (XS,YS) with respect
+!    Input, real ( kind = fp ) ALPHA, the polar angle of (XS,YS) with respect
 !    to (XR,YR).
 !
-!    Input, real ( kind = 8 ) THETA, the interior angle at reflex vertex.
+!    Input, real ( kind = fp ) THETA, the interior angle at reflex vertex.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
-!    Input, integer ( kind = 4 ) PVL(1:4,1:*), real ( kind = 8 ) IANG(1:*), the polygon 
+!    Input, integer ( kind = 4 ) PVL(1:4,1:*), real ( kind = fp ) IANG(1:*), the polygon 
 !    vertex list, interior angles.
 !
-!    Output, real ( kind = 8 ) MINANG, the minimum of the 4 angles in radians.
+!    Output, real ( kind = fp ) MINANG, the minimum of the 4 angles in radians.
 !
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) ang
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) beta1
-  real ( kind = 8 ) iang(*)
+  real ( kind = fp ) alpha
+  real ( kind = fp ) ang
+  real ( kind = fp ) angle
+  real ( kind = fp ) beta1
+  real ( kind = fp ) iang(*)
   integer ( kind = 4 ) ind
   integer ( kind = 4 ) j
   integer ( kind = 4 ) l
   integer ( kind = 4 ), parameter :: loc = 1
-  real ( kind = 8 ) minang
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
+  real ( kind = fp ) minang
   integer ( kind = 4 ) pvl(4,*)
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) xr
-  real ( kind = 8 ) xs
-  real ( kind = 8 ) yr
-  real ( kind = 8 ) ys
+  real ( kind = fp ) theta
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) xr
+  real ( kind = fp ) xs
+  real ( kind = fp ) yr
+  real ( kind = fp ) ys
 
   if ( 0 < ind ) then
     j = pvl(succ,ind)
@@ -7353,6 +7084,8 @@ function minang ( xr, yr, xs, ys, ind, alpha, theta, vcl, pvl, iang )
   return
 end
 subroutine mmasep ( angtol, xc, yc, indpvl, iang, v, w, i1, i2 )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -7382,17 +7115,17 @@ subroutine mmasep ( angtol, xc, yc, indpvl, iang, v, w, i1, i2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter (in 
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter (in 
 !    radians) for accepting separator.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the coordinates of 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the coordinates of 
 !    polygon vertices in counter clockwise order where NVRT is number of 
 !    vertices; (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
 !
 !    Input, integer ( kind = 4 ) INDPVL(0:NVRT), indices in PVL of vertices; INDPVL(I) = -K
 !    if (XC(I),YC(I)) is extra vertex inserted on edge from K to PVL(SUCC,K).
 !
-!    Input, real ( kind = 8 ) IANG(1:*), the interior angle array.
+!    Input, real ( kind = fp ) IANG(1:*), the interior angle array.
 !
 !    Input, integer ( kind = 4 ) V(1:2), W(1:2), indices in XC, YC in range 0 to NVRT-1; 
 !    four possible separators are V(I),W(J), I,J = 1,2.
@@ -7401,32 +7134,31 @@ subroutine mmasep ( angtol, xc, yc, indpvl, iang, v, w, i1, i2 )
 !    according to max-min angle criterion; I1 = -1
 !    if no satisfactory separator is found.
 !
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angmax
-  real ( kind = 8 ) angmin
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) beta
-  real ( kind = 8 ) delta
-  real ( kind = 8 ) gamma
+  real ( kind = fp ) alpha
+  real ( kind = fp ) angle
+  real ( kind = fp ) angmax
+  real ( kind = fp ) angmin
+  real ( kind = fp ) angtol
+  real ( kind = fp ) beta
+  real ( kind = fp ) delta
+  real ( kind = fp ) gamma
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
-  real ( kind = 8 ) iang(*)
+  real ( kind = fp ) iang(*)
   integer ( kind = 4 ) indpvl(0:*)
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) l
   integer ( kind = 4 ) m
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) tol
+  real ( kind = fp ) tol
   integer ( kind = 4 ) v(2)
   integer ( kind = 4 ) w(2)
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) yc(0:*)
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) yc(0:*)
 
-  tol = 100.0D+00 * epsilon ( tol )
-  angmax = 0.0D+00
+  tol = 100.0_fp * epsilon ( tol )
+  angmax = 0.0_fp
 
   do i = 1, 2
 
@@ -7478,6 +7210,8 @@ subroutine mmasep ( angtol, xc, yc, indpvl, iang, v, w, i1, i2 )
   return
 end
 subroutine mtredg ( utype, i1, i2, i3, ibndry, nt, til, tedg )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -7546,6 +7280,7 @@ subroutine mtredg ( utype, i1, i2, i3, ibndry, nt, til, tedg )
   return
 end
 function prime ( k )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7639,6 +7374,8 @@ function prime ( k )
   return
 end
 subroutine prmdf2 ( ipoly, wsq, ivrt, xivrt, edgval, vrtval, nev, ifv, listev )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -7671,7 +7408,7 @@ subroutine prmdf2 ( ipoly, wsq, ivrt, xivrt, edgval, vrtval, nev, ifv, listev )
 !
 !    Input, integer ( kind = 4 ) IPOLY, the index of the polygon.
 !
-!    Input, real ( kind = 8 ) WSQ, the square of the width of polygon IPOLY.
+!    Input, real ( kind = fp ) WSQ, the square of the width of polygon IPOLY.
 !
 !    Input, integer ( kind = 4 ) IVRT(1:*), the indices of polygon vertices in 
 !    VCL, ordered by polygon.
@@ -7680,10 +7417,10 @@ subroutine prmdf2 ( ipoly, wsq, ivrt, xivrt, edgval, vrtval, nev, ifv, listev )
 !    in IVRT; vertices of polygon IPOLY are IVRT(I) for I from
 !    XIVRT(IPOLY) to XIVRT(IPOLY+1)-1.
 !
-!    Input, real ( kind = 8 ) EDGVAL(1:*), a value associated with each edge 
+!    Input, real ( kind = fp ) EDGVAL(1:*), a value associated with each edge 
 !    of the decomposition.
 !
-!    Input, real ( kind = 8 ) VRTVAL(1:*), a value associated with each vertex 
+!    Input, real ( kind = fp ) VRTVAL(1:*), a value associated with each vertex 
 !    of the decomposition.
 !
 !    Output, integer ( kind = 4 ) NEV, the number of edges and vertices for which distances
@@ -7696,7 +7433,7 @@ subroutine prmdf2 ( ipoly, wsq, ivrt, xivrt, edgval, vrtval, nev, ifv, listev )
 !    <= [XIVRT(IPOLY+1)-XIVRT(IPOLY)]*2, containing indices of edges and 
 !    vertices mentioned above; indices of vertices are negated.
 !
-  real ( kind = 8 ) edgval(*)
+  real ( kind = fp ) edgval(*)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ifv
   integer ( kind = 4 ) im1
@@ -7706,8 +7443,8 @@ subroutine prmdf2 ( ipoly, wsq, ivrt, xivrt, edgval, vrtval, nev, ifv, listev )
   integer ( kind = 4 ) l
   integer ( kind = 4 ) listev(*)
   integer ( kind = 4 ) nev
-  real ( kind = 8 ) vrtval(*)
-  real ( kind = 8 ) wsq
+  real ( kind = fp ) vrtval(*)
+  real ( kind = fp ) wsq
   integer ( kind = 4 ) xivrt(*)
 
   ifv = 0
@@ -7742,6 +7479,8 @@ subroutine prmdf2 ( ipoly, wsq, ivrt, xivrt, edgval, vrtval, nev, ifv, listev )
   return
 end
 subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -7784,17 +7523,17 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
 !    PGIND(0), PGIND(INC), ..., PGIND(NV*INC) with first and
 !    last vertices identical.
 !
-!    Input, real ( kind = 8 ) VCL(1:DIM,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:DIM,1:*), the vertex coordinate list.
 !
-!    Input, real ( kind = 8 ) PT(1:DIM), the point for which in/out test is
+!    Input, real ( kind = fp ) PT(1:DIM), the point for which in/out test is
 !    applied.
 !
-!    Input, real ( kind = 8 ) NRML(1:3), the unit normal vector of plane 
+!    Input, real ( kind = fp ) NRML(1:3), the unit normal vector of plane 
 !    containing polygon, with vertices oriented counter clockwise with
 !    respect to the normal (used iff DIM = 3);
 !    The normal is assumed to be (0,0,1) if DIM = 2.
 !
-!    Input, real ( kind = 8 ) DTOL, an absolute tolerance to determine 
+!    Input, real ( kind = fp ) DTOL, an absolute tolerance to determine 
 !    whether a point is on a line or plane.
 !
 !    Output, integer ( kind = 4 ) INOUT, point PT is:
@@ -7806,12 +7545,12 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
   integer ( kind = 4 ) dim
   integer ( kind = 4 ) ldv
 
-  real ( kind = 8 ) cp(3)
-  real ( kind = 8 ) de(3)
-  real ( kind = 8 ) dir(3)
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dotp
-  real ( kind = 8 ) dtol
+  real ( kind = fp ) cp(3)
+  real ( kind = fp ) de(3)
+  real ( kind = fp ) dir(3)
+  real ( kind = fp ) dist
+  real ( kind = fp ) dotp
+  real ( kind = fp ) dtol
   integer ( kind = 4 ) i
   integer ( kind = 4 ) inc
   integer ( kind = 4 ) inout
@@ -7820,25 +7559,25 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
   integer ( kind = 4 ) l
   integer ( kind = 4 ) la
   integer ( kind = 4 ) lb
-  real ( kind = 8 ) len1
-  real ( kind = 8 ) len2
+  real ( kind = fp ) len1
+  real ( kind = fp ) len2
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
-  real ( kind = 8 ) nr(4)
-  real ( kind = 8 ) nrml(3)
+  real ( kind = fp ) nr(4)
+  real ( kind = fp ) nrml(3)
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) pgind(0:*)
-  real ( kind = 8 ) pt(dim)
-  real ( kind = 8 ) rhs(3)
+  real ( kind = fp ) pt(dim)
+  real ( kind = fp ) rhs(3)
   integer ( kind = 4 ) s
   integer ( kind = 4 ) sa
   integer ( kind = 4 ) sb
-  real ( kind = 8 ) t
-  real ( kind = 8 ) ta
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(ldv,*)
+  real ( kind = fp ) t
+  real ( kind = fp ) ta
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(ldv,*)
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   inout = -2
 
@@ -7877,9 +7616,9 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
       len2 = dir(1)**2 + dir(2)**2 + dir(3)**2
     end if
 
-    if ( len1 == 0.0D+00 ) then
+    if ( len1 == 0.0_fp ) then
       go to 10
-    else if ( len2 == 0.0D+00 ) then
+    else if ( len2 == 0.0_fp ) then
       inout = 0
       return
     end if
@@ -7891,26 +7630,26 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
         / sqrt(len1*len2)
     end if
 
-    if ( 1.0D+00 - tol <= dotp ) then
+    if ( 1.0_fp - tol <= dotp ) then
       go to 10
     end if
 
     if ( dim == 2 ) then
-      dir(1) = 0.5D+00 * ( vcl(1,la) + vcl(1,lb) ) - pt(1)
-      dir(2) = 0.5D+00 * ( vcl(2,la) + vcl(2,lb) ) - pt(2)
+      dir(1) = 0.5_fp * ( vcl(1,la) + vcl(1,lb) ) - pt(1)
+      dir(2) = 0.5_fp * ( vcl(2,la) + vcl(2,lb) ) - pt(2)
       dist = sqrt ( dir(1)**2 + dir(2)**2 )
       dir(1) = dir(1) / dist
       dir(2) = dir(2) / dist
-      dir(3) = 0.0D+00
+      dir(3) = 0.0_fp
       nr(1) = -dir(2)
       nr(2) = dir(1)
-      nr(3) = 0.0D+00
+      nr(3) = 0.0_fp
       nr(4) = nr(1) * pt(1) + nr(2) * pt(2)
       dist = nr(1) * vcl(1,lb) + nr(2) * vcl(2,lb) - nr(4)
     else if ( dim == 3 ) then
-      dir(1) = 0.5D+00 * ( vcl(1,la) + vcl(1,lb) ) - pt(1)
-      dir(2) = 0.5D+00 * ( vcl(2,la) + vcl(2,lb) ) - pt(2)
-      dir(3) = 0.5D+00 * ( vcl(3,la) + vcl(3,lb) ) - pt(3)
+      dir(1) = 0.5_fp * ( vcl(1,la) + vcl(1,lb) ) - pt(1)
+      dir(2) = 0.5_fp * ( vcl(2,la) + vcl(2,lb) ) - pt(2)
+      dir(3) = 0.5_fp * ( vcl(3,la) + vcl(3,lb) ) - pt(3)
       dist = sqrt ( dir(1)**2 + dir(2)**2 + dir(3)**2 )
 
       dir(1) = dir(1) / dist
@@ -7924,7 +7663,7 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
       dist = nr(1)*vcl(1,lb)+nr(2)*vcl(2,lb)+nr(3)*vcl(3,lb) - nr(4)
     end if
 
-    if ( 0.0D+00 < dist ) then
+    if ( 0.0_fp < dist ) then
       sb = 1
     else
       sb = -1
@@ -7962,7 +7701,7 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
 
    if ( abs ( dist) <= dtol ) then
      sb = 0
-   else if ( 0.0D+00 < dist ) then
+   else if ( 0.0_fp < dist ) then
      sb = 1
    else
      sb = -1
@@ -8040,7 +7779,7 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
 
     if ( abs ( dist) <= dtol ) then
       go to 40
-    else if ( 0.0D+00 < dist ) then
+    else if ( 0.0_fp < dist ) then
       sb = 1
     else
       sb = -1
@@ -8055,13 +7794,13 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
 
     if ( la /= l ) then
       ta = ( vcl(m,la) - pt(m) ) / dir(m)
-      if ( abs ( ta ) <= dtol .or. t * ta < 0.0D+00 ) then
+      if ( abs ( ta ) <= dtol .or. t * ta < 0.0_fp ) then
         inout = 0
         return
       end if
     end if
 
-    if ( sa * sb < 0 .and. 0.0D+00 < t ) then
+    if ( sa * sb < 0 .and. 0.0_fp < t ) then
       k = k + 1
     end if
 
@@ -8087,91 +7826,9 @@ subroutine ptpolg ( dim, ldv, nv, inc, pgind, vcl, pt, nrml, dtol, inout )
 
   return
 end
-subroutine r8mat_print ( lda, m, n, a, title )
-
-!*****************************************************************************80
-!
-!! R8MAT_PRINT prints an R8MAT.
-!
-!  Modified:
-!
-!    08 July 2001
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, integer ( kind = 4 ) LDA, the leading dimension of A.
-!
-!    Input, integer ( kind = 4 ) M, the number of rows in A.
-!
-!    Input, integer ( kind = 4 ) N, the number of columns in A.
-!
-!    Input, real ( kind = 8 ) A(LDA,N), the matrix to be printed.
-!
-!    Input, character ( len = * ) TITLE, a title to be printed first.
-!    TITLE may be blank.
-!
-  integer ( kind = 4 ) lda
-  integer ( kind = 4 ) n
-
-  real ( kind = 8 ) a(lda,n)
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ) j
-  integer ( kind = 4 ) jhi
-  integer ( kind = 4 ) jlo
-  integer ( kind = 4 ) m
-  character ( len = * ) title
-
-  if ( title /= ' ' ) then
-    write ( *, '(a)' ) ' '
-    write ( *, '(a)' ) trim ( title )
-  end if
-
-  do jlo = 1, n, 5
-    jhi = min ( jlo + 4, n )
-    write ( *, '(a)' ) ' '
-    write ( *, '(6x,5(i7,7x))' ) ( j, j = jlo, jhi )
-    write ( *, '(a)' ) ' '
-    do i = 1, m
-      write ( *, '(i6,5g14.6)' ) i, a(i,jlo:jhi)
-    end do
-  end do
-
-  return
-end
-function radians_to_degrees ( angle )
-
-!*****************************************************************************80
-!
-!! RADIANS_TO_DEGREES converts an angle from radians to degrees.
-!
-!  Modified:
-!
-!    10 July 1999
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, real ( kind = 8 ) ANGLE, an angle in radians.
-!
-!    Output, real ( kind = 8 ) RADIANS_TO_DEGREES, the equivalent angle
-!    in degrees.
-!
-  real ( kind = 8 ) angle
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians_to_degrees
-
-  radians_to_degrees = ( angle / pi ) * 180.0D+00
-
-  return
-end
 subroutine randpt ( k, n, seed, axis, nptav, scale, trans, lda, a )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -8211,31 +7868,31 @@ subroutine randpt ( k, n, seed, axis, nptav, scale, trans, lda, a )
 !    uniform random points are generated with the same AXIS
 !    coordinate on about N/NPTAV random parallel hyperplanes.
 !
-!    Input, real ( kind = 8 ) SCALE(K), TRANS(K), the scale and 
+!    Input, real ( kind = fp ) SCALE(K), TRANS(K), the scale and 
 !    translation factors for coordinates 1 to K; the I-th coordinate of 
 !    random point is R*SCALE(I) + TRANS(I) where 0 < R < 1.
 !
 !    Input, integer ( kind = 4 ) LDA, the leading dimension of array A in calling
 !    routine; should be at least K.
 !
-!    Output, real ( kind = 8 ) A(LDA,N), an array of N uniform random 
+!    Output, real ( kind = fp ) A(LDA,N), an array of N uniform random 
 !    K-dimensional points.
 !
   integer ( kind = 4 ) k
   integer ( kind = 4 ) lda
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(lda,n)
+  real ( kind = fp ) a(lda,n)
   integer ( kind = 4 ) axis
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
   integer ( kind = 4 ) m
   integer ( kind = 4 ) nptav
-  real ( kind = 8 ) r
-  real ( kind = 8 ) scale(k)
+  real ( kind = fp ) r
+  real ( kind = fp ) scale(k)
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) trans(k)
-  real ( kind = 8 ) urand
+  real ( kind = fp ) trans(k)
+  real ( kind = fp ) urand
 
   if ( axis < 1 .or. k < axis ) then
 
@@ -8247,7 +7904,7 @@ subroutine randpt ( k, n, seed, axis, nptav, scale, trans, lda, a )
 
   else
 
-    m = int ( urand ( seed ) * 2.0D+00 * nptav + 0.5D+00 )
+    m = int ( urand ( seed ) * 2.0_fp * nptav + 0.5_fp )
     r = urand ( seed ) * scale(axis) + trans(axis)
 
     do j = 1, n
@@ -8263,7 +7920,7 @@ subroutine randpt ( k, n, seed, axis, nptav, scale, trans, lda, a )
       m = m - 1
 
       if ( m <= 0 ) then
-        m = int ( urand ( seed ) * 2.0D+00 * nptav + 0.5D+00 )
+        m = int ( urand ( seed ) * 2.0_fp * nptav + 0.5_fp )
         r = urand ( seed ) * scale(axis) + trans(axis)
       end if
 
@@ -8275,6 +7932,8 @@ subroutine randpt ( k, n, seed, axis, nptav, scale, trans, lda, a )
 end
 subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
   maxwk, vcl, pvl, iang, w1, w2, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -8308,10 +7967,10 @@ subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
 !
 !    Input, integer ( kind = 4 ) VR, the index in PVL of reflex vertex.
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter used in
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter used in
 !    controlling the vertices to be considered as an endpoint of a separator.
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter used in 
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter used in 
 !    accepting separator(s).
 !
 !    Input/output, integer ( kind = 4 ) NVC, the number of positions used 
@@ -8329,9 +7988,9 @@ subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
 !    Input, integer ( kind = 4 ) MAXWK, the maximum size available for WK array; should 
 !    be about 5 times number of vertices in polygon.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
-!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT),
+!    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT),
 !    the polygon vertex list and interior angles.
 !
 !    Output, integer ( kind = 4 ) W1, the index in PVL of vertex which is the endpoint 
@@ -8342,7 +8001,7 @@ subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 3, 5, 6, 7, 206, 207, 208, 209, 210, or 212
@@ -8352,10 +8011,10 @@ subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
   integer ( kind = 4 ) maxvc
   integer ( kind = 4 ) maxwk
 
-  real ( kind = 8 ) angsep
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) angsep
+  real ( kind = fp ) angspc
+  real ( kind = fp ) angtol
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
@@ -8377,17 +8036,17 @@ subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
   integer ( kind = 4 ), parameter :: succ = 3
   integer ( kind = 4 ) theta
   integer ( kind = 4 ) v
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) vr
   integer ( kind = 4 ) w1
   integer ( kind = 4 ) w2
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) wk(maxwk)
   integer ( kind = 4 ) wkang
   integer ( kind = 4 ) xc
-  real ( kind = 8 ) xr
+  real ( kind = fp ) xr
   integer ( kind = 4 ) xvor
   integer ( kind = 4 ) yc
-  real ( kind = 8 ) yr
+  real ( kind = fp ) yr
   integer ( kind = 4 ) yvor
 !
 !  Determine number of vertices in polygon containing reflex vertex.
@@ -8574,6 +8233,8 @@ subroutine resvrt ( vr, angspc, angtol, nvc, nvert, maxvc, maxpv, maxiw,  &
   return
 end
 subroutine rotiar ( n, arr, shift )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -8665,6 +8326,8 @@ subroutine rotiar ( n, arr, shift )
   return
 end
 subroutine rotipg ( xeye, yeye, nvrt, xc, yc, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -8699,13 +8362,13 @@ subroutine rotipg ( xeye, yeye, nvrt, xc, yc, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XEYE, YEYE, the coordinates of eyepoint.
+!    Input, real ( kind = fp ) XEYE, YEYE, the coordinates of eyepoint.
 !
 !    Input/output, integer ( kind = 4 ) NVRT, the number of vertices on boundary of simple 
 !    polygon.  On output, NVRT is increased by 1 if the closest vertex
 !    is a new vertex.
 !
-!    Input/output, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the vertices 
+!    Input/output, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the vertices 
 !    of polygon in counter clockwise (or clockwise) order if eyepoint is 
 !    interior (or blocked exterior);
 !      (XC(0),YC(0)) = (XC(NVRT),YC(NVRT))
@@ -8720,7 +8383,7 @@ subroutine rotipg ( xeye, yeye, nvrt, xc, yc, ierror )
 
   integer ( kind = 4 ) a
   integer ( kind = 4 ) b
-  real ( kind = 8 ) dy
+  real ( kind = fp ) dy
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) irgt
@@ -8730,22 +8393,22 @@ subroutine rotipg ( xeye, yeye, nvrt, xc, yc, ierror )
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
   integer ( kind = 4 ) r
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) xc(0:nvrt+1)
-  real ( kind = 8 ) xeye
-  real ( kind = 8 ) xint
-  real ( kind = 8 ) xrgt
-  real ( kind = 8 ) xt
-  real ( kind = 8 ) yc(0:nvrt+1)
-  real ( kind = 8 ) yeye
-  real ( kind = 8 ) yeyemt
-  real ( kind = 8 ) yeyept
-  real ( kind = 8 ) yt
+  real ( kind = fp ) tol
+  real ( kind = fp ) xc(0:nvrt+1)
+  real ( kind = fp ) xeye
+  real ( kind = fp ) xint
+  real ( kind = fp ) xrgt
+  real ( kind = fp ) xt
+  real ( kind = fp ) yc(0:nvrt+1)
+  real ( kind = fp ) yeye
+  real ( kind = fp ) yeyemt
+  real ( kind = fp ) yeyept
+  real ( kind = fp ) yt
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
-  dy = 0.0D+00
+  dy = 0.0_fp
   do i = 0, nvrt-1
     dy = max ( dy, abs ( yc(i+1) - yc(i) ) )
   end do
@@ -8754,7 +8417,7 @@ subroutine rotipg ( xeye, yeye, nvrt, xc, yc, ierror )
   yeyept = yeye + tol * dy
   n = nvrt + 1
   irgt = n
-  xrgt = 0.0D+00
+  xrgt = 0.0_fp
 !
 !  Determine closest point on boundary which is to the right of
 !  (XEYE,YEYE) and on the horizontal line through (XEYE,YEYE).
@@ -8864,6 +8527,8 @@ subroutine rotipg ( xeye, yeye, nvrt, xc, yc, ierror )
   return
 end
 subroutine rotpg ( nvrt, xc, yc, i1, i2, ibot, costh, sinth )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -8896,7 +8561,7 @@ subroutine rotpg ( nvrt, xc, yc, i1, i2, ibot, costh, sinth )
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices on the boundary of
 !    the convex polygon.
 !
-!    Input/output, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT).  The vertex 
+!    Input/output, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT).  The vertex 
 !    coordinates in counter clockwise order;
 !      (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
 !    On output, the rotated vertex coordinates; indices are
@@ -8908,14 +8573,14 @@ subroutine rotpg ( nvrt, xc, yc, i1, i2, ibot, costh, sinth )
 !
 !    Output, integer ( kind = 4 ) IBOT, the index of bottom vertex.
 !
-!    Output, real ( kind = 8 ) COSTH, SINTH, the values COS(THETA) and 
+!    Output, real ( kind = fp ) COSTH, SINTH, the values COS(THETA) and 
 !    SIN(THETA) where THETA in [-PI,PI] is the rotation angle.
 !
   integer ( kind = 4 ) nvrt
 
   integer ( kind = 4 ) a
   integer ( kind = 4 ) b
-  real ( kind = 8 ) costh
+  real ( kind = fp ) costh
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
@@ -8925,33 +8590,32 @@ subroutine rotpg ( nvrt, xc, yc, i1, i2, ibot, costh, sinth )
   integer ( kind = 4 ) k
   integer ( kind = 4 ) l
   integer ( kind = 4 ) m
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
   integer ( kind = 4 ) r
-  real ( kind = 8 ) sinth
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) yc(0:nvrt)
+  real ( kind = fp ) sinth
+  real ( kind = fp ) theta
+  real ( kind = fp ) tol
+  real ( kind = fp ) x0
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) y0
+  real ( kind = fp ) yc(0:nvrt)
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   itop = i1
   ibot = i2
 
   if ( yc(i1) == yc(i2) ) then
     if ( xc(i1) < xc(i2) ) then
-      theta = -pi / 2.0D+00
+      theta = -pi / 2.0_fp
     else
-      theta = pi / 2.0D+00
+      theta = pi / 2.0_fp
     end if
   else
     if ( yc(i1) < yc(i2) ) then
       itop = i2
       ibot = i1
     end if
-    theta = pi / 2.0D+00 &
+    theta = pi / 2.0_fp &
       - atan2 ( yc(itop) - yc(ibot), xc(itop) - xc(ibot) )
   end if
 
@@ -9020,6 +8684,8 @@ subroutine rotpg ( nvrt, xc, yc, i1, i2, ibot, costh, sinth )
 end
 subroutine sepmdf ( angtol, nvrt, xc, yc, arpoly, mean, mdftr, indpvl, &
   iang, i1, i2 )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -9049,20 +8715,20 @@ subroutine sepmdf ( angtol, nvrt, xc, yc, arpoly, mean, mdftr, indpvl, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter
 !    (in radians).
 !
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices in polygon.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT),YC(0:NVRT), the coordinates of polygon
+!    Input, real ( kind = fp ) XC(0:NVRT),YC(0:NVRT), the coordinates of polygon
 !    vertices in counter clockwise order, translated so that centroid is at 
 !    origin; (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
 !
-!    Input, real ( kind = 8 ) ARPOLY, the area of polygon.
+!    Input, real ( kind = fp ) ARPOLY, the area of polygon.
 !
-!    Input, real ( kind = 8 ) MEAN, the mean mdf value in polygon.
+!    Input, real ( kind = fp ) MEAN, the mean mdf value in polygon.
 !
-!    Input, real ( kind = 8 ) MDFTR(0:NVRT-1), the mean mdf value in each 
+!    Input, real ( kind = fp ) MDFTR(0:NVRT-1), the mean mdf value in each 
 !    triangle of polygon; triangles are determined by polygon vertices 
 !    and centroid.
 !
@@ -9070,7 +8736,7 @@ subroutine sepmdf ( angtol, nvrt, xc, yc, arpoly, mean, mdftr, indpvl, &
 !    INDPVL(I) = -K if (XC(I),YC(I)) is extra vertex inserted on edge from
 !    K to PVL(SUCC,K).
 !
-!    Input, real ( kind = 8 ) IANG(1:*), the interior angle array.
+!    Input, real ( kind = fp ) IANG(1:*), the interior angle array.
 !
 !    Output, integer ( kind = 4 ) I1, I2, indices in range 0 to NVRT-1 of best separator
 !    according to MDF and max-min angle criterion; I1 = -1
@@ -9078,29 +8744,28 @@ subroutine sepmdf ( angtol, nvrt, xc, yc, arpoly, mean, mdftr, indpvl, &
 !
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) areatr
-  real ( kind = 8 ) arpoly
+  real ( kind = fp ) angle
+  real ( kind = fp ) angtol
+  real ( kind = fp ) areatr
+  real ( kind = fp ) arpoly
   integer ( kind = 4 ) hi
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
-  real ( kind = 8 ) iang(*)
+  real ( kind = fp ) iang(*)
   integer ( kind = 4 ) indpvl(0:nvrt)
   integer ( kind = 4 ) l
   integer ( kind = 4 ) m
-  real ( kind = 8 ) mdftr(0:nvrt-1)
-  real ( kind = 8 ) mean
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) sum2
-  real ( kind = 8 ) tol
+  real ( kind = fp ) mdftr(0:nvrt-1)
+  real ( kind = fp ) mean
+  real ( kind = fp ) sum2
+  real ( kind = fp ) tol
   integer ( kind = 4 ) v(2)
   integer ( kind = 4 ) w(2)
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) yc(0:nvrt)
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) yc(0:nvrt)
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Determine triangle with highest mean mesh density; then determine
 !  triangles adjacent to this triangle with mesh density at least MEAN
@@ -9169,7 +8834,7 @@ subroutine sepmdf ( angtol, nvrt, xc, yc, arpoly, mean, mdftr, indpvl, &
 !  (XC(M),YC(M)), (0,0), and (XC(L),YC(L)).
 !  Possible separators are L,M; L,M+1; L+1,M; L+1,M+1.
 !
-  if ( pi < angle ( xc(m), yc(m), 0.0D+00, 0.0D+00, xc(l), yc(l) ) ) then
+  if ( pi < angle ( xc(m), yc(m), 0.0_fp, 0.0_fp, xc(l), yc(l) ) ) then
     i = l
     l = m
     m = i
@@ -9192,6 +8857,8 @@ subroutine sepmdf ( angtol, nvrt, xc, yc, arpoly, mean, mdftr, indpvl, &
   return
 end
 subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -9221,12 +8888,12 @@ subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter
 !    (in radians).
 !
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices in polygon.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the coordinates of 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the coordinates of 
 !    polygon vertices in counter clockwise order, translated so that 
 !    centroid is at origin;
 !    (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
@@ -9235,44 +8902,43 @@ subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
 !    INDPVL(I) = -K if (XC(I),YC(I)) is extra vertex inserted on edge from
 !    K to PVL(SUCC,K).
 !
-!    Input, real ( kind = 8 ) IANG(1:*), the interior angle array.
+!    Input, real ( kind = fp ) IANG(1:*), the interior angle array.
 !
 !    Output, integer ( kind = 4 ) I1, I2, the indices in range 0 to NVRT-1 of best separator
 !    according to shape and max-min angle criterion; I1 = -1
 !    if no satisfactory separator is found.
 !
-!    Workspace, real ( kind = 8 ) WK(1:2*NVRT).
+!    Workspace, real ( kind = fp ) WK(1:2*NVRT).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  For abnormal return,
 !    IERROR is set to 200.
 !
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) angtol
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
+  real ( kind = fp ) angtol
+  real ( kind = fp ) dist
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
-  real ( kind = 8 ) iang(*)
+  real ( kind = fp ) iang(*)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) indpvl(0:nvrt)
   integer ( kind = 4 ) k
   integer ( kind = 4 ) n
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) pimtol
-  real ( kind = 8 ) tol
+  real ( kind = fp ) pimtol
+  real ( kind = fp ) tol
   integer ( kind = 4 ) v(2)
   integer ( kind = 4 ) w(2)
-  real ( kind = 8 ) wk(2*nvrt)
-  real ( kind = 8 ) xa
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) ya
-  real ( kind = 8 ) yc(0:nvrt)
+  real ( kind = fp ) wk(2*nvrt)
+  real ( kind = fp ) xa
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) ya
+  real ( kind = fp ) yc(0:nvrt)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Determine diameter of polygon. Possible separators endpoints (two
 !  on each side of polygon) are nearest to perpendicular bisector of
@@ -9306,8 +8972,8 @@ subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
 
   dx = wk(i2+nvrt) - wk(i1+nvrt)
   dy = wk(i1) - wk(i2)
-  xa = 0.5D+00 * ( wk(i1) + wk(i2) - dx )
-  ya = 0.5D+00 * ( wk(i1+nvrt) + wk(i2+nvrt) - dy )
+  xa = 0.5_fp * ( wk(i1) + wk(i2) - dx )
+  ya = 0.5_fp * ( wk(i1+nvrt) + wk(i2+nvrt) - dy )
 
   i = i1 - 1
 
@@ -9337,7 +9003,7 @@ subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
 
   dist = dx * ( yc(i) - ya ) - dy * ( xc(i) - xa )
 
-  if ( 0.0D+00 <= dist ) then
+  if ( 0.0_fp <= dist ) then
     v(1) = i - 1
     v(2) = i
   else
@@ -9355,7 +9021,7 @@ subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
 
   dist = dx * ( yc(i) - ya ) - dy * ( xc(i) - xa )
 
-  if ( dist <= 0.0D+00 ) then
+  if ( dist <= 0.0_fp ) then
     w(1) = i - 1
     w(2) = i
     if ( i <= 0 ) then
@@ -9371,6 +9037,8 @@ subroutine sepshp ( angtol, nvrt, xc, yc, indpvl, iang, i1, i2, wk, ierror )
   return
 end
 subroutine sfdwmf ( l, r, psi, indp, loch )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -9404,7 +9072,7 @@ subroutine sfdwmf ( l, r, psi, indp, loch )
 !
 !    Input, integer ( kind = 4 ) R, the upper bound of heap.
 !
-!    Input, real ( kind = 8 ) PSI(1:*), the key values for heap.
+!    Input, real ( kind = fp ) PSI(1:*), the key values for heap.
 !
 !    Input/output, integer ( kind = 4 ) INDP(1:R), the indices of PSI which are 
 !    maintained in heap.
@@ -9420,8 +9088,8 @@ subroutine sfdwmf ( l, r, psi, indp, loch )
   integer ( kind = 4 ) k
   integer ( kind = 4 ) l
   integer ( kind = 4 ) loch(*)
-  real ( kind = 8 ) psi(*)
-  real ( kind = 8 ) t
+  real ( kind = fp ) psi(*)
+  real ( kind = fp ) t
 
   i = l
   j = 2 * i
@@ -9453,6 +9121,8 @@ subroutine sfdwmf ( l, r, psi, indp, loch )
   return
 end
 subroutine sfupmf ( r, psi, indp, loch )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -9484,7 +9154,7 @@ subroutine sfupmf ( r, psi, indp, loch )
 !
 !    Input, integer ( kind = 4 ) R, the element of heap to be sifted up.
 !
-!    Input, real ( kind = 8 ) PSI(1:*), the key values for heap.
+!    Input, real ( kind = fp ) PSI(1:*), the key values for heap.
 !
 !    Input/output, integer ( kind = 4 ) INDP(1:R), the indices of PSI which are 
 !    maintained in heap.
@@ -9499,8 +9169,8 @@ subroutine sfupmf ( r, psi, indp, loch )
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) loch(*)
-  real ( kind = 8 ) psi(*)
-  real ( kind = 8 ) t
+  real ( kind = fp ) psi(*)
+  real ( kind = fp ) t
 
   i = r
   j = int ( i / 2 )
@@ -9530,6 +9200,8 @@ subroutine sfupmf ( r, psi, indp, loch )
   return
 end
 subroutine shrnk2 ( nvrt, xc, yc, sdist, nshr, xs, ys, iedge, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -9563,17 +9235,17 @@ subroutine shrnk2 ( nvrt, xc, yc, sdist, nshr, xs, ys, iedge, ierror )
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices on the boundary
 !    of convex polygon.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
 !    in counter clockwise order;
 !    (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)).
 !
-!    Input, real ( kind = 8 ) SDIST(0:NVRT-1), the nonnegative shrink 
+!    Input, real ( kind = fp ) SDIST(0:NVRT-1), the nonnegative shrink 
 !    distances for edges.
 !
 !    Output, integer ( kind = 4 ) NSHR, the number of vertices on boundary of
 !    shrunken polygon; 0 if shrunken polygon is empty else 3 <= NSHR <= NVRT.
 !
-!    Output, real ( kind = 8 ) XS(0:NSHR), YS(0:NSHR), the coordinates of
+!    Output, real ( kind = fp ) XS(0:NSHR), YS(0:NSHR), the coordinates of
 !    shrunken polygon in counter clockwise order if NSHR is greater than 0; 
 !    (XS(0),YS(0)) = (XS(NSHR),YS(NSHR)).
 !
@@ -9585,7 +9257,7 @@ subroutine shrnk2 ( nvrt, xc, yc, sdist, nshr, xs, ys, iedge, ierror )
 !
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) alpha
+  real ( kind = fp ) alpha
   logical first
   integer ( kind = 4 ) i
   integer ( kind = 4 ) iedge(0:nvrt)
@@ -9596,20 +9268,19 @@ subroutine shrnk2 ( nvrt, xc, yc, sdist, nshr, xs, ys, iedge, ierror )
   integer ( kind = 4 ) lrline
   integer ( kind = 4 ) nshr
   logical parall
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) pi2
-  real ( kind = 8 ) sdist(0:nvrt-1)
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xs(0:nvrt)
-  real ( kind = 8 ) yc(0:nvrt)
-  real ( kind = 8 ) ys(0:nvrt)
+  real ( kind = fp ) pi2
+  real ( kind = fp ) sdist(0:nvrt-1)
+  real ( kind = fp ) theta
+  real ( kind = fp ) tol
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xs(0:nvrt)
+  real ( kind = fp ) yc(0:nvrt)
+  real ( kind = fp ) ys(0:nvrt)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
-  pi2 = 2.0D+00 * pi
+  pi2 = 2.0_fp * pi
   alpha = atan2 ( yc(1)-yc(0), xc(1)-xc(0) )
 
   call xline ( xc(0), yc(0), xc(1), yc(1), xc(1), yc(1), xc(2), yc(2), &
@@ -9633,7 +9304,7 @@ subroutine shrnk2 ( nvrt, xc, yc, sdist, nshr, xs, ys, iedge, ierror )
 10 continue
 
   theta = atan2 ( yc(i+1)-yc(i), xc(i+1)-xc(i) ) - alpha
-  if ( theta < 0.0D+00 ) then
+  if ( theta < 0.0_fp ) then
     theta = theta + pi2
   end if
 
@@ -9767,6 +9438,8 @@ end
 subroutine spdec2 ( angspc, angtol, nvc, npolg, nvert, nhole, nhola, maxvc,  &
   maxhv, maxpv, maxiw, maxwk, holv, vcl, regnum, hvl, pvl, iang, iwk, &
   wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -9797,11 +9470,11 @@ subroutine spdec2 ( angspc, angtol, nvc, npolg, nvert, nhole, nhola, maxvc,  &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter in radians 
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter in radians 
 !    used in controlling vertices to be considered as an endpoint of 
 !    a separator.
 !
-!    Input, real ( kind = 8 ) ANGTOL, the angle tolerance parameter in radians 
+!    Input, real ( kind = fp ) ANGTOL, the angle tolerance parameter in radians 
 !    used in accepting separator(s).
 !
 !    Input/output, integer ( kind = 4 ) NVC, the number of vertex coordinates 
@@ -9848,20 +9521,20 @@ subroutine spdec2 ( angspc, angtol, nvc, npolg, nvert, nhole, nhola, maxvc,  &
 !    contains index of bottom vertex otherwise entry contains
 !    index of top vertex (which is simple).
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) REGNUM(1:NPOLG), the region numbers.
 !
 !    Input/output, integer ( kind = 4 ) HVL(1:NPOLG), the head vertex list.
 !
 !    Input/output, integer ( kind = 4 ) PVL(1:4,1:NVERT), 
-!    real ( kind = 8 ) IANG(1:NVERT), the polygon vertex list and interior 
+!    real ( kind = fp ) IANG(1:NVERT), the polygon vertex list and interior 
 !    angles; see routine DSPGDC for more details.  Note that the data 
 !    structures should be as output from routines DSMCPR or DSPGDC.
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 3, 4, 5, 6, 7, 206 to 210, 212, 218, or 219.
@@ -9872,15 +9545,15 @@ subroutine spdec2 ( angspc, angtol, nvc, npolg, nvert, nhole, nhola, maxvc,  &
   integer ( kind = 4 ) maxvc
   integer ( kind = 4 ) maxwk
 
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) angtol
+  real ( kind = fp ) angspc
+  real ( kind = fp ) angtol
   logical ci
   logical cj
   integer ( kind = 4 ), parameter :: edgv = 4
   integer ( kind = 4 ) holv(*)
   integer ( kind = 4 ) hvl(maxhv)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) iang(maxpv)
+  real ( kind = fp ) iang(maxpv)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) iwk(maxiw)
   integer ( kind = 4 ) j
@@ -9890,21 +9563,20 @@ subroutine spdec2 ( angspc, angtol, nvc, npolg, nvert, nhole, nhola, maxvc,  &
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvert
   integer ( kind = 4 ) p
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) piptol
+  real ( kind = fp ) piptol
   integer ( kind = 4 ), parameter :: polg = 2
   integer ( kind = 4 ) pvl(4,maxpv)
   integer ( kind = 4 ) regnum(maxhv)
   integer ( kind = 4 ), parameter :: succ = 3
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) vr
   integer ( kind = 4 ) w1
   integer ( kind = 4 ) w2
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) wk(maxwk)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  For each simple hole, find cut edge from top vertex of hole to
 !  a point on the outer boundary above top vertex, and update
@@ -10045,6 +9717,8 @@ subroutine spdec2 ( angspc, angtol, nvc, npolg, nvert, nhole, nhola, maxvc,  &
 
 end
 subroutine swapec ( i, top, maxst, btri, bedg, vcl, til, tnbr, stack, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -10087,7 +9761,7 @@ subroutine swapec ( i, top, maxst, btri, bedg, vcl, til, tnbr, stack, ierror )
 !    triangle and edge indices of a boundary edge whose updated indices
 !    must be recorded.  On output, these may be updated because of swaps.
 !
-!    Input, real ( kind = 8 ) VCL(2,*), the coordinates of the vertices.
+!    Input, real ( kind = fp ) VCL(2,*), the coordinates of the vertices.
 !
 !    Input/output, integer ( kind = 4 ) TIL(3,*), the triangle incidence list.  
 !    May be updated on output because of swaps.
@@ -10133,9 +9807,9 @@ subroutine swapec ( i, top, maxst, btri, bedg, vcl, til, tnbr, stack, ierror )
   integer ( kind = 4 ) top
   integer ( kind = 4 ) tt
   integer ( kind = 4 ) u
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 !
 !  Determine whether the triangles in the stack are Delaunay.
 !  Ifnot, swap the diagonal edge of the convex quadrilateral.
@@ -10300,86 +9974,10 @@ subroutine swapec ( i, top, maxst, btri, bedg, vcl, til, tnbr, stack, ierror )
 
   return
 end
-subroutine timestamp ( )
-
-!*****************************************************************************80
-!
-!! TIMESTAMP prints the current YMDHMS date as a time stamp.
-!
-!  Example:
-!
-!    31 May 2001   9:45:54.872 AM
-!
-!  Licensing:
-!
-!    This code is distributed under the GNU LGPL license.
-!
-!  Modified:
-!
-!    18 May 2013
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    None
-!
-  implicit none
-
-  character ( len = 8 ) ampm
-  integer ( kind = 4 ) d
-  integer ( kind = 4 ) h
-  integer ( kind = 4 ) m
-  integer ( kind = 4 ) mm
-  character ( len = 9 ), parameter, dimension(12) :: month = (/ &
-    'January  ', 'February ', 'March    ', 'April    ', &
-    'May      ', 'June     ', 'July     ', 'August   ', &
-    'September', 'October  ', 'November ', 'December ' /)
-  integer ( kind = 4 ) n
-  integer ( kind = 4 ) s
-  integer ( kind = 4 ) values(8)
-  integer ( kind = 4 ) y
-
-  call date_and_time ( values = values )
-
-  y = values(1)
-  m = values(2)
-  d = values(3)
-  h = values(5)
-  n = values(6)
-  s = values(7)
-  mm = values(8)
-
-  if ( h < 12 ) then
-    ampm = 'AM'
-  else if ( h == 12 ) then
-    if ( n == 0 .and. s == 0 ) then
-      ampm = 'Noon'
-    else
-      ampm = 'PM'
-    end if
-  else
-    h = h - 12
-    if ( h < 12 ) then
-      ampm = 'PM'
-    else if ( h == 12 ) then
-      if ( n == 0 .and. s == 0 ) then
-        ampm = 'Midnight'
-      else
-        ampm = 'AM'
-      end if
-    end if
-  end if
-
-  write ( *, '(i2,1x,a,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' ) &
-    d, trim ( month(m) ), y, h, ':', n, ':', s, '.', mm, trim ( ampm )
-
-  return
-end
 subroutine tmerge ( inter, nbl, ncr, chbl, chcr, ldv, vcl, til, tedg, &
   ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -10427,7 +10025,7 @@ subroutine tmerge ( inter, nbl, ncr, chbl, chcr, ldv, vcl, til, tedg, &
 !    Input, integer ( kind = 4 ) LDV, the leading dimension of VCL in 
 !    calling routine.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the vertex coordinate list.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the vertex coordinate list.
 !
 !    Output, integer ( kind = 4 ) TIL(1:3,1:NT), the triangle incidence list,
 !    where NT = NBL + NCR - K where K = 0 if INTER, else K = 2.
@@ -10463,15 +10061,15 @@ subroutine tmerge ( inter, nbl, ncr, chbl, chcr, ldv, vcl, til, tedg, &
   integer ( kind = 4 ) nt
   integer ( kind = 4 ) tedg(3,nbl+ncr)
   integer ( kind = 4 ) til(3,nbl+ncr)
-  real ( kind = 8 ) vcl(ldv,*)
-  real ( kind = 8 ) xi
-  real ( kind = 8 ) xip1
-  real ( kind = 8 ) xj
-  real ( kind = 8 ) xjp1
-  real ( kind = 8 ) yi
-  real ( kind = 8 ) yip1
-  real ( kind = 8 ) yj
-  real ( kind = 8 ) yjp1
+  real ( kind = fp ) vcl(ldv,*)
+  real ( kind = fp ) xi
+  real ( kind = fp ) xip1
+  real ( kind = fp ) xj
+  real ( kind = fp ) xjp1
+  real ( kind = fp ) yi
+  real ( kind = fp ) yip1
+  real ( kind = fp ) yj
+  real ( kind = fp ) yjp1
 
   ierror = 0
   ibndry = nbl + ncr + 1
@@ -10521,8 +10119,8 @@ subroutine tmerge ( inter, nbl, ncr, chbl, chcr, ldv, vcl, til, tedg, &
    in = diaedg ( xjp1, yjp1, xj, yj, xi, yi, xip1, yip1 )
 
    if ( inter ) then
-     lri = lrline ( xi, yi, xj, yj, xjp1, yjp1, 0.0D+00 )
-     lrip1 = lrline ( xip1, yip1, xj, yj, xjp1, yjp1, 0.0D+00 )
+     lri = lrline ( xi, yi, xj, yj, xjp1, yjp1, 0.0_fp )
+     lrip1 = lrline ( xip1, yip1, xj, yj, xjp1, yjp1, 0.0_fp )
    end if
 
    if ( in <= 0 .or. lri <= 0 .and. lrip1 <= 0 ) then
@@ -10576,7 +10174,7 @@ subroutine tmerge ( inter, nbl, ncr, chbl, chcr, ldv, vcl, til, tedg, &
 
       lri = lrline ( vcl(1,chbl(i)), vcl(2,chbl(i)), &
         vcl(1,chcr(j+1)), vcl(2,chcr(j+1)), vcl(1,chcr(j)), &
-        vcl(2,chcr(j)), 0.0D+00 )
+        vcl(2,chcr(j)), 0.0_fp )
 
       if ( 0 <= lri ) then
         ierror = 230
@@ -10604,6 +10202,8 @@ subroutine tmerge ( inter, nbl, ncr, chbl, chcr, ldv, vcl, til, tedg, &
   return
 end
 subroutine triangulation_plot_eps ( file_name, g_num, g_xy, tri_num, nod_tri )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -10631,7 +10231,7 @@ subroutine triangulation_plot_eps ( file_name, g_num, g_xy, tri_num, nod_tri )
 !
 !    Input, integer ( kind = 4 ) G_NUM, the number of points.
 !
-!    Input, real ( kind = 8 ) G_XY(2,G_NUM), the coordinates of the points.
+!    Input, real ( kind = fp ) G_XY(2,G_NUM), the coordinates of the points.
 !
 !    Input, integer ( kind = 4 ) TRI_NUM, the number of triangles.
 !
@@ -10647,21 +10247,21 @@ subroutine triangulation_plot_eps ( file_name, g_num, g_xy, tri_num, nod_tri )
   character ( len = * ) file_name
   integer ( kind = 4 ) file_unit
   integer ( kind = 4 ) g
-  real ( kind = 8 ) g_xy(2,g_num)
+  real ( kind = fp ) g_xy(2,g_num)
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) nod_tri(3,tri_num)
   integer ( kind = 4 ) t
-  real ( kind = 8 ) x_max
-  real ( kind = 8 ) x_min
+  real ( kind = fp ) x_max
+  real ( kind = fp ) x_min
   integer ( kind = 4 ) x_ps
   integer ( kind = 4 ) :: x_ps_max = 576
   integer ( kind = 4 ) :: x_ps_max_clip = 594
   integer ( kind = 4 ) :: x_ps_min = 36
   integer ( kind = 4 ) :: x_ps_min_clip = 18
-  real ( kind = 8 ) y_max
-  real ( kind = 8 ) y_min
+  real ( kind = fp ) y_max
+  real ( kind = fp ) y_min
   integer ( kind = 4 ) y_ps
   integer ( kind = 4 ) :: y_ps_max = 666
   integer ( kind = 4 ) :: y_ps_max_clip = 684
@@ -10748,12 +10348,12 @@ subroutine triangulation_plot_eps ( file_name, g_num, g_xy, tri_num, nod_tri )
 
   do g = 1, g_num
     x_ps = int ( &
-      ( ( x_max - g_xy(1,g) ) * real ( x_ps_min, kind = 8 ) &
-      + ( g_xy(1,g) - x_min ) * real ( x_ps_max, kind = 8 ) ) &
+      ( ( x_max - g_xy(1,g) ) * real ( x_ps_min, kind = fp ) &
+      + ( g_xy(1,g) - x_min ) * real ( x_ps_max, kind = fp ) ) &
       / ( x_max - x_min ) )
     y_ps = int ( &
-      ( ( y_max - g_xy(2,g) ) * real ( y_ps_min, kind = 8 ) &
-      + ( g_xy(2,g) - y_min ) * real ( y_ps_max, kind = 8 ) ) &
+      ( ( y_max - g_xy(2,g) ) * real ( y_ps_min, kind = fp ) &
+      + ( g_xy(2,g) - y_min ) * real ( y_ps_max, kind = fp ) ) &
       / ( y_max - y_min ) )
     write ( file_unit, '(a,i3,2x,i3,2x,a)' ) 'newpath ', x_ps, y_ps, &
       ' 5 0 360 arc closepath fill'
@@ -10778,13 +10378,13 @@ subroutine triangulation_plot_eps ( file_name, g_num, g_xy, tri_num, nod_tri )
       k = nod_tri(e,t)
 
       x_ps = int ( &
-        ( ( x_max - g_xy(1,k) ) * real ( x_ps_min, kind = 8 ) &
-        + ( g_xy(1,k) - x_min ) * real ( x_ps_max, kind = 8 ) ) &
+        ( ( x_max - g_xy(1,k) ) * real ( x_ps_min, kind = fp ) &
+        + ( g_xy(1,k) - x_min ) * real ( x_ps_max, kind = fp ) ) &
         / ( x_max - x_min ) )
 
       y_ps = int ( &
-        ( ( y_max - g_xy(2,k) ) * real ( y_ps_min, kind = 8 ) &
-        + ( g_xy(2,k) - y_min ) * real ( y_ps_max, kind = 8 ) ) &
+        ( ( y_max - g_xy(2,k) ) * real ( y_ps_min, kind = fp ) &
+        + ( g_xy(2,k) - y_min ) * real ( y_ps_max, kind = fp ) ) &
         / ( y_max - y_min ) )
 
       if ( j == 1 ) then
@@ -10810,6 +10410,8 @@ subroutine triangulation_plot_eps ( file_name, g_num, g_xy, tri_num, nod_tri )
   return
 end
 subroutine trinbr ( nvc, ntri, til, tnbr, htsiz, maxedg, ht, edge, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -10931,6 +10533,8 @@ subroutine trinbr ( nvc, ntri, til, tnbr, htsiz, maxedg, ht, edge, ierror )
 end
 subroutine tripr2 ( nvc, npolg, nvert, maxvc, maxti, maxiw, maxwk, h, vcl,  &
   hvl, pvl, iang, ntri, til, vstart, vnum, tstart, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -10986,14 +10590,14 @@ subroutine tripr2 ( nvc, npolg, nvert, maxvc, maxti, maxiw, maxwk, h, vcl,  &
 !    Input, integer ( kind = 4 ) MAXWK, the maximum size available for WK array, should 
 !    be at least 5*NVRT+4 where NVRT is max no. of vertices in a polygon.
 !
-!    Input, real ( kind = 8 ) H(1:NPOLG), the mesh spacings for the polygons 
+!    Input, real ( kind = fp ) H(1:NPOLG), the mesh spacings for the polygons 
 !    of the decomposition.
 !
-!    Input/output, real ( kind = 8 ) VCL(2,MAXVC), the vertex coordinates.
+!    Input/output, real ( kind = fp ) VCL(2,MAXVC), the vertex coordinates.
 !
 !    Input, integer ( kind = 4 ) HVL(1:NPOLG), the head vertex list.
 !
-!    Input, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = 8 ) IANG(1:NVERT), the 
+!    Input, integer ( kind = 4 ) PVL(1:4,1:NVERT), real ( kind = fp ) IANG(1:NVERT), the 
 !    polygon vertex list and interior angles; see routine DSPGDC for 
 !    more details.
 !
@@ -11016,7 +10620,7 @@ subroutine tripr2 ( nvc, npolg, nvert, maxvc, maxti, maxiw, maxwk, h, vcl,  &
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 3, 6, 7, 9, 10, 200, 202, 230, or 231
@@ -11029,10 +10633,10 @@ subroutine tripr2 ( nvc, npolg, nvert, maxvc, maxti, maxiw, maxwk, h, vcl,  &
   integer ( kind = 4 ) nvert
 
   integer ( kind = 4 ) bndcyc
-  real ( kind = 8 ) h(npolg)
+  real ( kind = fp ) h(npolg)
   integer ( kind = 4 ) hvl(npolg)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) iang(nvert)
+  real ( kind = fp ) iang(nvert)
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) iwk(maxiw)
   integer ( kind = 4 ) j
@@ -11042,22 +10646,21 @@ subroutine tripr2 ( nvc, npolg, nvert, maxvc, maxti, maxiw, maxwk, h, vcl,  &
   integer ( kind = 4 ) ntri
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) nvrt
-  real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
-  real ( kind = 8 ) pimtol
+  real ( kind = fp ) pimtol
   integer ( kind = 4 ) pvl(4,nvert)
   integer ( kind = 4 ), parameter :: succ = 3
   integer ( kind = 4 ) til(3,maxti)
-  real ( kind = 8 ) tol
+  real ( kind = fp ) tol
   integer ( kind = 4 ) tstart(npolg)
-  real ( kind = 8 ) vcl(2,maxvc)
+  real ( kind = fp ) vcl(2,maxvc)
   integer ( kind = 4 ) vnum(nvert)
   integer ( kind = 4 ) vstart(nvert)
-  real ( kind = 8 ) wk(maxwk)
+  real ( kind = fp ) wk(maxwk)
   integer ( kind = 4 ) xc
   integer ( kind = 4 ) yc
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   ntri = 0
   pimtol = pi - tol
@@ -11169,6 +10772,8 @@ subroutine tripr2 ( nvc, npolg, nvert, maxvc, maxti, maxiw, maxwk, h, vcl,  &
   return
 end
 subroutine trisiz ( ntrid, npolg, hvl, pvl, area, psi, h, indp, loch )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -11208,13 +10813,13 @@ subroutine trisiz ( ntrid, npolg, hvl, pvl, area, psi, h, indp, loch )
 !
 !    Input, integer ( kind = 4 ) PVL(1:4,1:*), the polygon vertex list.
 !
-!    Input, real ( kind = 8 ) AREA(1:NPOLG), the area of convex polygons 
+!    Input, real ( kind = fp ) AREA(1:NPOLG), the area of convex polygons 
 !    in decomposition.
 !
-!    Input/output, real ( kind = 8 ) PSI(1:NPOLG), the mean mdf values in 
+!    Input/output, real ( kind = fp ) PSI(1:NPOLG), the mean mdf values in 
 !    the convex polygons.
 !
-!    Output, real ( kind = 8 ) H(1:NPOLG), the triangle size for
+!    Output, real ( kind = fp ) H(1:NPOLG), the triangle size for
 !    convex polygons.
 !
 !    Workspace, integer INDP(1:NPOLG), the indices of polygon or PSI which 
@@ -11224,10 +10829,10 @@ subroutine trisiz ( ntrid, npolg, hvl, pvl, area, psi, h, indp, loch )
 !
   integer ( kind = 4 ) npolg
 
-  real ( kind = 8 ) area(npolg)
+  real ( kind = fp ) area(npolg)
   integer ( kind = 4 ), parameter :: edgv = 4
-  real ( kind = 8 ) factor
-  real ( kind = 8 ) h(npolg)
+  real ( kind = fp ) factor
+  real ( kind = fp ) h(npolg)
   integer ( kind = 4 ) hvl(npolg)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) indp(npolg)
@@ -11237,12 +10842,12 @@ subroutine trisiz ( ntrid, npolg, hvl, pvl, area, psi, h, indp, loch )
   integer ( kind = 4 ) loch(npolg)
   integer ( kind = 4 ) ntrid
   integer ( kind = 4 ), parameter :: polg = 2
-  real ( kind = 8 ) psi(npolg)
+  real ( kind = fp ) psi(npolg)
   integer ( kind = 4 ) pvl(4,*)
   integer ( kind = 4 ) r
   integer ( kind = 4 ), parameter :: succ = 3
 
-  factor = 0.25D+00
+  factor = 0.25_fp
 
   call i4vec_indicator ( npolg, indp )
   call i4vec_indicator ( npolg, loch )
@@ -11288,12 +10893,14 @@ subroutine trisiz ( ntrid, npolg, hvl, pvl, area, psi, h, indp, loch )
 
   psi(1:npolg) = psi(1:npolg) / dot_product ( psi(1:npolg), area(1:npolg) )
 
-  h(1:npolg) = sqrt ( 2.0D+00  / ( real ( ntrid, kind = 8 ) * psi(1:npolg) ) )
+  h(1:npolg) = sqrt ( 2.0_fp  / ( real ( ntrid, kind = fp ) * psi(1:npolg) ) )
 
   return
 end
 subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
   maxti, maxiw, maxwk, vcl, til, iwk, wk, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -11325,11 +10932,11 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices on the boundary of
 !    convex polygon.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the vertex coordinates 
 !    in counter clockwise order; (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)); it is 
 !    assumed that all interior angles are < PI.
 !
-!    Input, real ( kind = 8 ) H, the spacing of mesh vertices in polygon.
+!    Input, real ( kind = fp ) H, the spacing of mesh vertices in polygon.
 !
 !    Input, integer ( kind = 4 ) NBC, the size of BNDCYC.
 !
@@ -11357,13 +10964,13 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
 !    Input, integer ( kind = 4 ) MAXWK, the maximum size available for WK array, should 
 !    be at least 3*NVRT+2.
 !
-!    Input/output, real ( kind = 8 ) VCL(1:2,1:NVC), the vertex coordinate list.
+!    Input/output, real ( kind = fp ) VCL(1:2,1:NVC), the vertex coordinate list.
 !
 !    Input/output, integer ( kind = 4 ) TIL(1:3,1:NTRI), the triangle incidence list.
 !
 !    Workspace, integer IWK(1:MAXIW).
 !
-!    Workspace, real ( kind = 8 ) WK(1:MAXWK).
+!    Workspace, real ( kind = fp ) WK(1:MAXWK).
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.  On abnormal return,
 !    IERROR is set to 3, 6, 7, 9, 10, 200, 202, 230, or 231.
@@ -11377,11 +10984,11 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
   integer ( kind = 4 ) nvrt
 
   integer ( kind = 4 ) bndcyc(0:nbc)
-  real ( kind = 8 ) costh
+  real ( kind = fp ) costh
   integer ( kind = 4 ) cwalk
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) h
-  real ( kind = 8 ) hs
+  real ( kind = fp ) dist
+  real ( kind = fp ) h
+  real ( kind = fp ) hs
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
@@ -11399,21 +11006,21 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
   integer ( kind = 4 ) ntri
   integer ( kind = 4 ) nvc
   integer ( kind = 4 ) sdist
-  real ( kind = 8 ) sinth
-  real ( kind = 8 ) smdist
+  real ( kind = fp ) sinth
+  real ( kind = fp ) smdist
   integer ( kind = 4 ) sptr
   integer ( kind = 4 ) tedg
   integer ( kind = 4 ) til(3,maxti)
-  real ( kind = 8 ) vcl(ldv,maxvc)
-  real ( kind = 8 ) wk(maxwk)
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xi
+  real ( kind = fp ) vcl(ldv,maxvc)
+  real ( kind = fp ) wk(maxwk)
+  real ( kind = fp ) x0
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xi
   integer ( kind = 4 ) xs
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) yc(0:nvrt)
-  real ( kind = 8 ) yi
-  real ( kind = 8 ) yr
+  real ( kind = fp ) y0
+  real ( kind = fp ) yc(0:nvrt)
+  real ( kind = fp ) yi
+  real ( kind = fp ) yr
   integer ( kind = 4 ) ys
 
   ierror = 0
@@ -11432,7 +11039,7 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
   ys = xs + nvrt + 1
   sdist = ys + nvrt + 1
   iedge = 1
-  hs = h / sqrt ( 2.0D+00 )
+  hs = h / sqrt ( 2.0_fp )
   wk(sdist:sdist+nvrt-1) = hs
 
   call shrnk2 ( nvrt, xc, yc, wk(sdist), nshr, wk(xs), wk(ys), iwk(iedge), &
@@ -11481,7 +11088,7 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
       yr = sinth * x0 + costh * y0
     end if
 
-    smdist = 100000.0D+00 * h**2
+    smdist = 100000.0_fp * h**2
 
     do i = 0, nbc-1
 
@@ -11600,6 +11207,7 @@ subroutine trpolg ( nvrt, xc, yc, h, nbc, bndcyc, ldv, nvc, ntri, maxvc,  &
   return
 end
 function umdf2 ( x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11629,20 +11237,21 @@ function umdf2 ( x, y )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X, Y, the coordinates of a point.
+!    Input, real ( kind = fp ) X, Y, the coordinates of a point.
 !
-!    Output, real ( kind = 8 ) UMDF2, the mesh distribution function value 
+!    Output, real ( kind = fp ) UMDF2, the mesh distribution function value 
 !    at (X,Y)
 !
-  real ( kind = 8 ) umdf2
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) umdf2
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 
-  umdf2 = 1.0D+00
+  umdf2 = 1.0_fp
 
   return
 end
 function urand ( iy )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11670,9 +11279,9 @@ function urand ( iy )
 !
 !    Input, integer ( kind = 4 ) IY, the seed value.
 !
-!    Output, real ( kind = 8 ) URAND, the random value.
+!    Output, real ( kind = fp ) URAND, the random value.
 !
-  real ( kind = 8 ) halfm
+  real ( kind = fp ) halfm
   integer ( kind = 4 ), save :: ia = 0
   integer ( kind = 4 ), save :: ic = 0
   integer ( kind = 4 ), parameter :: itwo = 2
@@ -11680,8 +11289,8 @@ function urand ( iy )
   integer ( kind = 4 ) m
   integer ( kind = 4 ), save :: m2 = 0
   integer ( kind = 4 ), save :: mic = 0
-  real ( kind = 8 ), save :: s = 0.0D+00
-  real ( kind = 8 ) urand
+  real ( kind = fp ), save :: s = 0.0_fp
+  real ( kind = fp ) urand
 !
 !  If first entry, compute machine integer word length.
 !
@@ -11704,13 +11313,13 @@ function urand ( iy )
 !
 !  Compute multiplier and increment for linear congruential method.
 !
-    ia = 8 * int ( halfm * atan ( 1.0D+00 ) / 8.0D+00 ) + 5
-    ic = 2 * int ( halfm * ( 0.5D+00 - sqrt ( 3.0D+00 ) / 6.0D+00 ) ) + 1
+    ia = 8 * int ( halfm * atan ( 1.0_fp ) / 8.0_fp ) + 5
+    ic = 2 * int ( halfm * ( 0.5_fp - sqrt ( 3.0_fp ) / 6.0_fp ) ) + 1
     mic = ( m2 - ic ) + m2
 !
 !  S is the scale factor for converting to floating point.
 !
-    s = 0.5D+00 / halfm
+    s = 0.5_fp / halfm
 
   end if
 !
@@ -11741,11 +11350,13 @@ function urand ( iy )
     iy = ( iy + m2 ) + m2
   end if
 
-  urand = real ( iy, kind = 8 ) * s
+  urand = real ( iy, kind = fp ) * s
 
   return
 end
 subroutine vbedg ( x, y, vcl, til, tnbr, ltri, ledg, rtri, redg )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -11767,10 +11378,10 @@ subroutine vbedg ( x, y, vcl, til, tnbr, ltri, ledg, rtri, redg )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X, Y, the coordinates of a 2D point outside
+!    Input, real ( kind = fp ) X, Y, the coordinates of a 2D point outside
 !    the convex hull.
 !
-!    Input, real ( kind = 8 ) VCL(1:2,1:*), the coordinates of 2D vertices.
+!    Input, real ( kind = fp ) VCL(1:2,1:*), the coordinates of 2D vertices.
 !
 !    Input, integer ( kind = 4 ) TIL(1:3,1:*), the triangle incidence list.
 !
@@ -11808,9 +11419,9 @@ subroutine vbedg ( x, y, vcl, til, tnbr, ltri, ledg, rtri, redg )
   integer ( kind = 4 ) t
   integer ( kind = 4 ) til(3,*)
   integer ( kind = 4 ) tnbr(3,*)
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 !
 !  Find rightmost visible boundary edge using links, then possibly
 !  leftmost visible boundary edge using triangle neighbor information.
@@ -11836,7 +11447,7 @@ subroutine vbedg ( x, y, vcl, til, tnbr, ltri, ledg, rtri, redg )
       b = til(1,t)
     end if
 
-    lr = lrline ( x, y, vcl(1,a), vcl(2,a), vcl(1,b), vcl(2,b), 0.0D+00 )
+    lr = lrline ( x, y, vcl(1,a), vcl(2,a), vcl(1,b), vcl(2,b), 0.0_fp )
 
     if ( lr <= 0 ) then
       exit
@@ -11874,7 +11485,7 @@ subroutine vbedg ( x, y, vcl, til, tnbr, ltri, ledg, rtri, redg )
     end do
 
     a = til(e,t)
-    lr = lrline ( x, y, vcl(1,a), vcl(2,a), vcl(1,b), vcl(2,b), 0.0D+00 )
+    lr = lrline ( x, y, vcl(1,a), vcl(2,a), vcl(1,b), vcl(2,b), 0.0_fp )
 
     if ( lr <= 0 ) then
       exit
@@ -11888,6 +11499,8 @@ subroutine vbedg ( x, y, vcl, til, tnbr, ltri, ledg, rtri, redg )
   return
 end
 subroutine vispol ( xeye, yeye, nvrt, xc, yc, nvis, ivis, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -11927,13 +11540,13 @@ subroutine vispol ( xeye, yeye, nvrt, xc, yc, nvis, ivis, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XEYE, YEYE, the coordinates of eyepoint; must 
+!    Input, real ( kind = fp ) XEYE, YEYE, the coordinates of eyepoint; must 
 !    be a simple vertex if it lies on the boundary (i.e. occurs only once).
 !
 !    Input, integer ( kind = 4 ) NVRT, the upper subscript of XC, YC (approximate
 !    number of vertices).
 !
-!    Input/output, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT).  On input, if 
+!    Input/output, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT).  On input, if 
 !    eyepoint is interior or blocked exterior then arrays contain coordinates 
 !    in counter clockwise or clockwise order, respectively, with 
 !    (XC(0),YC(0)) = (XC(NVRT),YC(NVRT)); (XC(0),YC(0)) is a vertex visible from
@@ -11972,14 +11585,14 @@ subroutine vispol ( xeye, yeye, nvrt, xc, yc, nvis, ivis, ierror )
   integer ( kind = 4 ) nvis
   integer ( kind = 4 ) oper
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xeye
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:nvrt)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yeye
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xeye
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:nvrt)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yeye
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
@@ -12008,7 +11621,7 @@ subroutine vispol ( xeye, yeye, nvrt, xc, yc, nvis, ivis, ierror )
 
     do
 
-      lr = lrline ( xc(nv-1), yc(nv-1), xe, ye, xc(nv), yc(nv), 0.0D+00 )
+      lr = lrline ( xc(nv-1), yc(nv-1), xe, ye, xc(nv), yc(nv), 0.0_fp )
 
       if ( lr /= 0 ) then
         exit
@@ -12021,7 +11634,7 @@ subroutine vispol ( xeye, yeye, nvrt, xc, yc, nvis, ivis, ierror )
 
   do
 
-    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(0), yc(0), 0.0D+00 )
+    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(0), yc(0), 0.0_fp )
 
     if ( lr /= 0 ) then
       exit
@@ -12112,6 +11725,8 @@ subroutine vispol ( xeye, yeye, nvrt, xc, yc, nvis, ivis, ierror )
 end
 subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
   theta )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -12142,14 +11757,14 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGSPC, the angle spacing parameter in radians 
+!    Input, real ( kind = fp ) ANGSPC, the angle spacing parameter in radians 
 !    which controls how many extra points become visible vertices.
 !
-!    Input, real ( kind = 8 ) XEYE, YEYE, the coordinates of boundary eyepoint.
+!    Input, real ( kind = fp ) XEYE, YEYE, the coordinates of boundary eyepoint.
 !
 !    Input, integer ( kind = 4 ) NVIS, (number of vertices of visibility polygon) - 2.
 !
-!    Input/output, real ( kind = 8 ) XC(0:NVIS), YC(0:NVIS), on input, the 
+!    Input/output, real ( kind = fp ) XC(0:NVIS), YC(0:NVIS), on input, the 
 !    coordinates of the vertices of visibility polygon in counter clockwise 
 !    order; (XC(0),YC(0)) and (XC(NVIS),YC(NVIS)) are the successor and 
 !    predecessor vertices of eyepoint in visibility polygon; at most 2
@@ -12172,25 +11787,25 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
 !
 !    Output, integer ( kind = 4 ) NVSVRT, (number of visible vertices) - 1.
 !
-!    Output, real ( kind = 8 ) THETA(0:NVSVRT), the polar angles of visible 
+!    Output, real ( kind = fp ) THETA(0:NVSVRT), the polar angles of visible 
 !    vertices with respect to (XEYE,YEYE) at origin and (XC(0),YC(0))
 !    on positive x-axis.
 !
   integer ( kind = 4 ) maxn
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) ang
-  real ( kind = 8 ) ang1
-  real ( kind = 8 ) ang2
-  real ( kind = 8 ) angdif
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angsp2
-  real ( kind = 8 ) angspc
-  real ( kind = 8 ) cosang
+  real ( kind = fp ) alpha
+  real ( kind = fp ) ang
+  real ( kind = fp ) ang1
+  real ( kind = fp ) ang2
+  real ( kind = fp ) angdif
+  real ( kind = fp ) angle
+  real ( kind = fp ) angsp2
+  real ( kind = fp ) angspc
+  real ( kind = fp ) cosang
   integer ( kind = 4 ) cur
-  real ( kind = 8 ) diff
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
+  real ( kind = fp ) diff
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ind
   integer ( kind = 4 ) ivis(0:maxn)
@@ -12198,25 +11813,25 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
   integer ( kind = 4 ) lr
   integer ( kind = 4 ) lrline
   integer ( kind = 4 ) n
-  real ( kind = 8 ) numer
+  real ( kind = fp ) numer
   integer ( kind = 4 ) nvis
   integer ( kind = 4 ) nvsvrt
-  real ( kind = 8 ) r
-  real ( kind = 8 ) sinang
-  real ( kind = 8 ) theta(0:maxn)
-  real ( kind = 8 ) tol
+  real ( kind = fp ) r
+  real ( kind = fp ) sinang
+  real ( kind = fp ) theta(0:maxn)
+  real ( kind = fp ) tol
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:maxn)
-  real ( kind = 8 ) xeye
-  real ( kind = 8 ) yc(0:maxn)
-  real ( kind = 8 ) yeye
+  real ( kind = fp ) xc(0:maxn)
+  real ( kind = fp ) xeye
+  real ( kind = fp ) yc(0:maxn)
+  real ( kind = fp ) yeye
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Shift input vertices right, and possibly remove first and last
 !  vertices due to collinearity with eyepoint.
 !
-  angsp2 = 2.0D+00 * angspc
+  angsp2 = 2.0_fp * angspc
   cur = maxn + 1
   n = maxn
 
@@ -12227,7 +11842,7 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
     ivis(cur) = ivis(i)
   end do
 
-  lr = lrline ( xc(cur+1), yc(cur+1), xeye, yeye, xc(cur), yc(cur), 0.0D+00 )
+  lr = lrline ( xc(cur+1), yc(cur+1), xeye, yeye, xc(cur), yc(cur), 0.0_fp )
 
   if ( 0 <= lr ) then
     cur = cur + 1
@@ -12236,15 +11851,15 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
     ivis(0) = ivis(cur)
   end if
 
-  lr = lrline ( xc(n-1), yc(n-1), xeye, yeye, xc(n), yc(n), 0.0D+00 )
+  lr = lrline ( xc(n-1), yc(n-1), xeye, yeye, xc(n), yc(n), 0.0_fp )
 
   if ( lr <= 0 ) then
     n = n - 1
   end if
 
   alpha = atan2 ( yc(0)-yeye, xc(0)-xeye )
-  ang2 = 0.0D+00
-  theta(0) = 0.0D+00
+  ang2 = 0.0_fp
+  theta(0) = 0.0_fp
   top = 0
   cur = cur + 1
 !
@@ -12261,7 +11876,7 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
       diff = ( ( xc(cur) - xeye )**2 + ( yc(cur) - yeye)**2 ) - &
              ( ( xc(cur-1) - xeye )**2 + ( yc(cur-1) - yeye )**2 )
 
-      if ( diff < 0.0D+00 ) then
+      if ( diff < 0.0_fp ) then
         xc(top) = xc(cur)
         yc(top) = yc(cur)
         ivis(top) = ivis(cur)
@@ -12274,14 +11889,14 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
 
         k = int ( angdif / angspc )
         ind = -abs ( ivis(cur))
-        angdif = angdif / real ( k, kind = 8 )
+        angdif = angdif / real ( k, kind = fp )
         dx = xc(cur) - xc(cur-1)
         dy = yc(cur) - yc(cur-1)
         numer = ( xc(cur) - xeye ) * dy - ( yc(cur) - yeye ) * dx
 
         do i = 1, k-1
           top = top + 1
-          theta(top) = ang1 + real ( i, kind = 8 ) * angdif
+          theta(top) = ang1 + real ( i, kind = fp ) * angdif
           ang = theta(top) + alpha
           cosang = cos(ang)
           sinang = sin(ang)
@@ -12314,6 +11929,8 @@ subroutine visvrt ( angspc, xeye, yeye, nvis, xc, yc, ivis, maxn, nvsvrt, &
   return
 end
 subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -12341,11 +11958,11 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XEYE, YEYE, the coordinates of the eyepoint.
+!    Input, real ( kind = fp ) XEYE, YEYE, the coordinates of the eyepoint.
 !
 !    Input, integer ( kind = 4 ) NVRT, (number of vertices in list) minus 1.
 !
-!    Input, real ( kind = 8 ) XC(0:NVRT), YC(0:NVRT), the vertex 
+!    Input, real ( kind = fp ) XC(0:NVRT), YC(0:NVRT), the vertex 
 !    coordinates from which Voronoi neighbors are determined; (XC(0),YC(0)),...,
 !    (XC(NVRT),YC(NVRT)) are in increasing angular
 !    displacement order with respect to (XEYE,YEYE).
@@ -12355,20 +11972,20 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
 !    Output, integer ( kind = 4 ) IVOR(0:NVOR), the indices of Voronoi neighbors in XC, YC
 !    arrays; 0 <= IVOR(0) < ... < IVOR(NVOR) <= NVRT.
 !
-!    Workspace, real ( kind = 8 ) XVOR(0:NVRT), YVOR(0:NVRT), arrays for
+!    Workspace, real ( kind = fp ) XVOR(0:NVRT), YVOR(0:NVRT), arrays for
 !    storing the vertex coordinates of the Voronoi polygon.
 !
 !    Output, integer ( kind = 4 ) IERROR, set to 212 if an error occurred.
 !
   integer ( kind = 4 ) nvrt
 
-  real ( kind = 8 ) a11
-  real ( kind = 8 ) a12
-  real ( kind = 8 ) a21
-  real ( kind = 8 ) a22
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) det
+  real ( kind = fp ) a11
+  real ( kind = fp ) a12
+  real ( kind = fp ) a21
+  real ( kind = fp ) a22
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) det
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) im
   integer ( kind = 4 ) ivor(0:nvrt)
@@ -12377,25 +11994,25 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
   integer ( kind = 4 ) lrline
   integer ( kind = 4 ) m
   integer ( kind = 4 ) nvor
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
-  real ( kind = 8 ) xc(0:nvrt)
-  real ( kind = 8 ) xeye
-  real ( kind = 8 ) xi
-  real ( kind = 8 ) xvor(0:nvrt)
-  real ( kind = 8 ) yc(0:nvrt)
-  real ( kind = 8 ) yeye
-  real ( kind = 8 ) yi
-  real ( kind = 8 ) yvor(0:nvrt)
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
+  real ( kind = fp ) xc(0:nvrt)
+  real ( kind = fp ) xeye
+  real ( kind = fp ) xi
+  real ( kind = fp ) xvor(0:nvrt)
+  real ( kind = fp ) yc(0:nvrt)
+  real ( kind = fp ) yeye
+  real ( kind = fp ) yi
+  real ( kind = fp ) yvor(0:nvrt)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   k = 1
   m = 0
   ivor(0) = 0
-  xvor(0) = ( xeye + xc(0) ) * 0.5D+00
-  yvor(0) = ( yeye + yc(0) ) * 0.5D+00
+  xvor(0) = ( xeye + xc(0) ) * 0.5_fp
+  yvor(0) = ( yeye + yc(0) ) * 0.5_fp
 !
 !  Beginning of main loop
 !
@@ -12420,8 +12037,8 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
        return
      end if
 
-     b1 = ( a11**2 + a12**2 ) * 0.5D+00
-     b2 = ( a21**2 + a22**2 ) * 0.5D+00
+     b1 = ( a11**2 + a12**2 ) * 0.5_fp
+     b2 = ( a21**2 + a22**2 ) * 0.5_fp
 
      xi = ( b1 * a22 - b2 * a12 ) / det
      yi = ( b2 * a11 - b1 * a21 ) / det
@@ -12431,7 +12048,7 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
 !
      xvor(m+1) = xi + xeye
      yvor(m+1) = yi + yeye
-     lr = lrline ( xvor(m+1), yvor(m+1), xeye, yeye, xvor(m), yvor(m), 0.0D+00 )
+     lr = lrline ( xvor(m+1), yvor(m+1), xeye, yeye, xvor(m), yvor(m), 0.0_fp )
 
      if ( lr <= 0 ) then
        m = m + 1
@@ -12457,8 +12074,8 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
         return
       end if
 
-      b1 = ( a11**2 + a12**2 ) * 0.5D+00
-      b2 = 0.0D+00
+      b1 = ( a11**2 + a12**2 ) * 0.5_fp
+      b2 = 0.0_fp
       xi = ( b1 * a22 - b2 * a12 ) / det
       yi = ( b2 * a11 - b1 * a21 ) / det
       xvor(m) = xi + xeye
@@ -12475,7 +12092,7 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
 !
   do
 
-    lr = lrline ( xvor(m), yvor(m), xeye, yeye, xc(nvrt), yc(nvrt), 0.0D+00 )
+    lr = lrline ( xvor(m), yvor(m), xeye, yeye, xc(nvrt), yc(nvrt), 0.0_fp )
 
     if ( 0 <= lr ) then
       exit
@@ -12493,6 +12110,8 @@ subroutine vornbr ( xeye, yeye, nvrt, xc, yc, nvor, ivor, xvor, yvor, ierror )
   return
 end
 subroutine vpleft ( xc, yc, ivis )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -12525,14 +12144,14 @@ subroutine vpleft ( xc, yc, ivis )
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) oper
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:*)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xu
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:*)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yu
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
@@ -12562,7 +12181,7 @@ subroutine vpleft ( xc, yc, ivis )
     oper = 4
     xw = xc(cur)
     yw = yc(cur)
-    lr = lrline ( xc(top), yc(top), xe, ye, xc(nv), yc(nv), 0.0D+00 )
+    lr = lrline ( xc(top), yc(top), xe, ye, xc(nv), yc(nv), 0.0_fp )
 
     if ( lr == -1 ) then
       xc(top) = xu
@@ -12578,7 +12197,7 @@ subroutine vpleft ( xc, yc, ivis )
 !
 20 continue
 
-  lr = lrline ( xc(cur+1), yc(cur+1), xe, ye, xc(cur), yc(cur), 0.0D+00 )
+  lr = lrline ( xc(cur+1), yc(cur+1), xe, ye, xc(cur), yc(cur), 0.0_fp )
 
   if ( lr == -1 ) then
 
@@ -12592,7 +12211,7 @@ subroutine vpleft ( xc, yc, ivis )
 
     j = cur + 1
     lr1 = lrline ( xc(j), yc(j), xc(top-1), yc(top-1), xc(cur), yc(cur), &
-      0.0D+00 )
+      0.0_fp )
 
     if ( lr1 == 1 ) then
 
@@ -12609,7 +12228,7 @@ subroutine vpleft ( xc, yc, ivis )
       do
 
         j = j + 1
-        lr2 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0D+00 )
+        lr2 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0_fp )
 
         if ( lr2 /= 0 ) then
           exit
@@ -12647,6 +12266,8 @@ subroutine vpleft ( xc, yc, ivis )
   return
 end
 subroutine vprght ( xc, yc, ivis, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -12683,14 +12304,14 @@ subroutine vprght ( xc, yc, ivis, ierror )
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) oper
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:*)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xu
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:*)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yu
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
@@ -12714,7 +12335,7 @@ subroutine vprght ( xc, yc, ivis, ierror )
 
   if ( abs ( ivis(j)) <= nv ) then
 
-    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(j-1), yc(j-1), 0.0D+00 )
+    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(j-1), yc(j-1), 0.0_fp )
 
     if ( lr == -1 ) then
 
@@ -12795,7 +12416,7 @@ subroutine vprght ( xc, yc, ivis, ierror )
       ivis(top) = -abs ( ivis(top))
     end if
 
-    lr = lrline ( xc(cur+1), yc(cur+1), xe, ye, xc(cur), yc(cur), 0.0D+00 )
+    lr = lrline ( xc(cur+1), yc(cur+1), xe, ye, xc(cur), yc(cur), 0.0_fp )
 
     if ( lr == 1 ) then
 
@@ -12804,7 +12425,7 @@ subroutine vprght ( xc, yc, ivis, ierror )
     else
 
       j = cur + 1
-      lr1 = lrline ( xc(j), yc(j), xw, yw, xc(cur), yc(cur), 0.0D+00 )
+      lr1 = lrline ( xc(j), yc(j), xw, yw, xc(cur), yc(cur), 0.0_fp )
 
       if ( lr1 == -1 ) then
 
@@ -12821,7 +12442,7 @@ subroutine vprght ( xc, yc, ivis, ierror )
         do
 
           j = j + 1
-          lr2 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0D+00 )
+          lr2 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0_fp )
 
           if ( lr2 /= 0 ) then
             exit
@@ -12860,6 +12481,8 @@ subroutine vprght ( xc, yc, ivis, ierror )
   return
 end
 subroutine vpscna ( xc, yc, ivis, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -12898,12 +12521,12 @@ subroutine vpscna ( xc, yc, ivis, ierror )
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) oper
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:*)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:*)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
@@ -12932,7 +12555,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
 
     if ( intsct ) then
 
-      lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(k), yc(k), 0.0D+00 )
+      lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(k), yc(k), 0.0_fp )
 
       if ( lr == 1 ) then
 
@@ -12946,7 +12569,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
 
         else
 
-          lr1 = lrline ( xc(k), yc(k), xe, ye, xc(top), yc(top), 0.0D+00 )
+          lr1 = lrline ( xc(k), yc(k), xe, ye, xc(top), yc(top), 0.0_fp )
 
           if ( lr1 == -1 ) then
             case = 2
@@ -12957,7 +12580,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
 
       else
 
-        lr1 = lrline ( xc(k+1), yc(k+1), xe, ye, xc(top), yc(top), 0.0D+00 )
+        lr1 = lrline ( xc(k+1), yc(k+1), xe, ye, xc(top), yc(top), 0.0_fp )
 
         if ( lr1 == -1 ) then
           case = 3
@@ -12989,7 +12612,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
 
     oper = 1
     cur = k + 1
-    lr = lrline ( xc(k), yc(k), xe, ye, xc(top), yc(top), 0.0D+00 )
+    lr = lrline ( xc(k), yc(k), xe, ye, xc(top), yc(top), 0.0_fp )
     top = top + 1
 
     if ( lr == 0 ) then
@@ -13010,7 +12633,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
   else if ( case == 1 ) then
 
     cur = k + 1
-    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(top), yc(top), 0.0D+00 )
+    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(top), yc(top), 0.0_fp )
 
     if ( lr == 1 ) then
 
@@ -13019,8 +12642,8 @@ subroutine vpscna ( xc, yc, ivis, ierror )
     else
 
       j = cur + 1
-      lr1 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0D+00 )
-      lr2 = lrline ( xc(j), yc(j), xc(k), yc(k), xc(cur), yc(cur), 0.0D+00 )
+      lr1 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0_fp )
+      lr2 = lrline ( xc(j), yc(j), xc(k), yc(k), xc(cur), yc(cur), 0.0_fp )
 
       if ( lr1 <= 0 .and. lr2 == -1 ) then
 
@@ -13039,7 +12662,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
         do
 
           j = j + 1
-          lr3 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0D+00 )
+          lr3 = lrline ( xc(j), yc(j), xe, ye, xc(cur), yc(cur), 0.0_fp )
  
           if ( lr3 /= 0 ) then
             exit
@@ -13073,7 +12696,7 @@ subroutine vpscna ( xc, yc, ivis, ierror )
 
     oper = 6
     cur = k + 1
-    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(top), yc(top), 0.0D+00 )
+    lr = lrline ( xc(cur), yc(cur), xe, ye, xc(top), yc(top), 0.0_fp )
 
     if ( lr == 0 ) then
       xw = xc(cur)
@@ -13085,6 +12708,8 @@ subroutine vpscna ( xc, yc, ivis, ierror )
   return
 end
 subroutine vpscnb ( xc, yc, ivis, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13118,23 +12743,23 @@ subroutine vpscnb ( xc, yc, ivis, ierror )
   integer ( kind = 4 ) lrline
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) oper
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:*)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xu
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:*)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yu
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  EYE-V(CUR-1)-V(CUR) is a left turn, S(TOP) = V(CUR) or S(TOP) is
 !  on interior of edge V(CUR-1)-V(CUR), TOP <= CUR, S(TOP) has
@@ -13151,10 +12776,10 @@ subroutine vpscnb ( xc, yc, ivis, ierror )
     go to 10
   end if
 
-  lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(top), yc(top), 0.0D+00 )
+  lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(top), yc(top), 0.0_fp )
 
   lr1 = lrline ( xc(k+1), yc(k+1), xc(top-1), yc(top-1), xc(top), yc(top), &
-    0.0D+00 )
+    0.0_fp )
 
   if ( lr == 1 .and. lr1  ==  -1 ) then
     oper = 2
@@ -13190,7 +12815,7 @@ subroutine vpscnb ( xc, yc, ivis, ierror )
          if ( ( xc(top) - xu )**2 + ( yc(top) - yu )**2 <= tolabs ) then
            go to 20
          end if
-         lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(nv), yc(nv), 0.0D+00 )
+         lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(nv), yc(nv), 0.0_fp )
          if ( lr == 1 ) then
            oper = 2
            cur = k + 1
@@ -13215,6 +12840,8 @@ subroutine vpscnb ( xc, yc, ivis, ierror )
   return
 end
 subroutine vpscnc ( xc, yc, ivis, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13250,16 +12877,16 @@ subroutine vpscnc ( xc, yc, ivis, ierror )
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) oper
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xp
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:*)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yp
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xp
+  real ( kind = fp ) xu
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:*)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yp
+  real ( kind = fp ) yu
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
@@ -13285,8 +12912,8 @@ subroutine vpscnc ( xc, yc, ivis, ierror )
   else if ( xc(k) == xp .and. yc(k) == yp ) then
 
       j = k + 1
-      lr = lrline ( xc(j), yc(j), xe, ye, xp, yp, 0.0D+00 )
-      lr1 = lrline ( xc(j), yc(j), xw, yw, xp, yp, 0.0D+00 )
+      lr = lrline ( xc(j), yc(j), xe, ye, xp, yp, 0.0_fp )
+      lr1 = lrline ( xc(j), yc(j), xw, yw, xp, yp, 0.0_fp )
 
       if ( lr <= 0 .and. lr1 == -1 ) then
         go to 40
@@ -13301,7 +12928,7 @@ subroutine vpscnc ( xc, yc, ivis, ierror )
         do
 
           j = j + 1
-          lr2 = lrline ( xc(j), yc(j), xe, ye, xp, yp, 0.0D+00 )
+          lr2 = lrline ( xc(j), yc(j), xe, ye, xp, yp, 0.0_fp )
  
           if ( lr2 /= 0 ) then
             exit
@@ -13334,7 +12961,7 @@ subroutine vpscnc ( xc, yc, ivis, ierror )
         yc(k+1), xu, yu, intsct )
 
       if ( intsct ) then
-        lr = lrline ( xc(k+1), yc(k+1), xe, ye, xp, yp, 0.0D+00 )
+        lr = lrline ( xc(k+1), yc(k+1), xe, ye, xp, yp, 0.0_fp )
         if ( lr == 1 ) then
           oper = 2
           cur = k + 1
@@ -13359,6 +12986,8 @@ subroutine vpscnc ( xc, yc, ivis, ierror )
   return
 end
 subroutine vpscnd ( xc, yc, ivis, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13393,16 +13022,16 @@ subroutine vpscnd ( xc, yc, ivis, ierror )
   integer ( kind = 4 ) nv
   integer ( kind = 4 ) oper
   integer ( kind = 4 ) top
-  real ( kind = 8 ) xc(0:*)
-  real ( kind = 8 ) xe
-  real ( kind = 8 ) xp
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xw
-  real ( kind = 8 ) yc(0:*)
-  real ( kind = 8 ) ye
-  real ( kind = 8 ) yp
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yw
+  real ( kind = fp ) xc(0:*)
+  real ( kind = fp ) xe
+  real ( kind = fp ) xp
+  real ( kind = fp ) xu
+  real ( kind = fp ) xw
+  real ( kind = fp ) yc(0:*)
+  real ( kind = fp ) ye
+  real ( kind = fp ) yp
+  real ( kind = fp ) yu
+  real ( kind = fp ) yw
 
   common /gvpvar/ nv,oper,cur,top,xe,ye,xw,yw,beye
   save /gvpvar/
@@ -13426,8 +13055,8 @@ subroutine vpscnd ( xc, yc, ivis, ierror )
 
   if ( intsct ) then
 
-    lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(k), yc(k), 0.0D+00 )
-    lr1 = lrline ( xc(k+1), yc(k+1), xe, ye, xc(top), yc(top), 0.0D+00 )
+    lr = lrline ( xc(k+1), yc(k+1), xe, ye, xc(k), yc(k), 0.0_fp )
+    lr1 = lrline ( xc(k+1), yc(k+1), xe, ye, xc(top), yc(top), 0.0_fp )
 
     if ( lr == -1 .and. lr1  ==  -1 ) then
 
@@ -13435,7 +13064,7 @@ subroutine vpscnd ( xc, yc, ivis, ierror )
         go to 20
       end if
 
-      lr2 = lrline ( xc(k+1), yc(k+1), xp, yp, xw, yw, 0.0D+00 )
+      lr2 = lrline ( xc(k+1), yc(k+1), xp, yp, xw, yw, 0.0_fp )
 
       if ( lr2 == -1 ) then
         go to 30
@@ -13445,7 +13074,7 @@ subroutine vpscnd ( xc, yc, ivis, ierror )
 
          oper = 1
          cur = k + 1
-         lr2 = lrline ( xc(k), yc(k), xe, ye, xc(top), yc(top), 0.0D+00 )
+         lr2 = lrline ( xc(k), yc(k), xe, ye, xc(top), yc(top), 0.0_fp )
          top = top + 1
          if ( lr2 == 0 ) then
           xc(top) = xc(k)
@@ -13480,6 +13109,8 @@ subroutine vpscnd ( xc, yc, ivis, ierror )
   return
 end
 subroutine walkt2 ( x, y, ntri, vcl, til, tnbr, itri, iedg, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13504,12 +13135,12 @@ subroutine walkt2 ( x, y, ntri, vcl, til, tnbr, itri, iedg, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X, Y, the coordinates of a 2D point.
+!    Input, real ( kind = fp ) X, Y, the coordinates of a 2D point.
 !
 !    Input, integer ( kind = 4 ) NTRI, the number of triangles in the triangulation; used 
 !    to detect cycle.
 !
-!    Input, real ( kind = 8 ) VCL(2,1:*), the coordinates of 2D vertices.
+!    Input, real ( kind = fp ) VCL(2,1:*), the coordinates of 2D vertices.
 !
 !    Input, integer ( kind = 4 ) TIL(3,NTRI), the triangle incidence list.
 !
@@ -13537,32 +13168,32 @@ subroutine walkt2 ( x, y, ntri, vcl, til, tnbr, itri, iedg, ierror )
   integer ( kind = 4 ) ntri
 
   integer ( kind = 4 ) a
-  real ( kind = 8 ) alpha
+  real ( kind = fp ) alpha
   integer ( kind = 4 ) b
-  real ( kind = 8 ) beta
+  real ( kind = fp ) beta
   integer ( kind = 4 ) c
   integer ( kind = 4 ) cnt
-  real ( kind = 8 ) det
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dxa
-  real ( kind = 8 ) dxb
-  real ( kind = 8 ) dy
-  real ( kind = 8 ) dya
-  real ( kind = 8 ) dyb
-  real ( kind = 8 ) gamma
+  real ( kind = fp ) det
+  real ( kind = fp ) dx
+  real ( kind = fp ) dxa
+  real ( kind = fp ) dxb
+  real ( kind = fp ) dy
+  real ( kind = fp ) dya
+  real ( kind = fp ) dyb
+  real ( kind = fp ) gamma
   integer ( kind = 4 ) i
   integer ( kind = 4 ) iedg
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) itri
   integer ( kind = 4 ) til(3,ntri)
   integer ( kind = 4 ) tnbr(3,ntri)
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) vcl(2,*)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) tol
+  real ( kind = fp ) vcl(2,*)
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   cnt = 0
   iedg = 0
@@ -13605,7 +13236,7 @@ subroutine walkt2 ( x, y, ntri, vcl, til, tnbr, itri, iedg, ierror )
 !
     alpha = ( dx * dyb - dy * dxb ) / det
     beta = ( dxa * dy - dya * dx ) / det
-    gamma = 1.0D+00 - alpha - beta
+    gamma = 1.0_fp - alpha - beta
 !
 !  If the barycentric coordinates are all positive, then the point
 !  is inside the triangle.
@@ -13673,6 +13304,8 @@ subroutine walkt2 ( x, y, ntri, vcl, til, tnbr, itri, iedg, ierror )
   return
 end
 subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13693,7 +13326,7 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
 !
 !    Input, integer ( kind = 4 ) NVRT, the number of vertices.
 !
-!    Input, real ( kind = 8 ) XC(1:NVRT), YC(1:NVRT), the vertex coordinates, in
+!    Input, real ( kind = fp ) XC(1:NVRT), YC(1:NVRT), the vertex coordinates, in
 !    counter-clockwise order.
 !
 !    Output, integer ( kind = 4 ) I1, I2, indices in XC, YC such that the width is 
@@ -13701,7 +13334,7 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
 !    (XC(I2),YC(I2)) and (XC(I2+1),YC(I2+1)), where index NVRT+1 
 !    is same as 1.
 !
-!    Output, real ( kind = 8 ) WIDSQ, the square of the width of the polygon.
+!    Output, real ( kind = fp ) WIDSQ, the square of the width of the polygon.
 !
 !    Output, integer ( kind = 4 ) IERROR, the error flag.
 !    0, no error was detected.
@@ -13710,16 +13343,16 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
   integer ( kind = 4 ) nvrt
 
   integer ( kind = 4 ) a
-  real ( kind = 8 ) area1
-  real ( kind = 8 ) area2
-  real ( kind = 8 ) areatr
+  real ( kind = fp ) area1
+  real ( kind = fp ) area2
+  real ( kind = fp ) areatr
   integer ( kind = 4 ) b
   integer ( kind = 4 ) c
-  real ( kind = 8 ) c1mtol
-  real ( kind = 8 ) c1ptol
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
+  real ( kind = fp ) c1mtol
+  real ( kind = fp ) c1ptol
+  real ( kind = fp ) dist
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) i1
   integer ( kind = 4 ) i2
@@ -13729,19 +13362,19 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
   integer ( kind = 4 ) k
   integer ( kind = 4 ) kp1
   integer ( kind = 4 ) m
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) widsq
-  real ( kind = 8 ) xc(nvrt)
-  real ( kind = 8 ) yc(nvrt)
+  real ( kind = fp ) tol
+  real ( kind = fp ) widsq
+  real ( kind = fp ) xc(nvrt)
+  real ( kind = fp ) yc(nvrt)
 
   ierror = 0
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 !
 !  Find the first vertex which is farthest from the edge connecting
 !  vertices NVRT and 1.
 !
-  c1mtol = 1.0D+00 - tol
-  c1ptol = 1.0D+00 + tol
+  c1mtol = 1.0_fp - tol
+  c1ptol = 1.0_fp + tol
   j = nvrt
   jp1 = 1
   k = 2
@@ -13761,7 +13394,7 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
   end do
 
   m = k
-  widsq = 0.0D+00
+  widsq = 0.0_fp
 !
 !  Find width = minimum distance of antipodal edge-vertex pairs.
 !
@@ -13822,7 +13455,7 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
     dist = ( ( yc(a) - yc(b) ) * dx - ( xc(a) - xc(b) ) * dy )**2 &
       / ( dx**2 + dy**2 )
 
-    if ( dist < widsq .or. widsq <= 0.0D+00 ) then
+    if ( dist < widsq .or. widsq <= 0.0_fp ) then
       widsq = dist
       i1 = a
       i2 = b
@@ -13838,6 +13471,8 @@ subroutine width2 ( nvrt, xc, yc, i1, i2, widsq, ierror )
 end
 subroutine xedge ( mode, xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, xu, yu, &
   intsct )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13862,38 +13497,38 @@ subroutine xedge ( mode, xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, xu, yu, &
 !    Input, integer ( kind = 4 ) MODE, is 0 for two edges, 1 (or nonzero) for a ray 
 !    and an edge.
 !
-!    Input, real ( kind = 8 ) XV1, YV1, XV2, YV2, XW1, YW1, XW2, YW2, the
+!    Input, real ( kind = fp ) XV1, YV1, XV2, YV2, XW1, YW1, XW2, YW2, the
 !    vertex coordinates;  an edge (ray) is from (XV1,YV1) to (thru) (XV2,YV2);
 !    an edge joins vertices (XW1,YW1) and (XW2,YW2).
 !
-!    Output, real ( kind = 8 ) XU, YU, the coordinates of the point of 
+!    Output, real ( kind = fp ) XU, YU, the coordinates of the point of 
 !    intersection iff INTSCT is .TRUE.
 !
 !    Output, logical INTSCT, .TRUE. if the edges/ray are nondegenerate, not
 !    parallel, and intersect, .FALSE. otherwise.
 !
-  real ( kind = 8 ) denom
-  real ( kind = 8 ) dxv
-  real ( kind = 8 ) dxw
-  real ( kind = 8 ) dyv
-  real ( kind = 8 ) dyw
+  real ( kind = fp ) denom
+  real ( kind = fp ) dxv
+  real ( kind = fp ) dxw
+  real ( kind = fp ) dyv
+  real ( kind = fp ) dyw
   logical intsct
   integer ( kind = 4 ) mode
-  real ( kind = 8 ) t
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xv1
-  real ( kind = 8 ) xv2
-  real ( kind = 8 ) xw1
-  real ( kind = 8 ) xw2
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yv1
-  real ( kind = 8 ) yv2
-  real ( kind = 8 ) yw1
-  real ( kind = 8 ) yw2
+  real ( kind = fp ) t
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
+  real ( kind = fp ) xu
+  real ( kind = fp ) xv1
+  real ( kind = fp ) xv2
+  real ( kind = fp ) xw1
+  real ( kind = fp ) xw2
+  real ( kind = fp ) yu
+  real ( kind = fp ) yv1
+  real ( kind = fp ) yv2
+  real ( kind = fp ) yw1
+  real ( kind = fp ) yw2
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   intsct = .false.
   dxv = xv2 - xv1
@@ -13909,7 +13544,7 @@ subroutine xedge ( mode, xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, xu, yu, &
 
   t = ( dyv * ( xv1 - xw1 ) - dxv * ( yv1 - yw1 ) ) / denom
 
-  if ( t < -tol .or. 1.0D+00 + tol < t ) then
+  if ( t < -tol .or. 1.0_fp + tol < t ) then
     return
   end if
 
@@ -13923,7 +13558,7 @@ subroutine xedge ( mode, xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, xu, yu, &
   end if
 
   if ( mode == 0 ) then
-    if ( -tol <= t .and. t <= 1.0D+00 + tol ) then
+    if ( -tol <= t .and. t <= 1.0_fp + tol ) then
       intsct = .true.
     end if
   else
@@ -13936,6 +13571,8 @@ subroutine xedge ( mode, xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, xu, yu, &
 end
 subroutine xline ( xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, dv, dw, xu, &
   yu, parall )
+  use nrtype, only : fp
+  use constants, only : pi
 
 !*****************************************************************************80
 !
@@ -13952,44 +13589,44 @@ subroutine xline ( xv1, yv1, xv2, yv2, xw1, yw1, xw2, yw2, dv, dw, xu, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XV1, YV1, XV2, YV2, XW1, YW1, XW2, YW2, the 
+!    Input, real ( kind = fp ) XV1, YV1, XV2, YV2, XW1, YW1, XW2, YW2, the 
 !    vertex coordinates; the first line is parallel to and at signed distance 
 !    DV to the left of directed line from (XV1,YV1) to (XV2,YV2);
 !    second line is parallel to and at signed distance DW to
 !    left of directed line from (XW1,YW1) to (XW2,YW2)
 !
-!    Input, real ( kind = 8 ) DV, DW, the signed distances (positive for left).
+!    Input, real ( kind = fp ) DV, DW, the signed distances (positive for left).
 !
-!    Output, real ( kind = 8 ) XU, YU, the coordinates of the point of
+!    Output, real ( kind = fp ) XU, YU, the coordinates of the point of
 !    intersection, if PARALL is .FALSE.
 !
 !    Output, logical PARALL, is .TRUE. if the lines are parallel, or two 
 !    points for a line are identical, .FALSE. otherwise.
 !
-  real ( kind = 8 ) a11
-  real ( kind = 8 ) a12
-  real ( kind = 8 ) a21
-  real ( kind = 8 ) a22
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) det
-  real ( kind = 8 ) dv
-  real ( kind = 8 ) dw
+  real ( kind = fp ) a11
+  real ( kind = fp ) a12
+  real ( kind = fp ) a21
+  real ( kind = fp ) a22
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) det
+  real ( kind = fp ) dv
+  real ( kind = fp ) dw
   logical parall
-  real ( kind = 8 ) tol
-  real ( kind = 8 ) tolabs
-  real ( kind = 8 ) xu
-  real ( kind = 8 ) xv1
-  real ( kind = 8 ) xv2
-  real ( kind = 8 ) xw1
-  real ( kind = 8 ) xw2
-  real ( kind = 8 ) yu
-  real ( kind = 8 ) yv1
-  real ( kind = 8 ) yv2
-  real ( kind = 8 ) yw1
-  real ( kind = 8 ) yw2
+  real ( kind = fp ) tol
+  real ( kind = fp ) tolabs
+  real ( kind = fp ) xu
+  real ( kind = fp ) xv1
+  real ( kind = fp ) xv2
+  real ( kind = fp ) xw1
+  real ( kind = fp ) xw2
+  real ( kind = fp ) yu
+  real ( kind = fp ) yv1
+  real ( kind = fp ) yv2
+  real ( kind = fp ) yw1
+  real ( kind = fp ) yw2
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   parall = .true.
 

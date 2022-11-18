@@ -1,77 +1,17 @@
 program seismicgradiometry
   use nrtype, only : fp, sp
   use constants, only : pi, deg2rad, rad2deg
+  use typedef
   use read_sacfile, only : read_sachdr, read_sacdata
   use grdfile_io, only : write_grdfile_fp_2d
   use lonlat_xy_conv, only : bl2xy, xy2bl
-  use sort, only : bubblesort
-  use greatcircle, only : greatcircle_dist
-#ifdef MKL
-  use lapack95
-#else
-  use f95_lapack
-#endif
+  use gradiometry_parameters
+  use calc_kernelmatrix
 
   implicit none
 
-  type location
-    real(kind = fp) :: lon, lat, x_east, y_north, depth
-  end type location
-
   real(kind = fp), parameter :: eps = 1.0e-5_fp
 
-  !!For S-net/DONET OBP
-  real(kind = fp), parameter :: order = 1.0e-2_fp                             !!Pa -> hpa
-  real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
-
-  real(kind = fp), parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
-  &                             x_end = 350.0_fp, y_end = 600.0_fp
-  real(kind = fp), parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp   !!S-net
-  real(kind = fp), parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp          !!S-net test
-  real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!S-net test
-  real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
-  &                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!S-net test
-
-  !real(kind = fp), parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
-  !&                             x_end = 150.0_fp, y_end = 100.0_fp
-  !real(kind = fp), parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp   !!DONET test
-  !real(kind = fp), parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp          !!DONET test
-  !real(kind = fp), parameter :: cutoff_dist = 80.0_fp                         !!DONET 20-60min
-  !real(kind = fp), parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
-  !&                             fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp  !!DONET long-period test
-  !real(kind = fp), parameter :: cutoff_dist = 30.0_fp                         !!DONET test 6-20min
-  !real(kind = fp), parameter :: fl = 1.0_fp / (20.0_fp * 60.0_fp), fh = 1.0_fp / (6.0_fp * 60.0_fp), &
-  !&                             fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 10.0_fp  !!DONET short-period test
-
-  integer, parameter :: ntime_slowness = 61, ntime_slowness2 = (ntime_slowness - 1) / 2
-  integer, parameter :: nsta_grid_max = 40, nsta_grid_min = 5  !!For S-net/DONET OBPG array
-  integer, parameter :: ntime = 630
-  !integer, parameter :: ntime = 1024 !!testdata
-
-  !!For SK-net Long-period motion
-  !real(kind = fp), parameter :: az_diff_max = 150.0_fp * deg2rad
-  !real(kind = fp), parameter :: x_start = -125.0_fp, y_start = -165.0_fp, &
-  !&                             x_end = 205.0_fp, y_end = 165.0_fp
-  !real(kind = fp), parameter :: center_lon = 139.0_fp, center_lat = 36.0_fp
-  !real(kind = fp), parameter :: dgrid_x = 2.0_fp, dgrid_y = 2.0_fp
-  !real(kind = fp), parameter :: cutoff_dist = 5.0_fp
-  !real(kind = fp), parameter :: order = 1.0e-6_fp  !!nm -> mm
-  !integer, parameter :: nsta_grid_max = 10, nsta_grid_min = 3
-  !integer, parameter :: ntime_slowness = 21, ntime_slowness2 = (ntime_slowness - 1) / 2
-  !real(kind = fp), parameter :: fl = 1.0_fp / 10.0_fp, fh = 1.0_fp / 5.0_fp, fs = 1.0_fp / 2.0_fp, &
-  !&                             ap = 0.5_fp, as = 5.0_fp
-  !integer, parameter :: ntime = 2100
-
-#ifdef ELLIPSE
-  real(kind = fp), parameter :: sigma_x = cutoff_dist, sigma_y = cutoff_dist * 2.0_fp
-                                !!sigma_x: parallel to propagation direction, sigma_y: normal to propagation direction
-  real(kind = fp), parameter :: evlon = 137.8910_fp, evlat = 36.6928_fp
-  real(kind = fp)            :: propagation_direction
-#endif
-
-
-  integer, parameter :: ngrid_x = int((x_end - x_start) / real(dgrid_x, kind = fp)) + 1
-  integer, parameter :: ngrid_y = int((y_end - y_start) / real(dgrid_y, kind = fp)) + 1
   integer :: nsta, npts_tmp, info, i, j, ii, jj, kk, i3, j3, m, n, icount, jcount
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
   type(location), allocatable :: location_sta(:)
@@ -80,10 +20,7 @@ program seismicgradiometry
   real(kind = fp), allocatable :: waveform_est(:, :, :, :)   !!(1 : 3 (u, dudx, dudy), 1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
   real(kind = fp), allocatable :: waveform_est_diff(:, :, :) !!(1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
   real(kind = fp), allocatable :: h(:)
-  real(kind = fp), allocatable :: azimuth_order(:)
-  real(kind = fp) :: dist_grid_sta(1 : nsta_grid_max), g(1 : nsta_grid_max, 1 : 3), dist_tmp, &
-  &                  azimuth_grid_sta(1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), az_diff_tmp, &
-  &                  dist_x_tmp, dist_y_tmp, weight(1 : nsta_grid_max, 1 : nsta_grid_max), g_tmp(1 : 3, 1 : 3), &
+  real(kind = fp) :: weight(1 : nsta_grid_max, 1 : nsta_grid_max), &
   &                  kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), obs_vector(1 : nsta_grid_max), &
   &                  slowness_x(1 : ngrid_x, 1 : ngrid_y), slowness_y(1 : ngrid_x, 1 : ngrid_y), &
   &                  sigma_slowness_x(1 : ngrid_x, 1 : ngrid_y), sigma_slowness_y(1 : ngrid_x, 1 : ngrid_y), &
@@ -102,7 +39,7 @@ program seismicgradiometry
   &                  sigma_amp_term_x(1 : ngrid_x, 1 : ngrid_y), sigma_amp_term_y(1 : ngrid_x, 1 : ngrid_y), &
   &                  waveform_est_max(1 : ngrid_x, 1 : ngrid_y), waveform_est_diff_max(1 : ngrid_x, 1 : ngrid_y), &
   &                  dt, c, gn
-  integer :: grid_stationindex(1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), nsta_count(1 : ngrid_x, 1 : ngrid_y), ipiv(3)
+  integer :: grid_stationindex(1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), nsta_count(1 : ngrid_x, 1 : ngrid_y)
   logical :: grid_enough_sta(1 : ngrid_x, 1 : ngrid_y)
   character(len = 129), allocatable :: sacfile(:)
   character(len = 129) :: outfile
@@ -162,136 +99,8 @@ program seismicgradiometry
   close(12)
 
   !!make kernel matrix for each grid
-  do kk = 1, ngrid_y
-    do jj = 1, ngrid_x
-      nsta_count(jj, kk) = 0
-      grid_enough_sta(jj, kk) = .false.
-      grid_stationindex(1 : nsta_grid_max, jj, kk) = 0
-      azimuth_grid_sta(1 : nsta_grid_max, jj, kk) = 1.0e+15
-
-#ifdef ELLIPSE
-      dist_grid_sta(1 : nsta_grid_max) = 0.0_fp
-      call greatcircle_dist(evlat, evlon, location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
-      &                     backazimuth=propagation_direction)
-      propagation_direction = propagation_direction - pi
-      !print *, location_grid(jj, kk)%lon, location_grid(jj, kk)%lat, propagation_direction * rad2deg
-      do ii = 1, nsta
-        dist_x_tmp =   (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) * cos(propagation_direction) &
-        &            + (location_sta(ii)%x_east  - location_grid(jj, kk)%x_east)  * sin(propagation_direction)
-        dist_y_tmp = - (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) * sin(propagation_direction) &
-        &            + (location_sta(ii)%x_east  - location_grid(jj, kk)%x_east)  * cos(propagation_direction)
-        dist_tmp = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
-        if(dist_tmp .lt. exp(-2.0_fp)) cycle
-
-        nsta_count(jj, kk) = nsta_count(jj, kk) + 1
-        do j = 1, nsta_grid_max
-          if(dist_tmp .ge. dist_grid_sta(j)) then
-            do i = nsta_grid_max, j + 1, -1
-              dist_grid_sta(i) = dist_grid_sta(i - 1)
-              grid_stationindex(i, jj, kk) = grid_stationindex(i - 1, jj, kk)
-              azimuth_grid_sta(i, jj, kk) = azimuth_grid_sta(i - 1, jj, kk)
-            enddo
-            dist_grid_sta(j) = dist_tmp
-            grid_stationindex(j, jj, kk) = ii
-            azimuth_grid_sta(j, jj, kk) = atan2(location_sta(ii)%x_east  - location_grid(jj, kk)%x_east, &
-            &                                   location_sta(ii)%y_north - location_grid(jj, kk)%y_north)
-            exit
-          endif
-        enddo
-      enddo
-      if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
-      if(nsta_count(jj, kk) .gt. nsta_grid_max) nsta_count(jj, kk) = nsta_grid_max
-      !if(grid_enough_sta(jj, kk) .eqv. .true.) print *, jj, kk, nsta_count(jj, kk)
- 
-#else
-
-      !!count usable stations for each grid
-      dist_grid_sta(1 : nsta_grid_max) = 1.0e+15
-      do ii = 1, nsta
-        dist_tmp = sqrt((location_sta(ii)%x_east  - location_grid(jj, kk)%x_east)  ** 2 &
-        &             + (location_sta(ii)%y_north - location_grid(jj, kk)%y_north) ** 2)
-        if(dist_tmp .gt. cutoff_dist) cycle
-        nsta_count(jj, kk) = nsta_count(jj, kk) + 1
-        do j = 1, nsta_grid_max
-          if(dist_tmp .le. dist_grid_sta(j)) then
-            do i = nsta_grid_max, j + 1, -1
-              dist_grid_sta(i) = dist_grid_sta(i - 1)
-              grid_stationindex(i, jj, kk) = grid_stationindex(i - 1, jj, kk)
-              azimuth_grid_sta(i, jj, kk) = azimuth_grid_sta(i - 1, jj, kk)
-            enddo
-            dist_grid_sta(j) = dist_tmp
-            grid_stationindex(j, jj, kk) = ii
-            !azimuth_grid_sta(j, jj, kk) = atan2(location_sta(ii)%x_east  - location_grid(jj, kk)%x_east, &
-            !&                                   location_sta(ii)%y_north - location_grid(jj, kk)%y_north)
-            call greatcircle_dist(location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
-            &                     location_sta(ii)%lat, location_sta(ii)%lon, &
-            &                     azimuth = azimuth_grid_sta(j, jj, kk))
-            exit
-          endif
-        enddo
-      enddo
-      if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
-      if(nsta_count(jj, kk) .gt. nsta_grid_max) nsta_count(jj, kk) = nsta_grid_max
-
-#endif
-
-      allocate(azimuth_order(1 : nsta_count(jj, kk)))
-      azimuth_order(1 : nsta_count(jj, kk)) = azimuth_grid_sta(1 : nsta_count(jj, kk), jj, kk)
-      call bubblesort(azimuth_order)
-      az_diff_tmp = 2.0_fp * pi - (azimuth_order(1) - azimuth_order(nsta_count(jj, kk)))
-      do i = 2, nsta_count(jj, kk)
-        if(azimuth_order(i - 1) - azimuth_order(i) .gt. az_diff_tmp) then
-          az_diff_tmp = azimuth_order(i - 1) - azimuth_order(i)
-        endif
-      enddo
-      if(az_diff_tmp .gt. az_diff_max) grid_enough_sta(jj, kk) = .false.
-      deallocate(azimuth_order)
-
-      if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
-
-      g(1 : nsta_grid_max, 1 : 3) = 0.0_fp
-      weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_fp
-      do i = 1, nsta_count(jj, kk)
-        g(i, 1) = 1.0_fp
-        g(i, 2) = location_sta(grid_stationindex(i, jj, kk))%x_east - location_grid(jj, kk)%x_east
-        g(i, 3) = location_sta(grid_stationindex(i, jj, kk))%y_north - location_grid(jj, kk)%y_north
-#ifdef ELLIPSE
-        dist_x_tmp =   (location_sta(grid_stationindex(i, jj, kk))%y_north &
-        &            -  location_grid(jj, kk)%y_north) * cos(propagation_direction) &
-        &            + (location_sta(grid_stationindex(i, jj, kk))%x_east  &
-        &            -  location_grid(jj, kk)%x_east)  * sin(propagation_direction)
-        dist_y_tmp = - (location_sta(grid_stationindex(i, jj, kk))%y_north &
-        &            -  location_grid(jj, kk)%y_north) * sin(propagation_direction) &
-        &            + (location_sta(grid_stationindex(i, jj, kk))%x_east  &
-        &            -  location_grid(jj, kk)%x_east)  * cos(propagation_direction)
-
-        weight(i, i) = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
-#else
-        weight(i, i) = exp(-(g(i, 2) ** 2 + g(i, 3) ** 2) / (cutoff_dist ** 2))
-#endif
-      enddo
-      g_tmp = matmul(transpose(g), matmul(weight, g))
-#ifdef MKL
-      call getrf(g_tmp, ipiv = ipiv, info = info)
-      !write(0, '(a, i0)') "GETRF info = ", info
-      call getri(g_tmp, ipiv, info = info)
-      !write(0, '(a, i0)') "GETRI info = ", info
-#else
-      call LA_GETRF(g_tmp, ipiv, info = info)
-      !write(0, '(a, i0)') "LA_GETRF info = ", info
-      call LA_GETRI(g_tmp, ipiv, info = info)
-      !write(0, '(a, i0)') "LA_GETRI info = ", info
-#endif
-      if(info .ne. 0) then
-        grid_enough_sta(jj, kk) = .false.
-        cycle
-      endif
-
-      kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
-
-      !if(grid_enough_sta(jj, kk) .eqv. .true.) print *, jj, kk, nsta_count(jj, kk)
-    enddo
-  enddo
+  !call calc_kernelmatrix_circle(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
+  call calc_kernelmatrix_delaunay(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
 
   !!calculate amplitude and its spatial derivatives at each grid
   do j = 1, ntime

@@ -1,4 +1,5 @@
 subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -59,34 +60,34 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DIST, the nonnegative distance from P1
+!    Input, real ( kind = fp ) DIST, the nonnegative distance from P1
 !    to the computed points P4 and P5.
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2).
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2).
 !    P1 and P2 are distinct points that define a line.
 !    P2 and P3 are distinct points that define a line.
 !
-!    Output, real ( kind = 8 ) P4(2), P5(2), points which lie DIST units from
+!    Output, real ( kind = fp ) P4(2), P5(2), points which lie DIST units from
 !    the line between P1 and P2, and from the line between P2 and P3.
 !
   implicit none
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) p3(2)
-  real ( kind = 8 ) p4(2)
-  real ( kind = 8 ) p5(2)
-  real ( kind = 8 ) stheta
-  real ( kind = 8 ) temp1
-  real ( kind = 8 ) temp2
-  real ( kind = 8 ) u(2)
-  real ( kind = 8 ) u1(2)
-  real ( kind = 8 ) u2(2)
+  real ( kind = fp ) dist
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) p3(2)
+  real ( kind = fp ) p4(2)
+  real ( kind = fp ) p5(2)
+  real ( kind = fp ) stheta
+  real ( kind = fp ) temp1
+  real ( kind = fp ) temp2
+  real ( kind = fp ) u(2)
+  real ( kind = fp ) u1(2)
+  real ( kind = fp ) u2(2)
 !
 !  If DIST = 0, assume the user knows best.
 !
-  if ( dist == 0.0D+00 ) then
+  if ( dist == 0.0_fp ) then
     p4(1:2) = p2(1:2)
     p5(1:2) = p2(1:2)
     return
@@ -138,7 +139,7 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
 
   temp1 = dot_product ( u1(1:2), p3(1:2) - p2(1:2) )
 
-  if ( temp1 < 0.0D+00 ) then
+  if ( temp1 < 0.0_fp ) then
     u1(1:2) = -u1(1:2)
   end if
 
@@ -148,7 +149,7 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
   u2(1:2) = u2(1:2) / temp1
 
   temp1 = dot_product ( u2(1:2), p1(1:2) - p2(1:2) )
-  if ( temp1 < 0.0D+00 ) then
+  if ( temp1 < 0.0_fp ) then
     u2(1:2) = -u2(1:2)
   end if
 !
@@ -159,9 +160,9 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
   temp1 = dot_product ( u1(1:2), p3(1:2) - p2(1:2) )
   temp2 = dot_product ( u2(1:2), p1(1:2) - p2(1:2) )
 
-  if ( temp1 == 0.0D+00 .or. temp2 == 0.0D+00 ) then
+  if ( temp1 == 0.0_fp .or. temp2 == 0.0_fp ) then
 
-    if ( dot_product ( u1(1:2), u2(1:2) ) < 0.0D+00 ) then
+    if ( dot_product ( u1(1:2), u2(1:2) ) < 0.0_fp ) then
       u1(1:2) = -u1(1:2)
     end if
 
@@ -177,7 +178,7 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
         ( sqrt ( sum ( ( p3(1:2) - p2(1:2) )**2 ) ) &
         * sqrt ( sum ( ( p2(1:2) - p1(1:2) )**2 ) ) )
 
-  if ( temp1 < -0.99D+00 ) then
+  if ( temp1 < -0.99_fp ) then
     temp1 = sqrt ( sum ( ( p2(1:2) - p1(1:2) )**2 ) )
     p4(1:2) = p2(1:2) + dist * ( p2(1:2) - p1(1:2) ) &
       / temp1 + dist * u1(1:2)
@@ -196,11 +197,11 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
 !  P1 = P2, which I now treat specially just to guarantee I
 !  avoid this problem!
 !
-  if ( dot_product ( u1(1:2), u2(1:2) ) < 0.0D+00 ) then
+  if ( dot_product ( u1(1:2), u2(1:2) ) < 0.0_fp ) then
     u2(1:2) = -u2(1:2)
   end if
 
-  u(1:2) = 0.5D+00 * ( u1(1:2) + u2(1:2) )
+  u(1:2) = 0.5_fp * ( u1(1:2) + u2(1:2) )
   temp1 = sqrt ( sum ( u(1:2)**2 ) )
   u(1:2) = u(1:2) / temp1
 !
@@ -215,6 +216,7 @@ subroutine angle_box_2d ( dist, p1, p2, p3, p4, p5 )
   return
 end
 subroutine angle_contains_point_2d ( p1, p2, p3, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -249,22 +251,22 @@ subroutine angle_contains_point_2d ( p1, p2, p3, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), the coordinates of
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), the coordinates of
 !    three points that define the angle.  The order of these points matters!
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside
 !    the angle.
 !
   implicit none
 
-  real ( kind = 8 ) angle_rad_2d
+  real ( kind = fp ) angle_rad_2d
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(2)
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) p3(2)
+  real ( kind = fp ) p(2)
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) p3(2)
 
   if ( angle_rad_2d ( p1, p2, p ) <= angle_rad_2d ( p1, p2, p3 ) ) then
     inside = .true.
@@ -275,6 +277,7 @@ subroutine angle_contains_point_2d ( p1, p2, p3, p, inside )
   return
 end
 function angle_deg_2d ( p1, p2, p3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -307,10 +310,10 @@ function angle_deg_2d ( p1, p2, p3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), define the rays
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), define the rays
 !    P1 - P2 and P3 - P2 which define the angle.
 !
-!    Output, real ( kind = 8 ) ANGLE_DEG_2D, the angle swept out by the 
+!    Output, real ( kind = fp ) ANGLE_DEG_2D, the angle swept out by the 
 !    rays, measured in degrees.  0 <= ANGLE_DEG_2D < 360.  If either ray 
 !    has zero length, then ANGLE_DEG_2D is set to 0.
 !
@@ -318,14 +321,14 @@ function angle_deg_2d ( p1, p2, p3 )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle_deg_2d
-  real ( kind = 8 ) angle_rad_2d
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians_to_degrees
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
+  real ( kind = fp ) angle_deg_2d
+  real ( kind = fp ) angle_rad_2d
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radians_to_degrees
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
 
   p(1) = ( p3(1) - p2(1) ) * ( p1(1) - p2(1) ) &
        + ( p3(2) - p2(2) ) * ( p1(2) - p2(2) )
@@ -333,15 +336,15 @@ function angle_deg_2d ( p1, p2, p3 )
   p(2) = ( p3(1) - p2(1) ) * ( p1(2) - p2(2) ) &
        - ( p3(2) - p2(2) ) * ( p1(1) - p2(1) )
 
-  if ( p(1) == 0.0D+00 .and. p(2) == 0.0D+00 ) then
-    angle_deg_2d = 0.0D+00
+  if ( p(1) == 0.0_fp .and. p(2) == 0.0_fp ) then
+    angle_deg_2d = 0.0_fp
     return
   end if
 
   angle_rad_2d = atan2 ( p(2), p(1) )
 
-  if ( angle_rad_2d < 0.0D+00 ) then
-    angle_rad_2d = angle_rad_2d + 2.0D+00 * r8_pi
+  if ( angle_rad_2d < 0.0_fp ) then
+    angle_rad_2d = angle_rad_2d + 2.0_fp * r8_pi
   end if
 
   angle_deg_2d = radians_to_degrees ( angle_rad_2d )
@@ -349,6 +352,7 @@ function angle_deg_2d ( p1, p2, p3 )
   return
 end
 subroutine angle_half_2d ( p1, p2, p3, p4 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -383,19 +387,19 @@ subroutine angle_half_2d ( p1, p2, p3, p4 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), points defining the angle. 
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), points defining the angle. 
 !
-!    Input, real ( kind = 8 ) P4(2), a point defining the half angle.
+!    Input, real ( kind = fp ) P4(2), a point defining the half angle.
 !    The vector P4 - P2 will have unit norm.
 !
   implicit none
 
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) p3(2)
-  real ( kind = 8 ) p4(2)
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) p3(2)
+  real ( kind = fp ) p4(2)
 
-  p4(1:2) = 0.5D+00 * ( &
+  p4(1:2) = 0.5_fp * ( &
       ( p1(1:2) - p2(1:2) ) / sqrt ( sum ( ( p1(1:2) - p2(1:2) )**2 ) ) &
     + ( p3(1:2) - p2(1:2) ) / sqrt ( sum ( ( p3(1:2) - p2(1:2) )**2 ) ) )
 
@@ -404,6 +408,7 @@ subroutine angle_half_2d ( p1, p2, p3, p4 )
   return
 end
 function angle_rad_2d ( p1, p2, p3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -436,21 +441,21 @@ function angle_rad_2d ( p1, p2, p3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), define the rays
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), define the rays
 !    P1 - P2 and P3 - P2 which define the angle.
 !
-!    Output, real ( kind = 8 ) ANGLE_RAD_2D, the angle swept out by the rays,
+!    Output, real ( kind = fp ) ANGLE_RAD_2D, the angle swept out by the rays,
 !    in radians.  0 <= ANGLE_RAD_2D < 2 * PI.  If either ray has zero
 !    length, then ANGLE_RAD_2D is set to 0.
 !
   implicit none
 
-  real ( kind = 8 ) angle_rad_2d
-  real ( kind = 8 ) p(2)
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) p3(2)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) angle_rad_2d
+  real ( kind = fp ) p(2)
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) p3(2)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   p(1) = ( p3(1) - p2(1) ) * ( p1(1) - p2(1) ) &
        + ( p3(2) - p2(2) ) * ( p1(2) - p2(2) )
@@ -458,20 +463,21 @@ function angle_rad_2d ( p1, p2, p3 )
   p(2) = ( p3(1) - p2(1) ) * ( p1(2) - p2(2) ) &
        - ( p3(2) - p2(2) ) * ( p1(1) - p2(1) )
 
-  if ( all ( p(1:2) == 0.0D+00)  ) then
-    angle_rad_2d = 0.0D+00
+  if ( all ( p(1:2) == 0.0_fp)  ) then
+    angle_rad_2d = 0.0_fp
     return
   end if
 
   angle_rad_2d = atan2 ( p(2), p(1) )
 
-  if ( angle_rad_2d < 0.0D+00 ) then
-    angle_rad_2d = angle_rad_2d + 2.0D+00 * r8_pi
+  if ( angle_rad_2d < 0.0_fp ) then
+    angle_rad_2d = angle_rad_2d + 2.0_fp * r8_pi
   end if
 
   return
 end
 function angle_rad_3d ( p1, p2, p3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -499,10 +505,10 @@ function angle_rad_3d ( p1, p2, p3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), points defining an angle.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), points defining an angle.
 !    The rays are P1 - P2 and P3 - P2.
 !
-!    Output, real ( kind = 8 ) ANGLE_RAD_3D, the angle between the two rays,
+!    Output, real ( kind = fp ) ANGLE_RAD_3D, the angle between the two rays,
 !    in radians.  This value will always be between 0 and PI.  If either ray has
 !    zero length, then the angle is returned as zero.
 !
@@ -510,26 +516,26 @@ function angle_rad_3d ( p1, p2, p3 )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) angle_rad_3d
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) v1norm
-  real ( kind = 8 ) v2norm
+  real ( kind = fp ) angle_rad_3d
+  real ( kind = fp ) dot
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) v1norm
+  real ( kind = fp ) v2norm
 
   v1norm = sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
 
-  if ( v1norm == 0.0D+00 ) then
-    angle_rad_3d = 0.0D+00
+  if ( v1norm == 0.0_fp ) then
+    angle_rad_3d = 0.0_fp
     return
   end if
 
   v2norm = sqrt ( sum ( ( p3(1:dim_num) - p2(1:dim_num) )**2 ) )
 
-  if ( v2norm == 0.0D+00 ) then
-    angle_rad_3d = 0.0D+00
+  if ( v2norm == 0.0_fp ) then
+    angle_rad_3d = 0.0_fp
     return
   end if
 
@@ -541,6 +547,7 @@ function angle_rad_3d ( p1, p2, p3 )
   return
 end
 function angle_rad_nd ( dim_num, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -570,36 +577,36 @@ function angle_rad_nd ( dim_num, v1, v2 )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V1(DIM_NUM), V2(DIM_NUM), the two rays.
+!    Input, real ( kind = fp ) V1(DIM_NUM), V2(DIM_NUM), the two rays.
 !
-!    Output, real ( kind = 8 ) ANGLE_RAD_ND, the angle between the rays,
+!    Output, real ( kind = fp ) ANGLE_RAD_ND, the angle between the rays,
 !    in radians.  This value will always be between 0 and PI.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) angle_rad_nd
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v1norm
-  real ( kind = 8 ) v2(dim_num)
-  real ( kind = 8 ) v2norm
+  real ( kind = fp ) angle_rad_nd
+  real ( kind = fp ) dot
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v1norm
+  real ( kind = fp ) v2(dim_num)
+  real ( kind = fp ) v2norm
 
   dot = dot_product ( v1(1:dim_num), v2(1:dim_num) )
 
   v1norm = sqrt ( sum ( v1(1:dim_num)**2 ) )
 
-  if ( v1norm == 0.0D+00 ) then
-    angle_rad_nd = 0.0D+00
+  if ( v1norm == 0.0_fp ) then
+    angle_rad_nd = 0.0_fp
     return
   end if
 
   v2norm = sqrt ( sum ( v2(1:dim_num)**2 ) )
 
-  if ( v2norm == 0.0D+00 ) then
-    angle_rad_nd = 0.0D+00
+  if ( v2norm == 0.0_fp ) then
+    angle_rad_nd = 0.0_fp
     return
   end if
 
@@ -608,6 +615,7 @@ function angle_rad_nd ( dim_num, v1, v2 )
   return
 end
 subroutine angle_turn_2d ( p1, p2, p3, turn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -655,22 +663,22 @@ subroutine angle_turn_2d ( p1, p2, p3, turn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), the points that form
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), the points that form
 !    the angle.
 !
-!    Output, real ( kind = 8 ) TURN, the turn angle, between -PI and PI.
+!    Output, real ( kind = fp ) TURN, the turn angle, between -PI and PI.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) turn
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) turn
 
   p(1) = ( p3(1) - p2(1) ) * ( p1(1) - p2(1) ) &
        + ( p3(2) - p2(2) ) * ( p1(2) - p2(2) )
@@ -678,8 +686,8 @@ subroutine angle_turn_2d ( p1, p2, p3, turn )
   p(2) = ( p3(1) - p2(1) ) * ( p1(2) - p2(2) ) &
        - ( p3(2) - p2(2) ) * ( p1(1) - p2(1) )
 
-  if ( p(1) == 0.0D+00 .and. p(2) == 0.0D+00 ) then
-    turn = 0.0D+00
+  if ( p(1) == 0.0_fp .and. p(2) == 0.0_fp ) then
+    turn = 0.0_fp
   else
     turn = r8_pi - r8_atan ( p(2), p(1) )
   end if
@@ -687,6 +695,7 @@ subroutine angle_turn_2d ( p1, p2, p3, turn )
   return
 end
 subroutine annulus_area_2d ( r1, r2, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -713,22 +722,23 @@ subroutine annulus_area_2d ( r1, r2, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the inner and outer radii.
+!    Input, real ( kind = fp ) R1, R2, the inner and outer radii.
 !
-!    Output, real ( kind = 8 ) AREA, the area.
+!    Output, real ( kind = fp ) AREA, the area.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   area = r8_pi * ( r2 + r1 ) * ( r2 - r1 )
 
   return
 end
 subroutine annulus_sector_area_2d ( r1, r2, theta1, theta2, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -756,25 +766,26 @@ subroutine annulus_sector_area_2d ( r1, r2, theta1, theta2, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the inner and outer radii.
+!    Input, real ( kind = fp ) R1, R2, the inner and outer radii.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles.
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles.
 !
-!    Output, real ( kind = 8 ) AREA, the area.
+!    Output, real ( kind = fp ) AREA, the area.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) area
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
-  area = 0.5D+00 * ( theta2 - theta1 ) * ( r2 + r1 ) * ( r2 - r1 )
+  area = 0.5_fp * ( theta2 - theta1 ) * ( r2 + r1 ) * ( r2 - r1 )
 
   return
 end
 subroutine annulus_sector_centroid_2d ( pc, r1, r2, theta1, theta2, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -815,36 +826,37 @@ subroutine annulus_sector_centroid_2d ( pc, r1, r2, theta1, theta2, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the center.
+!    Input, real ( kind = fp ) PC(2), the center.
 !
-!    Input, real ( kind = 8 ) R1, R2, the inner and outer radii.
+!    Input, real ( kind = fp ) R1, R2, the inner and outer radii.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles.
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles.
 !
-!    Output, real ( kind = 8 ) CENTROID(2), the centroid.
+!    Output, real ( kind = fp ) CENTROID(2), the centroid.
 !
   implicit none
 
-  real ( kind = 8 ) centroid(2)
-  real ( kind = 8 ) pc(2)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) centroid(2)
+  real ( kind = fp ) pc(2)
+  real ( kind = fp ) r
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   theta = theta2 - theta1
 
-  r = 4.0D+00 * sin ( theta / 2.0D+00 ) / ( 3.0D+00 * theta ) &
+  r = 4.0_fp * sin ( theta / 2.0_fp ) / ( 3.0_fp * theta ) &
     * ( r1 * r1 + r1 * r2 + r2 * r2 ) / ( r1 + r2 )
 
-  centroid(1) = pc(1) + r * cos ( theta1 + theta / 2.0D+00 )
-  centroid(2) = pc(2) + r * sin ( theta1 + theta / 2.0D+00 )
+  centroid(1) = pc(1) + r * cos ( theta1 + theta / 2.0_fp )
+  centroid(2) = pc(2) + r * sin ( theta1 + theta / 2.0_fp )
 
   return
 end
 subroutine ball01_sample_2d ( seed, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -873,23 +885,23 @@ subroutine ball01_sample_2d ( seed, p )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) P(2), a random point in the unit ball.
+!    Output, real ( kind = fp ) P(2), a random point in the unit ball.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) u(dim_num)
+  real ( kind = fp ) theta
+  real ( kind = fp ) u(dim_num)
 
   call r8vec_uniform_01 ( dim_num, seed, u )
 
   r = sqrt ( u(1) )
-  theta = 2.0D+00 * r8_pi * u(2)
+  theta = 2.0_fp * r8_pi * u(2)
 
   p(1) = r * cos ( theta )
   p(2) = r * sin ( theta )
@@ -897,6 +909,7 @@ subroutine ball01_sample_2d ( seed, p )
   return
 end
 subroutine ball01_sample_3d ( seed, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -919,21 +932,21 @@ subroutine ball01_sample_3d ( seed, p )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) P(3), the sample point.
+!    Output, real ( kind = fp ) P(3), the sample point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) phi
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) u(dim_num)
-  real ( kind = 8 ) vdot
+  real ( kind = fp ) theta
+  real ( kind = fp ) u(dim_num)
+  real ( kind = fp ) vdot
 
   call r8vec_uniform_01 ( dim_num, seed, u )
 !
@@ -944,18 +957,18 @@ subroutine ball01_sample_3d ( seed, p )
 !  Z and Z + dZ is independent of Z.  So choosing Z uniformly chooses
 !  a patch of area uniformly.
 !
-  vdot = 2.0D+00 * u(1) - 1.0D+00
+  vdot = 2.0_fp * u(1) - 1.0_fp
 
   phi = r8_acos ( vdot )
 !
 !  Pick a uniformly random rotation between 0 and 2 Pi around the
 !  axis of the Z vector.
 !
-  theta = 2.0D+00 * r8_pi * u(2)
+  theta = 2.0_fp * r8_pi * u(2)
 !
 !  Pick a random radius R.
 !
-  r = u(3) ** ( 1.0D+00 / 3.0D+00 )
+  r = u(3) ** ( 1.0_fp / 3.0_fp )
 
   p(1) = r * cos ( theta ) * sin ( phi )
   p(2) = r * sin ( theta ) * sin ( phi )
@@ -964,6 +977,7 @@ subroutine ball01_sample_3d ( seed, p )
   return
 end
 subroutine ball01_sample_nd ( dim_num, seed, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1001,33 +1015,33 @@ subroutine ball01_sample_nd ( dim_num, seed, p )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) P(N), the random point.
+!    Output, real ( kind = fp ) P(N), the random point.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pi
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ) random_cosine
-  real ( kind = 8 ) random_sign
-  real ( kind = 8 ) random_sine
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pi
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ) random_cosine
+  real ( kind = fp ) random_sign
+  real ( kind = fp ) random_sine
   integer ( kind = 4 ) seed
 
-  p(1) = 1.0D+00
-  p(2:dim_num) = 0.0D+00
+  p(1) = 1.0_fp
+  p(2:dim_num) = 0.0_fp
 
   do i = 1, dim_num-1
 
     r = r8_uniform_01 ( seed )
-    random_cosine = 2.0D+00 * r - 1.0D+00
+    random_cosine = 2.0_fp * r - 1.0_fp
     r = r8_uniform_01 ( seed )
-    random_sign = real ( 2 * int ( 2.0D+00 * r ) - 1, kind = 8 )
+    random_sign = real ( 2 * int ( 2.0_fp * r ) - 1, kind = 8 )
     r = r8_uniform_01 ( seed )
-    random_sine = random_sign * sqrt ( 1.0D+00 - random_cosine * random_cosine )
+    random_sine = random_sign * sqrt ( 1.0_fp - random_cosine * random_cosine )
 
     pi = p(i)
     p(i  ) = random_cosine * pi
@@ -1037,13 +1051,14 @@ subroutine ball01_sample_nd ( dim_num, seed, p )
 
   r = r8_uniform_01 ( seed )
 
-  r = r ** ( 1.0D+00 / real ( dim_num, kind = 8 ) )
+  r = r ** ( 1.0_fp / real ( dim_num, kind = 8 ) )
 
   p(1:dim_num) = r * p(1:dim_num)
 
   return
 end
 function ball01_volume ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1063,20 +1078,21 @@ function ball01_volume ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) BALL01_VOLUME_3D, the volume.
+!    Output, real ( kind = fp ) BALL01_VOLUME_3D, the volume.
 !
   implicit none
 
-  real ( kind = 8 ) ball01_volume
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) ball01_volume
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   
-  r = 1.0D+00
-  ball01_volume = 4.0D+00 * r8_pi * r ** 3 / 3.0D+00
+  r = 1.0_fp
+  ball01_volume = 4.0_fp * r8_pi * r ** 3 / 3.0_fp
 
   return
 end
 subroutine basis_map_3d ( u, v, a, ierror )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1106,13 +1122,13 @@ subroutine basis_map_3d ( u, v, a, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) U(3,3), the columns of U are the three 
+!    Input, real ( kind = fp ) U(3,3), the columns of U are the three 
 !    "domain" or "preimage" vectors, which should be linearly independent.
 !
-!    Input, real ( kind = 8 ) V(3,3), the columns of V are the three 
+!    Input, real ( kind = fp ) V(3,3), the columns of V are the three 
 !    "range" or "image" vectors.
 !
-!    Output, real ( kind = 8 ) A(3,3), a matrix with the property that 
+!    Output, real ( kind = fp ) A(3,3), a matrix with the property that 
 !    A * U1 = V1, A * U2 = V2 and A * U3 = V3.
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.
@@ -1121,13 +1137,13 @@ subroutine basis_map_3d ( u, v, a, ierror )
 !
   implicit none
 
-  real ( kind = 8 ) a(3,3)
-  real ( kind = 8 ) b(3,3)
-  real ( kind = 8 ) c(3,3)
-  real ( kind = 8 ) det
+  real ( kind = fp ) a(3,3)
+  real ( kind = fp ) b(3,3)
+  real ( kind = fp ) c(3,3)
+  real ( kind = fp ) det
   integer ( kind = 4 ) ierror
-  real ( kind = 8 ) u(3,3)
-  real ( kind = 8 ) v(3,3)
+  real ( kind = fp ) u(3,3)
+  real ( kind = fp ) v(3,3)
 
   ierror = 0
 !
@@ -1137,7 +1153,7 @@ subroutine basis_map_3d ( u, v, a, ierror )
 
   call r8mat_inverse_3d ( b, c, det )
 
-  if ( det == 0.0D+00 ) then
+  if ( det == 0.0_fp ) then
     ierror = 1
     return
   end if
@@ -1149,6 +1165,7 @@ subroutine basis_map_3d ( u, v, a, ierror )
   return
 end
 function box_contains_point_2d ( p1, p2, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1176,10 +1193,10 @@ function box_contains_point_2d ( p1, p2, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the low and high 
+!    Input, real ( kind = fp ) P1(2), P2(2), the low and high 
 !    corners of the box.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) BOX_CONTAINS_POINT_2D, is TRUE if the point 
 !    is inside the box.
@@ -1187,9 +1204,9 @@ function box_contains_point_2d ( p1, p2, p )
   implicit none
 
   logical ( kind = 4 ) box_contains_point_2d
-  real ( kind = 8 ) p(2)
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
+  real ( kind = fp ) p(2)
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
 
   if ( p(1)  < p1(1) .or. &
        p2(1) < p(1)  .or. &
@@ -1203,6 +1220,7 @@ function box_contains_point_2d ( p1, p2, p )
   return
 end
 function box_contains_point_nd ( dim_num, p1, p2, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1232,10 +1250,10 @@ function box_contains_point_nd ( dim_num, p1, p2, p )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) P1(DIM_NUM), P2(DIM_NUM), the low and high 
+!    Input, real ( kind = fp ) P1(DIM_NUM), P2(DIM_NUM), the low and high 
 !    corners of the box.
 !
-!    Input, real ( kind = 8 ) P(DIM_NUM), the point to be checked.
+!    Input, real ( kind = fp ) P(DIM_NUM), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) BOX_CONTAINS_POINT_ND, is TRUE if the point 
 !    is inside the box.
@@ -1246,9 +1264,9 @@ function box_contains_point_nd ( dim_num, p1, p2, p )
 
   logical ( kind = 4 ) box_contains_point_nd
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   box_contains_point_nd = .false.
 
@@ -1263,6 +1281,7 @@ function box_contains_point_nd ( dim_num, p1, p2, p )
   return
 end
 function box_contains_segment_nd ( dim_num, p1, p2, pa, pb  )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1295,10 +1314,10 @@ function box_contains_segment_nd ( dim_num, p1, p2, pa, pb  )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) P1(DIM_NUM), P2(DIM_NUM), the low and high corners
+!    Input, real ( kind = fp ) P1(DIM_NUM), P2(DIM_NUM), the low and high corners
 !    of the box.
 !
-!    Input, real ( kind = 8 ) PA(DIM_NUM), PB(DIM_NUM), the endpoints of the 
+!    Input, real ( kind = fp ) PA(DIM_NUM), PB(DIM_NUM), the endpoints of the 
 !    line segment.
 !
 !    Output, logical ( kind = 4 ) BOX_CONTAINS_SEGMENT_ND, is TRUE if the box 
@@ -1310,10 +1329,10 @@ function box_contains_segment_nd ( dim_num, p1, p2, pa, pb  )
 
   logical ( kind = 4 ) box_contains_segment_nd
   logical ( kind = 4 ) box_contains_point_nd
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pa(dim_num)
-  real ( kind = 8 ) pb(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pa(dim_num)
+  real ( kind = fp ) pb(dim_num)
 
   box_contains_segment_nd = .false.
 
@@ -1330,6 +1349,7 @@ function box_contains_segment_nd ( dim_num, p1, p2, pa, pb  )
   return
 end
 subroutine box_ray_int_2d ( p1, p2, pa, pb, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1360,14 +1380,14 @@ subroutine box_ray_int_2d ( p1, p2, pa, pb, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the low and high corners of the box.
+!    Input, real ( kind = fp ) P1(2), P2(2), the low and high corners of the box.
 !
-!    Input, real ( kind = 8 ) PA(2), the origin of the ray, which should be
+!    Input, real ( kind = fp ) PA(2), the origin of the ray, which should be
 !    inside the box.
 !
-!    Input, real ( kind = 8 ) PB(2), a second point on the ray.
+!    Input, real ( kind = fp ) PB(2), a second point on the ray.
 !
-!    Output, real ( kind = 8 ) PINT(2), the point on the box intersected 
+!    Output, real ( kind = fp ) PINT(2), the point on the box intersected 
 !    by the ray.
 !
   implicit none
@@ -1376,13 +1396,13 @@ subroutine box_ray_int_2d ( p1, p2, pa, pb, pint )
 
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) ival
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) pa(2)
-  real ( kind = 8 ) pb(2)
-  real ( kind = 8 ) pc(2)
-  real ( kind = 8 ) pd(2)
-  real ( kind = 8 ) pint(2)
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) pa(2)
+  real ( kind = fp ) pb(2)
+  real ( kind = fp ) pc(2)
+  real ( kind = fp ) pd(2)
+  real ( kind = fp ) pint(2)
   integer ( kind = 4 ) side
 
   do side = 1, 4
@@ -1421,6 +1441,7 @@ subroutine box_ray_int_2d ( p1, p2, pa, pb, pint )
   return
 end
 subroutine box_segment_clip_2d ( p1, p2, pa, pb, ival )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1451,9 +1472,9 @@ subroutine box_segment_clip_2d ( p1, p2, pa, pb, ival )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the low and high corners of the box.
+!    Input, real ( kind = fp ) P1(2), P2(2), the low and high corners of the box.
 !
-!    Input/output, real ( kind = 8 ) PA(2), PB(2); on input, the endpoints 
+!    Input/output, real ( kind = fp ) PA(2), PB(2); on input, the endpoints 
 !    of a line segment.  On output, the endpoints of the portion of the
 !    line segment that lies inside the box.  However, if no part of the
 !    initial line segment lies inside the box, the output value is the
@@ -1473,11 +1494,11 @@ subroutine box_segment_clip_2d ( p1, p2, pa, pb, ival )
   logical ( kind = 4 ) clip_a
   logical ( kind = 4 ) clip_b
   integer ( kind = 4 ) ival
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pa(dim_num)
-  real ( kind = 8 ) pb(dim_num)
-  real ( kind = 8 ) q(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pa(dim_num)
+  real ( kind = fp ) pb(dim_num)
+  real ( kind = fp ) q(dim_num)
 
   clip_a = .false.
   clip_b = .false.
@@ -1571,6 +1592,7 @@ subroutine box_segment_clip_2d ( p1, p2, pa, pb, ival )
   return
 end
 function box01_contains_point_2d ( p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1599,7 +1621,7 @@ function box01_contains_point_2d ( p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) BOX01_CONTAINS_POINT_2D, is TRUE if the
 !    point is  inside the box.
@@ -1607,14 +1629,15 @@ function box01_contains_point_2d ( p )
   implicit none
 
   logical ( kind = 4 ) box01_contains_point_2d
-  real ( kind = 8 ) p(2)
+  real ( kind = fp ) p(2)
 
   box01_contains_point_2d = &
-    all ( 0.0D+00 <= p(1:2) ) .and. all ( p(1:2) <= 1.0D+00 )
+    all ( 0.0_fp <= p(1:2) ) .and. all ( p(1:2) <= 1.0_fp )
 
   return
 end
 function box01_contains_point_nd ( dim_num, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1643,7 +1666,7 @@ function box01_contains_point_nd ( dim_num, p )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) P(DIM_NUM), the point to be checked.
+!    Input, real ( kind = fp ) P(DIM_NUM), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) BOX_01_CONTAINS_POINT_ND, is TRUE 
 !    if the point is inside the box.
@@ -1653,15 +1676,16 @@ function box01_contains_point_nd ( dim_num, p )
   integer ( kind = 4 ) dim_num
 
   logical ( kind = 4 ) box01_contains_point_nd
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) p(dim_num)
 
   box01_contains_point_nd = &
-    all ( 0.0D+00 <= p(1:dim_num) ) .and. all ( p(1:dim_num) <= 1.0D+00 )
+    all ( 0.0_fp <= p(1:dim_num) ) .and. all ( p(1:dim_num) <= 1.0_fp )
 
   return
 end
 subroutine circle_arc_point_near_2d ( r, pc, theta1, theta2, p, pn, &
   dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1695,40 +1719,40 @@ subroutine circle_arc_point_near_2d ( r, pc, theta1, theta2, p, pn, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) PN(2), a point on the circular arc which is
+!    Output, real ( kind = fp ) PN(2), a point on the circular arc which is
 !    nearest to the point.
 !
-!    Output, real ( kind = 8 ) DIST, the distance to the nearest point.
+!    Output, real ( kind = fp ) DIST, the distance to the nearest point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) r8_modp
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r2
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) r8_modp
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 !
 !  Special case, the zero circle.
 !
-  if ( r == 0.0D+00 ) then
+  if ( r == 0.0_fp ) then
     pn(1:dim_num) = pc(1:dim_num)
     dist = sqrt ( sum ( ( p(1:dim_num) - pn(1:dim_num) )**2 ) )
     return
@@ -1741,8 +1765,8 @@ subroutine circle_arc_point_near_2d ( r, pc, theta1, theta2, p, pn, &
 !  If the angle is between THETA1 and THETA2, then you can
 !  simply project the point onto the arc.
 !
-  if ( r8_modp ( theta  - theta1,  2.0D+00 * r8_pi ) <= &
-       r8_modp ( theta2 - theta1,  2.0D+00 * r8_pi ) ) then
+  if ( r8_modp ( theta  - theta1,  2.0_fp * r8_pi ) <= &
+       r8_modp ( theta2 - theta1,  2.0_fp * r8_pi ) ) then
 
     r2 = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
 
@@ -1752,7 +1776,7 @@ subroutine circle_arc_point_near_2d ( r, pc, theta1, theta2, p, pn, &
 !  average of THETA1 and THETA2, it's on the side of the arc
 !  where the endpoint associated with THETA2 is closest.
 !
-  else if ( r8_modp ( theta - 0.5D+00 * ( theta1 + theta2 ), 2.0D+00 * r8_pi ) &
+  else if ( r8_modp ( theta - 0.5_fp * ( theta1 + theta2 ), 2.0_fp * r8_pi ) &
     <= r8_pi ) then
 
     pn(1:dim_num) = pc(1:dim_num) + r * (/ cos ( theta2 ), sin ( theta2 ) /)
@@ -1770,6 +1794,7 @@ subroutine circle_arc_point_near_2d ( r, pc, theta1, theta2, p, pn, &
   return
 end
 subroutine circle_area_2d ( r, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1789,21 +1814,22 @@ subroutine circle_area_2d ( r, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the circle.
+!    Output, real ( kind = fp ) AREA, the area of the circle.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   area = r8_pi * r * r
 
   return
 end
 subroutine circle_dia2imp_2d ( p1, p2, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1833,29 +1859,30 @@ subroutine circle_dia2imp_2d ( p1, p2, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points that are the 
+!    Input, real ( kind = fp ) P1(2), P2(2), two points that are the 
 !    endpoints of a diameter of the circle.
 !
-!    Output, real ( kind = 8 ) R, the radius of the circle.
+!    Output, real ( kind = fp ) R, the radius of the circle.
 !
-!    Output, real ( kind = 8 ) PC(2), the center of the circle.
+!    Output, real ( kind = fp ) PC(2), the center of the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
 
-  r = 0.5D+00 * sqrt ( sum ( ( p2(1:dim_num) - p1(1:dim_num) )**2 ) )
+  r = 0.5_fp * sqrt ( sum ( ( p2(1:dim_num) - p1(1:dim_num) )**2 ) )
 
-  pc(1:dim_num) = 0.5D+00 * ( p1(1:dim_num) + p2(1:dim_num) )
+  pc(1:dim_num) = 0.5_fp * ( p1(1:dim_num) + p2(1:dim_num) )
 
   return
 end
 subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -1881,9 +1908,9 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), three points on a circle.
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), three points on a circle.
 !
-!    Input, real ( kind = 8 ) P(2), the point to test.
+!    Input, real ( kind = fp ) P(2), the point to test.
 !
 !    Output, integer ( kind = 4 ) INSIDE, reports the result:
 !   -1, the three points are distinct and noncolinear,
@@ -1905,14 +1932,14 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) det
-  real ( kind = 8 ) r8mat_det_4d
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) det
+  real ( kind = fp ) r8mat_det_4d
   integer ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
 !
 !  P1 = P2?
 !
@@ -1931,7 +1958,7 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
       det = ( p1(1) - p3(1) ) * ( p(2)  - p3(2) ) &
           - ( p(1)  - p3(1) ) * ( p1(2) - p3(2) )
 
-      if ( det == 0.0D+00 ) then
+      if ( det == 0.0_fp ) then
         inside = 4
       else
         inside = 5
@@ -1949,7 +1976,7 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
     det = ( p1(1) - p2(1) ) * ( p(2)  - p2(2) ) &
         - ( p(1)  - p2(1) ) * ( p1(2) - p2(2) )
 
-    if ( det == 0.0D+00 ) then
+    if ( det == 0.0_fp ) then
       inside = 4
     else
       inside = 5
@@ -1964,12 +1991,12 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
   det = ( p1(1) - p2(1) ) * ( p3(2) - p2(2) ) &
       - ( p3(1) - p2(1) ) * ( p1(2) - p2(2) )
 
-  if ( det == 0.0D+00 ) then
+  if ( det == 0.0_fp ) then
 
     det = ( p1(1) - p2(1) ) * ( p(2)  - p2(2) ) &
         - ( p(1)  - p2(1) ) * ( p1(2) - p2(2) )
 
-    if ( det == 0.0D+00 ) then
+    if ( det == 0.0_fp ) then
       inside = 2
     else
       inside = 3
@@ -1986,28 +2013,28 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
   a(1,1) = p1(1)
   a(1,2) = p1(2)
   a(1,3) = p1(1) * p1(1) + p1(2) * p1(2)
-  a(1,4) = 1.0D+00
+  a(1,4) = 1.0_fp
 
   a(2,1) = p2(1)
   a(2,2) = p2(2)
   a(2,3) = p2(1) * p2(1) + p2(2) * p2(2)
-  a(2,4) = 1.0D+00
+  a(2,4) = 1.0_fp
 
   a(3,1) = p3(1)
   a(3,2) = p3(2)
   a(3,3) = p3(1) * p3(1) + p3(2) * p3(2)
-  a(3,4) = 1.0D+00
+  a(3,4) = 1.0_fp
 
   a(4,1) = p(1)
   a(4,2) = p(2)
   a(4,3) = p(1) * p(1) + p(2) * p(2)
-  a(4,4) = 1.0D+00
+  a(4,4) = 1.0_fp
 
   det = r8mat_det_4d ( a )
 
-  if ( det < 0.0D+00 ) then
+  if ( det < 0.0_fp ) then
     inside = 1
-  else if ( det == 0.0D+00 ) then
+  else if ( det == 0.0_fp ) then
     inside = 0
   else
     inside = -1
@@ -2016,6 +2043,7 @@ subroutine circle_exp_contains_point_2d ( p1, p2, p3, p, inside )
   return
 end
 subroutine circle_exp2imp_2d ( p1, p2, p3, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2072,36 +2100,36 @@ subroutine circle_exp2imp_2d ( p1, p2, p3, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), three points on the circle.
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), three points on the circle.
 !
-!    Output, real ( kind = 8 ) R, the radius of the circle.  Normally, R will
+!    Output, real ( kind = fp ) R, the radius of the circle.  Normally, R will
 !    be positive.  R will be (meaningfully) zero if all three points are 
 !    equal.  If two points are equal, R is returned as the distance between
 !    two nonequal points.  R is returned as -1 in the unlikely event that 
 !    the points are numerically collinear; philosophically speaking, R 
 !    should actually be "infinity" in this case.
 !
-!    Output, real ( kind = 8 ) PC(2), the center of the circle.
+!    Output, real ( kind = fp ) PC(2), the center of the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) e
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) e
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
 !
 !  If all three points are equal, then the
 !  circle of radius 0 and center P1 passes through the points.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) .and. &
        all ( p1(1:dim_num) == p3(1:dim_num) ) ) then
-    r = 0.0D+00
+    r = 0.0_fp
     pc(1:dim_num) = p1(1:dim_num)
     return
   end if
@@ -2111,20 +2139,20 @@ subroutine circle_exp2imp_2d ( p1, p2, p3, r, pc )
 !
        if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    r = 0.5D+00 * sqrt ( sum ( ( p1(1:dim_num) - p3(1:dim_num) )**2 ) )
-    pc(1:dim_num) = 0.5D+00 * ( p1(1:dim_num) + p3(1:dim_num)  )
+    r = 0.5_fp * sqrt ( sum ( ( p1(1:dim_num) - p3(1:dim_num) )**2 ) )
+    pc(1:dim_num) = 0.5_fp * ( p1(1:dim_num) + p3(1:dim_num)  )
     return
 
   else if ( all ( p1(1:dim_num) == p3(1:dim_num) ) ) then
 
-    r = 0.5D+00 * sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
-    pc(1:dim_num) = 0.5D+00 * ( p1(1:dim_num) + p2(1:dim_num)  )
+    r = 0.5_fp * sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
+    pc(1:dim_num) = 0.5_fp * ( p1(1:dim_num) + p2(1:dim_num)  )
     return
 
   else if ( all ( p2(1:dim_num) == p3(1:dim_num) ) ) then
 
-    r = 0.5D+00 * sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
-    pc(1:dim_num) = 0.5D+00 * ( p1(1:dim_num) + p2(1:dim_num)  )
+    r = 0.5_fp * sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
+    pc(1:dim_num) = 0.5_fp * ( p1(1:dim_num) + p2(1:dim_num)  )
     return
 
   end if
@@ -2141,16 +2169,16 @@ subroutine circle_exp2imp_2d ( p1, p2, p3, r, pc )
   g = ( p2(1) - p1(1) ) * ( p3(2) - p2(2) ) &
     - ( p2(2) - p1(2) ) * ( p3(1) - p2(1) )
 
-  if ( g == 0.0D+00 ) then
-    pc(1:2) = (/ 0.0D+00, 0.0D+00 /)
-    r = -1.0D+00
+  if ( g == 0.0_fp ) then
+    pc(1:2) = (/ 0.0_fp, 0.0_fp /)
+    r = -1.0_fp
     return
   end if
 !
 !  The center is halfway along the diameter vector from P1.
 !
-  pc(1) = 0.5D+00 * ( ( p3(2) - p1(2) ) * e - ( p2(2) - p1(2) ) * f ) / g
-  pc(2) = 0.5D+00 * ( ( p2(1) - p1(1) ) * f - ( p3(1) - p1(1) ) * e ) / g
+  pc(1) = 0.5_fp * ( ( p3(2) - p1(2) ) * e - ( p2(2) - p1(2) ) * f ) / g
+  pc(2) = 0.5_fp * ( ( p2(1) - p1(1) ) * f - ( p3(1) - p1(1) ) * e ) / g
 !
 !  Knowing the center, the radius is now easy to compute.
 !
@@ -2159,6 +2187,7 @@ subroutine circle_exp2imp_2d ( p1, p2, p3, r, pc )
   return
 end
 subroutine circle_imp_contains_point_2d ( r, pc, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2184,11 +2213,11 @@ subroutine circle_imp_contains_point_2d ( r, pc, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside or
 !    on the circle.
@@ -2198,9 +2227,9 @@ subroutine circle_imp_contains_point_2d ( r, pc, p, inside )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
 
   if ( ( p(1) - pc(1) ) * ( p(1) - pc(1) ) &
      + ( p(2) - pc(2) ) * ( p(2) - pc(2) ) <= r * r ) then
@@ -2212,6 +2241,7 @@ subroutine circle_imp_contains_point_2d ( r, pc, p, inside )
   return
 end
 subroutine circle_imp_line_exp_dist_2d ( r, pc, p1, p2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2246,35 +2276,36 @@ subroutine circle_imp_line_exp_dist_2d ( r, pc, p1, p2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Output, real ( kind = 8 ) DIST, the distance of the line to the circle.
+!    Output, real ( kind = fp ) DIST, the distance of the line to the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) dist
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
 
   call line_exp_point_dist_2d ( p1, p2, pc, dist )
 
   dist = dist - r
 
-  if ( dist < 0.0D+00 ) then
-    dist = 0.0D+00
+  if ( dist < 0.0_fp ) then
+    dist = 0.0_fp
   end if
 
   return
 end
 subroutine circle_imp_line_par_int_2d ( r, pc, x0, y0, f, g, int_num, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2307,41 +2338,41 @@ subroutine circle_imp_line_par_int_2d ( r, pc, x0, y0, f, g, int_num, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) F, G, X0, Y0, the parametric parameters of 
+!    Input, real ( kind = fp ) F, G, X0, Y0, the parametric parameters of 
 !    the line.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersecting 
 !    points found.  INT_NUM will be 0, 1 or 2.
 !
-!    Output, real ( kind = 8 ) P(2,INT_NUM), the intersecting points.
+!    Output, real ( kind = fp ) P(2,INT_NUM), the intersecting points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
+  real ( kind = fp ) f
+  real ( kind = fp ) g
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) p(dim_num,2)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) root
-  real ( kind = 8 ) t
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
+  real ( kind = fp ) p(dim_num,2)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) root
+  real ( kind = fp ) t
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
 
   root = r * r * ( f * f + g * g ) - ( f * ( pc(2) - y0 ) &
     - g * ( pc(1) - x0 ) )**2
 
-  if ( root < 0.0D+00 ) then
+  if ( root < 0.0_fp ) then
 
     int_num = 0
 
-  else if ( root == 0.0D+00 ) then
+  else if ( root == 0.0_fp ) then
 
     int_num = 1
 
@@ -2349,7 +2380,7 @@ subroutine circle_imp_line_par_int_2d ( r, pc, x0, y0, f, g, int_num, p )
     p(1,1) = x0 + f * t
     p(2,1) = y0 + g * t
 
-  else if ( 0.0D+00 < root ) then
+  else if ( 0.0_fp < root ) then
 
     int_num = 2
 
@@ -2370,6 +2401,7 @@ subroutine circle_imp_line_par_int_2d ( r, pc, x0, y0, f, g, int_num, p )
   return
 end
 subroutine circle_imp_point_dist_2d ( r, pc, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2397,23 +2429,23 @@ subroutine circle_imp_point_dist_2d ( r, pc, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance of the point to the circle.
+!    Output, real ( kind = fp ) DIST, the distance of the point to the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r2
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r2
 
   r2 = sqrt ( sum ( ( p(1:2) - pc(1:2) )**2 ) )
 
@@ -2422,6 +2454,7 @@ subroutine circle_imp_point_dist_2d ( r, pc, p, dist )
   return
 end
 subroutine circle_imp_point_dist_signed_2d ( r, pc, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2450,13 +2483,13 @@ subroutine circle_imp_point_dist_signed_2d ( r, pc, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the signed distance of the point
+!    Output, real ( kind = fp ) DIST, the signed distance of the point
 !    to the circle.  If the point is inside the circle, the signed distance
 !    is negative.
 !
@@ -2464,11 +2497,11 @@ subroutine circle_imp_point_dist_signed_2d ( r, pc, p, dist )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r2
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r2
 
   r2 = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
 
@@ -2477,6 +2510,7 @@ subroutine circle_imp_point_dist_signed_2d ( r, pc, p, dist )
   return
 end
 subroutine circle_imp_point_near_2d ( r, pc, p, pn, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2509,26 +2543,26 @@ subroutine circle_imp_point_near_2d ( r, pc, p, pn, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) PN(2), the nearest point on the circle.
+!    Output, real ( kind = fp ) PN(2), the nearest point on the circle.
 !
-!    Output, real ( kind = 8 ) DIST, the distance of the point to the circle.
+!    Output, real ( kind = fp ) DIST, the distance of the point to the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r2
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r2
 
   if ( all ( p(1:dim_num) == pc(1:dim_num) ) ) then
     dist = r
@@ -2545,6 +2579,7 @@ subroutine circle_imp_point_near_2d ( r, pc, p, pn, dist )
   return
 end
 subroutine circle_imp_points_2d ( r, pc, n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2573,14 +2608,14 @@ subroutine circle_imp_points_2d ( r, pc, n, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
 !    Input, integer ( kind = 4 ) N, the number of points desired.  
 !    N must be at least 1.
 !
-!    Output, real ( kind = 8 ) P(2,N), the coordinates of points 
+!    Output, real ( kind = fp ) P(2,N), the coordinates of points 
 !    on the circle.
 !
   implicit none
@@ -2589,20 +2624,21 @@ subroutine circle_imp_points_2d ( r, pc, n, p )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(2,n)
-  real ( kind = 8 ) pc(2)
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
+  real ( kind = fp ) p(2,n)
+  real ( kind = fp ) pc(2)
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
 
   do j = 1, n
-    theta = 2.0D+00 * r8_pi * real ( j - 1, kind = 8 ) / real ( n, kind = 8 )
+    theta = 2.0_fp * r8_pi * real ( j - 1, kind = 8 ) / real ( n, kind = 8 )
     p(1:dim_num,j) = pc(1:dim_num) + r * (/ cos ( theta ), sin ( theta ) /)
   end do
 
   return
 end
 subroutine circle_imp_points_3d ( r, pc, nc, n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2636,18 +2672,18 @@ subroutine circle_imp_points_3d ( r, pc, nc, n, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the circle.
+!    Input, real ( kind = fp ) PC(3), the center of the circle.
 !
-!    Input, real ( kind = 8 ) NC(3), a nonzero vector that is normal to
+!    Input, real ( kind = fp ) NC(3), a nonzero vector that is normal to
 !    the plane of the circle.  It is customary, but not necessary,
 !    that this vector have unit norm.
 !
 !    Input, integer ( kind = 4 ) N, the number of points desired.  
 !    N must be at least 1.
 !
-!    Output, real ( kind = 8 ) P(3,N), the coordinates of points 
+!    Output, real ( kind = fp ) P(3,N), the coordinates of points 
 !    on the circle.
 !
   implicit none
@@ -2656,14 +2692,14 @@ subroutine circle_imp_points_3d ( r, pc, nc, n, p )
   integer ( kind = 4 ), parameter :: dim_num = 3
 
   integer ( kind = 4 ) j
-  real ( kind = 8 ) n1(dim_num)
-  real ( kind = 8 ) n2(dim_num)
-  real ( kind = 8 ) nc(dim_num)
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
+  real ( kind = fp ) n1(dim_num)
+  real ( kind = fp ) n2(dim_num)
+  real ( kind = fp ) nc(dim_num)
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
 !
 !  Get two unit vectors N1 and N2 which are orthogonal to each other,
 !  and to NC.
@@ -2674,7 +2710,7 @@ subroutine circle_imp_points_3d ( r, pc, nc, n, p )
 !
   do j = 1, n
 
-    theta = ( 2.0D+00 * r8_pi * real ( j - 1, kind = 8 ) ) &
+    theta = ( 2.0_fp * r8_pi * real ( j - 1, kind = 8 ) ) &
       / real ( n, kind = 8 )
 
     p(1:dim_num,j) = pc(1:dim_num) &
@@ -2686,6 +2722,7 @@ subroutine circle_imp_points_3d ( r, pc, nc, n, p )
   return
 end
 subroutine circle_imp_points_arc_2d ( r, pc, theta1, theta2, n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2718,17 +2755,17 @@ subroutine circle_imp_points_arc_2d ( r, pc, theta1, theta2, n, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angular coordinates of 
+!    Input, real ( kind = fp ) THETA1, THETA2, the angular coordinates of 
 !    the first and last points to be drawn, in radians.
 !
 !    Input, integer ( kind = 4 ) N, the number of points desired.  
 !    N must be at least 1.
 !
-!    Output, real ( kind = 8 ) P(2,N), the points on the circle.
+!    Output, real ( kind = fp ) P(2,N), the points on the circle.
 !
   implicit none
 
@@ -2736,20 +2773,20 @@ subroutine circle_imp_points_arc_2d ( r, pc, theta1, theta2, n, p )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_modp
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
-  real ( kind = 8 ) theta3
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_modp
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
+  real ( kind = fp ) theta3
 !
 !  THETA3 is the smallest angle, no less than THETA1, which
 !  coincides with THETA2.
 !
-  theta3 = theta1 + r8_modp ( theta2 - theta1, 2.0D+00 * r8_pi )
+  theta3 = theta1 + r8_modp ( theta2 - theta1, 2.0_fp * r8_pi )
 
   do i = 1, n
 
@@ -2758,7 +2795,7 @@ subroutine circle_imp_points_arc_2d ( r, pc, theta1, theta2, n, p )
               + real (     i - 1, kind = 8 ) * theta3 ) &
               / real ( n     - 1, kind = 8 )
     else
-      theta = 0.5D+00 * ( theta1 + theta3 )
+      theta = 0.5_fp * ( theta1 + theta3 )
     end if
 
     p(1:dim_num,i) = pc(1:dim_num) + r * (/ cos ( theta ), sin ( theta ) /)
@@ -2768,6 +2805,7 @@ subroutine circle_imp_points_arc_2d ( r, pc, theta1, theta2, n, p )
   return
 end
 subroutine circle_imp_print_2d ( r, pc, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2793,9 +2831,9 @@ subroutine circle_imp_print_2d ( r, pc, title )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
 !    Input, character ( length = * ) TITLE, a title.
 !
@@ -2803,8 +2841,8 @@ subroutine circle_imp_print_2d ( r, pc, title )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
   character ( len = * ) title
 
   write ( *, '(a)' ) ' '
@@ -2816,6 +2854,7 @@ subroutine circle_imp_print_2d ( r, pc, title )
   return
 end
 subroutine circle_imp_print_3d ( r, pc, nc, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2849,11 +2888,11 @@ subroutine circle_imp_print_3d ( r, pc, nc, title )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the circle.
+!    Input, real ( kind = fp ) PC(3), the center of the circle.
 !
-!    Input, real ( kind = 8 ) NC(3), the normal vector to the circle.
+!    Input, real ( kind = fp ) NC(3), the normal vector to the circle.
 !
 !    Input, character ( length = * ) TITLE, a title.
 !
@@ -2861,9 +2900,9 @@ subroutine circle_imp_print_3d ( r, pc, nc, title )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) nc(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) nc(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
   character ( len = * )  title
 
   write ( *, '(a)' ) ' '
@@ -2876,6 +2915,7 @@ subroutine circle_imp_print_3d ( r, pc, nc, title )
   return
 end
 subroutine circle_imp2exp_2d ( r, pc, p1, p2, p3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2914,37 +2954,38 @@ subroutine circle_imp2exp_2d ( r, pc, p1, p2, p3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, PC(2), the radius and center of the circle.
+!    Input, real ( kind = fp ) R, PC(2), the radius and center of the circle.
 !
-!    Output, real ( kind = 8 ) P1(2), P2(2), P3(2), three points on the circle.
+!    Output, real ( kind = fp ) P1(2), P2(2), P3(2), three points on the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r
+  real ( kind = fp ) theta
 
-  theta = 0.0D+00
+  theta = 0.0_fp
   p1(1) = pc(1) + r * cos ( theta )
   p1(2) = pc(2) + r * sin ( theta )
 
-  theta = 2.0D+00 * r8_pi / 3.0D+00
+  theta = 2.0_fp * r8_pi / 3.0_fp
   p2(1) = pc(1) + r * cos ( theta )
   p2(2) = pc(2) + r * sin ( theta )
 
-  theta = 4.0D+00 * r8_pi / 3.0D+00
+  theta = 4.0_fp * r8_pi / 3.0_fp
   p3(1) = pc(1) + r * cos ( theta )
   p3(2) = pc(2) + r * sin ( theta )
 
   return
 end
 subroutine circle_llr2imp_2d ( p1, p2, q1, q2, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -2996,30 +3037,30 @@ subroutine circle_llr2imp_2d ( p1, p2, q1, q2, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on line 1.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on line 1.
 !
-!    Input, real ( kind = 8 ) Q1(2), Q2(2), two points on line 2.
+!    Input, real ( kind = fp ) Q1(2), Q2(2), two points on line 2.
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.  
+!    Input, real ( kind = fp ) R, the radius of the circle.  
 !
-!    Output, real ( kind = 8 ) PC(2,4), the centers of the circles.
+!    Output, real ( kind = fp ) PC(2,4), the centers of the circles.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a(2,2)
-  real ( kind = 8 ) b(2)
-  real ( kind = 8 ) det
-  real ( kind = 8 ) n1(dim_num)
-  real ( kind = 8 ) n2(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pc(dim_num,4)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) x(dim_num)
+  real ( kind = fp ) a(2,2)
+  real ( kind = fp ) b(2)
+  real ( kind = fp ) det
+  real ( kind = fp ) n1(dim_num)
+  real ( kind = fp ) n2(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pc(dim_num,4)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) x(dim_num)
 !
 !  Compute the normals N1 and N2.
 !
@@ -3062,6 +3103,7 @@ subroutine circle_llr2imp_2d ( p1, p2, q1, q2, r, pc )
   return
 end
 subroutine circle_lune_angle_by_height_2d ( r, h, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3094,27 +3136,28 @@ subroutine circle_lune_angle_by_height_2d ( r, h, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) H, the height of the lune.
+!    Input, real ( kind = fp ) H, the height of the lune.
 !
-!    Output, real ( kind = 8 ) ANGLE, the angle of the lune.
+!    Output, real ( kind = fp ) ANGLE, the angle of the lune.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
+  real ( kind = fp ) angle
+  real ( kind = fp ) h
+  real ( kind = fp ) r
 
   if ( -r <= h .and. h <= r ) then
-    angle = 2.0D+00 * acos ( h / r );
+    angle = 2.0_fp * acos ( h / r );
   else
-    angle = 0.0D+00
+    angle = 0.0_fp
   end if
 
   return
 end
 subroutine circle_lune_area_by_angle_2d ( r, pc, theta1, theta2, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3138,26 +3181,26 @@ subroutine circle_lune_area_by_angle_2d ( r, pc, theta1, theta2, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the lune.
+!    Output, real ( kind = fp ) AREA, the area of the lune.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) area_sector
-  real ( kind = 8 ) area_triangle
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) area
+  real ( kind = fp ) area_sector
+  real ( kind = fp ) area_triangle
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   call circle_sector_area_2d ( r, pc, theta1, theta2, area_sector )
   call circle_triangle_area_2d ( r, pc, theta1, theta2, area_triangle )
@@ -3167,6 +3210,7 @@ subroutine circle_lune_area_by_angle_2d ( r, pc, theta1, theta2, area )
   return
 end
 subroutine circle_lune_area_by_height_2d ( r, h )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3199,29 +3243,30 @@ subroutine circle_lune_area_by_height_2d ( r, h )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) H, the height of the lune.
+!    Input, real ( kind = fp ) H, the height of the lune.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the lune.
+!    Output, real ( kind = fp ) AREA, the area of the lune.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
+  real ( kind = fp ) area
+  real ( kind = fp ) h
+  real ( kind = fp ) r
 
   if ( -r <= h .and. h <= r ) then
     area = r ** 2 * acos ( h / r ) - h * sqrt ( r ** 2 - h ** 2 )
   else
-    area = 0.0D+00
+    area = 0.0_fp
   end if
 
   return
 end
 subroutine circle_lune_centroid_2d ( r, pc, theta1, theta2, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3252,35 +3297,35 @@ subroutine circle_lune_centroid_2d ( r, pc, theta1, theta2, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
-!    Output, real ( kind = 8 ) CENTROID(2), the coordinates of the centroid
+!    Output, real ( kind = fp ) CENTROID(2), the coordinates of the centroid
 !    of the lune.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) centroid(dim_num)
-  real ( kind = 8 ) d
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) centroid(dim_num)
+  real ( kind = fp ) d
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   theta = theta2 - theta1
 
-  if ( theta == 0.0D+00 ) then
+  if ( theta == 0.0_fp ) then
     d = r
   else
-    d = 4.0D+00 * r * ( sin ( 0.5D+00 * theta ) )**3 / &
-      ( 3.0D+00 * ( theta - sin ( theta ) ) )
+    d = 4.0_fp * r * ( sin ( 0.5_fp * theta ) )**3 / &
+      ( 3.0_fp * ( theta - sin ( theta ) ) )
   end if
 
   centroid(1:2) = (/ pc(1) + d * cos ( theta ), &
@@ -3289,6 +3334,7 @@ subroutine circle_lune_centroid_2d ( r, pc, theta1, theta2, centroid )
   return
 end
 subroutine circle_lune_height_by_angle_2d ( r, angle, height )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3317,23 +3363,24 @@ subroutine circle_lune_height_by_angle_2d ( r, angle, height )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle subtended by the lune.
+!    Input, real ( kind = fp ) ANGLE, the angle subtended by the lune.
 !
-!    Output, real ( kind = 8 ) HEIGHT, the height of the lune
+!    Output, real ( kind = fp ) HEIGHT, the height of the lune
 !
   implicit none
 
-  real ( kind = 8 ) angle
+  real ( kind = fp ) angle
   real  ( kind = 8 ) height
   real  ( kind = 8 ) r
 
-  height = r * cos ( angle / 2.0D+00 )
+  height = r * cos ( angle / 2.0_fp )
 
   return
 end
 subroutine circle_pppr2imp_3d ( p1, p2, p3, r, pc, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3381,32 +3428,32 @@ subroutine circle_pppr2imp_3d ( p1, p2, p3, r, pc, normal )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the circle.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the circle.
 !
-!    Input, real ( kind = 8 ) P3(3), a third point.
+!    Input, real ( kind = fp ) P3(3), a third point.
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Output, real ( kind = 8 ) PC(3,2), the centers of the two circles.
+!    Output, real ( kind = fp ) PC(3,2), the centers of the two circles.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), the normal to the circles.
+!    Output, real ( kind = fp ) NORMAL(3), the normal to the circles.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) h
+  real ( kind = fp ) dist
+  real ( kind = fp ) dot
+  real ( kind = fp ) h
   integer ( kind = 4 ) j
-  real ( kind = 8 ) length
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pc(dim_num,2)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) v(dim_num)
+  real ( kind = fp ) length
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pc(dim_num,2)
+  real ( kind = fp ) r
+  real ( kind = fp ) v(dim_num)
 !
 !  Compute the distance from P1 to P2.
 !
@@ -3414,16 +3461,16 @@ subroutine circle_pppr2imp_3d ( p1, p2, p3, r, pc, normal )
 !
 !  If R is smaller than DIST, we don't have a circle.
 !
-  if ( 2.0D+00 * r < dist ) then
+  if ( 2.0_fp * r < dist ) then
     do j = 1, 2
-      pc(1:dim_num,j) = 0.5D+00 * ( p1(1:dim_num) + p2(1:dim_num) )
+      pc(1:dim_num,j) = 0.5_fp * ( p1(1:dim_num) + p2(1:dim_num) )
     end do
     return
   end if
 !
 !  H is the distance from the midpoint of (P1,P2) to the center.
 !
-  h = sqrt ( ( r + 0.5D+00 * dist ) * ( r - 0.5D+00 * dist ) )
+  h = sqrt ( ( r + 0.5_fp * dist ) * ( r - 0.5_fp * dist ) )
 !
 !  Define a unit direction V that is normal to P2-P1, and lying
 !  in the plane (P1,P2,P3).
@@ -3442,10 +3489,10 @@ subroutine circle_pppr2imp_3d ( p1, p2, p3, r, pc, normal )
 !
 !  We can go with or against the given normal direction.
 !
-  pc(1:dim_num,1) = 0.5D+00 * ( p2(1:dim_num) + p1(1:dim_num) ) &
+  pc(1:dim_num,1) = 0.5_fp * ( p2(1:dim_num) + p1(1:dim_num) ) &
     + h * v(1:dim_num)
 
-  pc(1:dim_num,2) = 0.5D+00 * ( p2(1:dim_num) + p1(1:dim_num) ) &
+  pc(1:dim_num,2) = 0.5_fp * ( p2(1:dim_num) + p1(1:dim_num) ) &
     - h * v(1:dim_num)
 
   call plane_exp_normal_3d ( p1, p2, p3, normal )
@@ -3453,6 +3500,7 @@ subroutine circle_pppr2imp_3d ( p1, p2, p3, r, pc, normal )
   return
 end
 subroutine circle_ppr2imp_2d ( p1, p2, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3496,24 +3544,24 @@ subroutine circle_ppr2imp_2d ( p1, p2, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the circle.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the circle.
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.  
+!    Input, real ( kind = fp ) R, the radius of the circle.  
 !
-!    Output, real ( kind = 8 ) PC(2,2), the centers of the two circles.
+!    Output, real ( kind = fp ) PC(2,2), the centers of the two circles.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) h
+  real ( kind = fp ) dist
+  real ( kind = fp ) h
   integer ( kind = 4 ) j
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pc(dim_num,2)
-  real ( kind = 8 ) r
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pc(dim_num,2)
+  real ( kind = fp ) r
 !
 !  Compute the distance from P1 to P2.
 !
@@ -3521,16 +3569,16 @@ subroutine circle_ppr2imp_2d ( p1, p2, r, pc )
 !
 !  If R is smaller than DIST, we don't have a circle.
 !
-  if ( 2.0D+00 * r < dist ) then
+  if ( 2.0_fp * r < dist ) then
     do j = 1, 2
-      pc(1:dim_num,j) = 0.5D+00 * ( p1(1:dim_num) + p2(1:dim_num) )
+      pc(1:dim_num,j) = 0.5_fp * ( p1(1:dim_num) + p2(1:dim_num) )
     end do
     return
   end if
 !
 !  H is the distance from the midpoint of (P1,P2) to the center.
 !
-  h = sqrt ( ( r + 0.5D+00 * dist ) * ( r - 0.5D+00 * dist ) )
+  h = sqrt ( ( r + 0.5_fp * dist ) * ( r - 0.5_fp * dist ) )
 !
 !  Determine the unit normal direction.
 !
@@ -3539,15 +3587,16 @@ subroutine circle_ppr2imp_2d ( p1, p2, r, pc )
 !
 !  We can go with or against the given normal direction.
 !
-  pc(1:dim_num,1) = 0.5D+00 * ( p2(1:dim_num) + p1(1:dim_num) ) &
+  pc(1:dim_num,1) = 0.5_fp * ( p2(1:dim_num) + p1(1:dim_num) ) &
     + h * normal(1:dim_num)
 
-  pc(1:dim_num,2) = 0.5D+00 * ( p2(1:dim_num) + p1(1:dim_num) ) &
+  pc(1:dim_num,2) = 0.5_fp * ( p2(1:dim_num) + p1(1:dim_num) ) &
     - h * normal(1:dim_num)
 
   return
 end
 subroutine circle_sector_area_2d ( r, pc, theta1, theta2, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3580,30 +3629,31 @@ subroutine circle_sector_area_2d ( r, pc, theta1, theta2, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the two angles defining the
+!    Input, real ( kind = fp ) THETA1, THETA2, the two angles defining the
 !    sector, in radians.  Normally, THETA1 < THETA2.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the circle.
+!    Output, real ( kind = fp ) AREA, the area of the circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) area
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
-  area = 0.5D+00 * r * r * ( theta2 - theta1 )
+  area = 0.5_fp * r * r * ( theta2 - theta1 )
 
   return
 end
 subroutine circle_sector_centroid_2d ( r, pc, theta1, theta2, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3643,35 +3693,35 @@ subroutine circle_sector_centroid_2d ( r, pc, theta1, theta2, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
-!    Output, real ( kind = 8 ) CENTROID(2), the coordinates of the centroid
+!    Output, real ( kind = fp ) CENTROID(2), the coordinates of the centroid
 !    of the sector.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) centroid(dim_num)
-  real ( kind = 8 ) d
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) centroid(dim_num)
+  real ( kind = fp ) d
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   theta = theta2 - theta1
 
-  if ( theta == 0.0D+00 ) then
-    d = 2.0D+00 * r / 3.0D+00
+  if ( theta == 0.0_fp ) then
+    d = 2.0_fp * r / 3.0_fp
   else
-    d = 4.0D+00 * r * sin ( 0.5D+00 * theta ) / &
-      ( 3.0D+00 * theta )
+    d = 4.0_fp * r * sin ( 0.5_fp * theta ) / &
+      ( 3.0_fp * theta )
   end if
 
   centroid(1:2) = (/ pc(1) + d * cos ( theta ), &
@@ -3681,6 +3731,7 @@ subroutine circle_sector_centroid_2d ( r, pc, theta1, theta2, centroid )
 end
 subroutine circle_sector_contains_point_2d ( r, pc, theta1, theta2, &
   p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3713,14 +3764,14 @@ subroutine circle_sector_contains_point_2d ( r, pc, theta1, theta2, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside or 
 !    on the circular sector.
@@ -3730,15 +3781,15 @@ subroutine circle_sector_contains_point_2d ( r, pc, theta1, theta2, &
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) r8_modp
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) r8_modp
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   inside = .false.
 !
@@ -3752,8 +3803,8 @@ subroutine circle_sector_contains_point_2d ( r, pc, theta1, theta2, &
 !
     theta = r8_atan ( p(2) - pc(2), p(1) - pc(1) )
 
-    if ( r8_modp ( theta  - theta1,  2.0D+00 * r8_pi ) <= &
-         r8_modp ( theta2 - theta1,  2.0D+00 * r8_pi ) ) then
+    if ( r8_modp ( theta  - theta1,  2.0_fp * r8_pi ) <= &
+         r8_modp ( theta2 - theta1,  2.0_fp * r8_pi ) ) then
 
       inside = .true.
 
@@ -3764,6 +3815,7 @@ subroutine circle_sector_contains_point_2d ( r, pc, theta1, theta2, &
   return
 end
 subroutine circle_sector_print_2d ( r, pc, theta1, theta2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3796,21 +3848,21 @@ subroutine circle_sector_print_2d ( r, pc, theta1, theta2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   write ( *, '(a)'        ) ' '
   write ( *, '(a)'        ) '  Circular sector definition:'
@@ -3822,6 +3874,7 @@ subroutine circle_sector_print_2d ( r, pc, theta1, theta2 )
   return
 end
 subroutine circle_triangle_area_2d ( r, pc, theta1, theta2, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3850,30 +3903,31 @@ subroutine circle_triangle_area_2d ( r, pc, theta1, theta2, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle.
+!    Input, real ( kind = fp ) R, the radius of the circle.
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the circle.
+!    Input, real ( kind = fp ) PC(2), the center of the circle.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angles defining the arc,
+!    Input, real ( kind = fp ) THETA1, THETA2, the angles defining the arc,
 !    in radians.  Normally, THETA1 < THETA2.
 !
-!    Output, real ( kind = 8 ) AREA, the (signed) area of the triangle.
+!    Output, real ( kind = fp ) AREA, the (signed) area of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) area
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
-  area = 0.5D+00 * r * r * sin ( theta2 - theta1 )
+  area = 0.5_fp * r * r * sin ( theta2 - theta1 )
 
   return
 end
 subroutine circle_triple_angles_2d ( r1, r2, r3, angle1, angle2, angle3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3906,36 +3960,37 @@ subroutine circle_triple_angles_2d ( r1, r2, r3, angle1, angle2, angle3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, R3, the radii of the circles.
+!    Input, real ( kind = fp ) R1, R2, R3, the radii of the circles.
 !
-!    Input, real ( kind = 8 ) ANGLE1, ANGLE2, ANGLE3, the angles
+!    Input, real ( kind = fp ) ANGLE1, ANGLE2, ANGLE3, the angles
 !    in the triangle.
 !
   implicit none
 
-  real ( kind = 8 ) angle1
-  real ( kind = 8 ) angle2
-  real ( kind = 8 ) angle3
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) r3
-  real ( kind = 8 ) r8_acos
+  real ( kind = fp ) angle1
+  real ( kind = fp ) angle2
+  real ( kind = fp ) angle3
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ) r3
+  real ( kind = fp ) r8_acos
 
   angle1 = r8_acos ( &
     ( r1 + r2 )**2 + ( r1 + r3 )**2 - ( r2 + r3 )**2 ) / &
-    ( 2.0D+00 * ( r1 + r2 ) * ( r1 + r3 ) ) 
+    ( 2.0_fp * ( r1 + r2 ) * ( r1 + r3 ) ) 
 
   angle2 = r8_acos ( &
     ( r2 + r3 )**2 + ( r2 + r1 )**2 - ( r3 + r1 )**2 ) / &
-    ( 2.0D+00 * ( r2 + r3 ) * ( r2 + r1 ) ) 
+    ( 2.0_fp * ( r2 + r3 ) * ( r2 + r1 ) ) 
 
   angle3 = r8_acos ( &
     ( r3 + r1 )**2 + ( r3 + r2 )**2 - ( r1 + r2 )**2 ) / &
-    ( 2.0D+00 * ( r3 + r1 ) * ( r3 + r2 ) ) 
+    ( 2.0_fp * ( r3 + r1 ) * ( r3 + r2 ) ) 
 
   return
 end
 subroutine circles_intersect_points_2d ( r1, pc1, r2, pc2, int_num, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -3967,55 +4022,55 @@ subroutine circles_intersect_points_2d ( r1, pc1, r2, pc2, int_num, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, the radius of the first circle.
+!    Input, real ( kind = fp ) R1, the radius of the first circle.
 !
-!    Input, real ( kind = 8 ) PC1(2), the center of the first circle.
+!    Input, real ( kind = fp ) PC1(2), the center of the first circle.
 !
-!    Input, real ( kind = 8 ) R2, the radius of the second circle.
+!    Input, real ( kind = fp ) R2, the radius of the second circle.
 !
-!    Input, real ( kind = 8 ) PC2(2), the center of the second circle.
+!    Input, real ( kind = fp ) PC2(2), the center of the second circle.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersecting points 
 !    found.  INT_NUM will be 0, 1, 2 or 3.  3 indicates that there are an 
 !    infinite number of intersection points.
 !
-!    Output, real ( kind = 8 ) P(2,2), if INT_NUM is 1 or 2,
+!    Output, real ( kind = fp ) P(2,2), if INT_NUM is 1 or 2,
 !    the coordinates of the intersecting points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) distsq
+  real ( kind = fp ) distsq
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) p(dim_num,2)
-  real ( kind = 8 ) pc1(dim_num)
-  real ( kind = 8 ) pc2(dim_num)
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) root
-  real ( kind = 8 ) sc1
-  real ( kind = 8 ) sc2
-  real ( kind = 8 ) t1
-  real ( kind = 8 ) t2
-  real ( kind = 8 ) tol
+  real ( kind = fp ) p(dim_num,2)
+  real ( kind = fp ) pc1(dim_num)
+  real ( kind = fp ) pc2(dim_num)
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ) root
+  real ( kind = fp ) sc1
+  real ( kind = fp ) sc2
+  real ( kind = fp ) t1
+  real ( kind = fp ) t2
+  real ( kind = fp ) tol
 
   tol = epsilon ( tol )
 
-  p(1:dim_num,1:2) = 0.0D+00
+  p(1:dim_num,1:2) = 0.0_fp
 !
 !  Take care of the case in which the circles have the same center.
 !
   t1 = ( abs ( pc1(1) - pc2(1) ) &
-       + abs ( pc1(2) - pc2(2) ) ) / 2.0D+00
+       + abs ( pc1(2) - pc2(2) ) ) / 2.0_fp
 
   t2 = ( abs ( pc1(1) ) + abs ( pc2(1) ) &
-       + abs ( pc1(2) ) + abs ( pc2(2) ) + 1.0D+00 ) / 5.0D+00
+       + abs ( pc1(2) ) + abs ( pc2(2) ) + 1.0_fp ) / 5.0_fp
 
   if ( t1 <= tol * t2 ) then
 
     t1 = abs ( r1 - r2 )
-    t2 = ( abs ( r1 ) + abs ( r2 ) + 1.0D+00 ) / 3.0D+00
+    t2 = ( abs ( r1 ) + abs ( r2 ) + 1.0_fp ) / 3.0_fp
 
     if ( t1 <= tol * t2 ) then
       int_num = 3
@@ -4029,7 +4084,7 @@ subroutine circles_intersect_points_2d ( r1, pc1, r2, pc2, int_num, p )
 
   distsq = ( pc1(1) - pc2(1) )**2 + ( pc1(2) - pc2(2) )**2
 
-  root = 2.0D+00 * ( r1**2 + r2**2 ) * distsq - distsq**2 &
+  root = 2.0_fp * ( r1**2 + r2**2 ) * distsq - distsq**2 &
     - ( r1 - r2 )**2 * ( r1 + r2 )**2
 
   if ( root < -tol ) then
@@ -4042,7 +4097,7 @@ subroutine circles_intersect_points_2d ( r1, pc1, r2, pc2, int_num, p )
   if ( root < tol ) then
     int_num = 1
     p(1:dim_num,1) = pc1(1:dim_num) &
-      + 0.5D+00 * sc1 * ( pc2(1:dim_num) - pc1(1:dim_num) )
+      + 0.5_fp * sc1 * ( pc2(1:dim_num) - pc1(1:dim_num) )
     return
   end if
 
@@ -4050,19 +4105,20 @@ subroutine circles_intersect_points_2d ( r1, pc1, r2, pc2, int_num, p )
 
   int_num = 2
 
-  p(1,1) = pc1(1) + 0.5D+00 * sc1 * ( pc2(1) - pc1(1) ) &
-                  - 0.5D+00 * sc2 * ( pc2(2) - pc1(2) )
-  p(2,1) = pc1(2) + 0.5D+00 * sc1 * ( pc2(2) - pc1(2) ) &
-                  + 0.5D+00 * sc2 * ( pc2(1) - pc1(1) )
+  p(1,1) = pc1(1) + 0.5_fp * sc1 * ( pc2(1) - pc1(1) ) &
+                  - 0.5_fp * sc2 * ( pc2(2) - pc1(2) )
+  p(2,1) = pc1(2) + 0.5_fp * sc1 * ( pc2(2) - pc1(2) ) &
+                  + 0.5_fp * sc2 * ( pc2(1) - pc1(1) )
 
-  p(1,2) = pc1(1) + 0.5D+00 * sc1 * ( pc2(1) - pc1(1) ) &
-                  + 0.5D+00 * sc2 * ( pc2(2) - pc1(2) )
-  p(2,2) = pc1(2) + 0.5D+00 * sc1 * ( pc2(2) - pc1(2) ) &
-                  - 0.5D+00 * sc2 * ( pc2(1) - pc1(1) )
+  p(1,2) = pc1(1) + 0.5_fp * sc1 * ( pc2(1) - pc1(1) ) &
+                  + 0.5_fp * sc2 * ( pc2(2) - pc1(2) )
+  p(2,2) = pc1(2) + 0.5_fp * sc1 * ( pc2(2) - pc1(2) ) &
+                  - 0.5_fp * sc2 * ( pc2(1) - pc1(1) )
 
   return
 end
 subroutine combin2 ( n, k, icnk )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4137,6 +4193,7 @@ subroutine combin2 ( n, k, icnk )
   return
 end
 subroutine cone_area_3d ( h, r, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4156,23 +4213,24 @@ subroutine cone_area_3d ( h, r, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) H, R, the height of the cone, and the radius
+!    Input, real ( kind = fp ) H, R, the height of the cone, and the radius
 !    of the circle that forms the base of the cone.
 !
-!    Output, real ( kind = 8 ) AREA, the surface area of the cone.
+!    Output, real ( kind = fp ) AREA, the surface area of the cone.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) h
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   area = r8_pi * r * sqrt ( h * h + r * r )
 
   return
 end
 subroutine cone_centroid_3d ( r, pc, pt, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4199,30 +4257,31 @@ subroutine cone_centroid_3d ( r, pc, pt, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the circle at the base of
+!    Input, real ( kind = fp ) R, the radius of the circle at the base of
 !    the cone.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the circle.
+!    Input, real ( kind = fp ) PC(3), the center of the circle.
 !
-!    Input, real ( kind = 8 ) PT(3), the coordinates of the tip of the cone.
+!    Input, real ( kind = fp ) PT(3), the coordinates of the tip of the cone.
 !
-!    Output, real ( kind = 8 ) CENTROID(3), the coordinates of the centroid
+!    Output, real ( kind = fp ) CENTROID(3), the coordinates of the centroid
 !    of the cone.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) centroid(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pt(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) centroid(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pt(dim_num)
+  real ( kind = fp ) r
 
-  centroid(1:dim_num) = 0.75D+00 * pc(1:dim_num) + 0.25D+00 * pt(1:dim_num)
+  centroid(1:dim_num) = 0.75_fp * pc(1:dim_num) + 0.25_fp * pt(1:dim_num)
 
   return
 end
 subroutine cone_volume_3d ( h, r, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4242,23 +4301,24 @@ subroutine cone_volume_3d ( h, r, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) H, R, the height of the cone, and the radius
+!    Input, real ( kind = fp ) H, R, the height of the cone, and the radius
 !    of the circle that forms the base of the cone.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the cone.
+!    Output, real ( kind = fp ) VOLUME, the volume of the cone.
 !
   implicit none
 
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ) h
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
-  volume = r8_pi * r * r * h / 3.0D+00
+  volume = r8_pi * r * r * h / 3.0_fp
 
   return
 end
 subroutine conv3d ( axis, theta, n, cor3, cor2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4291,24 +4351,24 @@ subroutine conv3d ( axis, theta, n, cor3, cor2 )
 !    Input, character AXIS, the coordinate axis to be projected.
 !    AXIS should be 'X', 'Y', or 'Z'.
 !
-!    Input, real ( kind = 8 ) THETA, the presentation angle in degrees.
+!    Input, real ( kind = fp ) THETA, the presentation angle in degrees.
 !
 !    Input, integer ( kind = 4 ) N, the number of points.
 !
-!    Input, real ( kind = 8 ) COR3(3,N), the 3D points.
+!    Input, real ( kind = fp ) COR3(3,N), the 3D points.
 !
-!    Output, real ( kind = 8 ) COR2(2,N), the 2D projections.
+!    Output, real ( kind = fp ) COR2(2,N), the 2D projections.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
   character axis
-  real ( kind = 8 ) cor2(2,n)
-  real ( kind = 8 ) cor3(3,n)
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ) stheta
-  real ( kind = 8 ) theta
+  real ( kind = fp ) cor2(2,n)
+  real ( kind = fp ) cor3(3,n)
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ) stheta
+  real ( kind = fp ) theta
 
   stheta = sin ( degrees_to_radians ( theta ) )
 
@@ -4339,6 +4399,7 @@ subroutine conv3d ( axis, theta, n, cor3, cor2 )
   return
 end
 function cot_rad ( angle_rad )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4358,14 +4419,14 @@ function cot_rad ( angle_rad )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGLE_RAD, the angle, in radians.
+!    Input, real ( kind = fp ) ANGLE_RAD, the angle, in radians.
 !
-!    Output, real ( kind = 8 ) COT_RAD, the cotangent of the angle.
+!    Output, real ( kind = fp ) COT_RAD, the cotangent of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) angle_rad
-  real ( kind = 8 ) cot_rad
+  real ( kind = fp ) angle_rad
+  real ( kind = fp ) cot_rad
 
   cot_rad  = cos ( angle_rad ) / sin ( angle_rad )
 
@@ -4373,6 +4434,7 @@ function cot_rad ( angle_rad )
 end
 subroutine cube_shape_3d ( point_num, face_num, face_order_max, &
   point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4405,7 +4467,7 @@ subroutine cube_shape_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of vertices
 !    in a face.
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM),
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM),
 !    the vertices.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of vertices
@@ -4423,14 +4485,14 @@ subroutine cube_shape_3d ( point_num, face_num, face_order_max, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) point_num
 
-  real ( kind = 8 ) a
+  real ( kind = fp ) a
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 !
 !  Set point coordinates.
 !
-  a = sqrt ( 1.0D+00 / 3.0D+00 )
+  a = sqrt ( 1.0_fp / 3.0_fp )
 
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
      -a, -a, -a, &
@@ -4460,6 +4522,7 @@ subroutine cube_shape_3d ( point_num, face_num, face_order_max, &
   return
 end
 subroutine cube_size_3d ( point_num, edge_num, face_num, face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4502,6 +4565,7 @@ subroutine cube_size_3d ( point_num, edge_num, face_num, face_order_max )
   return
 end
 function cube01_volume ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4521,17 +4585,18 @@ function cube01_volume ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) CUBE01_VOLUME, the volume.
+!    Output, real ( kind = fp ) CUBE01_VOLUME, the volume.
 !
   implicit none
 
-  real ( kind = 8 ) cube01_volume
+  real ( kind = fp ) cube01_volume
 
-  cube01_volume = 1.0D+00
+  cube01_volume = 1.0_fp
 
   return
 end
 subroutine cylinder_point_dist_3d ( p1, p2, r, p, distance )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4565,36 +4630,36 @@ subroutine cylinder_point_dist_3d ( p1, p2, r, p, distance )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the first and last points
+!    Input, real ( kind = fp ) P1(3), P2(3), the first and last points
 !    on the axis line of the cylinder.
 !
-!    Input, real ( kind = 8 ) R, the radius of the cylinder.
+!    Input, real ( kind = fp ) R, the radius of the cylinder.
 !
-!    Input, real ( kind = 8 ) P(3), the point.
+!    Input, real ( kind = fp ) P(3), the point.
 !
-!    Output, real ( kind = 8 ) DISTANCE, the distance from the point 
+!    Output, real ( kind = fp ) DISTANCE, the distance from the point 
 !    to the cylinder.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_length
-  real ( kind = 8 ) distance
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) off_axis_component
-  real ( kind = 8 ) p(3)
-  real ( kind = 8 ) p_dot_axis
-  real ( kind = 8 ) p_length
-  real ( kind = 8 ) p1(3)
-  real ( kind = 8 ) p2(3)
-  real ( kind = 8 ) r
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_length
+  real ( kind = fp ) distance
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) off_axis_component
+  real ( kind = fp ) p(3)
+  real ( kind = fp ) p_dot_axis
+  real ( kind = fp ) p_length
+  real ( kind = fp ) p1(3)
+  real ( kind = fp ) p2(3)
+  real ( kind = fp ) r
 
   axis(1:dim_num) = p2(1:dim_num) - p1(1:dim_num)
   axis_length = r8vec_norm ( dim_num, axis )
 
-  if ( axis_length == 0.0D+00 ) then
+  if ( axis_length == 0.0_fp ) then
     distance = -huge ( distance )
     return
   end if
@@ -4605,7 +4670,7 @@ subroutine cylinder_point_dist_3d ( p1, p2, r, p, distance )
 !
 !  Case 1: Below bottom cap.
 !
-  if ( p_dot_axis <= 0.0D+00 ) then
+  if ( p_dot_axis <= 0.0_fp ) then
 
     call disk_point_dist_3d ( p1, r, axis, p, distance )
 !
@@ -4634,6 +4699,7 @@ subroutine cylinder_point_dist_3d ( p1, p2, r, p, distance )
   return
 end
 subroutine cylinder_point_dist_signed_3d ( p1, p2, r, p, distance )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4671,36 +4737,36 @@ subroutine cylinder_point_dist_signed_3d ( p1, p2, r, p, distance )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the first and last points
+!    Input, real ( kind = fp ) P1(3), P2(3), the first and last points
 !    on the axis line of the cylinder.
 !
-!    Input, real ( kind = 8 ) R, the radius of the cylinder.
+!    Input, real ( kind = fp ) R, the radius of the cylinder.
 !
-!    Input, real ( kind = 8 ) P(3), the point.
+!    Input, real ( kind = fp ) P(3), the point.
 !
-!    Output, real ( kind = 8 ) DISTANCE, the signed distance from the point 
+!    Output, real ( kind = fp ) DISTANCE, the signed distance from the point 
 !    to the cylinder.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_length
-  real ( kind = 8 ) distance
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) off_axis_component
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p_dot_axis
-  real ( kind = 8 ) p_length
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_length
+  real ( kind = fp ) distance
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) off_axis_component
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p_dot_axis
+  real ( kind = fp ) p_length
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) r
 
   axis(1:dim_num) = p2(1:dim_num) - p1(1:dim_num)
   axis_length = r8vec_norm ( dim_num, axis )
 
-  if ( axis_length == 0.0D+00 ) then
+  if ( axis_length == 0.0_fp ) then
     distance = -huge ( distance )
     return
   end if
@@ -4711,7 +4777,7 @@ subroutine cylinder_point_dist_signed_3d ( p1, p2, r, p, distance )
 !
 !  Case 1: Below bottom cap.
 !
-  if ( p_dot_axis <= 0.0D+00 ) then
+  if ( p_dot_axis <= 0.0_fp ) then
 
     call disk_point_dist_3d ( p1, r, axis, p, distance )
 !
@@ -4724,7 +4790,7 @@ subroutine cylinder_point_dist_signed_3d ( p1, p2, r, p, distance )
 
     distance = off_axis_component - r 
 
-    if ( distance < 0.0D+00 ) then
+    if ( distance < 0.0_fp ) then
       distance = max ( distance, p_dot_axis - axis_length )
       distance = max ( distance, -p_dot_axis )
     end if
@@ -4740,6 +4806,7 @@ subroutine cylinder_point_dist_signed_3d ( p1, p2, r, p, distance )
   return
 end
 subroutine cylinder_point_inside_3d ( p1, p2, r, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4768,12 +4835,12 @@ subroutine cylinder_point_inside_3d ( p1, p2, r, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the first and last points
+!    Input, real ( kind = fp ) P1(3), P2(3), the first and last points
 !    on the axis line of the cylinder.
 !
-!    Input, real ( kind = 8 ) R, the radius of the cylinder.
+!    Input, real ( kind = fp ) R, the radius of the cylinder.
 !
-!    Input, real ( kind = 8 ) P(3), the point.
+!    Input, real ( kind = fp ) P(3), the point.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is 
 !    inside the cylinder.
@@ -4782,22 +4849,22 @@ subroutine cylinder_point_inside_3d ( p1, p2, r, p, inside )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_length
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_length
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) off_axis_component
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p_dot_axis
-  real ( kind = 8 ) p_length
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8vec_norm
+  real ( kind = fp ) off_axis_component
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p_dot_axis
+  real ( kind = fp ) p_length
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8vec_norm
 
   axis(1:dim_num) = p2(1:dim_num) - p1(1:dim_num)
   axis_length = r8vec_norm ( dim_num, axis )
 
-  if ( axis_length == 0.0D+00 ) then
+  if ( axis_length == 0.0_fp ) then
     inside = .false.
     return
   end if
@@ -4808,7 +4875,7 @@ subroutine cylinder_point_inside_3d ( p1, p2, r, p, inside )
 !
 !  If the point lies below or above the "caps" of the cylinder, we're done.
 !
-  if ( p_dot_axis < 0.0D+00 .or. axis_length < p_dot_axis ) then
+  if ( p_dot_axis < 0.0_fp .or. axis_length < p_dot_axis ) then
 
     inside = .false.
 !
@@ -4831,6 +4898,7 @@ subroutine cylinder_point_inside_3d ( p1, p2, r, p, inside )
   return
 end
 subroutine cylinder_point_near_3d ( p1, p2, r, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4864,31 +4932,31 @@ subroutine cylinder_point_near_3d ( p1, p2, r, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the first and last points
+!    Input, real ( kind = fp ) P1(3), P2(3), the first and last points
 !    on the axis line of the cylinder.
 !
-!    Input, real ( kind = 8 ) R, the radius of the cylinder.
+!    Input, real ( kind = fp ) R, the radius of the cylinder.
 !
-!    Input, real ( kind = 8 ) P(3), the point.
+!    Input, real ( kind = fp ) P(3), the point.
 !
-!    Output, real ( kind = 8 ) PN(3), the nearest point on the cylinder.
+!    Output, real ( kind = fp ) PN(3), the nearest point on the cylinder.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) axial_component
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_length
-  real ( kind = 8 ) distance
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) off_axis(dim_num)
-  real ( kind = 8 ) off_axis_component
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) axial_component
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_length
+  real ( kind = fp ) distance
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) off_axis(dim_num)
+  real ( kind = fp ) off_axis_component
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) r
 
   axis(1:dim_num) = p2(1:dim_num) - p1(1:dim_num)
   axis_length = r8vec_norm ( dim_num, axis )
@@ -4903,7 +4971,7 @@ subroutine cylinder_point_near_3d ( p1, p2, r, p, pn )
 !
 !  Case 1: Below bottom cap.
 !
-  if ( axial_component <= 0.0D+00 ) then
+  if ( axial_component <= 0.0_fp ) then
 
     if ( off_axis_component <= r ) then
       pn(1:dim_num) = p1(1:dim_num) + off_axis(1:dim_num)
@@ -4916,7 +4984,7 @@ subroutine cylinder_point_near_3d ( p1, p2, r, p, pn )
 !
   else if ( axial_component <= axis_length ) then
 
-    if ( off_axis_component == 0.0D+00 ) then
+    if ( off_axis_component == 0.0_fp ) then
 
       call r8vec_any_normal ( dim_num, axis, off_axis )
       
@@ -4961,6 +5029,7 @@ subroutine cylinder_point_near_3d ( p1, p2, r, p, pn )
   return
 end
 subroutine cylinder_sample_3d ( p1, p2, r, n, seed, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -4991,37 +5060,37 @@ subroutine cylinder_sample_3d ( p1, p2, r, n, seed, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the first and last points
+!    Input, real ( kind = fp ) P1(3), P2(3), the first and last points
 !    on the axis line of the cylinder.
 !
-!    Input, real ( kind = 8 ) R, the radius of the cylinder.
+!    Input, real ( kind = fp ) R, the radius of the cylinder.
 !
 !    Input, integer ( kind = 4 ) N, the number of sample points to compute.
 !
 !    Input/output, integer ( kind = 4 ) SEED, the random number seed.
 !
-!    Input, real ( kind = 8 ) P(3,N), the sample points.
+!    Input, real ( kind = fp ) P(3,N), the sample points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_length
-  real ( kind = 8 ) r8vec_norm
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_length
+  real ( kind = fp ) r8vec_norm
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radius(n)
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radius(n)
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta(n)
-  real ( kind = 8 ) v2(dim_num)
-  real ( kind = 8 ) v3(dim_num)
-  real ( kind = 8 ) z(n)
+  real ( kind = fp ) theta(n)
+  real ( kind = fp ) v2(dim_num)
+  real ( kind = fp ) v3(dim_num)
+  real ( kind = fp ) z(n)
 !
 !  Compute the axis vector.
 !
@@ -5039,7 +5108,7 @@ subroutine cylinder_sample_3d ( p1, p2, r, n, seed, p )
   radius(1:n) = r * sqrt ( radius(1:n) )
 
   call random_number ( harvest = theta(1:n) )
-  theta(1:n) = 2.0D+00 * r8_pi * theta(1:n)
+  theta(1:n) = 2.0_fp * r8_pi * theta(1:n)
 
   call random_number ( harvest = z(1:n) )
   z(1:n) = axis_length * z(1:n)
@@ -5057,6 +5126,7 @@ subroutine cylinder_sample_3d ( p1, p2, r, n, seed, p )
   return
 end
 subroutine cylinder_volume_3d ( p1, p2, r, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5085,23 +5155,23 @@ subroutine cylinder_volume_3d ( p1, p2, r, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the first and last points
+!    Input, real ( kind = fp ) P1(3), P2(3), the first and last points
 !    on the axis line of the cylinder.
 !
-!    Input, real ( kind = 8 ) R, the radius of the cylinder.
+!    Input, real ( kind = fp ) R, the radius of the cylinder.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the cylinder.
+!    Output, real ( kind = fp ) VOLUME, the volume of the cylinder.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) h
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ) h
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
   h = sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
 
@@ -5110,6 +5180,7 @@ subroutine cylinder_volume_3d ( p1, p2, r, volume )
   return
 end
 function degrees_to_radians ( angle_deg )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5129,22 +5200,23 @@ function degrees_to_radians ( angle_deg )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGLE_DEG, an angle in degrees.
+!    Input, real ( kind = fp ) ANGLE_DEG, an angle in degrees.
 !
-!    Output, real ( kind = 8 ) DEGREES_TO_RADIANS, the equivalent angle
+!    Output, real ( kind = fp ) DEGREES_TO_RADIANS, the equivalent angle
 !    in radians.
 !
   implicit none
 
-  real ( kind = 8 ) angle_deg
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) angle_deg
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
-  degrees_to_radians = ( angle_deg / 180.0D+00 ) * r8_pi
+  degrees_to_radians = ( angle_deg / 180.0_fp ) * r8_pi
 
   return
 end
 subroutine direction_pert_3d ( sigma, vbase, seed, vran )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5164,57 +5236,57 @@ subroutine direction_pert_3d ( sigma, vbase, seed, vran )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) SIGMA, determines the strength of the
+!    Input, real ( kind = fp ) SIGMA, determines the strength of the
 !    perturbation.
 !    SIGMA <= 0 results in a completely random direction.
 !    1 <= SIGMA results in VBASE.
 !    0 < SIGMA < 1 results in a perturbation from VBASE, which is
 !    large when SIGMA is near 0, and small when SIGMA is near 1.
 !
-!    Input, real ( kind = 8 ) VBASE(3), the base direction vector, which
+!    Input, real ( kind = fp ) VBASE(3), the base direction vector, which
 !    should have unit norm.
 !
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number 
 !    generator.
 !
-!    Output, real ( kind = 8 ) VRAN(3), the perturbed vector, which will
+!    Output, real ( kind = fp ) VRAN(3), the perturbed vector, which will
 !    have unit norm.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ) dphi
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) psi
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ) dphi
+  real ( kind = fp ) phi
+  real ( kind = fp ) psi
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) sigma
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) vbase(dim_num)
-  real ( kind = 8 ) vdot
-  real ( kind = 8 ) vran(dim_num)
-  real ( kind = 8 ) x
+  real ( kind = fp ) sigma
+  real ( kind = fp ) theta
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) vbase(dim_num)
+  real ( kind = fp ) vdot
+  real ( kind = fp ) vran(dim_num)
+  real ( kind = fp ) x
 !
 !  1 <= SIGMA, just use the base vector.
 !
-  if ( 1.0D+00 <= sigma ) then
+  if ( 1.0_fp <= sigma ) then
 
     vran(1:dim_num) = vbase(1:dim_num)
 
-  else if ( sigma <= 0.0D+00 ) then
+  else if ( sigma <= 0.0_fp ) then
 
     vdot = r8_uniform_01 ( seed )
-    vdot = 2.0D+00 * vdot - 1.0D+00
+    vdot = 2.0_fp * vdot - 1.0_fp
 
     phi = r8_acos ( vdot )
 
     theta = r8_uniform_01 ( seed )
-    theta = 2.0D+00 * r8_pi * theta
+    theta = 2.0_fp * r8_pi * theta
 
     vran(1) = cos ( theta ) * sin ( phi )
     vran(2) = sin ( theta ) * sin ( phi )
@@ -5236,8 +5308,8 @@ subroutine direction_pert_3d ( sigma, vbase, seed, vran )
 !  SIGMA, we want biased towards 1.
 !
     r = r8_uniform_01 ( seed )
-    x = exp ( ( 1.0D+00 - sigma ) * log ( r ) )
-    dphi = r8_acos ( 2.0D+00 * x - 1.0D+00 )
+    x = exp ( ( 1.0_fp - sigma ) * log ( r ) )
+    dphi = r8_acos ( 2.0_fp * x - 1.0_fp )
 !
 !  Now we know enough to write down a vector that is rotated DPHI
 !  from the base vector.
@@ -5250,7 +5322,7 @@ subroutine direction_pert_3d ( sigma, vbase, seed, vran )
 !  axis of the base vector.
 !
     psi = r8_uniform_01 ( seed )
-    psi = 2.0D+00 * r8_pi * psi
+    psi = 2.0_fp * r8_pi * psi
 !
 !  Carry out the rotation.
 !
@@ -5261,6 +5333,7 @@ subroutine direction_pert_3d ( sigma, vbase, seed, vran )
   return
 end
 subroutine direction_uniform_2d ( seed, vran )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5283,21 +5356,21 @@ subroutine direction_uniform_2d ( seed, vran )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number 
 !    generator.
 !
-!    Output, real ( kind = 8 ) VRAN(2), the random direction vector, with
+!    Output, real ( kind = fp ) VRAN(2), the random direction vector, with
 !    unit norm.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_uniform_01
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_uniform_01
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) vran(dim_num)
+  real ( kind = fp ) theta
+  real ( kind = fp ) vran(dim_num)
 
   theta = r8_uniform_01 ( seed )
-  theta = 2.0D+00 * r8_pi * theta
+  theta = 2.0_fp * r8_pi * theta
 
   vran(1) = cos ( theta )
   vran(2) = sin ( theta )
@@ -5305,6 +5378,7 @@ subroutine direction_uniform_2d ( seed, vran )
   return
 end
 subroutine direction_uniform_3d ( seed, vran )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5327,21 +5401,21 @@ subroutine direction_uniform_3d ( seed, vran )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) VRAN(3), the random direction vector,
+!    Output, real ( kind = fp ) VRAN(3), the random direction vector,
 !    with unit norm.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ) phi
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) vdot
-  real ( kind = 8 ) vran(dim_num)
+  real ( kind = fp ) theta
+  real ( kind = fp ) vdot
+  real ( kind = fp ) vran(dim_num)
 !
 !  Pick a uniformly random VDOT, which must be between -1 and 1.
 !  This represents the dot product of the random vector with the Z unit vector.
@@ -5351,7 +5425,7 @@ subroutine direction_uniform_3d ( seed, vran )
 !  a patch of area uniformly.
 !
   vdot = r8_uniform_01 ( seed )
-  vdot = 2.0D+00 * vdot - 1.0D+00
+  vdot = 2.0_fp * vdot - 1.0_fp
 
   phi = r8_acos ( vdot )
 !
@@ -5359,7 +5433,7 @@ subroutine direction_uniform_3d ( seed, vran )
 !  axis of the Z vector.
 !
   theta = r8_uniform_01 ( seed )
-  theta = 2.0D+00 * r8_pi * theta
+  theta = 2.0_fp * r8_pi * theta
 
   vran(1) = cos ( theta ) * sin ( phi )
   vran(2) = sin ( theta ) * sin ( phi )
@@ -5368,6 +5442,7 @@ subroutine direction_uniform_3d ( seed, vran )
   return
 end
 subroutine direction_uniform_nd ( dim_num, seed, w )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5392,16 +5467,16 @@ subroutine direction_uniform_nd ( dim_num, seed, w )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number 
 !    generator.
 !
-!    Output, real ( kind = 8 ) W(DIM_NUM), a random direction vector,
+!    Output, real ( kind = fp ) W(DIM_NUM), a random direction vector,
 !    with unit norm.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) norm
+  real ( kind = fp ) norm
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) w(dim_num)
+  real ( kind = fp ) w(dim_num)
 !
 !  Get N values from a standard normal distribution.
 !
@@ -5418,6 +5493,7 @@ subroutine direction_uniform_nd ( dim_num, seed, w )
   return
 end
 subroutine disk_point_dist_3d ( pc, r, axis, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5447,41 +5523,41 @@ subroutine disk_point_dist_3d ( pc, r, axis, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the disk.
+!    Input, real ( kind = fp ) PC(3), the center of the disk.
 !
-!    Input, real ( kind = 8 ) R, the radius of the disk.
+!    Input, real ( kind = fp ) R, the radius of the disk.
 !
-!    Input, real ( kind = 8 ) AXIS(3), the axis vector.
+!    Input, real ( kind = fp ) AXIS(3), the axis vector.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be checked.
+!    Input, real ( kind = fp ) P(3), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance of the point to the disk.
+!    Output, real ( kind = fp ) DIST, the distance of the point to the disk.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) axial_component
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_length
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) off_axis_component
-  real ( kind = 8 ) off_axis(dim_num)
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) axial_component
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_length
+  real ( kind = fp ) dist
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) off_axis_component
+  real ( kind = fp ) off_axis(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
 !
 !  Special case: the point is the center.
 !
   if ( all ( p(1:dim_num) == pc(1:dim_num) ) ) then
-    dist = 0.0D+00
+    dist = 0.0_fp
     return
   end if
 
   axis_length = r8vec_norm ( dim_num, axis(1:dim_num) )
 
-  if ( axis_length == 0.0D+00 ) then
+  if ( axis_length == 0.0_fp ) then
     dist = -huge ( dist )
     return
   end if
@@ -5492,8 +5568,8 @@ subroutine disk_point_dist_3d ( pc, r, axis, p, dist )
 !  Special case: the point satisfies the disk equation exactly.
 !
   if ( sum ( p(1:dim_num) - pc(1:dim_num) )**2 <= r * r .and. &
-        axial_component == 0.0D+00 ) then
-    dist = 0.0D+00
+        axial_component == 0.0_fp ) then
+    dist = 0.0_fp
     return
   end if
 !
@@ -5520,6 +5596,7 @@ subroutine disk_point_dist_3d ( pc, r, axis, p, dist )
   return
 end
 subroutine dms_to_radians ( degrees, minutes, seconds, radians )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5542,27 +5619,28 @@ subroutine dms_to_radians ( degrees, minutes, seconds, radians )
 !    Input, integer ( kind = 4 ) DEGREES, MINUTES, SECONDS, an angle in 
 !    degrees, minutes, and seconds.
 !
-!    Output, real ( kind = 8 ) RADIANS, the equivalent angle in radians.
+!    Output, real ( kind = fp ) RADIANS, the equivalent angle in radians.
 !
   implicit none
 
-  real ( kind = 8 ) angle
+  real ( kind = fp ) angle
   integer ( kind = 4 ) degrees
   integer ( kind = 4 ) minutes
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radians
   integer ( kind = 4 ) seconds
 
   angle =   real ( degrees, kind = 8 ) &
         + ( real ( minutes, kind = 8 ) &
-        + ( real ( seconds, kind = 8 ) / 60.0D+00 ) ) / 60.0D+00
+        + ( real ( seconds, kind = 8 ) / 60.0_fp ) ) / 60.0_fp
 
-  radians = ( angle / 180.0D+00 ) * r8_pi
+  radians = ( angle / 180.0_fp ) * r8_pi
 
   return
 end
 subroutine dodec_shape_3d ( point_num, face_num, face_order_max, &
   point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5595,7 +5673,7 @@ subroutine dodec_shape_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of vertices
 !    per face.
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the vertices.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the vertices.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER[FACE_NUM], the number of vertices
 !    per face.
@@ -5612,23 +5690,23 @@ subroutine dodec_shape_3d ( point_num, face_num, face_order_max, &
   integer ( kind = 4 ) face_order_max
   integer ( kind = 4 ) point_num
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) point_coord(dim_num,point_num)
-  real ( kind = 8 ) z
+  real ( kind = fp ) phi
+  real ( kind = fp ) point_coord(dim_num,point_num)
+  real ( kind = fp ) z
 !
 !  Set point coordinates.
 !
-  phi = 0.5D+00 * ( sqrt ( 5.0D+00 ) + 1.0D+00 )
+  phi = 0.5_fp * ( sqrt ( 5.0_fp ) + 1.0_fp )
 
-  a = 1.0D+00 / sqrt ( 3.0D+00 )
-  b = phi / sqrt ( 3.0D+00 )
-  c = ( phi - 1.0D+00 ) / sqrt ( 3.0D+00 )
-  z = 0.0D+00
+  a = 1.0_fp / sqrt ( 3.0_fp )
+  b = phi / sqrt ( 3.0_fp )
+  c = ( phi - 1.0_fp ) / sqrt ( 3.0_fp )
+  z = 0.0_fp
 
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
       a,  a,  a, &
@@ -5676,6 +5754,7 @@ subroutine dodec_shape_3d ( point_num, face_num, face_order_max, &
   return
 end
 subroutine dodec_size_3d ( point_num, edge_num, face_num, face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5720,6 +5799,7 @@ end
 subroutine dual_shape_3d ( point_num, face_num, face_order_max, &
   point_coord, face_order, face_point, point_num2, face_num2, &
   face_order_max2, point_coord2, face_order2, face_point2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5746,7 +5826,7 @@ subroutine dual_shape_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of vertices
 !    per face.
 !
-!    Input, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the points.
+!    Input, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the points.
 !
 !    Input, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of vertices
 !    per face.
@@ -5763,7 +5843,7 @@ subroutine dual_shape_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX2, the maximum number of 
 !    vertices per face in the dual.
 !
-!    Output, real ( kind = 8 ) POINT_COORD2(3,POINT_NUM2), the point 
+!    Output, real ( kind = fp ) POINT_COORD2(3,POINT_NUM2), the point 
 !    coordinates of the dual.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER2(FACE_NUM2), the number of 
@@ -5794,10 +5874,10 @@ subroutine dual_shape_3d ( point_num, face_num, face_order_max, &
   integer ( kind = 4 ) istop
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
-  real ( kind = 8 ) point_coord2(dim_num,point_num2)
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord2(dim_num,point_num2)
   integer ( kind = 4 ) row
 !
 !  This computation should really compute the center of gravity
@@ -5809,7 +5889,7 @@ subroutine dual_shape_3d ( point_num, face_num, face_order_max, &
 !
   do face = 1, face_num
 
-    p(1:dim_num) = 0.0D+00
+    p(1:dim_num) = 0.0_fp
 
     do j = 1, face_order(face)
       k = face_point(j,face)
@@ -5899,6 +5979,7 @@ end
 subroutine dual_size_3d ( point_num, edge_num, face_num, face_order_max, &
   point_coord, face_order, face_point, point_num2, edge_num2, face_num2, &
   face_order_max2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -5933,7 +6014,7 @@ subroutine dual_size_3d ( point_num, edge_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of vertices
 !    per face.
 !
-!    Input, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the points.
+!    Input, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the points.
 !
 !    Input, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of vertices
 !    per face.
@@ -5970,7 +6051,7 @@ subroutine dual_size_3d ( point_num, edge_num, face_num, face_order_max, &
   integer ( kind = 4 ) face2
   integer ( kind = 4 ) i
   integer ( kind = 4 ) point_num2
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 !
 !  These values are easy to compute:
 !
@@ -5999,6 +6080,7 @@ subroutine dual_size_3d ( point_num, edge_num, face_num, face_order_max, &
   return
 end
 function ellipse_area1 ( a, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6024,25 +6106,26 @@ function ellipse_area1 ( a, r )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(2,2), the matrix that describes
+!    Input, real ( kind = fp ) A(2,2), the matrix that describes
 !    the ellipse.  A must be symmetric and positive definite.
 !
-!    Input, real ( kind = 8 ) R, the "radius" of the ellipse.
+!    Input, real ( kind = fp ) R, the "radius" of the ellipse.
 !
-!    Output, real ( kind = 8 ) ELLIPSE_AREA1, the area of the ellipse.
+!    Output, real ( kind = fp ) ELLIPSE_AREA1, the area of the ellipse.
 !
   implicit none
 
-  real ( kind = 8 ) a(2,2)
-  real ( kind = 8 ) ellipse_area1
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) a(2,2)
+  real ( kind = fp ) ellipse_area1
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   ellipse_area1 = r ** 2 * r8_pi / sqrt ( a(1,1) * a(2,2) - a(2,1) * a(1,2) )
 
   return
 end
 function ellipse_area2 ( a, b, c, d )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6067,26 +6150,27 @@ function ellipse_area2 ( a, b, c, d )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, coefficients on the left hand side.
+!    Input, real ( kind = fp ) A, B, C, coefficients on the left hand side.
 !
-!    Input, real ( kind = 8 ) D, the right hand side.
+!    Input, real ( kind = fp ) D, the right hand side.
 !
-!    Output, real ( kind = 8 ) ELLIPSE_AREA2, the area of the ellipse.
+!    Output, real ( kind = fp ) ELLIPSE_AREA2, the area of the ellipse.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) ellipse_area2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) ellipse_area2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
-  ellipse_area2 = 2.0D+00 * d * d * r8_pi / sqrt ( 4.0D+00 * a * c - b * b )
+  ellipse_area2 = 2.0_fp * d * d * r8_pi / sqrt ( 4.0_fp * a * c - b * b )
 
   return
 end
 function ellipse_area3 ( r1, r2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6114,23 +6198,24 @@ function ellipse_area3 ( r1, r2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the "radius" of the ellipse in the major
+!    Input, real ( kind = fp ) R1, R2, the "radius" of the ellipse in the major
 !    and minor axis directions.  A circle has these values equal.
 !
-!    Output, real ( kind = 8 ) ELLIPSE_AREA3, the area of the ellipse.
+!    Output, real ( kind = fp ) ELLIPSE_AREA3, the area of the ellipse.
 !
   implicit none
 
-  real ( kind = 8 ) ellipse_area3
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) ellipse_area3
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   ellipse_area3 = r8_pi * r1 * r2
 
   return
 end
 subroutine ellipse_point_dist_2d ( r1, r2, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6166,23 +6251,23 @@ subroutine ellipse_point_dist_2d ( r1, r2, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the ellipse parameters.  Normally,
+!    Input, real ( kind = fp ) R1, R2, the ellipse parameters.  Normally,
 !    these are both positive quantities.  Generally, they are also
 !    distinct.
 !
-!    Input, real ( kind = 8 ) P(2), the point.
+!    Input, real ( kind = fp ) P(2), the point.
 !
-!    Output, real ( kind = 8 ) DIST, the distance to the ellipse.
+!    Output, real ( kind = fp ) DIST, the distance to the ellipse.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
 
   call ellipse_point_near_2d ( r1, r1, p, pn )
 
@@ -6191,6 +6276,7 @@ subroutine ellipse_point_dist_2d ( r1, r2, p, dist )
   return
 end
 subroutine ellipse_point_near_2d ( r1, r2, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6236,52 +6322,52 @@ subroutine ellipse_point_near_2d ( r1, r2, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the ellipse parameters.  Normally,
+!    Input, real ( kind = fp ) R1, R2, the ellipse parameters.  Normally,
 !    these are both positive quantities.  Generally, they are also
 !    distinct.
 !
-!    Input, real ( kind = 8 ) P(2), the point.
+!    Input, real ( kind = fp ) P(2), the point.
 !
-!    Output, real ( kind = 8 ) PN(2), the point on the ellipse which
+!    Output, real ( kind = fp ) PN(2), the point on the ellipse which
 !    is closest to P.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) ct
-  real ( kind = 8 ) f
-  real ( kind = 8 ) fp
+  real ( kind = fp ) ct
+  real ( kind = fp ) f
+  real ( kind = fp ) fp2
   integer ( kind = 4 ) iteration
   integer ( kind = 4 ), parameter :: iteration_max = 100
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) st
-  real ( kind = 8 ) t
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) st
+  real ( kind = fp ) t
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 
   x = abs ( p(1) )
   y = abs ( p(2) )
 
-  if ( y == 0.0D+00 .and. r1 * r1 - r2 * r2 <= r1 * x ) then
+  if ( y == 0.0_fp .and. r1 * r1 - r2 * r2 <= r1 * x ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
-  else if ( x == 0.0D+00 .and. r2 * r2 - r1 * r1 <= r2 * y ) then
+  else if ( x == 0.0_fp .and. r2 * r2 - r1 * r1 <= r2 * y ) then
 
-    t = r8_pi / 2.0D+00
+    t = r8_pi / 2.0_fp
 
   else
 
-    if ( y == 0.0D+00 ) then
+    if ( y == 0.0_fp ) then
       y = sqrt ( epsilon ( y ) ) * abs ( r2 )
     end if
 
-    if ( x == 0.0D+00 ) then
+    if ( x == 0.0_fp ) then
       x = sqrt ( epsilon ( x ) ) * abs ( r1 )
     end if
 !
@@ -6299,7 +6385,7 @@ subroutine ellipse_point_near_2d ( r1, r2, p, pn )
       f = ( x - abs ( r1 ) * ct ) * abs ( r1 ) * st &
         - ( y - abs ( r2 ) * st ) * abs ( r2 ) * ct
 
-      if ( abs ( f ) <= 100.0D+00 * epsilon ( f ) ) then
+      if ( abs ( f ) <= 100.0_fp * epsilon ( f ) ) then
         exit
       end if
 
@@ -6314,11 +6400,11 @@ subroutine ellipse_point_near_2d ( r1, r2, p, pn )
 
       iteration = iteration + 1
 
-      fp = r1 * r1 * st * st + r2 * r2 * ct * ct &
+      fp2 = r1 * r1 * st * st + r2 * r2 * ct * ct &
          + ( x - abs ( r1 ) * ct ) * abs ( r1 ) * ct &
          + ( y - abs ( r2 ) * st ) * abs ( r2 ) * st
 
-      t = t - f / fp
+      t = t - f / fp2
 
     end do
 
@@ -6331,12 +6417,13 @@ subroutine ellipse_point_near_2d ( r1, r2, p, pn )
 !
 !  Take care of case where the point was in another quadrant.
 !
-  pn(1) = sign ( 1.0D+00, p(1) ) * pn(1)
-  pn(2) = sign ( 1.0D+00, p(2) ) * pn(2)
+  pn(1) = sign ( 1.0_fp, p(1) ) * pn(1)
+  pn(2) = sign ( 1.0_fp, p(2) ) * pn(2)
 
   return
 end
 subroutine ellipse_points_2d ( pc, r1, r2, psi, n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6367,19 +6454,19 @@ subroutine ellipse_points_2d ( pc, r1, r2, psi, n, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the ellipse.
+!    Input, real ( kind = fp ) PC(2), the center of the ellipse.
 !
-!    Input, real ( kind = 8 ) R1, R2, the "radius" of the ellipse in the major
+!    Input, real ( kind = fp ) R1, R2, the "radius" of the ellipse in the major
 !    and minor axis directions.  A circle has these values equal.
 !
-!    Input, real ( kind = 8 ) PSI, the angle that the major axis of the ellipse
+!    Input, real ( kind = fp ) PSI, the angle that the major axis of the ellipse
 !    makes with the X axis.  A value of 0.0 means that the major and
 !    minor axes of the ellipse will be the X and Y coordinate axes.
 !
 !    Input, integer ( kind = 4 ) N, the number of points desired.  N must 
 !    be at least 1.
 !
-!    Output, real ( kind = 8 ) P(2,N), points on the ellipse.
+!    Output, real ( kind = fp ) P(2,N), points on the ellipse.
 !
   implicit none
 
@@ -6388,17 +6475,17 @@ subroutine ellipse_points_2d ( pc, r1, r2, psi, n, p )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) psi
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) psi
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
 
   do i = 1, n
 
-    theta = ( 2.0D+00 * r8_pi * real ( i - 1, kind = 8 ) ) &
+    theta = ( 2.0_fp * r8_pi * real ( i - 1, kind = 8 ) ) &
       / real ( n, kind = 8 )
 
     p(1,i) = pc(1) + r1 * cos ( psi ) * cos ( theta ) &
@@ -6412,6 +6499,7 @@ subroutine ellipse_points_2d ( pc, r1, r2, psi, n, p )
   return
 end
 subroutine ellipse_points_arc_2d ( pc, r1, r2, psi, theta1, theta2, n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6442,47 +6530,47 @@ subroutine ellipse_points_arc_2d ( pc, r1, r2, psi, theta1, theta2, n, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the coordinates of the center of
+!    Input, real ( kind = fp ) PC(2), the coordinates of the center of
 !    the ellipse.
 !
-!    Input, real ( kind = 8 ) R1, R2, the "radius" of the ellipse in the major
+!    Input, real ( kind = fp ) R1, R2, the "radius" of the ellipse in the major
 !    and minor axis directions.  A circle has these values equal.
 !
-!    Input, real ( kind = 8 ) PSI, the angle that the major axis of the ellipse
+!    Input, real ( kind = fp ) PSI, the angle that the major axis of the ellipse
 !    makes with the X axis.  A value of 0.0 means that the major and
 !    minor axes of the ellipse will be the X and Y coordinate axes.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the angular coordinates of
+!    Input, real ( kind = fp ) THETA1, THETA2, the angular coordinates of
 !    the first and last points to be drawn, in radians.  This angle is measured
 !    with respect to the (possibly tilted) major axis.
 !
 !    Input, integer ( kind = 4 ) N, the number of points desired.  N must 
 !    be at least 1.
 !
-!    Output, real ( kind = 8 ) P(2,N), points on the ellipse.
+!    Output, real ( kind = fp ) P(2,N), points on the ellipse.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) r8_modp
+  real ( kind = fp ) r8_modp
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) psi
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
-  real ( kind = 8 ) theta3
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) psi
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
+  real ( kind = fp ) theta3
 !
 !  THETA3 is the smallest angle, no less than THETA1, which
 !  coincides with THETA2.
 !
-  theta3 = theta1 + r8_modp ( theta2 - theta1, 2.0D+00 * r8_pi )
+  theta3 = theta1 + r8_modp ( theta2 - theta1, 2.0_fp * r8_pi )
 
   do i = 1, n
 
@@ -6491,7 +6579,7 @@ subroutine ellipse_points_arc_2d ( pc, r1, r2, psi, theta1, theta2, n, p )
               + real (     i - 1, kind = 8 ) * theta3 ) &
               / real ( n     - 1, kind = 8 )
     else
-      theta = 0.5D+00 * ( theta1 + theta3 )
+      theta = 0.5_fp * ( theta1 + theta3 )
     end if
 
     p(1,i) = pc(1) + r1 * cos ( psi ) * cos ( theta ) &
@@ -6505,6 +6593,7 @@ subroutine ellipse_points_arc_2d ( pc, r1, r2, psi, theta1, theta2, n, p )
   return
 end
 subroutine get_seed ( seed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6536,7 +6625,7 @@ subroutine get_seed ( seed )
   implicit none
 
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) temp
+  real ( kind = fp ) temp
   character ( len = 10 ) time
   character ( len = 8 ) today
   integer ( kind = 4 ) values(8)
@@ -6544,24 +6633,24 @@ subroutine get_seed ( seed )
 
   call date_and_time ( today, time, zone, values )
 
-  temp = 0.0D+00
+  temp = 0.0_fp
 
-  temp = temp + real ( values(2) - 1, kind = 8 ) / 11.0D+00
-  temp = temp + real ( values(3) - 1, kind = 8 ) / 30.0D+00
-  temp = temp + real ( values(5),     kind = 8 ) / 23.0D+00
-  temp = temp + real ( values(6),     kind = 8 ) / 59.0D+00
-  temp = temp + real ( values(7),     kind = 8 ) / 59.0D+00
-  temp = temp + real ( values(8),     kind = 8 ) / 999.0D+00
-  temp = temp / 6.0D+00
+  temp = temp + real ( values(2) - 1, kind = 8 ) / 11.0_fp
+  temp = temp + real ( values(3) - 1, kind = 8 ) / 30.0_fp
+  temp = temp + real ( values(5),     kind = 8 ) / 23.0_fp
+  temp = temp + real ( values(6),     kind = 8 ) / 59.0_fp
+  temp = temp + real ( values(7),     kind = 8 ) / 59.0_fp
+  temp = temp + real ( values(8),     kind = 8 ) / 999.0_fp
+  temp = temp / 6.0_fp
 !
 !  Force 0 < TEMP <= 1.
 !
-  do while ( temp <= 0.0D+00 )
-    temp = temp + 1.0D+00
+  do while ( temp <= 0.0_fp )
+    temp = temp + 1.0_fp
   end do
 
-  do while ( 1.0D+00 < temp )
-    temp = temp - 1.0D+00
+  do while ( 1.0_fp < temp )
+    temp = temp - 1.0_fp
   end do
 
   seed = int ( real ( huge ( 1 ), kind = 8 ) * temp )
@@ -6579,6 +6668,7 @@ subroutine get_seed ( seed )
   return
 end
 subroutine get_unit ( iunit )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6643,6 +6733,7 @@ subroutine get_unit ( iunit )
 end
 subroutine glob2loc_3d ( cospitch, cosroll, cosyaw, sinpitch, sinroll, sinyaw, &
   globas, glopts, locpts )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6691,33 +6782,33 @@ subroutine glob2loc_3d ( cospitch, cosroll, cosyaw, sinpitch, sinroll, sinyaw, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) COSPITCH, COSROLL, COSYAW, the cosines of
+!    Input, real ( kind = fp ) COSPITCH, COSROLL, COSYAW, the cosines of
 !    the pitch, roll and yaw angles.
 !
-!    Input, real ( kind = 8 ) SINPITCH, SINROLL, SINYAW, the sines of the pitch,
+!    Input, real ( kind = fp ) SINPITCH, SINROLL, SINYAW, the sines of the pitch,
 !    roll and yaw angles.
 !
-!    Input, real ( kind = 8 ) GLOBAS(3), the global base vector.
+!    Input, real ( kind = fp ) GLOBAS(3), the global base vector.
 !
-!    Input, real ( kind = 8 ) GLOPTS(3), the global coordinates
+!    Input, real ( kind = fp ) GLOPTS(3), the global coordinates
 !    of the point whose coordinates are to be transformed.
 !
-!    Output, real ( kind = 8 ) LOCPTS(3), the local coordinates of the point
+!    Output, real ( kind = fp ) LOCPTS(3), the local coordinates of the point
 !    whose global coordinates were given in GLOPTS.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) cospitch
-  real ( kind = 8 ) cosroll
-  real ( kind = 8 ) cosyaw
-  real ( kind = 8 ) globas(dim_num)
-  real ( kind = 8 ) glopts(dim_num)
-  real ( kind = 8 ) locpts(dim_num)
-  real ( kind = 8 ) sinpitch
-  real ( kind = 8 ) sinroll
-  real ( kind = 8 ) sinyaw
+  real ( kind = fp ) cospitch
+  real ( kind = fp ) cosroll
+  real ( kind = fp ) cosyaw
+  real ( kind = fp ) globas(dim_num)
+  real ( kind = fp ) glopts(dim_num)
+  real ( kind = fp ) locpts(dim_num)
+  real ( kind = fp ) sinpitch
+  real ( kind = fp ) sinroll
+  real ( kind = fp ) sinyaw
 
   locpts(1) = ( cosyaw * cospitch ) * ( glopts(1) - globas(1) ) &
             + ( sinyaw * cospitch ) * ( glopts(2) - globas(2) ) &
@@ -6738,6 +6829,7 @@ subroutine glob2loc_3d ( cospitch, cosroll, cosyaw, sinpitch, sinroll, sinyaw, &
   return
 end
 function halfplane_contains_point_2d ( p1, p2, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6769,10 +6861,10 @@ function halfplane_contains_point_2d ( p1, p2, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two distinct points
+!    Input, real ( kind = fp ) P1(2), P2(2), two distinct points
 !    on the line defining the half plane.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) HALFPLANE_CONTAINS_POINT_2D, is TRUE if 
 !    the halfplane contains the point.
@@ -6781,22 +6873,23 @@ function halfplane_contains_point_2d ( p1, p2, p )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area_signed
+  real ( kind = fp ) area_signed
   logical ( kind = 4 ) halfplane_contains_point_2d
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
-  area_signed = 0.5D+00 *       &
+  area_signed = 0.5_fp *       &
     ( p1(1) * ( p2(2) - p(2)  ) &
     + p2(1) * ( p(2)  - p1(2) ) &
     + p(1)  * ( p1(2) - p2(2) ) )
 
-  halfplane_contains_point_2d = ( 0.0D+00 <= area_signed )
+  halfplane_contains_point_2d = ( 0.0_fp <= area_signed )
 
   return
 end
 subroutine halfspace_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6838,15 +6931,15 @@ subroutine halfspace_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the parameters that define the
+!    Input, real ( kind = fp ) A, B, C, D, the parameters that define the
 !    implicit plane, which in turn define the implicit halfspace.
 !
-!    Input, real ( kind = 8 ) T(3,3), the vertices of the triangle.
+!    Input, real ( kind = fp ) T(3,3), the vertices of the triangle.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersection points 
 !    returned, which will always be between 0 and 4.
 !
-!    Output, real ( kind = 8 ) PINT(3,4), the coordinates of the INT_NUM
+!    Output, real ( kind = fp ) PINT(3,4), the coordinates of the INT_NUM
 !    intersection points.  The points will lie in sequence on the triangle.
 !    Some points will be vertices, and some may be separators.
 !
@@ -6854,16 +6947,16 @@ subroutine halfspace_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist1
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) dist3
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) dist1
+  real ( kind = fp ) dist2
+  real ( kind = fp ) dist3
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) pint(dim_num,4)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pint(dim_num,4)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the signed distances between the vertices and the plane.
 !
@@ -6878,6 +6971,7 @@ subroutine halfspace_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
   return
 end
 subroutine halfspace_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -6921,19 +7015,19 @@ subroutine halfspace_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the bounding plane
+!    Input, real ( kind = fp ) PP(3), a point on the bounding plane
 !    that defines the halfspace.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), the components of the normal vector
+!    Input, real ( kind = fp ) NORMAL(3), the components of the normal vector
 !    to the bounding plane that defines the halfspace.  By convention, the
 !    normal vector points "outwards" from the halfspace.
 !
-!    Input, real ( kind = 8 ) T(3,3), the vertices of the triangle.
+!    Input, real ( kind = fp ) T(3,3), the vertices of the triangle.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersection points 
 !    returned, which will always be between 0 and 4.
 !
-!    Output, real ( kind = 8 ) PINT(3,4), the coordinates of the INT_NUM
+!    Output, real ( kind = fp ) PINT(3,4), the coordinates of the INT_NUM
 !    intersection points.  The points will lie in sequence on the triangle.
 !    Some points will be vertices, and some may be separators.
 !
@@ -6941,15 +7035,15 @@ subroutine halfspace_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist1
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) dist3
-  real ( kind = 8 ) normal(dim_num)
+  real ( kind = fp ) d
+  real ( kind = fp ) dist1
+  real ( kind = fp ) dist2
+  real ( kind = fp ) dist3
+  real ( kind = fp ) normal(dim_num)
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) pint(dim_num,4)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) pint(dim_num,4)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the signed distances between the vertices and the plane.
 !
@@ -6968,6 +7062,7 @@ subroutine halfspace_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
   return
 end
 subroutine halfspace_triangle_int_3d ( dist1, dist2, dist3, t, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7007,18 +7102,18 @@ subroutine halfspace_triangle_int_3d ( dist1, dist2, dist3, t, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DIST1, DIST2, DIST3, the distances from each of
+!    Input, real ( kind = fp ) DIST1, DIST2, DIST3, the distances from each of
 !    the three vertices of the triangle to the halfspace.  The distance is
 !    zero if a vertex lies within the halfspace, or on the plane that
 !    defines the boundary of the halfspace.  Otherwise, it is the
 !    distance from that vertex to the bounding plane.
 !
-!    Input, real ( kind = 8 ) T(3,3), the vertices of the triangle.
+!    Input, real ( kind = fp ) T(3,3), the vertices of the triangle.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersection points
 !    returned, which will always be between 0 and 4.
 !
-!    Output, real ( kind = 8 ) PINT(3,4), the coordinates of the INT_NUM
+!    Output, real ( kind = fp ) PINT(3,4), the coordinates of the INT_NUM
 !    intersection points.  The points will lie in sequence on the triangle.
 !    Some points will be vertices, and some may be separators.
 !
@@ -7026,26 +7121,26 @@ subroutine halfspace_triangle_int_3d ( dist1, dist2, dist3, t, int_num, pint )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dist1
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) dist3
+  real ( kind = fp ) dist1
+  real ( kind = fp ) dist2
+  real ( kind = fp ) dist3
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) pint(dim_num,4)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pint(dim_num,4)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Walk around the triangle, looking for vertices that are included,
 !  and points of separation.
 !
   int_num = 0
 
-  if ( dist1 <= 0.0D+00 ) then
+  if ( dist1 <= 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,1)
 
   end if
 
-  if ( dist1 * dist2 < 0.0D+00 ) then
+  if ( dist1 * dist2 < 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = &
@@ -7054,14 +7149,14 @@ subroutine halfspace_triangle_int_3d ( dist1, dist2, dist3, t, int_num, pint )
 
   end if
 
-  if ( dist2 <= 0.0D+00 ) then
+  if ( dist2 <= 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,2)
 
   end if
 
-  if ( dist2 * dist3 < 0.0D+00 ) then
+  if ( dist2 * dist3 < 0.0_fp ) then
 
     int_num = int_num + 1
 
@@ -7071,14 +7166,14 @@ subroutine halfspace_triangle_int_3d ( dist1, dist2, dist3, t, int_num, pint )
 
   end if
 
-  if ( dist3 <= 0.0D+00 ) then
+  if ( dist3 <= 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,3)
 
   end if
 
-  if ( dist3 * dist1 < 0.0D+00 ) then
+  if ( dist3 * dist1 < 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = &
@@ -7090,6 +7185,7 @@ subroutine halfspace_triangle_int_3d ( dist1, dist2, dist3, t, int_num, pint )
   return
 end
 function haversine ( a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7115,20 +7211,21 @@ function haversine ( a )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, the angle.
+!    Input, real ( kind = fp ) A, the angle.
 !
-!    Output, real ( kind = 8 ) HAVERSINE, the haversine of the angle.
+!    Output, real ( kind = fp ) HAVERSINE, the haversine of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) haversine
+  real ( kind = fp ) a
+  real ( kind = fp ) haversine
 
-  haversine = ( 1.0D+00 - cos ( a ) ) / 2.0D+00
+  haversine = ( 1.0_fp - cos ( a ) ) / 2.0_fp
 
   return
 end
 subroutine helix_shape_3d ( a, n, r, theta1, theta2, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7158,36 +7255,36 @@ subroutine helix_shape_3d ( a, n, r, theta1, theta2, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, the rate at which Z advances with THETA.
+!    Input, real ( kind = fp ) A, the rate at which Z advances with THETA.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to compute on 
 !    the helix.
 !
-!    Input, real ( kind = 8 ) R, the radius of the helix.
+!    Input, real ( kind = fp ) R, the radius of the helix.
 !
-!    Input, real ( kind = 8 ) THETA1, THETA2, the first and last THETA values at
+!    Input, real ( kind = fp ) THETA1, THETA2, the first and last THETA values at
 !    which to compute points on the helix.  THETA is measured in
 !    radians.
 !
-!    Output, real ( kind = 8 ) P(3,N), the coordinates of points on the helix.
+!    Output, real ( kind = fp ) P(3,N), the coordinates of points on the helix.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
+  real ( kind = fp ) a
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) r
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
 
   do i = 1, n
 
     if ( n == 1 ) then
-      theta = 0.5D+00 * ( theta1 + theta2 )
+      theta = 0.5_fp * ( theta1 + theta2 )
     else
       theta = ( real ( n - i,     kind = 8 ) * theta1 &
               + real (     i - 1, kind = 8 ) * theta2 ) &
@@ -7203,6 +7300,7 @@ subroutine helix_shape_3d ( a, n, r, theta1, theta2, p )
   return
 end
 function hexagon_area_2d ( r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7228,21 +7326,22 @@ function hexagon_area_2d ( r )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the hexagon.
+!    Input, real ( kind = fp ) R, the radius of the hexagon.
 !
-!    Output, real ( kind = 8 ) HEXAGON_AREA_2D, the area of the hexagon.
+!    Output, real ( kind = fp ) HEXAGON_AREA_2D, the area of the hexagon.
 !
   implicit none
 
-  real ( kind = 8 ) hexagon_area_2d
-  real ( kind = 8 ) hexagon01_area_2d
-  real ( kind = 8 ) r
+  real ( kind = fp ) hexagon_area_2d
+  real ( kind = fp ) hexagon01_area_2d
+  real ( kind = fp ) r
 
   hexagon_area_2d = r * r * hexagon01_area_2d ( )
 
   return
 end
 function hexagon_contains_point_2d ( v, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7266,9 +7365,9 @@ function hexagon_contains_point_2d ( v, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V(2,6), the vertices, in counter clockwise order.
+!    Input, real ( kind = fp ) V(2,6), the vertices, in counter clockwise order.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be tested.
+!    Input, real ( kind = fp ) P(2), the point to be tested.
 !
 !    Output, logical ( kind = 4 ) HEXAGON_CONTAINS_POINT_2D, is TRUE 
 !    if X is in the hexagon.
@@ -7281,8 +7380,8 @@ function hexagon_contains_point_2d ( v, p )
   logical ( kind = 4 ) hexagon_contains_point_2d
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) v(dim_num,n)
 !
 !  A point is inside a convex hexagon if and only if it is "inside"
 !  each of the 6 halfplanes defined by lines through consecutive
@@ -7294,7 +7393,7 @@ function hexagon_contains_point_2d ( v, p )
 
     if (  v(1,i) * ( v(2,j) - p(2  ) ) &
         + v(1,j) * ( p(2  ) - v(2,i) ) &
-        + p(1  ) * ( v(2,i) - v(2,j) ) < 0.0D+00 ) then
+        + p(1  ) * ( v(2,i) - v(2,j) ) < 0.0_fp ) then
 
       hexagon_contains_point_2d = .false.
       return
@@ -7308,6 +7407,7 @@ function hexagon_contains_point_2d ( v, p )
   return
 end
 subroutine hexagon_shape_2d ( angle_deg, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7349,65 +7449,65 @@ subroutine hexagon_shape_2d ( angle_deg, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGLE_DEG, the angle, in degrees, of the point.
+!    Input, real ( kind = fp ) ANGLE_DEG, the angle, in degrees, of the point.
 !
-!    Output, real ( kind = 8 ) P(2), the coordinates of the point.
+!    Output, real ( kind = fp ) P(2), the coordinates of the point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle_deg
-  real ( kind = 8 ) angle2
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) r8_cotd
-  real ( kind = 8 ) r8_modp
-  real ( kind = 8 ) r8_tand
+  real ( kind = fp ) angle_deg
+  real ( kind = fp ) angle2
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) r8_cotd
+  real ( kind = fp ) r8_modp
+  real ( kind = fp ) r8_tand
 !
 !  Ensure that 0 <= ANGLE < 360.
 !
-  angle2 = r8_modp ( angle_deg, 360.0D+00 )
+  angle2 = r8_modp ( angle_deg, 360.0_fp )
 !
 !  y = - sqrt(3) * x + sqrt(3)
 !
-  if ( 0.0D+00 <= angle2 .and. angle2 <= 60.0D+00 ) then
+  if ( 0.0_fp <= angle2 .and. angle2 <= 60.0_fp ) then
 
-    p(1) = sqrt ( 3.0D+00 ) / ( r8_tand ( angle2 ) + sqrt ( 3.0D+00 ) )
+    p(1) = sqrt ( 3.0_fp ) / ( r8_tand ( angle2 ) + sqrt ( 3.0_fp ) )
     p(2) = r8_tand ( angle2 ) * p(1)
 !
 !  y = sqrt(3) / 2
 !
-  else if ( angle2 <= 120.0D+00 ) then
+  else if ( angle2 <= 120.0_fp ) then
 
-    p(2) = sqrt ( 3.0D+00 ) / 2.0D+00
+    p(2) = sqrt ( 3.0_fp ) / 2.0_fp
     p(1) = r8_cotd ( angle2 ) * p(2)
 !
 !  y = sqrt(3) * x + sqrt(3)
 !
-  else if ( angle2 <= 180.0D+00 ) then
+  else if ( angle2 <= 180.0_fp ) then
 
-    p(1) = sqrt ( 3.0D+00 ) / ( r8_tand ( angle2 ) - sqrt ( 3.0D+00 ) )
+    p(1) = sqrt ( 3.0_fp ) / ( r8_tand ( angle2 ) - sqrt ( 3.0_fp ) )
     p(2) = r8_tand ( angle2 ) * p(1)
 !
 !  y = - sqrt(3) * x - sqrt(3)
 !
-  else if ( angle2 <= 240.0D+00 ) then
+  else if ( angle2 <= 240.0_fp ) then
 
-    p(1) = - sqrt ( 3.0D+00 ) / ( r8_tand ( angle2 ) + sqrt ( 3.0D+00 ) )
+    p(1) = - sqrt ( 3.0_fp ) / ( r8_tand ( angle2 ) + sqrt ( 3.0_fp ) )
     p(2) = r8_tand ( angle2 ) * p(1)
 !
 !  y = - sqrt(3) / 2
 !
-  else if ( angle2 <= 300.0D+00 ) then
+  else if ( angle2 <= 300.0_fp ) then
 
-    p(2) = - sqrt ( 3.0D+00 ) / 2.0D+00
+    p(2) = - sqrt ( 3.0_fp ) / 2.0_fp
     p(1) = r8_cotd ( angle2 ) * p(2)
 !
 !  y = sqrt(3) * x - sqrt(3)
 !
-  else if ( angle2 <= 360.0D+00 ) then
+  else if ( angle2 <= 360.0_fp ) then
 
-    p(1) = - sqrt ( 3.0D+00 ) / ( r8_tand ( angle2 ) - sqrt ( 3.0D+00 ) )
+    p(1) = - sqrt ( 3.0_fp ) / ( r8_tand ( angle2 ) - sqrt ( 3.0_fp ) )
     p(2) = r8_tand ( angle2 ) * p(1)
 
   end if
@@ -7415,6 +7515,7 @@ subroutine hexagon_shape_2d ( angle_deg, p )
   return
 end
 subroutine hexagon_vertices_2d ( p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7454,26 +7555,27 @@ subroutine hexagon_vertices_2d ( p )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) P(2,6), the coordinates of the vertices.
+!    Output, real ( kind = fp ) P(2,6), the coordinates of the vertices.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ), parameter :: a = 0.8660254037844386D+00
-  real ( kind = 8 ) p(dim_num,6)
+  real ( kind = fp ), parameter :: a = 0.8660254037844386_fp
+  real ( kind = fp ) p(dim_num,6)
 
   p(1:2,1:6) = reshape ( (/ &
-     1.0D+00,  0.0D+00, &
-     0.5D+00,  a, &
-    -0.5D+00,  a, &
-    -1.0D+00,  0.0D+00, &
-    -0.5D+00, -a, &
-     0.5D+00, -a /), (/ dim_num, 6 /) )
+     1.0_fp,  0.0_fp, &
+     0.5_fp,  a, &
+    -0.5_fp,  a, &
+    -1.0_fp,  0.0_fp, &
+    -0.5_fp, -a, &
+     0.5_fp, -a /), (/ dim_num, 6 /) )
 
   return
 end
 function hexagon01_area_2d ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7498,17 +7600,18 @@ function hexagon01_area_2d ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) HEXAGON01_AREA_2D, the area of the hexagon.
+!    Output, real ( kind = fp ) HEXAGON01_AREA_2D, the area of the hexagon.
 !
   implicit none
 
-  real ( kind = 8 ) hexagon01_area_2d
+  real ( kind = fp ) hexagon01_area_2d
 
-  hexagon01_area_2d = 3.0D+00 * sqrt ( 3.0D+00 ) / 2.0D+00
+  hexagon01_area_2d = 3.0_fp * sqrt ( 3.0_fp ) / 2.0_fp
 
   return
 end
 function hyperball01_volume ( m )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7545,16 +7648,16 @@ function hyperball01_volume ( m )
 !
 !    Input, integer ( kind = 4 ) M, the spatial dimension.
 !
-!    Output, real ( kind = 8 ) HYPERBALL01_VOLUME, the volume of the unit ball.
+!    Output, real ( kind = fp ) HYPERBALL01_VOLUME, the volume of the unit ball.
 !
   implicit none
 
-  real ( kind = 8 ) hyperball01_volume
+  real ( kind = fp ) hyperball01_volume
   integer ( kind = 4 ) i
   integer ( kind = 4 ) m
   integer ( kind = 4 ) m_half
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
   if ( mod ( m, 2 ) == 0 ) then
     m_half = ( m / 2 )
@@ -7564,7 +7667,7 @@ function hyperball01_volume ( m )
     end do
   else
     m_half = ( ( m - 1 ) / 2 )
-    volume = r8_pi ** m_half * 2.0D+00 ** m
+    volume = r8_pi ** m_half * 2.0_fp ** m
     do i = m_half + 1, 2 * m_half + 1
       volume = volume / real ( i, kind = 8 )
     end do
@@ -7575,6 +7678,7 @@ function hyperball01_volume ( m )
   return
 end
 function i4_dedekind_factor ( p, q )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7603,24 +7707,25 @@ function i4_dedekind_factor ( p, q )
 !
 !    Input, integer ( kind = 4 ) P, Q, two positive integers.
 !
-!    Input, real ( kind = 8 ) I4_DEDEKIND_FACTOR, the Dedekind factor of P / Q.
+!    Input, real ( kind = fp ) I4_DEDEKIND_FACTOR, the Dedekind factor of P / Q.
 !
   implicit none
 
-  real ( kind = 8 ) i4_dedekind_factor
+  real ( kind = fp ) i4_dedekind_factor
   integer ( kind = 4 ) p
   integer ( kind = 4 ) q
 
   if ( mod ( p, q ) == 0 ) then
-    i4_dedekind_factor = 0.0D+00
+    i4_dedekind_factor = 0.0_fp
   else
     i4_dedekind_factor = real ( p, kind = 8 ) / real ( q, kind = 8 ) &
-      - real ( ( p / q ), kind = 8 ) - 0.5D+00
+      - real ( ( p / q ), kind = 8 ) - 0.5_fp
   end if
 
   return
 end
 subroutine i4_dedekind_sum ( p, q, s )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7649,17 +7754,17 @@ subroutine i4_dedekind_sum ( p, q, s )
 !
 !    Input, integer ( kind = 4 ) P, Q, two positive integers.
 !
-!    Output, real ( kind = 8 ) S, the Dedekind sum of P and Q.
+!    Output, real ( kind = fp ) S, the Dedekind sum of P and Q.
 !
   implicit none
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) i4_dedekind_factor
+  real ( kind = fp ) i4_dedekind_factor
   integer ( kind = 4 ) p
   integer ( kind = 4 ) q
-  real ( kind = 8 ) s
+  real ( kind = fp ) s
 
-  s = 0.0D+00
+  s = 0.0_fp
 
   do i = 1, q
     s = s + i4_dedekind_factor ( i, q ) * i4_dedekind_factor ( p * i, q )
@@ -7668,6 +7773,7 @@ subroutine i4_dedekind_sum ( p, q, s )
   return
 end
 function i4_factorial2 ( n )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7719,6 +7825,7 @@ function i4_factorial2 ( n )
   return
 end
 function i4_gcd ( i, j )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7804,6 +7911,7 @@ function i4_gcd ( i, j )
   return
 end
 function i4_huge ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7859,6 +7967,7 @@ function i4_huge ( )
   return
 end
 function i4_lcm ( i, j )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7905,6 +8014,7 @@ function i4_lcm ( i, j )
   return
 end
 function i4_modp ( i, j )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -7979,6 +8089,7 @@ function i4_modp ( i, j )
   return
 end
 subroutine i4_swap ( i, j )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8014,6 +8125,7 @@ subroutine i4_swap ( i, j )
   return
 end
 function i4_uniform ( a, b, seed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8116,6 +8228,7 @@ function i4_uniform ( a, b, seed )
   return
 end
 function i4_wrap ( ival, ilo, ihi )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8191,6 +8304,7 @@ function i4_wrap ( ival, ilo, ihi )
   return
 end
 subroutine i4col_compare ( m, n, a, i, j, isgn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8290,6 +8404,7 @@ subroutine i4col_compare ( m, n, a, i, j, isgn )
   return
 end
 subroutine i4col_find_item ( m, n, a, item, row, col )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8350,6 +8465,7 @@ subroutine i4col_find_item ( m, n, a, item, row, col )
   return
 end
 subroutine i4col_find_pair_wrap ( m, n, a, item1, item2, row, col )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8431,6 +8547,7 @@ subroutine i4col_find_pair_wrap ( m, n, a, item1, item2, row, col )
   return
 end
 subroutine i4col_sort_a ( m, n, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8527,6 +8644,7 @@ subroutine i4col_sort_a ( m, n, a )
   return
 end
 subroutine i4col_sorted_unique_count ( m, n, a, unique_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8587,6 +8705,7 @@ subroutine i4col_sorted_unique_count ( m, n, a, unique_num )
   return
 end
 subroutine i4col_swap ( m, n, a, i, j )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8665,6 +8784,7 @@ subroutine i4col_swap ( m, n, a, i, j )
   return
 end
 subroutine i4mat_print ( m, n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8714,6 +8834,7 @@ subroutine i4mat_print ( m, n, a, title )
   return
 end
 subroutine i4mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8813,6 +8934,7 @@ subroutine i4mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   return
 end
 subroutine i4mat_transpose_print ( m, n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8851,6 +8973,7 @@ subroutine i4mat_transpose_print ( m, n, a, title )
   return
 end
 subroutine i4mat_transpose_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -8950,6 +9073,7 @@ subroutine i4mat_transpose_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   return
 end
 subroutine i4row_compare ( m, n, a, i, j, isgn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9065,6 +9189,7 @@ subroutine i4row_compare ( m, n, a, i, j, isgn )
   return
 end
 subroutine i4row_sort_a ( m, n, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9175,6 +9300,7 @@ subroutine i4row_sort_a ( m, n, a )
   return
 end
 subroutine i4row_sorted_unique_count ( m, n, a, unique_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9235,6 +9361,7 @@ subroutine i4row_sorted_unique_count ( m, n, a, unique_num )
   return
 end
 subroutine i4row_swap ( m, n, a, irow1, irow2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9297,6 +9424,7 @@ subroutine i4row_swap ( m, n, a, irow1, irow2 )
   return
 end
 subroutine i4vec_heap_d ( n, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9413,6 +9541,7 @@ subroutine i4vec_heap_d ( n, a )
   return
 end
 subroutine i4vec_indicator ( n, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9450,6 +9579,7 @@ subroutine i4vec_indicator ( n, a )
   return
 end
 function i4vec_lcm ( n, v )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9515,6 +9645,7 @@ function i4vec_lcm ( n, v )
   return
 end
 subroutine i4vec_print ( n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9562,6 +9693,7 @@ subroutine i4vec_print ( n, a, title )
   return
 end
 subroutine i4vec_sort_heap_a ( n, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9633,6 +9765,7 @@ subroutine i4vec_sort_heap_a ( n, a )
   return
 end
 subroutine i4vec_sorted_unique ( n, a, unique_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9688,6 +9821,7 @@ subroutine i4vec_sorted_unique ( n, a, unique_num )
   return
 end
 subroutine i4vec_uniform ( n, a, b, seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9774,6 +9908,7 @@ subroutine i4vec_uniform ( n, a, b, seed, x )
   return
 end
 subroutine i4vec2_compare ( n, a1, a2, i, j, isgn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9840,6 +9975,7 @@ subroutine i4vec2_compare ( n, a1, a2, i, j, isgn )
   return
 end
 subroutine i4vec2_sort_a ( n, a1, a2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9916,6 +10052,7 @@ subroutine i4vec2_sort_a ( n, a1, a2 )
   return
 end
 subroutine i4vec2_sorted_unique ( n, a1, a2, unique_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -9987,6 +10124,7 @@ subroutine i4vec2_sorted_unique ( n, a1, a2, unique_num )
 end
 subroutine icos_shape ( point_num, edge_num, face_num, face_order_max, &
   point_coord, edge_point, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10028,7 +10166,7 @@ subroutine icos_shape ( point_num, edge_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of 
 !    vertices per face (3).
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the points.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the points.
 !
 !    Output, integer ( kind = 4 ) EDGE_POINT(2,EDGE_NUM), the points that 
 !    make up each edge, listed in ascending order of their indexes.
@@ -10052,22 +10190,22 @@ subroutine icos_shape ( point_num, edge_num, face_num, face_order_max, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) point_num
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
+  real ( kind = fp ) a
+  real ( kind = fp ) b
   integer ( kind = 4 ) edge_point(edge_order,edge_num)
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) point_coord(dim_num,point_num)
-  real ( kind = 8 ) z
+  real ( kind = fp ) phi
+  real ( kind = fp ) point_coord(dim_num,point_num)
+  real ( kind = fp ) z
 !
 !  Set the point coordinates.
 !
-  phi = 0.5D+00 * ( sqrt ( 5.0D+00 ) + 1.0D+00 )
+  phi = 0.5_fp * ( sqrt ( 5.0_fp ) + 1.0_fp )
 
-  a = phi / sqrt ( 1.0D+00 + phi * phi )
-  b = 1.0D+00 / sqrt ( 1.0D+00 + phi * phi )
-  z = 0.0D+00
+  a = phi / sqrt ( 1.0_fp + phi * phi )
+  b = 1.0_fp / sqrt ( 1.0_fp + phi * phi )
+  z = 0.0_fp
 !
 !  A*A + B*B + Z*Z = 1.
 !
@@ -10152,6 +10290,7 @@ subroutine icos_shape ( point_num, edge_num, face_num, face_order_max, &
   return
 end
 subroutine icos_size ( point_num, edge_num, face_num, face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10194,6 +10333,7 @@ subroutine icos_size ( point_num, edge_num, face_num, face_order_max )
   return
 end
 function line_exp_is_degenerate_nd ( dim_num, p1, p2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10223,7 +10363,7 @@ function line_exp_is_degenerate_nd ( dim_num, p1, p2 )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) P1(DIM_NUM), P2(DIM_NUM), two points on the line.
+!    Input, real ( kind = fp ) P1(DIM_NUM), P2(DIM_NUM), two points on the line.
 !
 !    Output, logical ( kind = 4 ) LINE_EXP_IS_DEGENERATE_ND, is TRUE if the line
 !    is degenerate.
@@ -10233,14 +10373,15 @@ function line_exp_is_degenerate_nd ( dim_num, p1, p2 )
   integer ( kind = 4 ) dim_num
 
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   line_exp_is_degenerate_nd = ( all ( p1(1:dim_num) == p2(1:dim_num) ) )
 
   return
 end
 subroutine line_exp_normal_2d ( p1, p2, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10269,22 +10410,22 @@ subroutine line_exp_normal_2d ( p1, p2, normal )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two distinct points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two distinct points on the line.
 !
-!    Output, real ( kind = 8 ) NORMAL(2), a unit normal vector to the line.
+!    Output, real ( kind = fp ) NORMAL(2), a unit normal vector to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
-    normal(1:dim_num) = sqrt ( 2.0D+00 )
+    normal(1:dim_num) = sqrt ( 2.0_fp )
     return
   end if
 
@@ -10296,6 +10437,7 @@ subroutine line_exp_normal_2d ( p1, p2, normal )
   return
 end
 subroutine line_exp_perp_2d ( p1, p2, p3, p4, flag )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10331,12 +10473,12 @@ subroutine line_exp_perp_2d ( p1, p2, p3, p4, flag )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Input, real ( kind = 8 ) P3(2), a point (presumably not on the 
+!    Input, real ( kind = fp ) P3(2), a point (presumably not on the 
 !    line (P1,P2)), through which the perpendicular must pass.
 !
-!    Output, real ( kind = 8 ) P4(2), a point on the line (P1,P2),
+!    Output, real ( kind = fp ) P4(2), a point on the line (P1,P2),
 !    such that the line (P3,P4) is perpendicular to the line (P1,P2).
 !
 !    Output, logical ( kind = 4 ) FLAG, is TRUE if the value could 
@@ -10346,15 +10488,15 @@ subroutine line_exp_perp_2d ( p1, p2, p3, p4, flag )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) bot
+  real ( kind = fp ) bot
   logical ( kind = 4 ) flag
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) r8_huge
-  real ( kind = 8 ) t
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) r8_huge
+  real ( kind = fp ) t
 
   flag = .false.
 
@@ -10379,6 +10521,7 @@ subroutine line_exp_perp_2d ( p1, p2, p3, p4, flag )
   return
 end
 subroutine line_exp_point_dist_2d ( p1, p2, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10404,26 +10547,26 @@ subroutine line_exp_point_dist_2d ( p1, p2, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(2), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the line.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dot
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) dot
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
 
@@ -10452,6 +10595,7 @@ subroutine line_exp_point_dist_2d ( p1, p2, p, dist )
   return
 end
 subroutine line_exp_point_dist_3d ( p1, p2, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10477,25 +10621,25 @@ subroutine line_exp_point_dist_3d ( p1, p2, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the line.
 !
-!    Input, real ( kind = 8 ) P(3), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(3), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the line.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
 
@@ -10524,6 +10668,7 @@ subroutine line_exp_point_dist_3d ( p1, p2, p, dist )
   return
 end
 subroutine line_exp_point_dist_signed_2d ( p1, p2, p, dist_signed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10565,25 +10710,25 @@ subroutine line_exp_point_dist_signed_2d ( p1, p2, p, dist_signed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose signed distance is desired.
+!    Input, real ( kind = fp ) P(2), the point whose signed distance is desired.
 !
-!    Output, real ( kind = 8 ) DIST_SIGNED, the signed distance from the
+!    Output, real ( kind = fp ) DIST_SIGNED, the signed distance from the
 !    point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) dist_signed
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) dist_signed
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 !
 !  If the explicit line degenerates to a point, the computation is easy.
 !
@@ -10607,6 +10752,7 @@ subroutine line_exp_point_dist_signed_2d ( p1, p2, p, dist_signed )
   return
 end
 subroutine line_exp_point_near_2d ( p1, p2, p, pn, dist, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10640,30 +10786,30 @@ subroutine line_exp_point_near_2d ( p1, p2, p, pn, dist, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose nearest neighbor on the
+!    Input, real ( kind = fp ) P(2), the point whose nearest neighbor on the
 !    line is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(2), the nearest point on the line to P.
+!    Output, real ( kind = fp ) PN(2), the nearest point on the line to P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the line.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the line.
 !
-!    Output, real ( kind = 8 ) T, the relative position of the point
+!    Output, real ( kind = fp ) T, the relative position of the point
 !    PN to the points P1 and P2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
     write ( *, '(a)' ) ' '
@@ -10689,6 +10835,7 @@ subroutine line_exp_point_near_2d ( p1, p2, p, pn, dist, t )
   return
 end
 subroutine line_exp_point_near_3d ( p1, p2, p, pn, dist, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10722,32 +10869,32 @@ subroutine line_exp_point_near_3d ( p1, p2, p, pn, dist, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the line.
 !
-!    Input, real ( kind = 8 ) P(3), the point whose nearest neighbor on
+!    Input, real ( kind = fp ) P(3), the point whose nearest neighbor on
 !    the line is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(3), the point which is the nearest
+!    Output, real ( kind = fp ) PN(3), the point which is the nearest
 !    point on the line to P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the 
+!    Output, real ( kind = fp ) DIST, the distance from the point to the 
 !    nearest point on the line.
 !
-!    Output, real ( kind = 8 ) T, the relative position of the point
+!    Output, real ( kind = fp ) T, the relative position of the point
 !    PN to P1 and P2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
     write ( *, '(a)' ) ' '
@@ -10777,6 +10924,7 @@ subroutine line_exp_point_near_3d ( p1, p2, p, pn, dist, t )
   return
 end
 subroutine line_exp2imp_2d ( p1, p2, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10806,21 +10954,21 @@ subroutine line_exp2imp_2d ( p1, p2, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Output, real ( kind = 8 ) A, B, C, the implicit form of the line.
+!    Output, real ( kind = fp ) A, B, C, the implicit form of the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 !
 !  Take care of degenerate cases.
 !
@@ -10836,13 +10984,13 @@ subroutine line_exp2imp_2d ( p1, p2, a, b, c )
 
   norm = a * a + b * b + c * c
 
-  if ( 0.0D+00 < norm ) then
+  if ( 0.0_fp < norm ) then
     a = a / norm
     b = b / norm
     c = c / norm
   end if
 
-  if ( a < 0.0D+00 ) then
+  if ( a < 0.0_fp ) then
     a = -a
     b = -b
     c = -c
@@ -10851,6 +10999,7 @@ subroutine line_exp2imp_2d ( p1, p2, a, b, c )
   return
 end
 subroutine line_exp2par_2d ( p1, p2, f, g, x0, y0 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10883,23 +11032,23 @@ subroutine line_exp2par_2d ( p1, p2, f, g, x0, y0 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
-!    Output, real ( kind = 8 ) F, G, X0, Y0, the parametric parameters
+!    Output, real ( kind = fp ) F, G, X0, Y0, the parametric parameters
 !    of the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
+  real ( kind = fp ) f
+  real ( kind = fp ) g
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
+  real ( kind = fp ) norm
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
     write ( *, '(a)' ) ' '
@@ -10915,12 +11064,12 @@ subroutine line_exp2par_2d ( p1, p2, f, g, x0, y0 )
 
   norm = sqrt ( f * f + g * g )
 
-  if ( norm /= 0.0D+00 ) then
+  if ( norm /= 0.0_fp ) then
     f = f / norm
     g = g / norm
   end if
 
-  if ( f < 0.0D+00 ) then
+  if ( f < 0.0_fp ) then
     f = -f
     g = -g
   end if
@@ -10928,6 +11077,7 @@ subroutine line_exp2par_2d ( p1, p2, f, g, x0, y0 )
   return
 end
 subroutine line_exp2par_3d ( p1, p2, f, g, h, x0, y0, z0 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -10961,25 +11111,25 @@ subroutine line_exp2par_3d ( p1, p2, f, g, h, x0, y0, z0 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the line.
 !
-!    Output, real ( kind = 8 ) F, G, H, X0, Y0, Z0, the parametric parameters
+!    Output, real ( kind = fp ) F, G, H, X0, Y0, Z0, the parametric parameters
 !    of the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) h
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) h
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) z0
+  real ( kind = fp ) norm
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
+  real ( kind = fp ) z0
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
     write ( *, '(a)' ) ' '
@@ -10997,13 +11147,13 @@ subroutine line_exp2par_3d ( p1, p2, f, g, h, x0, y0, z0 )
 
   norm = sqrt ( f * f + g * g + h * h )
 
-  if ( norm /= 0.0D+00 ) then
+  if ( norm /= 0.0_fp ) then
     f = f / norm
     g = g / norm
     h = h / norm
   end if
 
-  if ( f < 0.0D+00 ) then
+  if ( f < 0.0_fp ) then
     f = -f
     g = -g
     h = -h
@@ -11012,6 +11162,7 @@ subroutine line_exp2par_3d ( p1, p2, f, g, h, x0, y0, z0 )
   return
 end
 function line_imp_is_degenerate_2d ( a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11037,7 +11188,7 @@ function line_imp_is_degenerate_2d ( a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the implicit line parameters.
+!    Input, real ( kind = fp ) A, B, C, the implicit line parameters.
 !
 !    Output, logical ( kind = 4 ) LINE_IMP_IS_DEGENERATE_2D, is true if the
 !    line is degenerate.
@@ -11046,16 +11197,17 @@ function line_imp_is_degenerate_2d ( a, b, c )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
   logical ( kind = 4 ) line_imp_is_degenerate_2d
 
-  line_imp_is_degenerate_2d = ( a * a + b * b == 0.0D+00 )
+  line_imp_is_degenerate_2d = ( a * a + b * b == 0.0_fp )
 
   return
 end
 subroutine line_imp_point_dist_2d ( a, b, c, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11081,23 +11233,23 @@ subroutine line_imp_point_dist_2d ( a, b, c, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the implicit line parameters.
+!    Input, real ( kind = fp ) A, B, C, the implicit line parameters.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(2), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the line.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) dist
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) dist
   logical ( kind = 4 ) line_imp_is_degenerate_2d
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) p(dim_num)
 
   if ( line_imp_is_degenerate_2d ( a, b, c ) ) then
     write ( *, '(a)' ) ' '
@@ -11111,6 +11263,7 @@ subroutine line_imp_point_dist_2d ( a, b, c, p, dist )
   return
 end
 subroutine line_imp_point_dist_signed_2d ( a, b, c, p, dist_signed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11136,23 +11289,23 @@ subroutine line_imp_point_dist_signed_2d ( a, b, c, p, dist_signed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the implicit line parameters.
+!    Input, real ( kind = fp ) A, B, C, the implicit line parameters.
 !
-!    Input, real ( kind = 8 ) P(2), the coordinates of the point.
+!    Input, real ( kind = fp ) P(2), the coordinates of the point.
 !
-!    Output, real ( kind = 8 ) DIST_SIGNED, the signed distance from the
+!    Output, real ( kind = fp ) DIST_SIGNED, the signed distance from the
 !    point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) dist_signed
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) dist_signed
   logical ( kind = 4 ) line_imp_is_degenerate_2d
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) p(dim_num)
 
   if ( line_imp_is_degenerate_2d ( a, b, c ) ) then
     write ( *, '(a)' ) ' '
@@ -11161,12 +11314,13 @@ subroutine line_imp_point_dist_signed_2d ( a, b, c, p, dist_signed )
     stop 1
   end if
 
-  dist_signed = - sign ( 1.0D+00, c ) * ( a * p(1) + b * p(2) + c ) / &
+  dist_signed = - sign ( 1.0_fp, c ) * ( a * p(1) + b * p(2) + c ) / &
     sqrt ( a * a + b * b )
 
   return
 end
 subroutine line_imp2exp_2d ( a, b, c, p1, p2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11203,21 +11357,21 @@ subroutine line_imp2exp_2d ( a, b, c, p1, p2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the implicit line parameters.
+!    Input, real ( kind = fp ) A, B, C, the implicit line parameters.
 !
-!    Output, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Output, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
   logical ( kind = 4 ) line_imp_is_degenerate_2d
-  real ( kind = 8 ) normsq
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) normsq
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   if ( line_imp_is_degenerate_2d ( a, b, c ) ) then
     write ( *, '(a)' ) ' '
@@ -11233,15 +11387,16 @@ subroutine line_imp2exp_2d ( a, b, c, p1, p2 )
 
   if ( abs ( b ) < abs ( a ) ) then
     p2(1) = - ( a - b / a ) * c / normsq
-    p2(2) = - ( b + 1.0D+00 ) * c / normsq
+    p2(2) = - ( b + 1.0_fp ) * c / normsq
   else
-    p2(1) = - ( a + 1.0D+00 ) * c / normsq
+    p2(1) = - ( a + 1.0_fp ) * c / normsq
     p2(2) = - ( b - a / b ) * c / normsq
   end if
 
   return
 end
 subroutine line_imp2par_2d ( a, b, c, f, g, x0, y0 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11281,23 +11436,23 @@ subroutine line_imp2par_2d ( a, b, c, f, g, x0, y0 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the implicit line parameters.
+!    Input, real ( kind = fp ) A, B, C, the implicit line parameters.
 !
-!    Output, real ( kind = 8 ) F, G, X0, Y0, the parametric parameters of
+!    Output, real ( kind = fp ) F, G, X0, Y0, the parametric parameters of
 !    the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) f
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) f
   logical ( kind = 4 ) line_imp_is_degenerate_2d
-  real ( kind = 8 ) g
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
+  real ( kind = fp ) g
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
 
   if ( line_imp_is_degenerate_2d ( a, b, c ) ) then
     write ( *, '(a)' ) ' '
@@ -11312,7 +11467,7 @@ subroutine line_imp2par_2d ( a, b, c, f, g, x0, y0 )
   f =   b / sqrt ( a * a + b * b )
   g = - a / sqrt ( a * a + b * b )
 
-  if ( f < 0.0D+00 ) then
+  if ( f < 0.0_fp ) then
     f = -f
     g = -g
   end if
@@ -11320,6 +11475,7 @@ subroutine line_imp2par_2d ( a, b, c, f, g, x0, y0 )
   return
 end
 subroutine line_par_point_dist_2d ( f, g, x0, y0, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11355,25 +11511,25 @@ subroutine line_par_point_dist_2d ( f, g, x0, y0, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, X0, Y0, the parametric line parameters.
+!    Input, real ( kind = fp ) F, G, X0, Y0, the parametric line parameters.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(2), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the line.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
+  real ( kind = fp ) dist
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
 
   dx =   g * g * ( p(1) - x0 ) - f * g * ( p(2) - y0 )
   dy = - f * g * ( p(1) - x0 ) + f * f * ( p(2) - y0 )
@@ -11383,6 +11539,7 @@ subroutine line_par_point_dist_2d ( f, g, x0, y0, p, dist )
   return
 end
 subroutine line_par_point_dist_3d ( f, g, h, x0, y0, z0, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11419,29 +11576,29 @@ subroutine line_par_point_dist_3d ( f, g, h, x0, y0, z0, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, H, X0, Y0, Z0, the parametric line
+!    Input, real ( kind = fp ) F, G, H, X0, Y0, Z0, the parametric line
 !    parameters.
 !
-!    Input, real ( kind = 8 ) P(3), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(3), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the line.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dx
-  real ( kind = 8 ) dy
-  real ( kind = 8 ) dz
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) h
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) z0
+  real ( kind = fp ) dist
+  real ( kind = fp ) dx
+  real ( kind = fp ) dy
+  real ( kind = fp ) dz
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) h
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
+  real ( kind = fp ) z0
 
   dx =   g * ( f * ( p(2) - y0 ) - g * ( p(1) - x0 ) ) &
        + h * ( f * ( p(3) - z0 ) - h * ( p(1) - x0 ) )
@@ -11458,6 +11615,7 @@ subroutine line_par_point_dist_3d ( f, g, h, x0, y0, z0, p, dist )
   return
 end
 subroutine line_par_point_near_2d ( f, g, x0, y0, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11493,25 +11651,25 @@ subroutine line_par_point_near_2d ( f, g, x0, y0, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, X0, Y0, the parametric line parameters.
+!    Input, real ( kind = fp ) F, G, X0, Y0, the parametric line parameters.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(2), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) PN(2), the point on the parametric line which
+!    Output, real ( kind = fp ) PN(2), the point on the parametric line which
 !    is nearest to P.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
 
   t = ( f * ( p(1) - x0 ) + g * ( p(2) - y0 ) ) / ( f * f + g * g )
 
@@ -11521,6 +11679,7 @@ subroutine line_par_point_near_2d ( f, g, x0, y0, p, pn )
   return
 end
 subroutine line_par_point_near_3d ( f, g, h, x0, y0, z0, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11557,28 +11716,28 @@ subroutine line_par_point_near_3d ( f, g, h, x0, y0, z0, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, H, X0, Y0, Z0, the parametric 
+!    Input, real ( kind = fp ) F, G, H, X0, Y0, Z0, the parametric 
 !    line parameters.
 !
-!    Input, real ( kind = 8 ) P(3), the point whose distance from the line is
+!    Input, real ( kind = fp ) P(3), the point whose distance from the line is
 !    to be measured.
 !
-!    Output, real ( kind = 8 ) PN(3), the point on the parametric line which
+!    Output, real ( kind = fp ) PN(3), the point on the parametric line which
 !    is nearest to P.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) h
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) z0
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) h
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
+  real ( kind = fp ) z0
 
   t = ( f * ( p(1) - x0 ) + g * ( p(2) - y0 ) + h * ( p(3) - z0 ) ) &
     / ( f * f + g * g + h * h )
@@ -11590,6 +11749,7 @@ subroutine line_par_point_near_3d ( f, g, h, x0, y0, z0, p, pn )
   return
 end
 subroutine line_par2exp_2d ( f, g, x0, y0, p1, p2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11629,20 +11789,20 @@ subroutine line_par2exp_2d ( f, g, x0, y0, p1, p2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, X0, Y0, the parametric line parameters.
+!    Input, real ( kind = fp ) F, G, X0, Y0, the parametric line parameters.
 !
-!    Output, real ( kind = 8 ) P1(2), P2(2), two points on the line.
+!    Output, real ( kind = fp ) P1(2), P2(2), two points on the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   p1(1) = x0
   p1(2) = y0
@@ -11653,6 +11813,7 @@ subroutine line_par2exp_2d ( f, g, x0, y0, p1, p2 )
   return
 end
 subroutine line_par2exp_3d ( f, g, h, x0, y0, z0, p1, p2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11693,23 +11854,23 @@ subroutine line_par2exp_3d ( f, g, h, x0, y0, z0, p1, p2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, H, X0, Y0, Z0, the parametric 
+!    Input, real ( kind = fp ) F, G, H, X0, Y0, Z0, the parametric 
 !    line parameters.
 !
-!    Output, real ( kind = 8 ) P1(3), P2(3), two points on the line.
+!    Output, real ( kind = fp ) P1(3), P2(3), two points on the line.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) h
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) z0
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) h
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
+  real ( kind = fp ) z0
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   p1(1) = x0
   p1(2) = y0
@@ -11722,6 +11883,7 @@ subroutine line_par2exp_3d ( f, g, h, x0, y0, z0, p1, p2 )
   return
 end
 subroutine line_par2imp_2d ( f, g, x0, y0, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11761,19 +11923,19 @@ subroutine line_par2imp_2d ( f, g, x0, y0, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F, G, X0, Y0, the parametric line parameters.
+!    Input, real ( kind = fp ) F, G, X0, Y0, the parametric line parameters.
 !
-!    Output, real ( kind = 8 ) A, B, C, the implicit line parameters.
+!    Output, real ( kind = fp ) A, B, C, the implicit line parameters.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
 
   a = -g
   b = f
@@ -11782,6 +11944,7 @@ subroutine line_par2imp_2d ( f, g, x0, y0, a, b, c )
   return
 end
 subroutine lines_exp_angle_3d ( p1, p2, q1, q2, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11807,11 +11970,11 @@ subroutine lines_exp_angle_3d ( p1, p2, q1, q2, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the first line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), two points on the second line.
+!    Input, real ( kind = fp ) Q1(3), Q2(3), two points on the second line.
 !
-!    Output, real ( kind = 8 ) ANGLE, the angle in radians between the two
+!    Output, real ( kind = fp ) ANGLE, the angle in radians between the two
 !    lines.  The angle is computed using the ACOS function, and so lies between
 !    0 and PI.  But if one of the lines is degenerate, the angle is 
 !    returned as -1.0.
@@ -11820,23 +11983,23 @@ subroutine lines_exp_angle_3d ( p1, p2, q1, q2, angle )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) ctheta
+  real ( kind = fp ) angle
+  real ( kind = fp ) ctheta
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pdotq
-  real ( kind = 8 ) pnorm
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) qnorm
-  real ( kind = 8 ) r8_acos
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pdotq
+  real ( kind = fp ) pnorm
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) qnorm
+  real ( kind = fp ) r8_acos
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
 !   write ( *, '(a)' ) ' '
 !   write ( *, '(a)' ) 'LINES_EXP_ANGLE_3D - Fatal error!'
 !   write ( *, '(a)' ) '  The line (P1,P2) is degenerate!'
-    angle = -1.0D+00
+    angle = -1.0_fp
     return
   end if
 
@@ -11844,7 +12007,7 @@ subroutine lines_exp_angle_3d ( p1, p2, q1, q2, angle )
 !   write ( *, '(a)' ) ' '
 !   write ( *, '(a)' ) 'LINES_EXP_ANGLE_3D - Warning!'
 !   write ( *, '(a)' ) '  The line (Q1,Q2) is degenerate!'
-    angle = -1.0D+00
+    angle = -1.0_fp
     return
   end if
 
@@ -11862,6 +12025,7 @@ subroutine lines_exp_angle_3d ( p1, p2, q1, q2, angle )
   return
 end
 subroutine lines_exp_angle_nd ( dim_num, p1, p2, q1, q2, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11889,13 +12053,13 @@ subroutine lines_exp_angle_nd ( dim_num, p1, p2, q1, q2, angle )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) P1(DIM_NUM), P2(DIM_NUM), two points 
+!    Input, real ( kind = fp ) P1(DIM_NUM), P2(DIM_NUM), two points 
 !    on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(DIM_NUM), Q2(DIM_NUM), two points 
+!    Input, real ( kind = fp ) Q1(DIM_NUM), Q2(DIM_NUM), two points 
 !    on the second line.
 !
-!    Output, real ( kind = 8 ) ANGLE, the angle in radians between the two
+!    Output, real ( kind = fp ) ANGLE, the angle in radians between the two
 !    lines.  The angle is computed using the ACOS function, and so lies
 !    between 0 and PI.  But if one of the lines is degenerate, the angle
 !    is returned as -1.0.
@@ -11904,23 +12068,23 @@ subroutine lines_exp_angle_nd ( dim_num, p1, p2, q1, q2, angle )
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) ctheta
+  real ( kind = fp ) angle
+  real ( kind = fp ) ctheta
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pdotq
-  real ( kind = 8 ) pnorm
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) qnorm
-  real ( kind = 8 ) r8_acos
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pdotq
+  real ( kind = fp ) pnorm
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) qnorm
+  real ( kind = fp ) r8_acos
 
   if ( line_exp_is_degenerate_nd ( dim_num, p1, p2 ) ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'LINES_EXP_ANGLE_3D - Fatal error!'
     write ( *, '(a)' ) '  The line (P1,P2) is degenerate!'
-    angle = -1.0D+00
+    angle = -1.0_fp
     stop 1
   end if
 
@@ -11928,7 +12092,7 @@ subroutine lines_exp_angle_nd ( dim_num, p1, p2, q1, q2, angle )
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'LINES_EXP_ANGLE_3D - Fatal error!'
     write ( *, '(a)' ) '  The line (Q1,Q2) is degenerate!'
-    angle = -1.0D+00
+    angle = -1.0_fp
     stop 1
   end if
 
@@ -11944,6 +12108,7 @@ subroutine lines_exp_angle_nd ( dim_num, p1, p2, q1, q2, angle )
   return
 end
 subroutine lines_exp_dist_3d ( p1, p2, q1, q2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -11969,35 +12134,35 @@ subroutine lines_exp_dist_3d ( p1, p2, q1, q2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the first line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), two points on the second line.  
+!    Input, real ( kind = fp ) Q1(3), Q2(3), two points on the second line.  
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the lines.
+!    Output, real ( kind = fp ) DIST, the distance between the lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a11
-  real ( kind = 8 ) a12
-  real ( kind = 8 ) a13
-  real ( kind = 8 ) a21
-  real ( kind = 8 ) a22
-  real ( kind = 8 ) a23
-  real ( kind = 8 ) a31
-  real ( kind = 8 ) a32
-  real ( kind = 8 ) a33
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) cr1
-  real ( kind = 8 ) cr2
-  real ( kind = 8 ) cr3
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) top
+  real ( kind = fp ) a11
+  real ( kind = fp ) a12
+  real ( kind = fp ) a13
+  real ( kind = fp ) a21
+  real ( kind = fp ) a22
+  real ( kind = fp ) a23
+  real ( kind = fp ) a31
+  real ( kind = fp ) a32
+  real ( kind = fp ) a33
+  real ( kind = fp ) bot
+  real ( kind = fp ) cr1
+  real ( kind = fp ) cr2
+  real ( kind = fp ) cr3
+  real ( kind = fp ) dist
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) top
 !
 !  The distance is found by computing the volume of a parallelipiped,
 !  and dividing by the area of its base.
@@ -12026,7 +12191,7 @@ subroutine lines_exp_dist_3d ( p1, p2, q1, q2, dist )
 
   bot = sqrt ( cr1 * cr1 + cr2 * cr2 + cr3 * cr3 )
 
-  if ( bot == 0.0D+00 ) then
+  if ( bot == 0.0_fp ) then
 
     call line_exp_point_dist_3d ( p1, p2, q1, dist )
 
@@ -12043,6 +12208,7 @@ subroutine lines_exp_dist_3d ( p1, p2, q1, q2, dist )
   return
 end
 subroutine lines_exp_dist_3d_2 ( p1, p2, q1, q2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12070,34 +12236,34 @@ subroutine lines_exp_dist_3d_2 ( p1, p2, q1, q2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the first line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), two points on the second line.  
+!    Input, real ( kind = fp ) Q1(3), Q2(3), two points on the second line.  
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the lines.
+!    Output, real ( kind = fp ) DIST, the distance between the lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) det
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) e
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) qn(dim_num)
-  real ( kind = 8 ) sn
-  real ( kind = 8 ) tn
-  real ( kind = 8 ) u(dim_num)
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) w0(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) det
+  real ( kind = fp ) dist
+  real ( kind = fp ) e
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) qn(dim_num)
+  real ( kind = fp ) sn
+  real ( kind = fp ) tn
+  real ( kind = fp ) u(dim_num)
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) w0(dim_num)
 !
 !  Let U = (P2-P1) and V = (Q2-Q1) be the direction vectors on
 !  the two lines.
@@ -12146,8 +12312,8 @@ subroutine lines_exp_dist_3d_2 ( p1, p2, q1, q2, dist )
 !
   det = - a * c + b * b
 
-  if ( det == 0.0D+00 ) then
-    sn = 0.0D+00
+  if ( det == 0.0_fp ) then
+    sn = 0.0_fp
     if ( abs ( b ) < abs ( c ) ) then
       tn = e / c
     else
@@ -12166,6 +12332,7 @@ subroutine lines_exp_dist_3d_2 ( p1, p2, q1, q2, dist )
   return
 end
 function lines_exp_equal_2d ( p1, p2, q1, q2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12198,9 +12365,9 @@ function lines_exp_equal_2d ( p1, p2, q1, q2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the first line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(2), Q2(2), two points on the second line.
+!    Input, real ( kind = fp ) Q1(2), Q2(2), two points on the second line.
 !
 !    Output, logical ( kind = 4 ) LINES_EXP_EQUAL_2D, is TRUE if the two lines 
 !    are determined to be identical.
@@ -12210,21 +12377,21 @@ function lines_exp_equal_2d ( p1, p2, q1, q2 )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   logical ( kind = 4 ) lines_exp_equal_2d
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) q1(2)
-  real ( kind = 8 ) q2(2)
-  real ( kind = 8 ) test1
-  real ( kind = 8 ) test2
-  real ( kind = 8 ) test3
-  real ( kind = 8 ) test4
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) q1(2)
+  real ( kind = fp ) q2(2)
+  real ( kind = fp ) test1
+  real ( kind = fp ) test2
+  real ( kind = fp ) test3
+  real ( kind = fp ) test4
 !
 !  Slope (P1,P2) = Slope (P2,Q1).
 !
   test1 = ( p2(2) - p1(2) ) * ( q1(1) - p2(1) ) &
         - ( p2(1) - p1(1) ) * ( q1(2) - p2(2) )
 
-  if ( test1 /= 0.0D+00 ) then
+  if ( test1 /= 0.0_fp ) then
     lines_exp_equal_2d = .false.
     return
   end if
@@ -12234,7 +12401,7 @@ function lines_exp_equal_2d ( p1, p2, q1, q2 )
   test2 = ( q2(2) - q1(2) ) * ( q1(1) - p2(1) ) &
         - ( q2(1) - q1(1) ) * ( q1(2) - p2(2) ) 
 
-  if ( test2 /= 0.0D+00 ) then
+  if ( test2 /= 0.0_fp ) then
     lines_exp_equal_2d = .false.
     return
   end if
@@ -12244,7 +12411,7 @@ function lines_exp_equal_2d ( p1, p2, q1, q2 )
   test3 = ( p2(2) - p1(2) ) * ( q2(1) - p1(1) ) &
         - ( p2(1) - p1(1) ) * ( q2(2) - p1(2) )
 
-  if ( test3 /= 0.0D+00 ) then
+  if ( test3 /= 0.0_fp ) then
     lines_exp_equal_2d = .false.
     return
   end if
@@ -12254,7 +12421,7 @@ function lines_exp_equal_2d ( p1, p2, q1, q2 )
   test4 = ( q2(2) - q1(2) ) * ( q2(1) - p1(1) ) &
         - ( q2(1) - q1(1) ) * ( q2(2) - p1(2) ) 
 
-  if ( test4 /= 0.0D+00 ) then
+  if ( test4 /= 0.0_fp ) then
     lines_exp_equal_2d = .false.
     return
   end if
@@ -12264,6 +12431,7 @@ function lines_exp_equal_2d ( p1, p2, q1, q2 )
   return
 end
 subroutine lines_exp_int_2d ( p1, p2, q1, q2, ival, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12289,39 +12457,39 @@ subroutine lines_exp_int_2d ( p1, p2, q1, q2, ival, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the first line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(2), Q2(2), two points on the second line.
+!    Input, real ( kind = fp ) Q1(2), Q2(2), two points on the second line.
 !
 !    Output, integer ( kind = 4 ) IVAL, reports on the intersection:
 !    0, no intersection, the lines may be parallel or degenerate.
 !    1, one intersection point, returned in P.
 !    2, infinitely many intersections, the lines are identical.
 !
-!    Output, real ( kind = 8 ) P(2), if IVAl = 1, P is
+!    Output, real ( kind = fp ) P(2), if IVAl = 1, P is
 !    the intersection point.  Otherwise, P = 0.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a1
-  real ( kind = 8 ) a2
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) c1
-  real ( kind = 8 ) c2
+  real ( kind = fp ) a1
+  real ( kind = fp ) a2
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) c1
+  real ( kind = fp ) c2
   integer ( kind = 4 ) ival
   logical ( kind = 4 ) point_1
   logical ( kind = 4 ) point_2
-  real ( kind = 8 ) p(2)
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) q1(2)
-  real ( kind = 8 ) q2(2)
+  real ( kind = fp ) p(2)
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) q1(2)
+  real ( kind = fp ) q2(2)
 
   ival = 0
-  p(1:dim_num) = 0.0D+00
+  p(1:dim_num) = 0.0_fp
 !
 !  Check whether either line is a point.
 !
@@ -12371,6 +12539,7 @@ subroutine lines_exp_int_2d ( p1, p2, q1, q2, ival, p )
   return
 end
 subroutine lines_exp_near_3d ( p1, p2, q1, q2, pn, qn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12398,34 +12567,34 @@ subroutine lines_exp_near_3d ( p1, p2, q1, q2, pn, qn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the first line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), two points on the second line.  
+!    Input, real ( kind = fp ) Q1(3), Q2(3), two points on the second line.  
 !
-!    Output, real ( kind = 8 ) PN(3), QN(3), the points on the first and
+!    Output, real ( kind = fp ) PN(3), QN(3), the points on the first and
 !    second lines that are nearest.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) det
-  real ( kind = 8 ) e
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) qn(dim_num)
-  real ( kind = 8 ) sn
-  real ( kind = 8 ) tn
-  real ( kind = 8 ) u(dim_num)
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) w0(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) det
+  real ( kind = fp ) e
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) qn(dim_num)
+  real ( kind = fp ) sn
+  real ( kind = fp ) tn
+  real ( kind = fp ) u(dim_num)
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) w0(dim_num)
 !
 !  Let U = (P2-P1) and V = (Q2-Q1) be the direction vectors on
 !  the two lines.
@@ -12474,8 +12643,8 @@ subroutine lines_exp_near_3d ( p1, p2, q1, q2, pn, qn )
 !
   det = - a * c + b * b
 
-  if ( det == 0.0D+00 ) then
-    sn = 0.0D+00
+  if ( det == 0.0_fp ) then
+    sn = 0.0_fp
     if ( abs ( b ) < abs ( c ) ) then
       tn = e / c
     else
@@ -12492,6 +12661,7 @@ subroutine lines_exp_near_3d ( p1, p2, q1, q2, pn, qn )
   return
 end
 function lines_exp_parallel_2d ( p1, p2, q1, q2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12527,9 +12697,9 @@ function lines_exp_parallel_2d ( p1, p2, q1, q2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points on the first line.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(2), Q2(2), two points on the second line.
+!    Input, real ( kind = fp ) Q1(2), Q2(2), two points on the second line.
 !
 !    Output, logical ( kind = 4 ) LINES_EXP_PARALLEL_2D is TRUE if the 
 !    lines are parallel.
@@ -12539,10 +12709,10 @@ function lines_exp_parallel_2d ( p1, p2, q1, q2 )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   logical ( kind = 4 ) lines_exp_parallel_2d
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
 
   lines_exp_parallel_2d = ( p2(1) - p1(1) ) * ( q2(2) - q1(2) ) == &
                           ( q2(1) - q1(1) ) * ( p2(2) - p1(2) )
@@ -12550,6 +12720,7 @@ function lines_exp_parallel_2d ( p1, p2, q1, q2 )
   return
 end
 function lines_exp_parallel_3d ( p1, p2, q1, q2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12594,9 +12765,9 @@ function lines_exp_parallel_3d ( p1, p2, q1, q2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the first line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the first line.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), two points on the second line.
+!    Input, real ( kind = fp ) Q1(3), Q2(3), two points on the second line.
 !
 !    Output, logical ( kind = 4 ) LINES_EXP_PARALLEL_3D is TRUE if the lines 
 !    are parallel.
@@ -12606,13 +12777,13 @@ function lines_exp_parallel_3d ( p1, p2, q1, q2 )
   integer ( kind = 4 ), parameter :: dim_num = 3
 
   logical ( kind = 4 ) lines_exp_parallel_3d
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pdotp
-  real ( kind = 8 ) pdotq
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) qdotq
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pdotp
+  real ( kind = fp ) pdotq
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) qdotq
 
   pdotq = dot_product ( p2(1:dim_num) - p1(1:dim_num), &
                         q2(1:dim_num) - q1(1:dim_num) )
@@ -12628,6 +12799,7 @@ function lines_exp_parallel_3d ( p1, p2, q1, q2 )
   return
 end
 subroutine lines_imp_angle_2d ( a1, b1, c1, a2, b2, c2, theta )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12660,29 +12832,29 @@ subroutine lines_imp_angle_2d ( a1, b1, c1, a2, b2, c2, theta )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A1, B1, C1, the implicit parameters of the 
+!    Input, real ( kind = fp ) A1, B1, C1, the implicit parameters of the 
 !    first line.
 !
-!    Input, real ( kind = 8 ) A2, B2, C2, the implicit parameters of the
+!    Input, real ( kind = fp ) A2, B2, C2, the implicit parameters of the
 !    second line.
 !
-!    Output, real ( kind = 8 ) THETA, the angle between the two lines.
+!    Output, real ( kind = fp ) THETA, the angle between the two lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a1
-  real ( kind = 8 ) a2
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) c1
-  real ( kind = 8 ) c2
-  real ( kind = 8 ) pdotq
-  real ( kind = 8 ) pnorm
-  real ( kind = 8 ) qnorm
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) theta
+  real ( kind = fp ) a1
+  real ( kind = fp ) a2
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) c1
+  real ( kind = fp ) c2
+  real ( kind = fp ) pdotq
+  real ( kind = fp ) pnorm
+  real ( kind = fp ) qnorm
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) theta
 
   pdotq = a1 * a2 + b1 * b2
   pnorm = sqrt ( a1 * a1 + b1 * b1 )
@@ -12693,6 +12865,7 @@ subroutine lines_imp_angle_2d ( a1, b1, c1, a2, b2, c2, theta )
   return
 end
 subroutine lines_imp_dist_2d ( a1, b1, c1, a2, b2, c2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12721,25 +12894,25 @@ subroutine lines_imp_dist_2d ( a1, b1, c1, a2, b2, c2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A1, B1, C1, define the first line.
+!    Input, real ( kind = fp ) A1, B1, C1, define the first line.
 !    At least one of A1 and B1 must be nonzero.
 !
-!    Input, real ( kind = 8 ) A2, B2, C2, define the second line.
+!    Input, real ( kind = fp ) A2, B2, C2, define the second line.
 !    At least one of A2 and B2 must be nonzero.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the two lines.
+!    Output, real ( kind = fp ) DIST, the distance between the two lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a1
-  real ( kind = 8 ) a2
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) c1
-  real ( kind = 8 ) c2
-  real ( kind = 8 ) dist
+  real ( kind = fp ) a1
+  real ( kind = fp ) a2
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) c1
+  real ( kind = fp ) c2
+  real ( kind = fp ) dist
   logical ( kind = 4 ) line_imp_is_degenerate_2d
 !
 !  Refuse to handle degenerate lines.
@@ -12761,7 +12934,7 @@ subroutine lines_imp_dist_2d ( a1, b1, c1, a2, b2, c2, dist )
 !  Determine if the lines intersect.
 !
   if ( a1 * b2 /= a2 * b1 ) then
-    dist = 0.0D+00
+    dist = 0.0_fp
     return
   end if
 !
@@ -12773,6 +12946,7 @@ subroutine lines_imp_dist_2d ( a1, b1, c1, a2, b2, c2, dist )
   return
 end
 subroutine lines_imp_int_2d ( a1, b1, c1, a2, b2, c2, ival, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12798,10 +12972,10 @@ subroutine lines_imp_int_2d ( a1, b1, c1, a2, b2, c2, ival, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A1, B1, C1, define the first line.
+!    Input, real ( kind = fp ) A1, B1, C1, define the first line.
 !    At least one of A1 and B1 must be nonzero.
 !
-!    Input, real ( kind = 8 ) A2, B2, C2, define the second line.
+!    Input, real ( kind = fp ) A2, B2, C2, define the second line.
 !    At least one of A2 and B2 must be nonzero.
 !
 !    Output, integer ( kind = 4 ) IVAL, reports on the intersection.
@@ -12812,26 +12986,26 @@ subroutine lines_imp_int_2d ( a1, b1, c1, a2, b2, c2, ival, p )
 !     1, one intersection point, returned in P.
 !     2, infinitely many intersections, the lines are identical.
 !
-!    Output, real ( kind = 8 ) P(2), if IVAL = 1, then P is
+!    Output, real ( kind = fp ) P(2), if IVAL = 1, then P is
 !    the intersection point.  Otherwise, P = 0.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a(dim_num,dim_num+1)
-  real ( kind = 8 ) a1
-  real ( kind = 8 ) a2
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) c1
-  real ( kind = 8 ) c2
+  real ( kind = fp ) a(dim_num,dim_num+1)
+  real ( kind = fp ) a1
+  real ( kind = fp ) a2
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) c1
+  real ( kind = fp ) c2
   integer ( kind = 4 ) info
   integer ( kind = 4 ) ival
   logical ( kind = 4 ) line_imp_is_degenerate_2d
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) p(dim_num)
 
-  p(1:dim_num) = 0.0D+00
+  p(1:dim_num) = 0.0_fp
 !
 !  Refuse to handle degenerate lines.
 !
@@ -12872,7 +13046,7 @@ subroutine lines_imp_int_2d ( a1, b1, c1, a2, b2, c2, ival, p )
 
     ival = 0
 
-    if ( a1 == 0.0D+00 ) then
+    if ( a1 == 0.0_fp ) then
       if ( b2 * c1 == c2 * b1 ) then
         ival = 2
       end if
@@ -12887,6 +13061,7 @@ subroutine lines_imp_int_2d ( a1, b1, c1, a2, b2, c2, ival, p )
   return
 end
 subroutine lines_par_angle_2d ( f1, g1, x01, y01, f2, g2, x02, y02, theta )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12922,31 +13097,31 @@ subroutine lines_par_angle_2d ( f1, g1, x01, y01, f2, g2, x02, y02, theta )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F1, G1, X01, Y01, the parametric parameters of the
+!    Input, real ( kind = fp ) F1, G1, X01, Y01, the parametric parameters of the
 !    first line.
 !
-!    Input, real ( kind = 8 ) F2, G2, X02, Y02, the parametric parameters of the
+!    Input, real ( kind = fp ) F2, G2, X02, Y02, the parametric parameters of the
 !    second line.
 !
-!    Output, real ( kind = 8 ) THETA, the angle between the two lines.
+!    Output, real ( kind = fp ) THETA, the angle between the two lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) f1
-  real ( kind = 8 ) f2
-  real ( kind = 8 ) g1
-  real ( kind = 8 ) g2
-  real ( kind = 8 ) pdotq
-  real ( kind = 8 ) pnorm
-  real ( kind = 8 ) qnorm
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) x01
-  real ( kind = 8 ) x02
-  real ( kind = 8 ) y01
-  real ( kind = 8 ) y02
+  real ( kind = fp ) f1
+  real ( kind = fp ) f2
+  real ( kind = fp ) g1
+  real ( kind = fp ) g2
+  real ( kind = fp ) pdotq
+  real ( kind = fp ) pnorm
+  real ( kind = fp ) qnorm
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) theta
+  real ( kind = fp ) x01
+  real ( kind = fp ) x02
+  real ( kind = fp ) y01
+  real ( kind = fp ) y02
 
   pdotq = f1 * f2 + g1 * g2
   pnorm = sqrt ( f1 * f1 + g1 * g1 )
@@ -12958,6 +13133,7 @@ subroutine lines_par_angle_2d ( f1, g1, x01, y01, f2, g2, x02, y02, theta )
 end
 subroutine lines_par_angle_3d ( f1, g1, h1, x01, y01, z01, f2, g2, h2, &
   x02, y02, z02, theta )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -12994,35 +13170,35 @@ subroutine lines_par_angle_3d ( f1, g1, h1, x01, y01, z01, f2, g2, h2, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F1, G1, H1, X01, Y01, Z01, the parametric
+!    Input, real ( kind = fp ) F1, G1, H1, X01, Y01, Z01, the parametric
 !    parameters of the first line.
 !
-!    Input, real ( kind = 8 ) F2, G2, H2, X02, Y02, Z02, the parametric
+!    Input, real ( kind = fp ) F2, G2, H2, X02, Y02, Z02, the parametric
 !    parameters of the second line.
 !
-!    Output, real ( kind = 8 ) THETA, the angle between the two lines.
+!    Output, real ( kind = fp ) THETA, the angle between the two lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) f1
-  real ( kind = 8 ) f2
-  real ( kind = 8 ) g1
-  real ( kind = 8 ) g2
-  real ( kind = 8 ) h1
-  real ( kind = 8 ) h2
-  real ( kind = 8 ) pdotq
-  real ( kind = 8 ) pnorm
-  real ( kind = 8 ) qnorm
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) x01
-  real ( kind = 8 ) x02
-  real ( kind = 8 ) y01
-  real ( kind = 8 ) y02
-  real ( kind = 8 ) z01
-  real ( kind = 8 ) z02
+  real ( kind = fp ) f1
+  real ( kind = fp ) f2
+  real ( kind = fp ) g1
+  real ( kind = fp ) g2
+  real ( kind = fp ) h1
+  real ( kind = fp ) h2
+  real ( kind = fp ) pdotq
+  real ( kind = fp ) pnorm
+  real ( kind = fp ) qnorm
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) theta
+  real ( kind = fp ) x01
+  real ( kind = fp ) x02
+  real ( kind = fp ) y01
+  real ( kind = fp ) y02
+  real ( kind = fp ) z01
+  real ( kind = fp ) z02
 
   pdotq = f1 * f2 + g1 * g2 + h1 * h2
   pnorm = sqrt ( f1 * f1 + g1 * g1 + h1 * h1 )
@@ -13034,6 +13210,7 @@ subroutine lines_par_angle_3d ( f1, g1, h1, x01, y01, z01, f2, g2, h2, &
 end
 subroutine lines_par_dist_3d ( f1, g1, h1, x01, y01, z01, f2, g2, h2, &
   x02, y02, z02, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13072,31 +13249,31 @@ subroutine lines_par_dist_3d ( f1, g1, h1, x01, y01, z01, f2, g2, h2, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F1, G1, H1, X01, Y01, Z01, the parametric
+!    Input, real ( kind = fp ) F1, G1, H1, X01, Y01, Z01, the parametric
 !    parameters of the first line.
 !
-!    Input, real ( kind = 8 ) F2, G2, H2, X02, Y02, Z02, the parametric
+!    Input, real ( kind = fp ) F2, G2, H2, X02, Y02, Z02, the parametric
 !    parameters of the second line.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the two lines.
+!    Output, real ( kind = fp ) DIST, the distance between the two lines.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) f1
-  real ( kind = 8 ) f2
-  real ( kind = 8 ) g1
-  real ( kind = 8 ) g2
-  real ( kind = 8 ) h1
-  real ( kind = 8 ) h2
-  real ( kind = 8 ) x01
-  real ( kind = 8 ) x02
-  real ( kind = 8 ) y01
-  real ( kind = 8 ) y02
-  real ( kind = 8 ) z01
-  real ( kind = 8 ) z02
+  real ( kind = fp ) dist
+  real ( kind = fp ) f1
+  real ( kind = fp ) f2
+  real ( kind = fp ) g1
+  real ( kind = fp ) g2
+  real ( kind = fp ) h1
+  real ( kind = fp ) h2
+  real ( kind = fp ) x01
+  real ( kind = fp ) x02
+  real ( kind = fp ) y01
+  real ( kind = fp ) y02
+  real ( kind = fp ) z01
+  real ( kind = fp ) z02
 
   dist = abs ( ( x02 - x01 ) * ( g1 * h2 - g2 * h1 ) &
              + ( y02 - y01 ) * ( h1 * f2 - h2 * f1 ) &
@@ -13108,6 +13285,7 @@ subroutine lines_par_dist_3d ( f1, g1, h1, x01, y01, z01, f2, g2, h2, &
   return
 end
 subroutine lines_par_int_2d ( f1, g1, x1, y1, f2, g2, x2, y2, t1, t2, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13143,38 +13321,38 @@ subroutine lines_par_int_2d ( f1, g1, x1, y1, f2, g2, x2, y2, t1, t2, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) F1, G1, X1, Y1, define the first parametric line.
+!    Input, real ( kind = fp ) F1, G1, X1, Y1, define the first parametric line.
 !
-!    Input, real ( kind = 8 ) F2, G2, X2, Y2, define the second parametric line.
+!    Input, real ( kind = fp ) F2, G2, X2, Y2, define the second parametric line.
 !
-!    Output, real ( kind = 8 ) T1, T2, the T parameters on the first and second
+!    Output, real ( kind = fp ) T1, T2, the T parameters on the first and second
 !    lines of the intersection point.
 !
-!    Output, real ( kind = 8 ) PINT(2), the intersection point.
+!    Output, real ( kind = fp ) PINT(2), the intersection point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) det
-  real ( kind = 8 ) f1
-  real ( kind = 8 ) f2
-  real ( kind = 8 ) g1
-  real ( kind = 8 ) g2
-  real ( kind = 8 ) pint(dim_num)
-  real ( kind = 8 ) t1
-  real ( kind = 8 ) t2
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
+  real ( kind = fp ) det
+  real ( kind = fp ) f1
+  real ( kind = fp ) f2
+  real ( kind = fp ) g1
+  real ( kind = fp ) g2
+  real ( kind = fp ) pint(dim_num)
+  real ( kind = fp ) t1
+  real ( kind = fp ) t2
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
 
   det = f2 * g1 - f1 * g2
 
-  if ( det == 0.0D+00 ) then
-    t1 = 0.0D+00
-    t2 = 0.0D+00
-    pint(1:dim_num) = 0.0D+00
+  if ( det == 0.0_fp ) then
+    t1 = 0.0_fp
+    t2 = 0.0_fp
+    pint(1:dim_num) = 0.0_fp
   else
     t1 = ( f2 * ( y2 - y1 ) - g2 * ( x2 - x1 ) ) / det
     t2 = ( f1 * ( y2 - y1 ) - g1 * ( x2 - x1 ) ) / det
@@ -13186,6 +13364,7 @@ subroutine lines_par_int_2d ( f1, g1, x1, y1, f2, g2, x2, y2, t1, t2, pint )
 end
 subroutine loc2glob_3d ( cospitch, cosroll, cosyaw, sinpitch, sinroll, sinyaw, &
   globas, locpts, glopts )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13234,32 +13413,32 @@ subroutine loc2glob_3d ( cospitch, cosroll, cosyaw, sinpitch, sinroll, sinyaw, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) COSPITCH, COSROLL, COSYAW, the cosines of the
+!    Input, real ( kind = fp ) COSPITCH, COSROLL, COSYAW, the cosines of the
 !    pitch, roll and yaw angles.
 !
-!    Input, real ( kind = 8 ) SINPITCH, SINROLL, SINYAW, the sines of the pitch,
+!    Input, real ( kind = fp ) SINPITCH, SINROLL, SINYAW, the sines of the pitch,
 !    roll and yaw angles.
 !
-!    Input, real ( kind = 8 ) GLOBAS(3), the global coordinates of the base
+!    Input, real ( kind = fp ) GLOBAS(3), the global coordinates of the base
 !    vector.
 !
-!    Input, real ( kind = 8 ) LOCPTS(3), the local coordinates of the point.
+!    Input, real ( kind = fp ) LOCPTS(3), the local coordinates of the point.
 !
-!    Output, real ( kind = 8 ) GLOPTS(3), the global coordinates of the point.
+!    Output, real ( kind = fp ) GLOPTS(3), the global coordinates of the point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) cospitch
-  real ( kind = 8 ) cosroll
-  real ( kind = 8 ) cosyaw
-  real ( kind = 8 ) globas(dim_num)
-  real ( kind = 8 ) glopts(dim_num)
-  real ( kind = 8 ) locpts(dim_num)
-  real ( kind = 8 ) sinpitch
-  real ( kind = 8 ) sinroll
-  real ( kind = 8 ) sinyaw
+  real ( kind = fp ) cospitch
+  real ( kind = fp ) cosroll
+  real ( kind = fp ) cosyaw
+  real ( kind = fp ) globas(dim_num)
+  real ( kind = fp ) glopts(dim_num)
+  real ( kind = fp ) locpts(dim_num)
+  real ( kind = fp ) sinpitch
+  real ( kind = fp ) sinroll
+  real ( kind = fp ) sinyaw
 
   glopts(1) = globas(1) + (  cosyaw * cospitch ) * locpts(1) &
     + (  cosyaw * sinpitch * sinroll - sinyaw * cosroll ) * locpts(2) &
@@ -13276,6 +13455,7 @@ subroutine loc2glob_3d ( cospitch, cosroll, cosyaw, sinpitch, sinroll, sinyaw, &
   return
 end
 subroutine l4vec_print ( n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13320,6 +13500,7 @@ subroutine l4vec_print ( n, a, title )
   return
 end
 subroutine minabs ( x1, y1, x2, y2, x3, y3, xmin, ymin )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13339,29 +13520,29 @@ subroutine minabs ( x1, y1, x2, y2, x3, y3, xmin, ymin )
 !
 !  Parameters:
 !
-!    Input/output, real ( kind = 8 ) X1, Y1, X2, Y2, X3, Y3, are three sets of
+!    Input/output, real ( kind = fp ) X1, Y1, X2, Y2, X3, Y3, are three sets of
 !    data of the form ( X, F(X) ).  The three X values must be distinct.
 !    On output, the data has been sorted so that X1 < X2 < X3,
 !    and the Y values have been rearranged accordingly.
 !
-!    Output, real ( kind = 8 ) XMIN, YMIN.  XMIN is a point within the interval
+!    Output, real ( kind = fp ) XMIN, YMIN.  XMIN is a point within the interval
 !    spanned by X1, X2 and X3, at which F takes its local minimum
 !    value YMIN.
 !
   implicit none
 
-  real ( kind = 8 ) slope
-  real ( kind = 8 ) slope12
-  real ( kind = 8 ) slope13
-  real ( kind = 8 ) slope23
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) x3
-  real ( kind = 8 ) xmin
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) y3
-  real ( kind = 8 ) ymin
+  real ( kind = fp ) slope
+  real ( kind = fp ) slope12
+  real ( kind = fp ) slope13
+  real ( kind = fp ) slope23
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) x3
+  real ( kind = fp ) xmin
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) y3
+  real ( kind = fp ) ymin
 !
 !  Refuse to deal with coincident data.
 !
@@ -13397,7 +13578,7 @@ subroutine minabs ( x1, y1, x2, y2, x3, y3, xmin, ymin )
 !
 !  Case 1: Minimum must be at an endpoint.
 !
-  if ( slope13 <= slope12 .or. 0.0D+00 <= slope12 ) then
+  if ( slope13 <= slope12 .or. 0.0_fp <= slope12 ) then
 
     if ( y1 < y3 ) then
       xmin = x1
@@ -13419,7 +13600,7 @@ subroutine minabs ( x1, y1, x2, y2, x3, y3, xmin, ymin )
 
     slope = max ( abs ( slope12 ), slope23 )
 
-    xmin = 0.5D+00 * ( x1 + x3 + ( y1 - y3 ) / slope )
+    xmin = 0.5_fp * ( x1 + x3 + ( y1 - y3 ) / slope )
     ymin = y1 - slope * ( xmin - x1 )
 
   end if
@@ -13427,6 +13608,7 @@ subroutine minabs ( x1, y1, x2, y2, x3, y3, xmin, ymin )
   return
 end
 subroutine minquad ( x1, y1, x2, y2, x3, y3, xmin, ymin )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13454,29 +13636,29 @@ subroutine minquad ( x1, y1, x2, y2, x3, y3, xmin, ymin )
 !
 !  Parameters:
 !
-!    Input/output, real ( kind = 8 ) X1, Y1, X2, Y2, X3, Y3, three sets of data
+!    Input/output, real ( kind = fp ) X1, Y1, X2, Y2, X3, Y3, three sets of data
 !    of the form ( X, F(X) ).  The three X values must be distinct.
 !    On output, the data has been sorted so that X1 < X2 < X3,
 !    and the Y values have been rearranged accordingly.
 !
-!    Output, real ( kind = 8 ) XMIN, YMIN.  XMIN is a point within the interval
+!    Output, real ( kind = fp ) XMIN, YMIN.  XMIN is a point within the interval
 !    spanned by X1, X2 and X3, at which F takes its local minimum value YMIN.
 !
   implicit none
 
   integer ( kind = 4 ) ierror
-  real ( kind = 8 ) x
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) x3
-  real ( kind = 8 ) xleft
-  real ( kind = 8 ) xmin
-  real ( kind = 8 ) xrite
-  real ( kind = 8 ) y
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) y3
-  real ( kind = 8 ) ymin
+  real ( kind = fp ) x
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) x3
+  real ( kind = fp ) xleft
+  real ( kind = fp ) xmin
+  real ( kind = fp ) xrite
+  real ( kind = fp ) y
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) y3
+  real ( kind = fp ) ymin
 !
 !  Refuse to deal with coincident data.
 !
@@ -13536,6 +13718,7 @@ subroutine minquad ( x1, y1, x2, y2, x3, y3, xmin, ymin )
 end
 subroutine octahedron_shape_3d ( point_num, face_num, face_order_max, &
   point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13568,7 +13751,7 @@ subroutine octahedron_shape_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of vertices 
 !    per face.
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the points.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the points.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of 
 !    vertices per face.
@@ -13587,17 +13770,17 @@ subroutine octahedron_shape_3d ( point_num, face_num, face_order_max, &
 
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 !
 !  Set point coordinates.
 !
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
-     0.0D+00,  0.0D+00, -1.0D+00, &
-     0.0D+00, -1.0D+00,  0.0D+00, &
-     1.0D+00,  0.0D+00,  0.0D+00, &
-     0.0D+00,  1.0D+00,  0.0D+00, &
-    -1.0D+00,  0.0D+00,  0.0D+00, &
-     0.0D+00,  0.0D+00,  1.0D+00 /), (/ dim_num, point_num /) )
+     0.0_fp,  0.0_fp, -1.0_fp, &
+     0.0_fp, -1.0_fp,  0.0_fp, &
+     1.0_fp,  0.0_fp,  0.0_fp, &
+     0.0_fp,  1.0_fp,  0.0_fp, &
+    -1.0_fp,  0.0_fp,  0.0_fp, &
+     0.0_fp,  0.0_fp,  1.0_fp /), (/ dim_num, point_num /) )
 !
 !  Set the face orders.
 !
@@ -13619,6 +13802,7 @@ subroutine octahedron_shape_3d ( point_num, face_num, face_order_max, &
   return
 end
 subroutine octahedron_size_3d ( point_num, edge_num, face_num, face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13667,6 +13851,7 @@ subroutine octahedron_size_3d ( point_num, edge_num, face_num, face_order_max )
   return
 end
 subroutine parallelogram_area_2d ( p, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13706,15 +13891,15 @@ subroutine parallelogram_area_2d ( p, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P(2,4), the parallelogram vertices,
+!    Input, real ( kind = fp ) P(2,4), the parallelogram vertices,
 !    given in counterclockwise order.  The fourth vertex is ignored.
 !
-!    Output, real ( kind = 8 ) AREA, the (signed) area.
+!    Output, real ( kind = fp ) AREA, the (signed) area.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) p(2,4)
+  real ( kind = fp ) area
+  real ( kind = fp ) p(2,4)
 !
 !  Compute the cross product vector, which only has a single
 !  nonzero component.  
@@ -13725,6 +13910,7 @@ subroutine parallelogram_area_2d ( p, area )
   return
 end
 subroutine parallelogram_area_3d ( p, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13768,16 +13954,16 @@ subroutine parallelogram_area_3d ( p, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P(3,4), the parallelogram vertices,
+!    Input, real ( kind = fp ) P(3,4), the parallelogram vertices,
 !    given in counterclockwise order.  The fourth vertex is ignored.
 !
-!    Output, real ( kind = 8 ) AREA, the area
+!    Output, real ( kind = fp ) AREA, the area
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) cross(3)
-  real ( kind = 8 ) p(3,4)
+  real ( kind = fp ) area
+  real ( kind = fp ) cross(3)
+  real ( kind = fp ) p(3,4)
 !
 !  Compute the cross product vector.
 !
@@ -13795,6 +13981,7 @@ subroutine parallelogram_area_3d ( p, area )
   return
 end
 function parallelogram_contains_point_2d ( p1, p2, p3, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13830,10 +14017,10 @@ function parallelogram_contains_point_2d ( p1, p2, p3, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), three corners of the 
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), three corners of the 
 !    parallelogram, with P1 between P2 and P3.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) PARALLELOGRAM_CONTAINS_POINT_2D, 
 !    is TRUE if P is inside the parallelogram.
@@ -13842,12 +14029,12 @@ function parallelogram_contains_point_2d ( p1, p2, p3, p )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a(dim_num,dim_num+1)
+  real ( kind = fp ) a(dim_num,dim_num+1)
   integer ( kind = 4 ) info
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
   logical ( kind = 4 ) parallelogram_contains_point_2d
 !
 !  Set up the linear system
@@ -13877,9 +14064,9 @@ function parallelogram_contains_point_2d ( p1, p2, p3, p )
     stop 1
   end if
 
-  if ( a(1,3) < 0.0D+00 .or. 1.0D+00 < a(1,3) ) then
+  if ( a(1,3) < 0.0_fp .or. 1.0_fp < a(1,3) ) then
     parallelogram_contains_point_2d = .false.
-  else if ( a(2,3) < 0.0D+00 .or. 1.0D+00 < a(2,3) ) then
+  else if ( a(2,3) < 0.0_fp .or. 1.0_fp < a(2,3) ) then
     parallelogram_contains_point_2d = .false.
   else
     parallelogram_contains_point_2d = .true.
@@ -13888,6 +14075,7 @@ function parallelogram_contains_point_2d ( p1, p2, p3, p )
   return
 end
 function parallelogram_contains_point_3d ( p1, p2, p3, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -13925,10 +14113,10 @@ function parallelogram_contains_point_3d ( p1, p2, p3, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three corners of the 
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three corners of the 
 !    parallelogram, with P1 between P2 and P3.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be checked.
+!    Input, real ( kind = fp ) P(3), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) PARALLELOGRAM_CONTAINS_POINT_3D, 
 !    is TRUE if P is inside the parallelogram, or on its boundary.
@@ -13940,16 +14128,16 @@ function parallelogram_contains_point_3d ( p1, p2, p3, p )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a(dim_num,dim_num+1)
-  real ( kind = 8 ) r8vec_norm
+  real ( kind = fp ) a(dim_num,dim_num+1)
+  real ( kind = fp ) r8vec_norm
   integer ( kind = 4 ) info
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
   logical ( kind = 4 ) parallelogram_contains_point_3d
-  real ( kind = 8 ), parameter :: tol = 0.0001D+00
+  real ( kind = fp ), parameter :: tol = 0.0001_fp
 !
 !  Turn the triangle into a tetrahedron by computing the normal to
 !  P2-P1 and P3-P1.
@@ -13994,9 +14182,9 @@ function parallelogram_contains_point_3d ( p1, p2, p3, p )
     stop 1
   end if
 
-  if ( a(1,4) < 0.0D+00 .or. 1.0D+00 < a(1,4) ) then
+  if ( a(1,4) < 0.0_fp .or. 1.0_fp < a(1,4) ) then
     parallelogram_contains_point_3d = .false.
-  else if ( a(2,4) < 0.0D+00 .or. 1.0D+00 < a(2,4) ) then
+  else if ( a(2,4) < 0.0_fp .or. 1.0_fp < a(2,4) ) then
     parallelogram_contains_point_3d = .false.
   else if ( tol < abs ( a(3,4) ) ) then
     parallelogram_contains_point_3d = .false.
@@ -14007,6 +14195,7 @@ function parallelogram_contains_point_3d ( p1, p2, p3, p )
   return
 end
 subroutine parallelogram_point_dist_3d ( p1, p2, p3, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14037,12 +14226,12 @@ subroutine parallelogram_point_dist_3d ( p1, p2, p3, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three corners of the 
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three corners of the 
 !    parallelogram, with P1 between P2 and P3.
 !
-!    Input, real ( kind = 8 ) P(3), the point which is to be checked.
+!    Input, real ( kind = fp ) P(3), the point which is to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    parallelogram.  DIST is zero if the point lies exactly on the
 !    parallelogram.
 !
@@ -14050,22 +14239,22 @@ subroutine parallelogram_point_dist_3d ( p1, p2, p3, p, dist )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dis13
-  real ( kind = 8 ) dis21
-  real ( kind = 8 ) dis34
-  real ( kind = 8 ) dis42
-  real ( kind = 8 ) dist
+  real ( kind = fp ) dis13
+  real ( kind = fp ) dis21
+  real ( kind = fp ) dis34
+  real ( kind = fp ) dis42
+  real ( kind = fp ) dist
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
   logical ( kind = 4 ) parallelogram_contains_point_3d
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) t
-  real ( kind = 8 ) temp
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) t
+  real ( kind = fp ) temp
 !
 !  Compute PP, the unit normal to X2-X1 and X3-X1:
 !
@@ -14078,7 +14267,7 @@ subroutine parallelogram_point_dist_3d ( p1, p2, p3, p, dist )
 
   temp = sqrt ( sum ( pp(1:dim_num) ** 2 ) )
 
-  if ( temp == 0.0D+00 ) then
+  if ( temp == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PARALLELOGRAM_POINT_DIST_3D - Fatal error!'
     write ( *, '(a)' ) '  The normal vector is zero.'
@@ -14117,6 +14306,7 @@ subroutine parallelogram_point_dist_3d ( p1, p2, p3, p, dist )
   return
 end
 subroutine parabola_ex ( x1, y1, x2, y2, x3, y3, x, y, ierror )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14136,10 +14326,10 @@ subroutine parabola_ex ( x1, y1, x2, y2, x3, y3, x, y, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X1, Y1, X2, Y2, X3, Y3, the coordinates of 
+!    Input, real ( kind = fp ) X1, Y1, X2, Y2, X3, Y3, the coordinates of 
 !    three points on the parabola.  X1, X2 and X3 must be distinct.
 !
-!    Output, real ( kind = 8 ) X, Y, the X coordinate of the extremal point
+!    Output, real ( kind = fp ) X, Y, the X coordinate of the extremal point
 !    of the parabola, and the value of the parabola at that point.
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.
@@ -14149,16 +14339,16 @@ subroutine parabola_ex ( x1, y1, x2, y2, x3, y3, x, y, ierror )
 !
   implicit none
 
-  real ( kind = 8 ) bot
+  real ( kind = fp ) bot
   integer ( kind = 4 ) ierror
-  real ( kind = 8 ) x
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) x3
-  real ( kind = 8 ) y
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) y3
+  real ( kind = fp ) x
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) x3
+  real ( kind = fp ) y
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) y3
 
   ierror = 0
 
@@ -14175,12 +14365,12 @@ subroutine parabola_ex ( x1, y1, x2, y2, x3, y3, x, y, ierror )
 
   bot = ( x2 - x3 ) * y1 - ( x1 - x3 ) * y2 + ( x1 - x2 ) * y3
 
-  if ( bot == 0.0D+00 ) then
+  if ( bot == 0.0_fp ) then
     ierror = 2
     return
   end if
 
-  x = 0.5D+00 * ( x1 * x1 * ( y3 - y2 ) &
+  x = 0.5_fp * ( x1 * x1 * ( y3 - y2 ) &
                 + x2 * x2 * ( y1 - y3 ) &
                 + x3 * x3 * ( y2 - y1 ) ) / bot
 
@@ -14192,6 +14382,7 @@ subroutine parabola_ex ( x1, y1, x2, y2, x3, y3, x, y, ierror )
   return
 end
 subroutine parabola_ex2 ( x1, y1, x2, y2, x3, y3, x, y, a, b, c, ierror )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14211,13 +14402,13 @@ subroutine parabola_ex2 ( x1, y1, x2, y2, x3, y3, x, y, a, b, c, ierror )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X1, Y1, X2, Y2, X3, Y3, the coordinates of 
+!    Input, real ( kind = fp ) X1, Y1, X2, Y2, X3, Y3, the coordinates of 
 !    three points on the parabola.  X1, X2 and X3 must be distinct.
 !
-!    Output, real ( kind = 8 ) X, Y, the X coordinate of the extremal point
+!    Output, real ( kind = fp ) X, Y, the X coordinate of the extremal point
 !    of the parabola, and the value of the parabola at that point.
 !
-!    Output, real ( kind = 8 ) A, B, C, the coefficients that define the
+!    Output, real ( kind = fp ) A, B, C, the coefficients that define the
 !    parabola: P(X) = A * X * X + B * X + C.
 !
 !    Output, integer ( kind = 4 ) IERROR, error flag.
@@ -14228,21 +14419,21 @@ subroutine parabola_ex2 ( x1, y1, x2, y2, x3, y3, x, y, a, b, c, ierror )
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) det
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) det
   integer ( kind = 4 ) ierror
-  real ( kind = 8 ) v(3,3)
-  real ( kind = 8 ) w(3,3)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) x1
-  real ( kind = 8 ) x2
-  real ( kind = 8 ) x3
-  real ( kind = 8 ) y
-  real ( kind = 8 ) y1
-  real ( kind = 8 ) y2
-  real ( kind = 8 ) y3
+  real ( kind = fp ) v(3,3)
+  real ( kind = fp ) w(3,3)
+  real ( kind = fp ) x
+  real ( kind = fp ) x1
+  real ( kind = fp ) x2
+  real ( kind = fp ) x3
+  real ( kind = fp ) y
+  real ( kind = fp ) y1
+  real ( kind = fp ) y2
+  real ( kind = fp ) y3
 
   ierror = 0
 
@@ -14259,15 +14450,15 @@ subroutine parabola_ex2 ( x1, y1, x2, y2, x3, y3, x, y, a, b, c, ierror )
 !
 !  Set up the Vandermonde matrix.
 !
-  v(1,1) = 1.0D+00
+  v(1,1) = 1.0_fp
   v(1,2) = x1
   v(1,3) = x1 * x1
 
-  v(2,1) = 1.0D+00
+  v(2,1) = 1.0_fp
   v(2,2) = x2
   v(2,3) = x2 * x2
 
-  v(3,1) = 1.0D+00
+  v(3,1) = 1.0_fp
   v(3,2) = x3
   v(3,3) = x3 * x3
 !
@@ -14283,17 +14474,18 @@ subroutine parabola_ex2 ( x1, y1, x2, y2, x3, y3, x, y, a, b, c, ierror )
 !
 !  Determine the extremal point.
 !
-  if ( a == 0.0D+00 ) then
+  if ( a == 0.0_fp ) then
     ierror = 2
     return
   end if
 
-  x = - b / ( 2.0D+00 * a )
+  x = - b / ( 2.0_fp * a )
   y = a * x * x + b * x + c
 
   return
 end
 function parallelepiped_contains_point_3d ( p1, p2, p3, p4, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14332,11 +14524,11 @@ function parallelepiped_contains_point_3d ( p1, p2, p3, p4, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), P4(3), four corners 
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), P4(3), four corners 
 !    of the parallelepiped.  It is assumed that P2, P3 and P4 are
 !    immediate neighbors of P1.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be checked.
+!    Input, real ( kind = fp ) P(3), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) PARALLELEPIPED_CONTAINS_POINT_3D, 
 !    is true if P is inside the parallelepiped, or on its boundary.
@@ -14345,20 +14537,20 @@ function parallelepiped_contains_point_3d ( p1, p2, p3, p4, p )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dot
+  real ( kind = fp ) dot
   logical ( kind = 4 ) parallelepiped_contains_point_3d
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
  
   parallelepiped_contains_point_3d = .false.
 
   dot = dot_product ( p(1:dim_num)  - p1(1:dim_num), &
                       p2(1:dim_num) - p1(1:dim_num) )
 
-  if ( dot < 0.0D+00 ) then
+  if ( dot < 0.0_fp ) then
     return
   end if
 
@@ -14369,7 +14561,7 @@ function parallelepiped_contains_point_3d ( p1, p2, p3, p4, p )
   dot = dot_product ( p(1:dim_num)  - p1(1:dim_num), &
                       p3(1:dim_num) - p1(1:dim_num) )
 
-  if ( dot < 0.0D+00 ) then
+  if ( dot < 0.0_fp ) then
     return
   end if
 
@@ -14380,7 +14572,7 @@ function parallelepiped_contains_point_3d ( p1, p2, p3, p4, p )
   dot = dot_product ( p(1:dim_num)  - p1(1:dim_num), &
                       p4(1:dim_num) - p1(1:dim_num) )
 
-  if ( dot < 0.0D+00 ) then
+  if ( dot < 0.0_fp ) then
     return
   end if
 
@@ -14393,6 +14585,7 @@ function parallelepiped_contains_point_3d ( p1, p2, p3, p4, p )
   return
 end
 subroutine parallelepiped_point_dist_3d ( p1, p2, p3, p4, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14431,33 +14624,33 @@ subroutine parallelepiped_point_dist_3d ( p1, p2, p3, p4, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), P4(3), 
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), P4(3), 
 !    half of the corners of the box, from which the other corners can be
 !    deduced.  The corners should be chosen so that the first corner
 !    is directly connected to the other three.  The locations of
 !    corners 5, 6, 7 and 8 will be computed by the parallelogram
 !    relation.
 !
-!    Input, real ( kind = 8 ) P(3), the point which is to be checked.
+!    Input, real ( kind = fp ) P(3), the point which is to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the box. 
+!    Output, real ( kind = fp ) DIST, the distance from the point to the box. 
 !    DIST is zero if the point lies exactly on the box.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dis
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) p5(dim_num)
-  real ( kind = 8 ) p6(dim_num)
-  real ( kind = 8 ) p7(dim_num)
-  real ( kind = 8 ) p8(dim_num)
+  real ( kind = fp ) dis
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) p5(dim_num)
+  real ( kind = fp ) p6(dim_num)
+  real ( kind = fp ) p7(dim_num)
+  real ( kind = fp ) p8(dim_num)
 !
 !  Fill in the other corners
 !
@@ -14465,7 +14658,7 @@ subroutine parallelepiped_point_dist_3d ( p1, p2, p3, p4, p, dist )
   p6(1:dim_num) = p2(1:dim_num) + p4(1:dim_num) - p1(1:dim_num)
   p7(1:dim_num) = p3(1:dim_num) + p4(1:dim_num) - p1(1:dim_num)
   p8(1:dim_num) = p2(1:dim_num) + p3(1:dim_num) + p4(1:dim_num) &
-    - 2.0D+00 * p1(1:dim_num)
+    - 2.0_fp * p1(1:dim_num)
 !
 !  Compute the distance from the point P to each of the six
 !  parallelogram faces.
@@ -14497,6 +14690,7 @@ subroutine parallelepiped_point_dist_3d ( p1, p2, p3, p4, p, dist )
   return
 end
 subroutine perm_inverse ( n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14586,6 +14780,7 @@ subroutine perm_inverse ( n, p )
 end
 subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
   maxcor3, line_max, ierror )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14625,14 +14820,14 @@ subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
 !    Input/output, integer ( kind = 4 ) NCOR3, the number of points stored 
 !    in COR3.
 !
 !    Input/output, integer ( kind = 4 ) LINE_NUM, the number of line data items.
 !
-!    Input/output, real ( kind = 8 ) COR3(3,MAXCOR3), the grid points.
+!    Input/output, real ( kind = fp ) COR3(3,MAXCOR3), the grid points.
 !
 !    Input/output, integer ( kind = 4 ) LINES(LINE_MAX), the indices of 
 !    points used in the lines of the grid.  Successive entries of LINES are 
@@ -14654,14 +14849,14 @@ subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
   integer ( kind = 4 ) maxcor3
   integer ( kind = 4 ) line_max
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) amax
-  real ( kind = 8 ) amin
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bmax
-  real ( kind = 8 ) bmin
-  real ( kind = 8 ) cor3(dim_num,maxcor3)
-  real ( kind = 8 ) dot
+  real ( kind = fp ) a
+  real ( kind = fp ) amax
+  real ( kind = fp ) amin
+  real ( kind = fp ) b
+  real ( kind = fp ) bmax
+  real ( kind = fp ) bmin
+  real ( kind = fp ) cor3(dim_num,maxcor3)
+  real ( kind = fp ) dot
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ierror
   integer ( kind = 4 ) j
@@ -14671,11 +14866,11 @@ subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
   integer ( kind = 4 ) ncor3
   integer ( kind = 4 ), parameter :: nx = 5
   integer ( kind = 4 ), parameter :: ny = 5
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 
   ierror = 0
 
@@ -14712,10 +14907,10 @@ subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
 !
   if ( ncor3 == 0 ) then
 
-    amin = 0.0D+00
-    amax = 1.0D+00
-    bmin = 0.0D+00
-    bmax = 1.0D+00
+    amin = 0.0_fp
+    amax = 1.0_fp
+    bmin = 0.0_fp
+    bmax = 1.0_fp
 
   else
 
@@ -14821,6 +15016,7 @@ subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
   return
 end
 subroutine plane_exp_normal_3d ( p1, p2, p3, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14846,20 +15042,20 @@ subroutine plane_exp_normal_3d ( p1, p2, p3, normal )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), the coordinates of the unit normal
+!    Output, real ( kind = fp ) NORMAL(3), the coordinates of the unit normal
 !    vector to the plane containing the three points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) normal_norm
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) normal_norm
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
 !
 !  The cross product (P2-P1) x (P3-P1) is normal to (P2-P1) and (P3-P1).
 !
@@ -14874,7 +15070,7 @@ subroutine plane_exp_normal_3d ( p1, p2, p3, normal )
 
   normal_norm = sqrt ( sum ( normal(1:dim_num) ** 2 ) )
 
-  if ( normal_norm == 0.0D+00 ) then
+  if ( normal_norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_EXP_NORMAL_3D - Fatal error!'
     write ( *, '(a)' ) '  The plane is poorly defined.'
@@ -14886,6 +15082,7 @@ subroutine plane_exp_normal_3d ( p1, p2, p3, normal )
   return
 end
 subroutine plane_exp_point_dist_3d ( p1, p2, p3, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14911,25 +15108,25 @@ subroutine plane_exp_point_dist_3d ( p1, p2, p3, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
-!    Input, real ( kind = 8 ) P(3), the coordinates of the point.
+!    Input, real ( kind = fp ) P(3), the coordinates of the point.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the plane.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
 
   call plane_exp2imp_3d ( p1, p2, p3, a, b, c, d )
 
@@ -14938,6 +15135,7 @@ subroutine plane_exp_point_dist_3d ( p1, p2, p3, p, dist )
   return
 end
 subroutine plane_exp_pro2 ( p1, p2, p3, n, p, pp )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -14972,16 +15170,16 @@ subroutine plane_exp_pro2 ( p1, p2, p3, n, p, pp )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to project.
 !
-!    Input, real ( kind = 8 ) P(3,N), are the Cartesian
+!    Input, real ( kind = fp ) P(3,N), are the Cartesian
 !    coordinates of points which lie on the plane spanned by the
 !    three points.  These points are not checked to ensure that
 !    they lie on the plane.
 !
-!    Output, real ( kind = 8 ) PP(2,N), the "in-plane"
+!    Output, real ( kind = fp ) PP(2,N), the "in-plane"
 !    coordinates of the points.  
 !
   implicit none
@@ -14989,15 +15187,15 @@ subroutine plane_exp_pro2 ( p1, p2, p3, n, p, pp )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dot
+  real ( kind = fp ) dot
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pp(2,dim_num)
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pp(2,dim_num)
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 !
 !  Compute the two basis vectors for the affine plane.
 !
@@ -15023,6 +15221,7 @@ subroutine plane_exp_pro2 ( p1, p2, p3, n, p, pp )
   return
 end
 subroutine plane_exp_pro3 ( p1, p2, p3, n, p, pp )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15051,13 +15250,13 @@ subroutine plane_exp_pro3 ( p1, p2, p3, n, p, pp )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to project.
 !
-!    Input, real ( kind = 8 ) P(3,N), the points.
+!    Input, real ( kind = fp ) P(3,N), the points.
 !
-!    Output, real ( kind = 8 ) PP(3,N), the projections of the points through 
+!    Output, real ( kind = fp ) PP(3,N), the projections of the points through 
 !    the focus point onto the plane.
 !
   implicit none
@@ -15065,16 +15264,16 @@ subroutine plane_exp_pro3 ( p1, p2, p3, n, p, pp )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pp(dim_num,n)
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pp(dim_num,n)
 !
 !  Put the plane into ABCD form.
 !
@@ -15092,6 +15291,7 @@ subroutine plane_exp_pro3 ( p1, p2, p3, n, p, pp )
   return
 end
 subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15117,15 +15317,15 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
-!    Input, real ( kind = 8 ) PF(3), the focus point.
+!    Input, real ( kind = fp ) PF(3), the focus point.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to project.
 !
-!    Input, real ( kind = 8 ) PO(3,N), the object points.
+!    Input, real ( kind = fp ) PO(3,N), the object points.
 !
-!    Output, real ( kind = 8 ) PP(3,N), are the 
+!    Output, real ( kind = fp ) PP(3,N), are the 
 !    coordinates of the projections of the object points through the focus
 !    point onto the plane.  PP may share the same memory as PO,
 !    in which case the projections will overwrite the original data.
@@ -15144,24 +15344,24 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) angle_rad_3d
-  real ( kind = 8 ) b
-  real ( kind = 8 ) beta
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) disfo
-  real ( kind = 8 ) disfn
+  real ( kind = fp ) a
+  real ( kind = fp ) alpha
+  real ( kind = fp ) angle_rad_3d
+  real ( kind = fp ) b
+  real ( kind = fp ) beta
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) disfo
+  real ( kind = fp ) disfn
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ivis(n)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pf(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) po(dim_num,n)
-  real ( kind = 8 ) pp(dim_num,n)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pf(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) po(dim_num,n)
+  real ( kind = fp ) pp(dim_num,n)
 !
 !  Put the plane into ABCD form.
 !
@@ -15179,7 +15379,7 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
 !  project points that actually lie in the plane, but we'll
 !  just bail out.
 !
-  if ( disfn == 0.0D+00 ) then
+  if ( disfn == 0.0_fp ) then
     ivis(1:n) = 0
     do i = 1, dim_num
       pp(i,1:n) = pf(i)
@@ -15195,7 +15395,7 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
 !
     disfo = sqrt ( sum ( ( po(1:dim_num,i) - pf(1:dim_num) ) ** 2 ) )
 
-    if ( disfo == 0.0D+00 ) then
+    if ( disfo == 0.0_fp ) then
 
       ivis(i) = 0
       pp(1:dim_num,i) = pn(1:dim_num)
@@ -15206,7 +15406,7 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
 !
       alpha = angle_rad_3d ( po(1:3,i), pf(1:3), pn(1:3) )
 
-      if ( cos ( alpha ) == 0.0D+00 ) then
+      if ( cos ( alpha ) == 0.0_fp ) then
 
         ivis(i) = 0
         pp(1:dim_num,i) = pn(1:dim_num)
@@ -15217,11 +15417,11 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
 !
         beta = disfn / ( cos ( alpha ) * disfo )
 
-        if ( 1.0D+00 < beta ) then
+        if ( 1.0_fp < beta ) then
           ivis(i) = 1
-        else if ( beta == 1.0D+00 ) then
+        else if ( beta == 1.0_fp ) then
           ivis(i) = 2
-        else if ( 0.0D+00 < beta ) then
+        else if ( 0.0_fp < beta ) then
           ivis(i) = 3
         else
           ivis(i) = -1
@@ -15241,6 +15441,7 @@ subroutine plane_exp_project_3d ( p1, p2, p3, pf, n, po, pp, ivis )
   return
 end
 subroutine plane_exp2imp_3d ( p1, p2, p3, a, b, c, d )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15277,22 +15478,22 @@ subroutine plane_exp2imp_3d ( p1, p2, p3, a, b, c, d )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
-!    Output, real ( kind = 8 ) A, B, C, D, coefficients which describe 
+!    Output, real ( kind = fp ) A, B, C, D, coefficients which describe 
 !    the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
 
   a = ( p2(2) - p1(2) ) * ( p3(3) - p1(3) ) &
     - ( p2(3) - p1(3) ) * ( p3(2) - p1(2) )
@@ -15308,6 +15509,7 @@ subroutine plane_exp2imp_3d ( p1, p2, p3, a, b, c, d )
   return
 end
 subroutine plane_exp2normal_3d ( p1, p2, p3, pp, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15338,22 +15540,22 @@ subroutine plane_exp2normal_3d ( p1, p2, p3, pp, normal )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
-!    Output, real ( kind = 8 ) PP(3), a point on the plane.
+!    Output, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), a unit normal vector to the plane.
+!    Output, real ( kind = fp ) NORMAL(3), a unit normal vector to the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pp(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pp(dim_num)
 
   pp(1:dim_num) = p1(1:dim_num)
 
@@ -15368,7 +15570,7 @@ subroutine plane_exp2normal_3d ( p1, p2, p3, pp, normal )
 
   norm = sqrt ( sum ( normal(1:dim_num) ** 2 ) )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_EXP2NORMAL_3D - Fatal error!'
     write ( *, '(a)' ) '  The normal vector is null.'
@@ -15381,6 +15583,7 @@ subroutine plane_exp2normal_3d ( p1, p2, p3, pp, normal )
   return
 end
 function plane_imp_is_degenerate_3d ( a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15408,19 +15611,19 @@ function plane_imp_is_degenerate_3d ( a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, the implicit plane parameters.
 !
 !    Output, logical ( kind = 4 ) PLANE_IMP_IS_DEGENERATE_3D, 
 !    is TRUE if the plane is degenerate.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
   logical ( kind = 4 ) plane_imp_is_degenerate_3d
 
-  if ( a == 0.0D+00 .and. b == 0.0D+00 .and. c == 0.0D+00 ) then
+  if ( a == 0.0_fp .and. b == 0.0_fp .and. c == 0.0_fp ) then
     plane_imp_is_degenerate_3d = .true.
   else
     plane_imp_is_degenerate_3d = .false.
@@ -15430,6 +15633,7 @@ function plane_imp_is_degenerate_3d ( a, b, c )
 end
 subroutine plane_imp_line_par_int_3d ( a, b, c, d, x0, y0, z0, f, g, h, &
   intersect, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15472,44 +15676,44 @@ subroutine plane_imp_line_par_int_3d ( a, b, c, d, x0, y0, z0, f, g, h, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Input, real ( kind = 8 ) X0, Y0, Z0, F, G, H, parameters that define the
+!    Input, real ( kind = fp ) X0, Y0, Z0, F, G, H, parameters that define the
 !    parametric line.
 !
 !    Output, logical ( kind = 4 ) INTERSECT, is TRUE if the line and the plane
 !    intersect.
 !
-!    Output, real ( kind = 8 ) P(3), is a point of intersection of the line
+!    Output, real ( kind = fp ) P(3), is a point of intersection of the line
 !    and the plane, if INTERSECT is TRUE.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) denom
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) h
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) denom
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) h
   logical ( kind = 4 ) intersect
-  real ( kind = 8 ) norm1
-  real ( kind = 8 ) norm2
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t
-  real ( kind = 8 ), parameter :: tol = 0.00001D+00
-  real ( kind = 8 ) x0
-  real ( kind = 8 ) y0
-  real ( kind = 8 ) z0
+  real ( kind = fp ) norm1
+  real ( kind = fp ) norm2
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t
+  real ( kind = fp ), parameter :: tol = 0.00001_fp
+  real ( kind = fp ) x0
+  real ( kind = fp ) y0
+  real ( kind = fp ) z0
 !
 !  Check.
 !
   norm1 = sqrt ( a * a + b * b + c * c )
 
-  if ( norm1 == 0.0D+00 ) then
+  if ( norm1 == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_IMP_LINE_PAR_INT_3D - Fatal error!'
     write ( *, '(a)' ) '  The plane normal vector is null.'
@@ -15518,7 +15722,7 @@ subroutine plane_imp_line_par_int_3d ( a, b, c, d, x0, y0, z0, f, g, h, &
 
   norm2 = sqrt ( f * f + g * g + h * h )
 
-  if ( norm2 == 0.0D+00 ) then
+  if ( norm2 == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_IMP_LINE_PAR_INT_3D - Fatal error!'
     write ( *, '(a)' ) '  The line direction vector is null.'
@@ -15531,14 +15735,14 @@ subroutine plane_imp_line_par_int_3d ( a, b, c, d, x0, y0, z0, f, g, h, &
 !
   if ( abs ( denom ) < tol * norm1 * norm2 ) then
 
-    if ( a * x0 + b * y0 + c * z0 + d == 0.0D+00 ) then
+    if ( a * x0 + b * y0 + c * z0 + d == 0.0_fp ) then
       intersect = .true.
       p(1) = x0
       p(2) = y0
       p(3) = z0
     else
       intersect = .false.
-      p(1:dim_num) = 0.0D+00
+      p(1:dim_num) = 0.0_fp
     end if
 !
 !  If they are not parallel, they must intersect.
@@ -15556,6 +15760,7 @@ subroutine plane_imp_line_par_int_3d ( a, b, c, d, x0, y0, z0, f, g, h, &
   return
 end
 subroutine plane_imp_point_dist_3d ( a, b, c, d, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15588,27 +15793,27 @@ subroutine plane_imp_point_dist_3d ( a, b, c, d, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Input, real ( kind = 8 ) P(3), the coordinates of the point.
+!    Input, real ( kind = fp ) P(3), the coordinates of the point.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the plane.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) dist
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(dim_num)
 
   norm = sqrt ( a * a + b * b + c * c )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_IMP_POINT_DIST_3D - Fatal error!'
     write ( *, '(a)' ) '  The plane normal vector is null.'
@@ -15620,6 +15825,7 @@ subroutine plane_imp_point_dist_3d ( a, b, c, d, p, dist )
   return
 end
 subroutine plane_imp_point_dist_signed_3d ( a, b, c, d, p, dist_signed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15653,40 +15859,41 @@ subroutine plane_imp_point_dist_signed_3d ( a, b, c, d, p, dist_signed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Input, real ( kind = 8 ) P(3), the coordinates of the point.
+!    Input, real ( kind = fp ) P(3), the coordinates of the point.
 !
-!    Output, real ( kind = 8 ) DIST_SIGNED, the signed distance from 
+!    Output, real ( kind = fp ) DIST_SIGNED, the signed distance from 
 !    the point to the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist_signed
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) dist_signed
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(dim_num)
 
   norm = sqrt ( a * a + b * b + c * c )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_IMP_POINT_DIST_SIGNED_3D - Fatal error!'
     write ( *, '(a)' ) '  The plane normal vector is null.'
     stop 1
   end if
 
-  dist_signed = - sign ( 1.0D+00, d ) &
+  dist_signed = - sign ( 1.0_fp, d ) &
     * ( a * p(1) + b * p(2) + c * p(3) + d ) / norm
 
   return
 end
 subroutine plane_imp_point_near_3d ( a, b, c, d, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15731,24 +15938,24 @@ subroutine plane_imp_point_near_3d ( a, b, c, d, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Input, real ( kind = 8 ) P(3), the coordinates of the point.
+!    Input, real ( kind = fp ) P(3), the coordinates of the point.
 !
-!    Output, real ( kind = 8 ) PN(3), the nearest point on the plane.
+!    Output, real ( kind = fp ) PN(3), the nearest point on the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) p(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) p(dim_num)
   logical ( kind = 4 ) plane_imp_is_degenerate_3d
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 
   if ( plane_imp_is_degenerate_3d ( a, b, c ) ) then
     write ( *, '(a)' ) ' '
@@ -15766,6 +15973,7 @@ subroutine plane_imp_point_near_3d ( a, b, c, d, p, pn )
   return
 end
 subroutine plane_imp_segment_near_3d ( p1, p2, a, b, c, d, dist, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15794,17 +16002,17 @@ subroutine plane_imp_segment_near_3d ( p1, p2, a, b, c, d, dist, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the endpoints of the line
+!    Input, real ( kind = fp ) P1(3), P2(3), the endpoints of the line
 !    segment.
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the line segment and
+!    Output, real ( kind = fp ) DIST, the distance between the line segment and
 !    the plane.
 !
-!    Output, real ( kind = 8 ) P(3), the nearest point on the plane.
+!    Output, real ( kind = fp ) P(3), the nearest point on the plane.
 !
-!    Output, real ( kind = 8 ) PN(3), the nearest point on the line
+!    Output, real ( kind = fp ) PN(3), the nearest point on the line
 !    segment to the plane.  If DIST is zero, the PN is a point of
 !    intersection of the plane and the line segment.
 !
@@ -15812,30 +16020,30 @@ subroutine plane_imp_segment_near_3d ( p1, p2, a, b, c, d, dist, p, pn )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) an
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bn
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cn
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dn
-  real ( kind = 8 ) dot1
-  real ( kind = 8 ) dot2
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) alpha
+  real ( kind = fp ) an
+  real ( kind = fp ) b
+  real ( kind = fp ) bn
+  real ( kind = fp ) c
+  real ( kind = fp ) cn
+  real ( kind = fp ) d
+  real ( kind = fp ) dist
+  real ( kind = fp ) dn
+  real ( kind = fp ) dot1
+  real ( kind = fp ) dot2
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
 
-  pn(1:dim_num) = 0.0D+00
-  p(1:dim_num) = 0.0D+00
+  pn(1:dim_num) = 0.0_fp
+  p(1:dim_num) = 0.0_fp
 
   norm = sqrt ( a * a + b * b + c * c )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_IMP_SEGMENT_NEAR_3D - Fatal error!'
     write ( *, '(a)' ) '  Plane normal vector is null.'
@@ -15871,8 +16079,8 @@ subroutine plane_imp_segment_near_3d ( p1, p2, a, b, c, d, dist, p, pn )
 !  If these have the same sign, then the line segment does not
 !  cross the plane, and one endpoint is the nearest point.
 !
-  if ( ( 0.0D+00 < dot1 .and. 0.0D+00 < dot2 ) .or. &
-       ( dot1 < 0.0D+00 .and. dot2 < 0.0D+00 ) ) then
+  if ( ( 0.0_fp < dot1 .and. 0.0_fp < dot2 ) .or. &
+       ( dot1 < 0.0_fp .and. dot2 < 0.0_fp ) ) then
 
     dot1 = abs ( dot1 )
     dot2 = abs ( dot2 )
@@ -15895,26 +16103,27 @@ subroutine plane_imp_segment_near_3d ( p1, p2, a, b, c, d, dist, p, pn )
 !
   else
 
-    if ( dot1 == 0.0D+00 ) then
-      alpha = 0.0D+00
-    else if ( dot2 == 0.0D+00 ) then
-      alpha = 1.0D+00
+    if ( dot1 == 0.0_fp ) then
+      alpha = 0.0_fp
+    else if ( dot2 == 0.0_fp ) then
+      alpha = 1.0_fp
     else
       alpha = dot2 / ( dot2 - dot1 )
     end if
 
     pn(1:dim_num) =             alpha   * p1(1:dim_num) &
-                  + ( 1.0D+00 - alpha ) * p2(1:dim_num)
+                  + ( 1.0_fp - alpha ) * p2(1:dim_num)
 
     p(1:dim_num) = pn(1:dim_num)
 
-    dist = 0.0D+00
+    dist = 0.0_fp
 
   end if
  
   return
 end
 subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -15948,29 +16157,29 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Input, real ( kind = 8 ) T(3,3), the vertices of the triangle.
+!    Input, real ( kind = fp ) T(3,3), the vertices of the triangle.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersection points 
 !    returned.
 !
-!    Output, real ( kind = 8 ) PINT(3,3), the intersection points.
+!    Output, real ( kind = fp ) PINT(3,3), the intersection points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist1
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) dist3
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) dist1
+  real ( kind = fp ) dist2
+  real ( kind = fp ) dist3
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) pint(dim_num,3)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pint(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
 
   int_num = 0
 !
@@ -15982,17 +16191,17 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
 !
 !  Consider any zero distances.
 !
-  if ( dist1 == 0.0D+00 ) then
+  if ( dist1 == 0.0_fp ) then
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,1)
   end if
 
-  if ( dist2 == 0.0D+00 ) then
+  if ( dist2 == 0.0_fp ) then
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,2)
   end if
 
-  if ( dist3 == 0.0D+00 ) then
+  if ( dist3 == 0.0_fp ) then
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,3)
   end if
@@ -16008,17 +16217,17 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
 !
   if ( int_num == 1 ) then
 
-    if ( dist1 == 0.0D+00 ) then
+    if ( dist1 == 0.0_fp ) then
 
       call plane_imp_triangle_int_add_3d ( t(1:dim_num,2), t(1:dim_num,3), &
         dist2, dist3, int_num, pint )
 
-    else if ( dist2 == 0.0D+00 ) then
+    else if ( dist2 == 0.0_fp ) then
 
       call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,3), &
         dist1, dist3, int_num, pint )
 
-    else if ( dist3 == 0.0D+00 ) then
+    else if ( dist3 == 0.0_fp ) then
 
       call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,2), &
         dist1, dist2, int_num, pint )
@@ -16032,7 +16241,7 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
 !  All nodal distances are nonzero, and there is at least one
 !  positive and one negative.
 !
-  if ( dist1 * dist2 < 0.0D+00 .and. dist1 * dist3 < 0.0D+00 ) then
+  if ( dist1 * dist2 < 0.0_fp .and. dist1 * dist3 < 0.0_fp ) then
 
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,2), &
       dist1, dist2, int_num, pint )
@@ -16040,7 +16249,7 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,3), &
       dist1, dist3, int_num, pint )
 
-  else if ( dist2 * dist1 < 0.0D+00 .and. dist2 * dist3 < 0.0D+00 ) then
+  else if ( dist2 * dist1 < 0.0_fp .and. dist2 * dist3 < 0.0_fp ) then
 
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,2), t(1:dim_num,1), &
       dist2, dist1, int_num, pint )
@@ -16048,7 +16257,7 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,2), t(1:dim_num,3), &
       dist2, dist3, int_num, pint )
 
-  else if ( dist3 * dist1 < 0.0D+00 .and. dist3 * dist2 < 0.0D+00 ) then
+  else if ( dist3 * dist1 < 0.0_fp .and. dist3 * dist2 < 0.0_fp ) then
 
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,3), t(1:dim_num,1), &
       dist3, dist1, int_num, pint )
@@ -16061,6 +16270,7 @@ subroutine plane_imp_triangle_int_3d ( a, b, c, d, t, int_num, pint )
   return
 end
 subroutine plane_imp_triangle_int_add_3d ( p1, p2, dist1, dist2, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16087,45 +16297,46 @@ subroutine plane_imp_triangle_int_add_3d ( p1, p2, dist1, dist2, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the coordinates of two vertices 
+!    Input, real ( kind = fp ) P1(3), P2(3), the coordinates of two vertices 
 !    of a triangle.
 !
-!    Input, real ( kind = 8 ) DIST1, DIST2, the signed distances of the 
+!    Input, real ( kind = fp ) DIST1, DIST2, the signed distances of the 
 !    two vertices from a plane.
 !
 !    Input/output, integer ( kind = 4 ) INT_NUM, the number of intersection 
 !    points.
 !
-!    Input/output, real ( kind = 8 ) PINT(3,INT_NUM), the intersection points.
+!    Input/output, real ( kind = fp ) PINT(3,INT_NUM), the intersection points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) dist1
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) alpha
+  real ( kind = fp ) dist1
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pint(dim_num,3)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pint(dim_num,3)
 
-  if ( dist1 == 0.0D+00 ) then
+  if ( dist1 == 0.0_fp ) then
     int_num = int_num + 1
     pint(1:dim_num,int_num) = p1(1:dim_num)
-  else if ( dist2 == 0.0D+00 ) then
+  else if ( dist2 == 0.0_fp ) then
     int_num = int_num + 1
     pint(1:dim_num,int_num) = p2(1:dim_num)
-  else if ( dist1 * dist2 < 0.0D+00 ) then
+  else if ( dist1 * dist2 < 0.0_fp ) then
     alpha = dist2 / ( dist2 - dist1 )
     int_num = int_num + 1
     pint(1:dim_num,int_num) =             alpha   * p1(1:dim_num) &
-                            + ( 1.0D+00 - alpha ) * p2(1:dim_num)
+                            + ( 1.0_fp - alpha ) * p2(1:dim_num)
   end if
 
   return
 end
 subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16161,35 +16372,35 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the vertices of the triangle.
+!    Input, real ( kind = fp ) T(3,3), the vertices of the triangle.
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the triangle
+!    Output, real ( kind = fp ) DIST, the distance between the triangle
 !    and the plane.
 !
 !    Output, integer ( kind = 4 ) NEAR_NUM, the number of nearest points 
 !    returned.
 !
-!    Output, real ( kind = 8 ) PN(3,6), a collection of nearest points.
+!    Output, real ( kind = fp ) PN(3,6), a collection of nearest points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist12
-  real ( kind = 8 ) dist23
-  real ( kind = 8 ) dist31
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist12
+  real ( kind = fp ) dist23
+  real ( kind = fp ) dist31
   integer ( kind = 4 ) near_num
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num,6)
-  real ( kind = 8 ) pt(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num,6)
+  real ( kind = fp ) pt(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 
   near_num = 0
 !
@@ -16203,7 +16414,7 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
   near_num = near_num + 1
   pn(1:dim_num,near_num) = pt(1:dim_num)
 
-  if ( 0.0D+00 < dist12 ) then
+  if ( 0.0_fp < dist12 ) then
     near_num = near_num + 1
     pn(1:dim_num,near_num) = p(1:dim_num)
   end if
@@ -16221,7 +16432,7 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
     near_num = near_num + 1
     pn(1:dim_num,near_num) = pt(1:dim_num)
 
-    if ( 0.0D+00 < dist23 ) then
+    if ( 0.0_fp < dist23 ) then
       near_num = near_num + 1
       pn(1:dim_num,near_num) = p(1:dim_num)
     end if
@@ -16231,7 +16442,7 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
     near_num = near_num + 1
     pn(1:dim_num,near_num) = pt(1:dim_num)
 
-    if ( 0.0D+00 < dist23 ) then
+    if ( 0.0_fp < dist23 ) then
       near_num = near_num + 1
       pn(1:dim_num,near_num) = p(1:dim_num)
     end if
@@ -16251,7 +16462,7 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
     near_num = near_num + 1
     pn(1:dim_num,near_num) = pt(1:dim_num)
 
-    if ( 0.0D+00 < dist31 ) then
+    if ( 0.0_fp < dist31 ) then
       near_num = near_num + 1
       pn(1:dim_num,near_num) = p(1:dim_num)
     end if
@@ -16261,7 +16472,7 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
     near_num = near_num + 1
     pn(1:dim_num,near_num) = pt(1:dim_num)
 
-    if ( 0.0D+00 < dist31 ) then
+    if ( 0.0_fp < dist31 ) then
       near_num = near_num + 1
       pn(1:dim_num,near_num) = p(1:dim_num)
     end if
@@ -16271,6 +16482,7 @@ subroutine plane_imp_triangle_near_3d ( t, a, b, c, d, dist, near_num, pn )
   return
 end
 subroutine plane_imp2exp_3d ( a, b, c, d, p1, p2, p3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16300,23 +16512,23 @@ subroutine plane_imp2exp_3d ( a, b, c, d, p1, p2, p3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Output, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Output, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pp(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pp(dim_num)
 
   call plane_imp2normal_3d ( a, b, c, d, pp, normal )
 
@@ -16325,6 +16537,7 @@ subroutine plane_imp2exp_3d ( a, b, c, d, p1, p2, p3 )
   return
 end
 subroutine plane_imp2normal_3d ( a, b, c, d, pp, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16355,27 +16568,27 @@ subroutine plane_imp2normal_3d ( a, b, c, d, pp, normal )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Input, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
-!    Output, real ( kind = 8 ) PP(3), a point on the plane.
+!    Output, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), the unit normal vector to the plane.
+!    Output, real ( kind = fp ) NORMAL(3), the unit normal vector to the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) pp(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) pp(dim_num)
 
   norm = sqrt ( a * a + b * b + c * c )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_IMP2NORMAL_3D - Fatal error!'
     write ( *, '(a)' ) '  The plane (A,B,C) has zero norm.'
@@ -16386,17 +16599,17 @@ subroutine plane_imp2normal_3d ( a, b, c, d, pp, normal )
   normal(2) = b / norm
   normal(3) = c / norm
 
-  if ( a /= 0.0D+00 ) then
+  if ( a /= 0.0_fp ) then
     pp(1) = - d / a
-    pp(2) = 0.0D+00
-    pp(3) = 0.0D+00
-  else if ( b /= 0.0D+00 ) then
-    pp(1) = 0.0D+00
+    pp(2) = 0.0_fp
+    pp(3) = 0.0_fp
+  else if ( b /= 0.0_fp ) then
+    pp(1) = 0.0_fp
     pp(2) = - d / b
-    pp(3) = 0.0D+00
-  else if ( c /= 0.0D+00 ) then
-    pp(1) = 0.0D+00
-    pp(2) = 0.0D+00
+    pp(3) = 0.0_fp
+  else if ( c /= 0.0_fp ) then
+    pp(1) = 0.0_fp
+    pp(2) = 0.0_fp
     pp(3) = - d / c
   else
     write ( *, '(a)' ) ' '
@@ -16408,6 +16621,7 @@ subroutine plane_imp2normal_3d ( a, b, c, d, pp, normal )
   return
 end
 subroutine plane_normal_basis_3d ( pp, normal, pq, pr )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16444,36 +16658,36 @@ subroutine plane_normal_basis_3d ( pp, normal, pq, pr )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.  (Actually,
+!    Input, real ( kind = fp ) PP(3), a point on the plane.  (Actually,
 !    we never need to know these values to do the calculation!)
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector N to the plane.  The
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector N to the plane.  The
 !    vector must not have zero length, but it is not necessary for N
 !    to have unit length.
 !
-!    Output, real ( kind = 8 ) PQ(3), a vector of unit length,
+!    Output, real ( kind = fp ) PQ(3), a vector of unit length,
 !    perpendicular to the vector N and the vector PR.
 !
-!    Output, real ( kind = 8 ) PR(3), a vector of unit length,
+!    Output, real ( kind = fp ) PR(3), a vector of unit length,
 !    perpendicular to the vector N and the vector PQ.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) normal_norm
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) pq(dim_num)
-  real ( kind = 8 ) pr(dim_num)
-  real ( kind = 8 ) pr_norm
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) normal_norm
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) pq(dim_num)
+  real ( kind = fp ) pr(dim_num)
+  real ( kind = fp ) pr_norm
 !
 !  Compute the length of NORMAL.
 !
   normal_norm = r8vec_norm ( dim_num, normal )
 
-  if ( normal_norm == 0.0D+00 ) then
+  if ( normal_norm == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_NORMAL_BASIS_3D - Fatal error!'
     write ( *, '(a)' ) '  The normal vector is 0.'
@@ -16495,6 +16709,7 @@ subroutine plane_normal_basis_3d ( pp, normal, pq, pr )
   return
 end
 subroutine plane_normal_line_exp_int_3d ( pp, normal, p1, p2, ival, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16525,33 +16740,33 @@ subroutine plane_normal_line_exp_int_3d ( pp, normal, p1, p2, ival, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector to the plane.
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector to the plane.
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two distinct points on the line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two distinct points on the line.
 !
 !    Output, integer ( kind = 4 ) IVAL, the kind of intersection;
 !    0, the line and plane seem to be parallel and separate;
 !    1, the line and plane intersect at a single point;
 !    2, the line and plane seem to be parallel and joined.
 !
-!    Output, real ( kind = 8 ) PINT(3), the coordinates of a
+!    Output, real ( kind = fp ) PINT(3), the coordinates of a
 !    common point of the plane and line, when IVAL is 1 or 2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) direction(dim_num)
+  real ( kind = fp ) direction(dim_num)
   integer ( kind = 4 ) ival
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pint(dim_num)
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) temp
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pint(dim_num)
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) temp
 !
 !  Make sure the line is not degenerate.
 !
@@ -16566,7 +16781,7 @@ subroutine plane_normal_line_exp_int_3d ( pp, normal, p1, p2, ival, pint )
 !
   temp = sqrt ( sum ( normal(1:dim_num) ** 2 ) )
 
-  if ( temp == 0.0D+00 ) then
+  if ( temp == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'PLANE_NORMAL_LINE_EXP_INT_3D - Fatal error!'
     write ( *, '(a)' ) '  The normal vector of the plane is degenerate.'
@@ -16584,11 +16799,11 @@ subroutine plane_normal_line_exp_int_3d ( pp, normal, p1, p2, ival, pint )
 !  If the normal and direction vectors are orthogonal, then
 !  we have a special case to deal with.
 !
-  if ( dot_product ( normal(1:dim_num), direction(1:dim_num) ) == 0.0D+00 ) then
+  if ( dot_product ( normal(1:dim_num), direction(1:dim_num) ) == 0.0_fp ) then
 
     temp = dot_product ( normal(1:dim_num), p1(1:dim_num) - pp(1:dim_num) )
 
-    if ( temp == 0.0D+00 ) then
+    if ( temp == 0.0_fp ) then
       ival = 2
       pint(1:dim_num) = p1(1:dim_num)
     else
@@ -16610,6 +16825,7 @@ subroutine plane_normal_line_exp_int_3d ( pp, normal, p1, p2, ival, pint )
   return
 end
 subroutine plane_normal_qr_to_xyz ( pp, normal, pq, pr, n, qr, xyz )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16645,35 +16861,35 @@ subroutine plane_normal_qr_to_xyz ( pp, normal, pq, pr, n, qr, xyz )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector N to the plane.  The
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector N to the plane.  The
 !    vector must not have zero length, but it is not necessary for N
 !    to have unit length.
 !
-!    Input, real ( kind = 8 ) PQ(3), a vector of unit length,
+!    Input, real ( kind = fp ) PQ(3), a vector of unit length,
 !    perpendicular to the vector N and the vector PR.
 !
-!    Input, real ( kind = 8 ) PR(3), a vector of unit length,
+!    Input, real ( kind = fp ) PR(3), a vector of unit length,
 !    perpendicular to the vector N and the vector PQ.
 !
 !    Input, integer ( kind = 4 ) N, the number of points on the plane.
 !
-!    Input, real ( kind = 8 ) QR(2,N), the QR coordinates of the points.
+!    Input, real ( kind = fp ) QR(2,N), the QR coordinates of the points.
 !
-!    Output, real ( kind = 8 ) XYZ(3,N), the XYZ coordinates of the points.
+!    Output, real ( kind = fp ) XYZ(3,N), the XYZ coordinates of the points.
 !
   implicit none
   
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) normal(3)
-  real ( kind = 8 ) pp(3)
-  real ( kind = 8 ) pq(3)
-  real ( kind = 8 ) pqpr(3,2)
-  real ( kind = 8 ) pr(3)
-  real ( kind = 8 ) qr(2,n)
-  real ( kind = 8 ) xyz(3,n)
+  real ( kind = fp ) normal(3)
+  real ( kind = fp ) pp(3)
+  real ( kind = fp ) pq(3)
+  real ( kind = fp ) pqpr(3,2)
+  real ( kind = fp ) pr(3)
+  real ( kind = fp ) qr(2,n)
+  real ( kind = fp ) xyz(3,n)
 
   xyz(1,1:n) = pp(1)
   xyz(2,1:n) = pp(2)
@@ -16687,6 +16903,7 @@ subroutine plane_normal_qr_to_xyz ( pp, normal, pq, pr, n, qr, xyz )
   return
 end
 subroutine plane_normal_tetrahedron_intersect ( pp, normal, t, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16729,37 +16946,37 @@ subroutine plane_normal_tetrahedron_intersect ( pp, normal, t, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector to the plane.
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector to the plane.
 !
-!    Input, real ( kind = 8 ) T(3,4), the tetrahedron vertices.
+!    Input, real ( kind = fp ) T(3,4), the tetrahedron vertices.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersection 
 !    points returned.  This will be 0, 1, 2, 3 or 4.
 !
-!    Output, real ( kind = 8 ) PINT(3,4), the coordinates of the
+!    Output, real ( kind = fp ) PINT(3,4), the coordinates of the
 !    intersection points.
 !
   implicit none
 
-  real ( kind = 8 ) area1
-  real ( kind = 8 ) area2
-  real ( kind = 8 ) d(4)
-  real ( kind = 8 ) dn
-  real ( kind = 8 ) dpp
+  real ( kind = fp ) area1
+  real ( kind = fp ) area2
+  real ( kind = fp ) d(4)
+  real ( kind = fp ) dn
+  real ( kind = fp ) dpp
   integer ( kind = 4 ) int_num
   integer ( kind = 4 ) j1
   integer ( kind = 4 ) j2
-  real ( kind = 8 ) normal(3)
-  real ( kind = 8 ) pint(3,4)
-  real ( kind = 8 ) pp(3)
+  real ( kind = fp ) normal(3)
+  real ( kind = fp ) pint(3,4)
+  real ( kind = fp ) pp(3)
   logical ( kind = 4 ) r8_sign_opposite_strict
-  real ( kind = 8 ) t(3,4)
-  real ( kind = 8 ) temp(3)
+  real ( kind = fp ) t(3,4)
+  real ( kind = fp ) temp(3)
 
   int_num = 0
-  pint(1:3,1:4) = 0.0D+00
+  pint(1:3,1:4) = 0.0_fp
 !
 !  DN is the length of the normal vector.
 !
@@ -16777,7 +16994,7 @@ subroutine plane_normal_tetrahedron_intersect ( pp, normal, t, int_num, pint )
 !
 !  If all D are positive or negative, no intersection.
 !
-  if ( all ( d(1:4) < 0.0D+00 ) .or. all ( 0.0D+00 < d(1:4) ) ) then
+  if ( all ( d(1:4) < 0.0_fp ) .or. all ( 0.0_fp < d(1:4) ) ) then
     int_num = 0
     return
   end if
@@ -16790,7 +17007,7 @@ subroutine plane_normal_tetrahedron_intersect ( pp, normal, t, int_num, pint )
 !
   do j1 = 1, 4
 
-    if ( d(j1) == 0.0D+00 ) then
+    if ( d(j1) == 0.0_fp ) then
       int_num = int_num + 1
       pint(1:3,int_num) = t(1:3,j1)
     else
@@ -16823,6 +17040,7 @@ subroutine plane_normal_tetrahedron_intersect ( pp, normal, t, int_num, pint )
   return
 end
 subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -16857,31 +17075,31 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector to the plane.
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector to the plane.
 !
-!    Input, real ( kind = 8 ) T(3,3), the vertices of the triangle.
+!    Input, real ( kind = fp ) T(3,3), the vertices of the triangle.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of intersection 
 !    points returned.
 !
-!    Output, real ( kind = 8 ) PINT(3,3), the coordinates of the
+!    Output, real ( kind = fp ) PINT(3,3), the coordinates of the
 !    intersection points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist1
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) dist3
-  real ( kind = 8 ) normal(dim_num)
+  real ( kind = fp ) d
+  real ( kind = fp ) dist1
+  real ( kind = fp ) dist2
+  real ( kind = fp ) dist3
+  real ( kind = fp ) normal(dim_num)
   integer ( kind = 4 ) int_num
-  real ( kind = 8 ) pint(dim_num,3)
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pint(dim_num,3)
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 
   int_num = 0
 !
@@ -16895,21 +17113,21 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
 !
 !  Consider any zero distances.
 !
-  if ( dist1 == 0.0D+00 ) then
+  if ( dist1 == 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,1)
 
   end if
 
-  if ( dist2 == 0.0D+00 ) then
+  if ( dist2 == 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,2)
 
   end if
 
-  if ( dist3 == 0.0D+00 ) then
+  if ( dist3 == 0.0_fp ) then
 
     int_num = int_num + 1
     pint(1:dim_num,int_num) = t(1:dim_num,3)
@@ -16927,17 +17145,17 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
 !
   if ( int_num == 1 ) then
 
-    if ( dist1 == 0.0D+00 ) then
+    if ( dist1 == 0.0_fp ) then
 
       call plane_imp_triangle_int_add_3d ( t(1:dim_num,2), t(1:dim_num,3), &
         dist2, dist3, int_num, pint )
 
-    else if ( dist2 == 0.0D+00 ) then
+    else if ( dist2 == 0.0_fp ) then
 
       call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,3), &
         dist1, dist3, int_num, pint )
 
-    else if ( dist3 == 0.0D+00 ) then
+    else if ( dist3 == 0.0_fp ) then
 
       call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,2), &
         dist1, dist2, int_num, pint )
@@ -16951,7 +17169,7 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
 !  All nodal distances are nonzero, and there is at least one
 !  positive and one negative.
 !
-  if ( dist1 * dist2 < 0.0D+00 .and. dist1 * dist3 < 0.0D+00 ) then
+  if ( dist1 * dist2 < 0.0_fp .and. dist1 * dist3 < 0.0_fp ) then
 
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,2), &
       dist1, dist2, int_num, pint )
@@ -16959,7 +17177,7 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,1), t(1:dim_num,3), &
       dist1, dist3, int_num, pint )
 
-  else if ( dist2 * dist1 < 0.0D+00 .and. dist2 * dist3 < 0.0D+00 ) then
+  else if ( dist2 * dist1 < 0.0_fp .and. dist2 * dist3 < 0.0_fp ) then
 
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,2), t(1:dim_num,1), &
       dist2, dist1, int_num, pint )
@@ -16967,7 +17185,7 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,2), t(1:dim_num,3), &
       dist2, dist3, int_num, pint )
 
-  else if ( dist3 * dist1 < 0.0D+00 .and. dist3 * dist2 < 0.0D+00 ) then
+  else if ( dist3 * dist1 < 0.0_fp .and. dist3 * dist2 < 0.0_fp ) then
 
     call plane_imp_triangle_int_add_3d ( t(1:dim_num,3), t(1:dim_num,1), &
       dist3, dist1, int_num, pint )
@@ -16980,6 +17198,7 @@ subroutine plane_normal_triangle_int_3d ( pp, normal, t, int_num, pint )
   return
 end
 subroutine plane_normal_uniform_3d ( seed, pp, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17011,17 +17230,17 @@ subroutine plane_normal_uniform_3d ( seed, pp, normal )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) PP(3), a point on the plane.
+!    Output, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), the unit normal vector.
+!    Output, real ( kind = fp ) NORMAL(3), the unit normal vector.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) pp(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) pp(dim_num)
   integer ( kind = 4 ) seed
 !
 !  Pick PP as a random point inside the unit sphere in ND.
@@ -17043,6 +17262,7 @@ subroutine plane_normal_uniform_3d ( seed, pp, normal )
   return
 end
 subroutine plane_normal_uniform_nd ( dim_num, seed, pp, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17076,17 +17296,17 @@ subroutine plane_normal_uniform_nd ( dim_num, seed, pp, normal )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) PP(DIM_NUM), a point on the plane.
+!    Output, real ( kind = fp ) PP(DIM_NUM), a point on the plane.
 !
-!    Output, real ( kind = 8 ) NORMAL(DIM_NUM), the unit normal vector.
+!    Output, real ( kind = fp ) NORMAL(DIM_NUM), the unit normal vector.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) pp(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) pp(dim_num)
   integer ( kind = 4 ) seed
 !
 !  Pick PP as a random point inside the unit sphere in ND.
@@ -17108,6 +17328,7 @@ subroutine plane_normal_uniform_nd ( dim_num, seed, pp, normal )
   return
 end
 subroutine plane_normal_xyz_to_qr ( pp, normal, pq, pr, n, xyz, qr )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17143,35 +17364,35 @@ subroutine plane_normal_xyz_to_qr ( pp, normal, pq, pr, n, xyz, qr )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector N to the plane.  The
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector N to the plane.  The
 !    vector must not have zero length, but it is not necessary for N
 !    to have unit length.
 !
-!    Input, real ( kind = 8 ) PQ(3), a vector of unit length,
+!    Input, real ( kind = fp ) PQ(3), a vector of unit length,
 !    perpendicular to the vector N and the vector PR.
 !
-!    Input, real ( kind = 8 ) PR(3), a vector of unit length,
+!    Input, real ( kind = fp ) PR(3), a vector of unit length,
 !    perpendicular to the vector N and the vector PQ.
 !
 !    Input, integer ( kind = 4 ) N, the number of points on the plane.
 !
-!    Input, real ( kind = 8 ) XYZ(3,N), the XYZ coordinates of the points.
+!    Input, real ( kind = fp ) XYZ(3,N), the XYZ coordinates of the points.
 !
-!    Output, real ( kind = 8 ) QR(2,N), the QR coordinates of the points.
+!    Output, real ( kind = fp ) QR(2,N), the QR coordinates of the points.
 !
   implicit none
   
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) normal(3)
-  real ( kind = 8 ) pp(3)
-  real ( kind = 8 ) pq(3)
-  real ( kind = 8 ) pr(3)
-  real ( kind = 8 ) qr(2,n)
-  real ( kind = 8 ) rpqp(2,3)
-  real ( kind = 8 ) xyz(3,n)
+  real ( kind = fp ) normal(3)
+  real ( kind = fp ) pp(3)
+  real ( kind = fp ) pq(3)
+  real ( kind = fp ) pr(3)
+  real ( kind = fp ) qr(2,n)
+  real ( kind = fp ) rpqp(2,3)
+  real ( kind = fp ) xyz(3,n)
 
   rpqp(1,1:3) = pq(1:3)
   rpqp(2,1:3) = pr(1:3)
@@ -17184,6 +17405,7 @@ subroutine plane_normal_xyz_to_qr ( pp, normal, pq, pr, n, xyz, qr )
   return
 end
 subroutine plane_normal2exp_3d ( pp, normal, p1, p2, p3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17214,25 +17436,25 @@ subroutine plane_normal2exp_3d ( pp, normal, p1, p2, p3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), a normal vector N to the plane.  The
+!    Input, real ( kind = fp ) NORMAL(3), a normal vector N to the plane.  The
 !    vector must not have zero length, but it is not necessary for N
 !    to have unit length.
 !
-!    Output, real ( kind = 8 ) P1(3), P2(3), P3(3), three points on the plane.
+!    Output, real ( kind = fp ) P1(3), P2(3), P3(3), three points on the plane.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) pq(dim_num)
-  real ( kind = 8 ) pr(dim_num)
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) pq(dim_num)
+  real ( kind = fp ) pr(dim_num)
 
   call plane_normal_basis_3d ( pp, normal, pq, pr )
 
@@ -17243,6 +17465,7 @@ subroutine plane_normal2exp_3d ( pp, normal, p1, p2, p3 )
   return
 end
 subroutine plane_normal2imp_3d ( pp, normal, a, b, c, d )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17273,22 +17496,22 @@ subroutine plane_normal2imp_3d ( pp, normal, a, b, c, d )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PP(3), a point on the plane.
+!    Input, real ( kind = fp ) PP(3), a point on the plane.
 !
-!    Input, real ( kind = 8 ) NORMAL(3), the unit normal vector to the plane.
+!    Input, real ( kind = fp ) NORMAL(3), the unit normal vector to the plane.
 !
-!    Output, real ( kind = 8 ) A, B, C, D, the implicit plane parameters.
+!    Output, real ( kind = fp ) A, B, C, D, the implicit plane parameters.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) pp(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) pp(dim_num)
 
   a = normal(1)
   b = normal(2)
@@ -17298,6 +17521,7 @@ subroutine plane_normal2imp_3d ( pp, normal, a, b, c, d )
   return
 end
 subroutine planes_imp_angle_3d ( a1, b1, c1, d1, a2, b2, c2, d2, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17340,13 +17564,13 @@ subroutine planes_imp_angle_3d ( a1, b1, c1, d1, a2, b2, c2, d2, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A1, B1, C1, D1, coefficients that define the
+!    Input, real ( kind = fp ) A1, B1, C1, D1, coefficients that define the
 !    first plane.
 !
-!    Input, real ( kind = 8 ) A2, B2, C2, D2, coefficients that define
+!    Input, real ( kind = fp ) A2, B2, C2, D2, coefficients that define
 !    the second plane.
 !
-!    Output, real ( kind = 8 ) ANGLE, the dihedral angle, in radians,
+!    Output, real ( kind = fp ) ANGLE, the dihedral angle, in radians,
 !    defined by the two planes.  If either plane is degenerate, or they
 !    do not intersect, or they coincide, then the angle is set to HUGE(1.0).
 !    Otherwise, the angle is between 0 and PI.
@@ -17355,30 +17579,30 @@ subroutine planes_imp_angle_3d ( a1, b1, c1, d1, a2, b2, c2, d2, angle )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a1
-  real ( kind = 8 ) a2
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) b2
-  real ( kind = 8 ) c1
-  real ( kind = 8 ) c2
-  real ( kind = 8 ) cosine
-  real ( kind = 8 ) d1
-  real ( kind = 8 ) d2
-  real ( kind = 8 ) norm1
-  real ( kind = 8 ) norm2
-  real ( kind = 8 ) r8_acos
+  real ( kind = fp ) a1
+  real ( kind = fp ) a2
+  real ( kind = fp ) angle
+  real ( kind = fp ) b1
+  real ( kind = fp ) b2
+  real ( kind = fp ) c1
+  real ( kind = fp ) c2
+  real ( kind = fp ) cosine
+  real ( kind = fp ) d1
+  real ( kind = fp ) d2
+  real ( kind = fp ) norm1
+  real ( kind = fp ) norm2
+  real ( kind = fp ) r8_acos
 
   norm1 = sqrt ( a1 * a1 + b1 * b1 + c1 * c1 )
 
-  if ( norm1 == 0.0D+00 ) then
+  if ( norm1 == 0.0_fp ) then
     angle = huge ( angle )
     return
   end if
 
   norm2 = sqrt ( a2 * a2 + b2 * b2 + c2 * c2 )
 
-  if ( norm2 == 0.0D+00 ) then
+  if ( norm2 == 0.0_fp ) then
     angle = huge ( angle )
     return
   end if
@@ -17390,6 +17614,7 @@ subroutine planes_imp_angle_3d ( a1, b1, c1, d1, a2, b2, c2, d2, angle )
   return
 end
 function points_avoid_point_naive_2d ( n, p_set, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17422,9 +17647,9 @@ function points_avoid_point_naive_2d ( n, p_set, p )
 !
 !    Input, integer ( kind = 4 ) N, the number of accepted points.
 !
-!    Input, real ( kind = 8 ) P_SET(2,N), the accepted points.
+!    Input, real ( kind = fp ) P_SET(2,N), the accepted points.
 !
-!    Input, real ( kind = 8 ) P(2), a point to be tested.
+!    Input, real ( kind = fp ) P(2), a point to be tested.
 !
 !    Output, logical ( kind = 4 ) POINTS_AVOID_POINT_NAIVE_2D, is TRUE if 
 !    XY_TEST is "far enough" from all the accepted points.
@@ -17435,12 +17660,12 @@ function points_avoid_point_naive_2d ( n, p_set, p )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p_set(dim_num,n)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p_set(dim_num,n)
   logical ( kind = 4 ) points_avoid_point_naive_2d
-  real ( kind = 8 ) tol
+  real ( kind = fp ) tol
 
-  tol = 100.0D+00 * epsilon ( tol )
+  tol = 100.0_fp * epsilon ( tol )
 
   points_avoid_point_naive_2d = .true.
 
@@ -17456,6 +17681,7 @@ function points_avoid_point_naive_2d ( n, p_set, p )
   return
 end
 subroutine points_bisect_line_imp_2d ( p1, p2, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17491,29 +17717,30 @@ subroutine points_bisect_line_imp_2d ( p1, p2, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the coordinates of two points.
+!    Input, real ( kind = fp ) P1(2), P2(2), the coordinates of two points.
 !
-!    Output, real ( kind = 8 ) A, B, C, the parameters of the implicit line
+!    Output, real ( kind = fp ) A, B, C, the parameters of the implicit line
 !    equidistant from both points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   a = p1(1) - p2(1)
   b = p1(2) - p2(2)
-  c = - 0.5D+00 * ( ( p1(1) * p1(1) + p1(2) * p1(2) ) &
+  c = - 0.5_fp * ( ( p1(1) * p1(1) + p1(2) * p1(2) ) &
                   - ( p2(1) * p2(1) + p2(2) * p2(2) ) )
 
   return
 end
 subroutine points_bisect_line_par_2d ( p1, p2, f, g, x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17552,34 +17779,34 @@ subroutine points_bisect_line_par_2d ( p1, p2, f, g, x, y )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), two points.
+!    Input, real ( kind = fp ) P1(2), P2(2), two points.
 !
-!    Output, real ( kind = 8 ) F, G, X, Y, the parameters of the parametric line
+!    Output, real ( kind = fp ) F, G, X, Y, the parameters of the parametric line
 !    equidistant from both points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) f
-  real ( kind = 8 ) g
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) f
+  real ( kind = fp ) g
+  real ( kind = fp ) norm
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 
-  f = 0.5D+00 * ( p1(1) + p2(1) )
-  g = 0.5D+00 * ( p1(2) + p2(2) )
+  f = 0.5_fp * ( p1(1) + p2(1) )
+  g = 0.5_fp * ( p1(2) + p2(2) )
 
   norm = f * f + g * g
 
-  if ( norm /= 0.0D+00 ) then
+  if ( norm /= 0.0_fp ) then
     f = f / norm
     g = g / norm
   end if
 
-  if ( f < 0.0D+00 ) then
+  if ( f < 0.0_fp ) then
     f = -f
     g = -g
   end if
@@ -17590,6 +17817,7 @@ subroutine points_bisect_line_par_2d ( p1, p2, f, g, x, y )
   return
 end
 subroutine points_centroid_2d ( n, p, centroid_index )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17623,7 +17851,7 @@ subroutine points_centroid_2d ( n, p, centroid_index )
 !
 !    Input, integer ( kind = 4 ) N, the number of points.
 !
-!    Input, real ( kind = 8 ) P(2,N), the points.
+!    Input, real ( kind = fp ) P(2,N), the points.
 !
 !    Output, integer ( kind = 4 ) CENTROID_INDEX, the index of a discrete
 !    centroid of the set, between 1 and N.
@@ -17634,18 +17862,18 @@ subroutine points_centroid_2d ( n, p, centroid_index )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   integer ( kind = 4 ) centroid_index
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist_min
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist_min
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(dim_num,n)
+  real ( kind = fp ) p(dim_num,n)
 
-  dist_min = 0.0D+00
+  dist_min = 0.0_fp
   centroid_index = -1
 
   do i = 1, n
 
-    dist = 0.0D+00
+    dist = 0.0_fp
     do j = 1, n
       dist = dist + sum ( ( p(1:dim_num,i) - p(1:dim_num,j) )**2 )
     end do
@@ -17663,6 +17891,7 @@ subroutine points_centroid_2d ( n, p, centroid_index )
   return
 end
 subroutine points_colin_2d ( p1, p2, p3, colin )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17692,32 +17921,32 @@ subroutine points_colin_2d ( p1, p2, p3, colin )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), the points.
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), the points.
 !
-!    Output, real ( kind = 8 ) COLIN, the colinearity estimate.
+!    Output, real ( kind = fp ) COLIN, the colinearity estimate.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area_triangle
-  real ( kind = 8 ) area2
-  real ( kind = 8 ) colin
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) perim
-  real ( kind = 8 ) side
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) area_triangle
+  real ( kind = fp ) area2
+  real ( kind = fp ) colin
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) perim
+  real ( kind = fp ) side
+  real ( kind = fp ) t(dim_num,3)
 
   t(1:dim_num,1:3) = reshape ( (/ &
     p1(1:dim_num), p2(1:dim_num), p3(1:dim_num) /), (/ dim_num, 3 /) )
 
   call triangle_area_2d ( t, area_triangle )
 
-  if ( area_triangle == 0.0D+00 ) then
+  if ( area_triangle == 0.0_fp ) then
 
-    colin = 0.0D+00
+    colin = 0.0_fp
 
   else
 
@@ -17725,9 +17954,9 @@ subroutine points_colin_2d ( p1, p2, p3, colin )
           + sqrt ( sum ( ( p3(1:dim_num) - p2(1:dim_num) )**2 ) ) &
           + sqrt ( sum ( ( p1(1:dim_num) - p3(1:dim_num) )**2 ) )
 
-    side = perim / 3.0D+00
+    side = perim / 3.0_fp
 
-    area2 = 0.25D+00 * sqrt ( 3.0D+00 ) * side * side
+    area2 = 0.25_fp * sqrt ( 3.0_fp ) * side * side
 
     colin = abs ( area_triangle ) / area2
 
@@ -17736,6 +17965,7 @@ subroutine points_colin_2d ( p1, p2, p3, colin )
   return
 end
 subroutine points_colin_3d ( p1, p2, p3, colin )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17765,32 +17995,32 @@ subroutine points_colin_3d ( p1, p2, p3, colin )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), the points.
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), the points.
 !
-!    Output, real ( kind = 8 ) COLIN, the colinearity estimate. 
+!    Output, real ( kind = fp ) COLIN, the colinearity estimate. 
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area_triangle
-  real ( kind = 8 ) area2
-  real ( kind = 8 ) colin
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) perim
-  real ( kind = 8 ) side
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) area_triangle
+  real ( kind = fp ) area2
+  real ( kind = fp ) colin
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) perim
+  real ( kind = fp ) side
+  real ( kind = fp ) t(dim_num,3)
 
   t(1:dim_num,1:3) = reshape ( (/ &
     p1(1:dim_num), p2(1:dim_num), p3(1:dim_num) /), (/ dim_num, 3 /) )
 
   call triangle_area_3d ( t, area_triangle )
 
-  if ( area_triangle == 0.0D+00 ) then
+  if ( area_triangle == 0.0_fp ) then
 
-    colin = 0.0D+00
+    colin = 0.0_fp
 
   else
 
@@ -17798,9 +18028,9 @@ subroutine points_colin_3d ( p1, p2, p3, colin )
           + sqrt ( sum ( ( p3(1:dim_num) - p2(1:dim_num) )**2 ) ) &
           + sqrt ( sum ( ( p1(1:dim_num) - p3(1:dim_num) )**2 ) )
 
-    side = perim / 3.0D+00
+    side = perim / 3.0_fp
 
-    area2 = 0.25D+00 * sqrt ( 3.0D+00 ) * side * side
+    area2 = 0.25_fp * sqrt ( 3.0_fp ) * side * side
 
     colin = abs ( area_triangle ) / area2
 
@@ -17809,6 +18039,7 @@ subroutine points_colin_3d ( p1, p2, p3, colin )
   return
 end
 subroutine points_dist_nd ( dim_num, p1, p2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17830,24 +18061,25 @@ subroutine points_dist_nd ( dim_num, p1, p2, dist )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) P1(DIM_NUM), P2(DIM_NUM), the coordinates 
+!    Input, real ( kind = fp ) P1(DIM_NUM), P2(DIM_NUM), the coordinates 
 !    of two points.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the points.
+!    Output, real ( kind = fp ) DIST, the distance between the points.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
+  real ( kind = fp ) dist
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
 
   dist = sqrt ( sum ( ( p1(1:dim_num) - p2(1:dim_num) )**2 ) )
 
   return
 end
 subroutine points_hull_2d ( node_num, node_xy, hull_num, hull )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -17874,7 +18106,7 @@ subroutine points_hull_2d ( node_num, node_xy, hull_num, hull )
 !
 !    Input, integer ( kind = 4 ) NODE_NUM, the number of nodes.
 !
-!    Input, real ( kind = 8 ) NODE_XY(2,NODE_NUM), the coordinates of the nodes.
+!    Input, real ( kind = fp ) NODE_XY(2,NODE_NUM), the coordinates of the nodes.
 !
 !    Output, integer ( kind = 4 ) HULL_NUM, the number of nodes that lie on 
 !    the convex hull.
@@ -17886,21 +18118,21 @@ subroutine points_hull_2d ( node_num, node_xy, hull_num, hull )
 
   integer ( kind = 4 ) node_num
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angle_max
-  real ( kind = 8 ) angle_rad_2d
-  real ( kind = 8 ) di
-  real ( kind = 8 ) dr
+  real ( kind = fp ) angle
+  real ( kind = fp ) angle_max
+  real ( kind = fp ) angle_rad_2d
+  real ( kind = fp ) di
+  real ( kind = fp ) dr
   integer ( kind = 4 ) first
   integer ( kind = 4 ) hull(node_num)
   integer ( kind = 4 ) hull_num
   integer ( kind = 4 ) i
-  real ( kind = 8 ) node_xy(2,node_num)
-  real ( kind = 8 ) p_xy(2)
+  real ( kind = fp ) node_xy(2,node_num)
+  real ( kind = fp ) p_xy(2)
   integer ( kind = 4 ) q
-  real ( kind = 8 ) q_xy(2)
+  real ( kind = fp ) q_xy(2)
   integer ( kind = 4 ) r
-  real ( kind = 8 ) r_xy(2)
+  real ( kind = fp ) r_xy(2)
 
   if ( node_num < 1 ) then
     hull_num = 0
@@ -17956,7 +18188,7 @@ subroutine points_hull_2d ( node_num, node_xy, hull_num, hull )
 !  and call it "P".
 !
   p_xy(1) = q_xy(1)
-  p_xy(2) = q_xy(2) - 1.0D+00
+  p_xy(2) = q_xy(2) - 1.0_fp
 !
 !  Now, having old point P, and current point Q, find the new point R
 !  so the angle PQR is maximal.
@@ -17966,7 +18198,7 @@ subroutine points_hull_2d ( node_num, node_xy, hull_num, hull )
   do
 
     r = 0
-    angle_max = 0.0D+00
+    angle_max = 0.0_fp
 
     do i = 1, node_num
 
@@ -18031,6 +18263,7 @@ subroutine points_hull_2d ( node_num, node_xy, hull_num, hull )
   return
 end
 subroutine points_plot ( file_name, node_num, node_xy, node_label )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18054,7 +18287,7 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
 !
 !    Input, integer ( kind = 4 ) NODE_NUM, the number of points.
 !
-!    Input, real ( kind = 8 ) NODE_XY(2,NODE_NUM), the nodes.
+!    Input, real ( kind = fp ) NODE_XY(2,NODE_NUM), the nodes.
 !
 !    Input, logical ( kind = 4 ) NODE_LABEL, is TRUE if the nodes should 
 !    be labeled.
@@ -18076,24 +18309,24 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
   integer ( kind = 4 ) ios
   integer ( kind = 4 ) node
   logical ( kind = 4 ) node_label
-  real ( kind = 8 ) node_xy(2,node_num)
+  real ( kind = fp ) node_xy(2,node_num)
   character ( len = 40 ) string
-  real ( kind = 8 ) x_max
-  real ( kind = 8 ) x_min
+  real ( kind = fp ) x_max
+  real ( kind = fp ) x_min
   integer ( kind = 4 ) x_ps
   integer ( kind = 4 ) :: x_ps_max = 576
   integer ( kind = 4 ) :: x_ps_max_clip = 594
   integer ( kind = 4 ) :: x_ps_min = 36
   integer ( kind = 4 ) :: x_ps_min_clip = 18
-  real ( kind = 8 ) x_scale
-  real ( kind = 8 ) y_max
-  real ( kind = 8 ) y_min
+  real ( kind = fp ) x_scale
+  real ( kind = fp ) y_max
+  real ( kind = fp ) y_min
   integer ( kind = 4 ) y_ps
   integer ( kind = 4 ) :: y_ps_max = 666
   integer ( kind = 4 ) :: y_ps_max_clip = 684
   integer ( kind = 4 ) :: y_ps_min = 126
   integer ( kind = 4 ) :: y_ps_min_clip = 108
-  real ( kind = 8 ) y_scale
+  real ( kind = fp ) y_scale
 !
 !  We need to do some figuring here, so that we can determine
 !  the range of the data, and hence the height and width
@@ -18103,22 +18336,22 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
   x_min = minval ( node_xy(1,1:node_num) )
   x_scale = x_max - x_min
 
-  x_max = x_max + 0.05D+00 * x_scale
-  x_min = x_min - 0.05D+00 * x_scale
+  x_max = x_max + 0.05_fp * x_scale
+  x_min = x_min - 0.05_fp * x_scale
   x_scale = x_max - x_min
 
   y_max = maxval ( node_xy(2,1:node_num) )
   y_min = minval ( node_xy(2,1:node_num) )
   y_scale = y_max - y_min
 
-  y_max = y_max + 0.05D+00 * y_scale
-  y_min = y_min - 0.05D+00 * y_scale
+  y_max = y_max + 0.05_fp * y_scale
+  y_min = y_min - 0.05_fp * y_scale
   y_scale = y_max - y_min
 
   if ( x_scale < y_scale ) then
 
     delta = nint ( real ( x_ps_max - x_ps_min, kind = 8 ) &
-      * ( y_scale - x_scale ) / ( 2.0D+00 * y_scale ) )
+      * ( y_scale - x_scale ) / ( 2.0_fp * y_scale ) )
 
     x_ps_max = x_ps_max - delta
     x_ps_min = x_ps_min + delta
@@ -18131,7 +18364,7 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
   else if ( y_scale < x_scale ) then
 
     delta = nint ( real ( y_ps_max - y_ps_min, kind = 8 ) &
-      * ( x_scale - y_scale ) / ( 2.0D+00 * x_scale ) )
+      * ( x_scale - y_scale ) / ( 2.0_fp * x_scale ) )
 
     y_ps_max = y_ps_max - delta
     y_ps_min = y_ps_min + delta
@@ -18290,6 +18523,7 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
 end
 subroutine points_point_near_naive_nd ( dim_num, set_num, pset, p, i_min, &
   dist_min )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18318,15 +18552,15 @@ subroutine points_point_near_naive_nd ( dim_num, set_num, pset, p, i_min, &
 !
 !    Input, integer ( kind = 4 ) SET_NUM, the number of points in the set.
 !
-!    Input, real ( kind = 8 ) PSET(DIM_NUM,SET_NUM), the points in the set.
+!    Input, real ( kind = fp ) PSET(DIM_NUM,SET_NUM), the points in the set.
 !
-!    Input, real ( kind = 8 ) P(DIM_NUM), the point whose nearest neighbor
+!    Input, real ( kind = fp ) P(DIM_NUM), the point whose nearest neighbor
 !    is sought.
 !
 !    Output, integer ( kind = 4 ) I_MIN, the index of the nearest point in 
 !    PSET to P.
 !
-!    Output, real ( kind = 8 ) DIST_MIN, the distance between P(*) 
+!    Output, real ( kind = fp ) DIST_MIN, the distance between P(*) 
 !    and PSET(*,I_MIN).
 !
   implicit none
@@ -18334,12 +18568,12 @@ subroutine points_point_near_naive_nd ( dim_num, set_num, pset, p, i_min, &
   integer ( kind = 4 ) dim_num
   integer ( kind = 4 ) set_num
 
-  real ( kind = 8 ) d
-  real ( kind = 8 ) dist_min
+  real ( kind = fp ) d
+  real ( kind = fp ) dist_min
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i_min
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pset(dim_num,set_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pset(dim_num,set_num)
 
   dist_min = huge ( dist_min )
   i_min = -1
@@ -18357,6 +18591,7 @@ subroutine points_point_near_naive_nd ( dim_num, set_num, pset, p, i_min, &
   return
 end
 subroutine polar_to_xy ( r, t, xy )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18376,15 +18611,15 @@ subroutine polar_to_xy ( r, t, xy )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, T, the radius and angle (in radians).
+!    Input, real ( kind = fp ) R, T, the radius and angle (in radians).
 !
-!    Output, real ( kind = 8 ) XY(2), the Cartesian coordinates.
+!    Output, real ( kind = fp ) XY(2), the Cartesian coordinates.
 !
   implicit none
 
-  real ( kind = 8 ) r
-  real ( kind = 8 ) t
-  real ( kind = 8 ) xy(2)
+  real ( kind = fp ) r
+  real ( kind = fp ) t
+  real ( kind = fp ) xy(2)
 
   xy(1) = r * cos ( t )
   xy(2) = r * sin ( t )
@@ -18392,6 +18627,7 @@ subroutine polar_to_xy ( r, t, xy )
   return
 end
 subroutine polygon_1_2d ( n, v, result )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18432,10 +18668,10 @@ subroutine polygon_1_2d ( n, v, result )
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !    N should be at least 3 for a nonzero result.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices
 !    of the polygon.  These vertices should be given in counter clockwise order.
 !
-!    Output, real ( kind = 8 ) RESULT, the value of the integral.
+!    Output, real ( kind = fp ) RESULT, the value of the integral.
 !
   implicit none
 
@@ -18444,10 +18680,10 @@ subroutine polygon_1_2d ( n, v, result )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) im1
-  real ( kind = 8 ) result
-  real ( kind = 8 ) v(2,n)
+  real ( kind = fp ) result
+  real ( kind = fp ) v(2,n)
 
-  result = 0.0D+00
+  result = 0.0_fp
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -18465,13 +18701,14 @@ subroutine polygon_1_2d ( n, v, result )
       im1 = i - 1
     end if
 
-    result = result + 0.5D+00 * ( v(1,i) + v(1,im1) ) * ( v(2,i) - v(2,im1) )
+    result = result + 0.5_fp * ( v(1,i) + v(1,im1) ) * ( v(2,i) - v(2,im1) )
 
   end do
 
   return
 end
 subroutine polygon_angles_2d ( n, v, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18497,9 +18734,9 @@ subroutine polygon_angles_2d ( n, v, angle )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices.
+!    Input, real ( kind = fp ) V(2,N), the vertices.
 !
-!    Output, real ( kind = 8 ) ANGLE(N), the angles of the polygon,
+!    Output, real ( kind = fp ) ANGLE(N), the angles of the polygon,
 !    in radians.
 !
   implicit none
@@ -18507,16 +18744,16 @@ subroutine polygon_angles_2d ( n, v, angle )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle(n)
-  real ( kind = 8 ) angle_rad_2d
+  real ( kind = fp ) angle(n)
+  real ( kind = fp ) angle_rad_2d
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) im1
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) v(dim_num,n)
 
   if ( n <= 2 ) then
-    angle(1:n) = 0.0D+00
+    angle(1:n) = 0.0_fp
     return
   end if
  
@@ -18533,6 +18770,7 @@ subroutine polygon_angles_2d ( n, v, angle )
   return
 end
 subroutine polygon_area_2d ( n, v, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18563,23 +18801,23 @@ subroutine polygon_area_2d ( n, v, area )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices.
+!    Input, real ( kind = fp ) V(2,N), the vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the absolute area of the polygon.
+!    Output, real ( kind = fp ) AREA, the absolute area of the polygon.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
+  real ( kind = fp ) area
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) im1
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) v(dim_num,n)
 
-  area = 0.0D+00
+  area = 0.0_fp
 
   do i = 1, n
 
@@ -18590,11 +18828,12 @@ subroutine polygon_area_2d ( n, v, area )
 
   end do
 
-  area = 0.5D+00 * area
+  area = 0.5_fp * area
 
   return
 end
 subroutine polygon_area_2d_2 ( n, v, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18636,22 +18875,22 @@ subroutine polygon_area_2d_2 ( n, v, area )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices.
+!    Input, real ( kind = fp ) V(2,N), the vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the absolute area of the polygon.
+!    Output, real ( kind = fp ) AREA, the absolute area of the polygon.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) area_triangle
+  real ( kind = fp ) area
+  real ( kind = fp ) area_triangle
   integer ( kind = 4 ) i
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) v(dim_num,n)
 
-  area = 0.0D+00
+  area = 0.0_fp
 
   do i = 1, n - 2
 
@@ -18668,6 +18907,7 @@ subroutine polygon_area_2d_2 ( n, v, area )
   return
 end
 subroutine polygon_area_3d ( n, v, area, normal )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18705,12 +18945,12 @@ subroutine polygon_area_3d ( n, v, area, normal )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices.
 !
-!    Input, real ( kind = 8 ) V(3,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(3,N), the coordinates of the vertices.
 !    The vertices should be listed in neighboring order.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the polygon.
+!    Output, real ( kind = fp ) AREA, the area of the polygon.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), the unit normal vector to the polygon.
+!    Output, real ( kind = fp ) NORMAL(3), the unit normal vector to the polygon.
 !
   implicit none
 
@@ -18718,14 +18958,14 @@ subroutine polygon_area_3d ( n, v, area, normal )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) cross(dim_num)
+  real ( kind = fp ) area
+  real ( kind = fp ) cross(dim_num)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) v(dim_num,n)
 
-  normal(1:dim_num) = 0.0D+00
+  normal(1:dim_num) = 0.0_fp
 
   do i = 1, n
 
@@ -18747,17 +18987,18 @@ subroutine polygon_area_3d ( n, v, area, normal )
 
   area = sqrt ( sum ( normal(1:dim_num)**2 ) )
 
-  if ( area /= 0.0D+00 ) then
+  if ( area /= 0.0_fp ) then
     normal(1:dim_num) = normal(1:dim_num) / area
   else
-    normal(1:dim_num) = 1.0D+00 / sqrt ( real ( dim_num, kind = 8 ) )
+    normal(1:dim_num) = 1.0_fp / sqrt ( real ( dim_num, kind = 8 ) )
   end if
 
-  area = 0.5D+00 * area
+  area = 0.5_fp * area
 
   return
 end
 subroutine polygon_area_3d_2 ( n, v, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18798,23 +19039,23 @@ subroutine polygon_area_3d_2 ( n, v, area )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(3,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(3,N), the coordinates of the vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the polygon.
+!    Output, real ( kind = fp ) AREA, the area of the polygon.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) area_vector(dim_num)
-  real ( kind = 8 ) area_vector_triangle(dim_num)
+  real ( kind = fp ) area
+  real ( kind = fp ) area_vector(dim_num)
+  real ( kind = fp ) area_vector_triangle(dim_num)
   integer ( kind = 4 ) j
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) v(dim_num,n)
 
-  area_vector(1:dim_num) = 0.0D+00
+  area_vector(1:dim_num) = 0.0_fp
 
   do j = 1, n - 2
 
@@ -18829,11 +19070,12 @@ subroutine polygon_area_3d_2 ( n, v, area )
 
   end do
 
-  area = 0.5D+00 * sqrt ( sum ( area_vector(1:dim_num)**2 ) )
+  area = 0.5_fp * sqrt ( sum ( area_vector(1:dim_num)**2 ) )
 
   return
 end
 subroutine polygon_centroid_2d ( n, v, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18892,24 +19134,24 @@ subroutine polygon_centroid_2d ( n, v, centroid )
 !
 !    Input, integer ( kind = 4 ) N, the number of sides of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices.
 !
-!    Output, real ( kind = 8 ) CENTROID(2), the coordinates of the centroid.
+!    Output, real ( kind = fp ) CENTROID(2), the coordinates of the centroid.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) centroid(dim_num)
+  real ( kind = fp ) area
+  real ( kind = fp ) centroid(dim_num)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) temp
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) temp
+  real ( kind = fp ) v(dim_num,n)
 
-  area = 0.0D+00
-  centroid(1:dim_num) = 0.0D+00
+  area = 0.0_fp
+  centroid(1:dim_num) = 0.0_fp
 
   do i = 1, n
 
@@ -18928,17 +19170,18 @@ subroutine polygon_centroid_2d ( n, v, centroid )
 
   end do
 
-  area = area / 2.0D+00
+  area = area / 2.0_fp
 
-  if ( area == 0.0D+00 ) then
+  if ( area == 0.0_fp ) then
     centroid(1:dim_num) = v(1:dim_num,1)
   else
-    centroid(1:dim_num) = centroid(1:dim_num) / ( 6.0D+00 * area )
+    centroid(1:dim_num) = centroid(1:dim_num) / ( 6.0_fp * area )
   end if
 
   return
 end
 subroutine polygon_centroid_2d_2 ( n, v, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -18972,24 +19215,24 @@ subroutine polygon_centroid_2d_2 ( n, v, centroid )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices.
 !
-!    Output, real ( kind = 8 ) CENTROID(2), the coordinates of the centroid.
+!    Output, real ( kind = fp ) CENTROID(2), the coordinates of the centroid.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area_polygon
-  real ( kind = 8 ) area_triangle
-  real ( kind = 8 ) centroid(dim_num)
+  real ( kind = fp ) area_polygon
+  real ( kind = fp ) area_triangle
+  real ( kind = fp ) centroid(dim_num)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) v(dim_num,n)
 
-  area_polygon = 0.0D+00
-  centroid(1:dim_num) = 0.0D+00
+  area_polygon = 0.0_fp
+  centroid(1:dim_num) = 0.0_fp
 
   do i = 1, n - 2
 
@@ -19002,11 +19245,11 @@ subroutine polygon_centroid_2d_2 ( n, v, centroid )
     area_polygon = area_polygon + area_triangle
 
     centroid(1:dim_num) = centroid(1:dim_num) + area_triangle &
-      * ( v(1:dim_num,i) + v(1:dim_num,i+1) + v(1:dim_num,n) ) / 3.0D+00
+      * ( v(1:dim_num,i) + v(1:dim_num,i+1) + v(1:dim_num,n) ) / 3.0_fp
 
   end do
 
-  if ( area_polygon == 0.0D+00 ) then
+  if ( area_polygon == 0.0_fp ) then
     centroid(1:dim_num) = v(1:dim_num,1)
   else
     centroid(1:dim_num) = centroid(1:dim_num) / area_polygon
@@ -19015,6 +19258,7 @@ subroutine polygon_centroid_2d_2 ( n, v, centroid )
   return
 end
 subroutine polygon_centroid_3d ( n, v, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19053,24 +19297,24 @@ subroutine polygon_centroid_3d ( n, v, centroid )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(3,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(3,N), the coordinates of the vertices.
 !
-!    Output, real ( kind = 8 ) CENTROID(3), the coordinates of the centroid.
+!    Output, real ( kind = fp ) CENTROID(3), the coordinates of the centroid.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area_polygon
-  real ( kind = 8 ) area_triangle
-  real ( kind = 8 ) centroid(dim_num)
+  real ( kind = fp ) area_polygon
+  real ( kind = fp ) area_triangle
+  real ( kind = fp ) centroid(dim_num)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) v(dim_num,n)
 
-  area_polygon = 0.0D+00
-  centroid(1:dim_num) = 0.0D+00
+  area_polygon = 0.0_fp
+  centroid(1:dim_num) = 0.0_fp
 
   do i = 1, n - 2
 
@@ -19083,11 +19327,11 @@ subroutine polygon_centroid_3d ( n, v, centroid )
     area_polygon = area_polygon + area_triangle
 
     centroid(1:dim_num) = centroid(1:dim_num) + area_triangle &
-      * ( v(1:dim_num,i) + v(1:dim_num,i+1) + v(1:dim_num,n) ) / 3.0D+00
+      * ( v(1:dim_num,i) + v(1:dim_num,i+1) + v(1:dim_num,n) ) / 3.0_fp
 
   end do
 
-  if ( area_polygon == 0.0D+00 ) then
+  if ( area_polygon == 0.0_fp ) then
     centroid(1:dim_num) = v(1:dim_num,1)
   else
     centroid(1:dim_num) = centroid(1:dim_num) / area_polygon
@@ -19096,6 +19340,7 @@ subroutine polygon_centroid_3d ( n, v, centroid )
   return
 end
 subroutine polygon_contains_point_2d ( n, v, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19118,9 +19363,9 @@ subroutine polygon_contains_point_2d ( n, v, p, inside )
 !    Input, integer ( kind = 4 ) N, the number of nodes or vertices in 
 !    the polygon.  N must be at least 3.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices of the polygon.
+!    Input, real ( kind = fp ) V(2,N), the vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) P(2), the coordinates of the point to be tested.
+!    Input, real ( kind = fp ) P(2), the coordinates of the point to be tested.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside 
 !    the polygon.
@@ -19132,19 +19377,19 @@ subroutine polygon_contains_point_2d ( n, v, p, inside )
   integer ( kind = 4 ) i
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) p(2)
-  real ( kind = 8 ) px1
-  real ( kind = 8 ) px2
-  real ( kind = 8 ) py1
-  real ( kind = 8 ) py2
-  real ( kind = 8 ) v(2,n)
-  real ( kind = 8 ) xints
+  real ( kind = fp ) p(2)
+  real ( kind = fp ) px1
+  real ( kind = fp ) px2
+  real ( kind = fp ) py1
+  real ( kind = fp ) py2
+  real ( kind = fp ) v(2,n)
+  real ( kind = fp ) xints
 
   inside = .false.
 
   px1 = v(1,1)
   py1 = v(2,1)
-  xints = p(1) - 1.0D+00
+  xints = p(1) - 1.0_fp
 
   do i = 1, n
 
@@ -19172,6 +19417,7 @@ subroutine polygon_contains_point_2d ( n, v, p, inside )
   return
 end
 subroutine polygon_contains_point_2d_2 ( n, v, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19194,9 +19440,9 @@ subroutine polygon_contains_point_2d_2 ( n, v, p, inside )
 !    Input, integer ( kind = 4 ) N, the number of nodes or vertices in the 
 !    polygon.  N must be at least 3.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices of the polygon.
+!    Input, real ( kind = fp ) V(2,N), the vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) P(2), the coordinates of the point to be tested.
+!    Input, real ( kind = fp ) P(2), the coordinates of the point to be tested.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside
 !    the polygon or on its boundary.
@@ -19208,9 +19454,9 @@ subroutine polygon_contains_point_2d_2 ( n, v, p, inside )
 
   integer ( kind = 4 ) i
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) v(dim_num,n)
 
   inside = .false.
 !
@@ -19236,6 +19482,7 @@ subroutine polygon_contains_point_2d_2 ( n, v, p, inside )
   return
 end
 subroutine polygon_contains_point_2d_3 ( n, v, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19271,9 +19518,9 @@ subroutine polygon_contains_point_2d_3 ( n, v, p, inside )
 !    Input, integer ( kind = 4 ) N, the number of nodes or vertices in 
 !    the polygon.  N must be at least 3.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices of the polygon.
+!    Input, real ( kind = fp ) V(2,N), the vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) P(2), the coordinates of the point to be tested.
+!    Input, real ( kind = fp ) P(2), the coordinates of the point to be tested.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside 
 !    the polygon.
@@ -19286,8 +19533,8 @@ subroutine polygon_contains_point_2d_3 ( n, v, p, inside )
   integer ( kind = 4 ) i
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) v(dim_num,n)
 
   inside = .false.
 
@@ -19302,7 +19549,7 @@ subroutine polygon_contains_point_2d_3 ( n, v, p, inside )
     if ( ( v(2,i)   <  p(2) .and. p(2) <= v(2,ip1)   ) .or. &
          ( p(2) <= v(2,i)   .and. v(2,ip1)   < p(2) ) ) then
       if ( ( p(1) - v(1,i) ) - ( p(2) - v(2,i) ) &
-         * ( v(1,ip1) - v(1,i) ) / ( v(2,ip1) - v(2,i) ) < 0.0D+00 ) then
+         * ( v(1,ip1) - v(1,i) ) / ( v(2,ip1) - v(2,i) ) < 0.0_fp ) then
         inside = .not. inside
       end if
     end if
@@ -19312,6 +19559,7 @@ subroutine polygon_contains_point_2d_3 ( n, v, p, inside )
   return
 end
 subroutine polygon_diameter_2d ( n, v, diameter )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19342,21 +19590,21 @@ subroutine polygon_diameter_2d ( n, v, diameter )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the vertices.
+!    Input, real ( kind = fp ) V(2,N), the vertices.
 !
-!    Output, real ( kind = 8 ) DIAMETER, the diameter of the polygon.
+!    Output, real ( kind = fp ) DIAMETER, the diameter of the polygon.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) diameter
+  real ( kind = fp ) diameter
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) v(dim_num,n)
 
-  diameter = 0.0D+00
+  diameter = 0.0_fp
 
   do i = 1, n
 
@@ -19370,6 +19618,7 @@ subroutine polygon_diameter_2d ( n, v, diameter )
   return
 end
 subroutine polygon_expand_2d ( n, v, h, w )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19401,28 +19650,28 @@ subroutine polygon_expand_2d ( n, v, h, w )
 !
 !    Input, integer ( kind = 4 ) N, the number of sides of the polygon.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices.
 !
-!    Input, real ( kind = 8 ) H, the expansion amount.
+!    Input, real ( kind = fp ) H, the expansion amount.
 !
-!    Output, real ( kind = 8 ) W(2,N), the "expanded" coordinates.
+!    Output, real ( kind = fp ) W(2,N), the "expanded" coordinates.
 !
   implicit none
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angle_rad_2d
-  real ( kind = 8 ) h
-  real ( kind = 8 ) h2
+  real ( kind = fp ) angle
+  real ( kind = fp ) angle_rad_2d
+  real ( kind = fp ) h
+  real ( kind = fp ) h2
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) im1
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) v(dim_num,n)
-  real ( kind = 8 ) w(dim_num,n)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) v(dim_num,n)
+  real ( kind = fp ) w(dim_num,n)
 !
 !  Consider each angle, formed by the nodes P(I-1), P(I), P(I+1).
 !
@@ -19457,6 +19706,7 @@ subroutine polygon_expand_2d ( n, v, h, w )
   return
 end
 subroutine polygon_inrad_data_2d ( n, radin, area, radout, side )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19479,27 +19729,27 @@ subroutine polygon_inrad_data_2d ( n, radin, area, radout, side )
 !    Input, integer ( kind = 4 ) N, the number of sides of the polygon.
 !    N must be at least 3.
 !
-!    Input, real ( kind = 8 ) RADIN, the inner radius of the polygon, that is,
+!    Input, real ( kind = fp ) RADIN, the inner radius of the polygon, that is,
 !    the radius of the largest circle that can be inscribed within
 !    the polygon.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the regular polygon.
+!    Output, real ( kind = fp ) AREA, the area of the regular polygon.
 !
-!    Output, real ( kind = 8 ) RADOUT, the outer radius of the polygon, that is,
+!    Output, real ( kind = fp ) RADOUT, the outer radius of the polygon, that is,
 !    the radius of the smallest circle that can be described about
 !    the polygon.
 !
-!    Output, real ( kind = 8 ) SIDE, the length of one side of the polygon.
+!    Output, real ( kind = fp ) SIDE, the length of one side of the polygon.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) area
+  real ( kind = fp ) angle
+  real ( kind = fp ) area
   integer ( kind = 4 ) n
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radin
-  real ( kind = 8 ) radout
-  real ( kind = 8 ) side
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radin
+  real ( kind = fp ) radout
+  real ( kind = fp ) side
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -19511,12 +19761,13 @@ subroutine polygon_inrad_data_2d ( n, radin, area, radout, side )
 
   angle = r8_pi / real ( n, kind = 8 )
   area = real ( n, kind = 8 ) * radin * radin * tan ( angle )
-  side = 2.0D+00 * radin * tan ( angle )
-  radout = 0.5D+00 * side / sin ( angle )
+  side = 2.0_fp * radin * tan ( angle )
+  radout = 0.5_fp * side / sin ( angle )
 
   return
 end
 function polygon_is_convex_2d ( n, v )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19555,7 +19806,7 @@ function polygon_is_convex_2d ( n, v )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices.
 !
-!    Input/output, real ( kind = 8 ) V(2,N), the coordinates of the vertices 
+!    Input/output, real ( kind = fp ) V(2,N), the coordinates of the vertices 
 !    of the polygon.  On output, duplicate consecutive points have been 
 !    deleted, and the vertices have been reordered so that the 
 !    lexicographically least point comes first.
@@ -19568,29 +19819,29 @@ function polygon_is_convex_2d ( n, v )
 !
   implicit none
 
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ), parameter :: RAD_TO_DEG = 180.0D+00 / r8_pi
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ), parameter :: RAD_TO_DEG = 180.0_fp / r8_pi
 
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle
+  real ( kind = fp ) angle
   integer ( kind = 4 ), parameter :: CONVEX_CCW = 1
   integer ( kind = 4 ), parameter :: CONVEX_CW = 2
-  real ( kind = 8 ) cross
+  real ( kind = fp ) cross
   integer ( kind = 4 ), parameter :: DEGENERATE_CONVEX = 0
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) exterior_total
+  real ( kind = fp ) dot
+  real ( kind = fp ) exterior_total
   integer ( kind = 4 ) i
   integer ( kind = 4 ) ip1
   integer ( kind = 4 ) ip2
   integer ( kind = 4 ), parameter :: NOT_CONVEX = -1
   integer ( kind = 4 ) polygon_is_convex_2d
-  real ( kind = 8 ) sense
-  real ( kind = 8 ), parameter :: tol = 1.0D+00
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) sense
+  real ( kind = fp ), parameter :: tol = 1.0_fp
+  real ( kind = fp ) v(dim_num,n)
 
-  exterior_total = 0.0D+00
+  exterior_total = 0.0_fp
 !
 !  If there are not at least 3 distinct vertices, we are done.
 !
@@ -19599,7 +19850,7 @@ function polygon_is_convex_2d ( n, v )
     return
   end if
 
-  sense = 0.0D+00
+  sense = 0.0_fp
 !
 !  Consider each polygonal vertex I.
 !
@@ -19627,24 +19878,24 @@ function polygon_is_convex_2d ( n, v )
 !  the "sense" of the polygon, or if it disagrees with the previously
 !  defined sense.
 !
-    if ( sense == 0.0D+00 ) then
+    if ( sense == 0.0_fp ) then
 
-      if ( angle < 0.0D+00 ) then
-        sense = -1.0D+00
-      else if ( 0.0D+00 < angle ) then
-        sense = +1.0D+00
+      if ( angle < 0.0_fp ) then
+        sense = -1.0_fp
+      else if ( 0.0_fp < angle ) then
+        sense = +1.0_fp
       end if
 
-    else if ( sense == 1.0D+00 ) then
+    else if ( sense == 1.0_fp ) then
 
-      if ( angle < 0.0D+00 ) then
+      if ( angle < 0.0_fp ) then
         polygon_is_convex_2d = NOT_CONVEX
         return
       end if
 
-    else if ( sense == -1.0D+00 ) then
+    else if ( sense == -1.0_fp ) then
 
-      if ( 0.0D+00 < angle ) then
+      if ( 0.0_fp < angle ) then
         polygon_is_convex_2d = NOT_CONVEX
         return
       end if
@@ -19658,22 +19909,23 @@ function polygon_is_convex_2d ( n, v )
 
     exterior_total = exterior_total + angle
 
-    if ( 360.0D+00 + tol < abs ( exterior_total ) * RAD_TO_DEG ) then
+    if ( 360.0_fp + tol < abs ( exterior_total ) * RAD_TO_DEG ) then
       polygon_is_convex_2d = NOT_CONVEX
       return
     end if
 
   end do
 
-  if ( sense == +1.0D+00 ) then
+  if ( sense == +1.0_fp ) then
     polygon_is_convex_2d = CONVEX_CCW
-  else if ( sense == -1.0D+00 ) then
+  else if ( sense == -1.0_fp ) then
     polygon_is_convex_2d = CONVEX_CW
   end if
 
   return
 end
 subroutine polygon_lattice_area_2d ( i, b, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19722,19 +19974,20 @@ subroutine polygon_lattice_area_2d ( i, b, area )
 !
 !    Input, integer ( kind = 4 ) B, the number of boundary lattice points.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the lattice polygon.
+!    Output, real ( kind = fp ) AREA, the area of the lattice polygon.
 !
   implicit none
 
-  real ( kind = 8 ) area
+  real ( kind = fp ) area
   integer ( kind = 4 ) b
   integer ( kind = 4 ) i
 
-  area = real ( i, kind = 8 ) + real ( b, kind = 8 ) / 2.0D+00 - 1.0D+00
+  area = real ( i, kind = 8 ) + real ( b, kind = 8 ) / 2.0_fp - 1.0_fp
 
   return
 end
 subroutine polygon_normal_3d ( n, v, normal ) 
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19778,9 +20031,9 @@ subroutine polygon_normal_3d ( n, v, normal )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices.
 !
-!    Input, real ( kind = 8 ) V(3,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(3,N), the coordinates of the vertices.
 !
-!    Output, real ( kind = 8 ) NORMAL(3), the averaged normal vector
+!    Output, real ( kind = fp ) NORMAL(3), the averaged normal vector
 !    to the polygon. 
 !
   implicit none
@@ -19788,16 +20041,16 @@ subroutine polygon_normal_3d ( n, v, normal )
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) r8vec_norm
+  real ( kind = fp ) r8vec_norm
   integer ( kind = 4 ) j
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) normal_norm
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) v(dim_num,n)
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) normal_norm
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) v(dim_num,n)
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 
-  normal(1:dim_num) = 0.0D+00
+  normal(1:dim_num) = 0.0_fp
 
   v1(1:dim_num) = v(1:dim_num,2) - v(1:dim_num,1)
 
@@ -19817,7 +20070,7 @@ subroutine polygon_normal_3d ( n, v, normal )
 !
   normal_norm = r8vec_norm ( dim_num, normal )
 
-  if ( normal_norm == 0.0D+00 ) then
+  if ( normal_norm == 0.0_fp ) then
     return
   end if
 
@@ -19826,6 +20079,7 @@ subroutine polygon_normal_3d ( n, v, normal )
   return
 end
 subroutine polygon_outrad_data_2d ( n, radout, area, radin, side )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19848,27 +20102,27 @@ subroutine polygon_outrad_data_2d ( n, radout, area, radin, side )
 !    Input, integer ( kind = 4 ) N, the number of sides of the polygon.
 !    N must be at least 3.
 !
-!    Input, real ( kind = 8 ) RADOUT, the outer radius of the polygon, that is,
+!    Input, real ( kind = fp ) RADOUT, the outer radius of the polygon, that is,
 !    the radius of the smallest circle that can be described
 !    around the polygon.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the regular polygon.
+!    Output, real ( kind = fp ) AREA, the area of the regular polygon.
 !
-!    Output, real ( kind = 8 ) RADIN, the inner radius of the polygon, that is,
+!    Output, real ( kind = fp ) RADIN, the inner radius of the polygon, that is,
 !    the radius of the largest circle that can be inscribed
 !    within the polygon.
 !
-!    Output, real ( kind = 8 ) SIDE, the length of one side of the polygon.
+!    Output, real ( kind = fp ) SIDE, the length of one side of the polygon.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) area
+  real ( kind = fp ) angle
+  real ( kind = fp ) area
   integer ( kind = 4 ) n
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radin
-  real ( kind = 8 ) radout
-  real ( kind = 8 ) side
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radin
+  real ( kind = fp ) radout
+  real ( kind = fp ) side
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -19879,14 +20133,15 @@ subroutine polygon_outrad_data_2d ( n, radout, area, radin, side )
   end if
 
   angle = r8_pi / real ( n, kind = 8 )
-  area = 0.5D+00 * real ( n, kind = 8 ) * radout * radout &
-    * sin ( 2.0D+00 * angle )
-  side = 2.0D+00 * radout * sin ( angle )
-  radin = 0.5D+00 * side / tan ( angle )
+  area = 0.5_fp * real ( n, kind = 8 ) * radout * radout &
+    * sin ( 2.0_fp * angle )
+  side = 2.0_fp * radout * sin ( angle )
+  radin = 0.5_fp * side / tan ( angle )
 
   return
 end
 subroutine polygon_point_dist_2d ( n, v, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19908,11 +20163,11 @@ subroutine polygon_point_dist_2d ( n, v, p, dist )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices.
 !
-!    Input, real ( kind = 8 ) V(2,N), the triangle vertices.
+!    Input, real ( kind = fp ) V(2,N), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    polygon.
 !
   implicit none
@@ -19920,13 +20175,13 @@ subroutine polygon_point_dist_2d ( n, v, p, dist )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) v(dim_num,n)
 !
 !  Find the distance to each of the line segments.
 !
@@ -19947,6 +20202,7 @@ subroutine polygon_point_dist_2d ( n, v, p, dist )
   return
 end
 subroutine polygon_point_near_2d ( n, v, p, pn, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -19966,14 +20222,14 @@ subroutine polygon_point_near_2d ( n, v, p, pn, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V(2,N), the polygon vertices.
+!    Input, real ( kind = fp ) V(2,N), the polygon vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose nearest polygon point
+!    Input, real ( kind = fp ) P(2), the point whose nearest polygon point
 !    is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(2), the nearest point to P.
+!    Output, real ( kind = fp ) PN(2), the nearest point to P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    polygon.
 !
   implicit none
@@ -19981,22 +20237,22 @@ subroutine polygon_point_near_2d ( n, v, p, pn, dist )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) pn2(dim_num)
-  real ( kind = 8 ) tval
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) pn2(dim_num)
+  real ( kind = fp ) tval
+  real ( kind = fp ) v(dim_num,n)
 !
 !  Find the distance to each of the line segments that make up the edges
 !  of the polygon.
 !
   dist = huge ( dist )
-  pn(1:dim_num) = 0.0D+00
+  pn(1:dim_num) = 0.0_fp
 
   do j = 1, n
 
@@ -20015,6 +20271,7 @@ subroutine polygon_point_near_2d ( n, v, p, pn, dist )
   return
 end
 subroutine polygon_side_data_2d ( n, side, area, radin, radout )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20037,27 +20294,27 @@ subroutine polygon_side_data_2d ( n, side, area, radin, radout )
 !    Input, integer ( kind = 4 ) N, the number of sides of the polygon.
 !    N must be at least 3.
 !
-!    Input, real ( kind = 8 ) SIDE, the length of one side of the polygon.
+!    Input, real ( kind = fp ) SIDE, the length of one side of the polygon.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the regular polygon.
+!    Output, real ( kind = fp ) AREA, the area of the regular polygon.
 !
-!    Output, real ( kind = 8 ) RADIN, the inner radius of the polygon, that is,
+!    Output, real ( kind = fp ) RADIN, the inner radius of the polygon, that is,
 !    the radius of the largest circle that can be inscribed within
 !    the polygon.
 !
-!    Output, real ( kind = 8 ) RADOUT, the outer radius of the polygon, that is,
+!    Output, real ( kind = fp ) RADOUT, the outer radius of the polygon, that is,
 !    the radius of the smallest circle that can be described about
 !    the polygon.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) area
+  real ( kind = fp ) angle
+  real ( kind = fp ) area
   integer ( kind = 4 ) n
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radin
-  real ( kind = 8 ) radout
-  real ( kind = 8 ) side
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radin
+  real ( kind = fp ) radout
+  real ( kind = fp ) side
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -20068,13 +20325,14 @@ subroutine polygon_side_data_2d ( n, side, area, radin, radout )
   end if
 
   angle = r8_pi / real ( n, kind = 8 )
-  area = 0.25D+00 * real ( n, kind = 8 ) * side * side / tan ( angle )
-  radin = 0.5D+00 * side / tan ( angle )
-  radout = 0.5D+00 * side / sin ( angle )
+  area = 0.25_fp * real ( n, kind = 8 ) * side * side / tan ( angle )
+  radin = 0.5_fp * side / tan ( angle )
+  radout = 0.5_fp * side / sin ( angle )
 
   return
 end
 subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20128,9 +20386,9 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices.
 !
-!    Input, real ( kind = 8 ) V(3,N), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(3,N), the coordinates of the vertices.
 !
-!    Input, real ( kind = 8 ) P(3), the point at the center of the unit sphere.
+!    Input, real ( kind = fp ) P(3), the point at the center of the unit sphere.
 !
 !    Output, double SOLID_ANGLE, the solid angle subtended
 !    by the polygon, as projected onto the unit sphere around the point P.
@@ -20140,30 +20398,30 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(dim_num)
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) area
-  real ( kind = 8 ) b(dim_num)
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) r8vec_scalar_triple_product
+  real ( kind = fp ) a(dim_num)
+  real ( kind = fp ) angle
+  real ( kind = fp ) area
+  real ( kind = fp ) b(dim_num)
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) r8vec_scalar_triple_product
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) normal1(dim_num)
-  real ( kind = 8 ) normal1_norm
-  real ( kind = 8 ) normal2(dim_num)
-  real ( kind = 8 ) normal2_norm
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) plane(dim_num)
-  real ( kind = 8 ) r1(dim_num)
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) s
-  real ( kind = 8 ) solid_angle
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) normal1(dim_num)
+  real ( kind = fp ) normal1_norm
+  real ( kind = fp ) normal2(dim_num)
+  real ( kind = fp ) normal2_norm
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) plane(dim_num)
+  real ( kind = fp ) r1(dim_num)
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) s
+  real ( kind = fp ) solid_angle
+  real ( kind = fp ) v(dim_num,n)
 
   if ( n < 3 ) then
-    solid_angle = 0.0D+00
+    solid_angle = 0.0_fp
     return
   end if
 
@@ -20171,7 +20429,7 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
  
   a(1:dim_num) = v(1:dim_num,n) - v(1:dim_num,1)
 
-  area = 0.0D+00
+  area = 0.0_fp
 
   do j = 1, n
 
@@ -20196,7 +20454,7 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
 
     s = r8vec_scalar_triple_product ( b, a, plane )
 
-    if ( 0.0D+00 < s ) then
+    if ( 0.0_fp < s ) then
       area = area + r8_pi - angle
     else
       area = area + r8_pi + angle
@@ -20208,7 +20466,7 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
 
   area = area - r8_pi * real ( n - 2, kind = 8 )
 
-  if ( 0.0D+00 < dot_product ( plane(1:dim_num), r1(1:dim_num) ) ) then
+  if ( 0.0_fp < dot_product ( plane(1:dim_num), r1(1:dim_num) ) ) then
     solid_angle = -area
   else
     solid_angle = area
@@ -20217,6 +20475,7 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
   return
 end
 subroutine polygon_x_2d ( n, v, result )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20255,10 +20514,10 @@ subroutine polygon_x_2d ( n, v, result )
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !    N should be at least 3 for a nonzero result.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices
 !    of the polygon.  These vertices should be given in counter clockwise order.
 !
-!    Output, real ( kind = 8 ) RESULT, the value of the integral.
+!    Output, real ( kind = fp ) RESULT, the value of the integral.
 !
   implicit none
 
@@ -20267,10 +20526,10 @@ subroutine polygon_x_2d ( n, v, result )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) im1
-  real ( kind = 8 ) result
-  real ( kind = 8 ) v(2,n)
+  real ( kind = fp ) result
+  real ( kind = fp ) v(2,n)
 
-  result = 0.0D+00
+  result = 0.0_fp
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -20293,11 +20552,12 @@ subroutine polygon_x_2d ( n, v, result )
 
   end do
 
-  result = result / 6.0D+00
+  result = result / 6.0_fp
 
   return
 end
 subroutine polygon_xx_2d ( n, v, result )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20337,11 +20597,11 @@ subroutine polygon_xx_2d ( n, v, result )
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !    N should be at least 3 for a nonzero result.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices
 !    of the polygon.  These vertices should be given in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) RESULT, the value of the integral.
+!    Output, real ( kind = fp ) RESULT, the value of the integral.
 !
   implicit none
 
@@ -20350,10 +20610,10 @@ subroutine polygon_xx_2d ( n, v, result )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) im1
-  real ( kind = 8 ) result
-  real ( kind = 8 ) v(2,n)
+  real ( kind = fp ) result
+  real ( kind = fp ) v(2,n)
 
-  result = 0.0D+00
+  result = 0.0_fp
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -20376,11 +20636,12 @@ subroutine polygon_xx_2d ( n, v, result )
 
   end do
 
-  result = result / 12.0D+00
+  result = result / 12.0_fp
 
   return
 end
 subroutine polygon_xy_2d ( n, v, result )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20421,11 +20682,11 @@ subroutine polygon_xy_2d ( n, v, result )
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !    N should be at least 3 for a nonzero result.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices
 !    of the polygon.  These vertices should be given in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) RESULT, the value of the integral.
+!    Output, real ( kind = fp ) RESULT, the value of the integral.
 !
   implicit none
 
@@ -20434,10 +20695,10 @@ subroutine polygon_xy_2d ( n, v, result )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) im1
-  real ( kind = 8 ) result
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) result
+  real ( kind = fp ) v(dim_num,n)
 
-  result = 0.0D+00
+  result = 0.0_fp
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -20456,17 +20717,18 @@ subroutine polygon_xy_2d ( n, v, result )
     end if
 
     result = result + ( &
-      v(2,i) * ( 3.0D+00 * v(1,i)**2 + 2.0D+00 * v(1,i) * v(1,im1) &
-      + v(1,im1)**2 ) + v(2,im1) * ( v(1,i)**2 + 2.0D+00 * v(1,i) * v(1,im1) &
-      + 3.0D+00 * v(1,im1)**2 ) ) * ( v(2,i) - v(2,im1) )
+      v(2,i) * ( 3.0_fp * v(1,i)**2 + 2.0_fp * v(1,i) * v(1,im1) &
+      + v(1,im1)**2 ) + v(2,im1) * ( v(1,i)**2 + 2.0_fp * v(1,i) * v(1,im1) &
+      + 3.0_fp * v(1,im1)**2 ) ) * ( v(2,i) - v(2,im1) )
 
   end do
 
-  result = result / 24.0D+00
+  result = result / 24.0_fp
 
   return
 end
 subroutine polygon_y_2d ( n, v, result )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20505,11 +20767,11 @@ subroutine polygon_y_2d ( n, v, result )
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !    N should be at least 3 for a nonzero result.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices
 !    of the polygon.  These vertices should be given in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) RESULT, the value of the integral.
+!    Output, real ( kind = fp ) RESULT, the value of the integral.
 !
   implicit none
 
@@ -20518,10 +20780,10 @@ subroutine polygon_y_2d ( n, v, result )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) im1
-  real ( kind = 8 ) result
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) result
+  real ( kind = fp ) v(dim_num,n)
 
-  result = 0.0D+00
+  result = 0.0_fp
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -20544,11 +20806,12 @@ subroutine polygon_y_2d ( n, v, result )
 
   end do
 
-  result = result / 6.0D+00
+  result = result / 6.0_fp
 
   return
 end
 subroutine polygon_yy_2d ( n, v, result )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20588,11 +20851,11 @@ subroutine polygon_yy_2d ( n, v, result )
 !    Input, integer ( kind = 4 ) N, the number of vertices of the polygon.
 !    N should be at least 3 for a nonzero result.
 !
-!    Input, real ( kind = 8 ) V(2,N), the coordinates of the vertices
+!    Input, real ( kind = fp ) V(2,N), the coordinates of the vertices
 !    of the polygon.  These vertices should be given in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) RESULT, the value of the integral.
+!    Output, real ( kind = fp ) RESULT, the value of the integral.
 !
   implicit none
 
@@ -20601,10 +20864,10 @@ subroutine polygon_yy_2d ( n, v, result )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) im1
-  real ( kind = 8 ) result
-  real ( kind = 8 ) v(dim_num,n)
+  real ( kind = fp ) result
+  real ( kind = fp ) v(dim_num,n)
 
-  result = 0.0D+00
+  result = 0.0_fp
 
   if ( n < 3 ) then
     write ( *, '(a)' ) ' '
@@ -20627,12 +20890,13 @@ subroutine polygon_yy_2d ( n, v, result )
 
   end do
 
-  result = result / 12.0D+00
+  result = result / 12.0_fp
 
   return
 end
 subroutine polyhedron_area_3d ( coord, order_max, face_num, node, &
   node_num, order, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20665,7 +20929,7 @@ subroutine polyhedron_area_3d ( coord, order_max, face_num, node, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) COORD(3,NODE_NUM), the coordinates of the
+!    Input, real ( kind = fp ) COORD(3,NODE_NUM), the coordinates of the
 !    vertices.  The vertices may be listed in any order.
 !
 !    Input, integer ( kind = 4 ) ORDER_MAX, the maximum number of vertices 
@@ -20683,7 +20947,7 @@ subroutine polyhedron_area_3d ( coord, order_max, face_num, node, &
 !    Input, integer ( kind = 4 ) ORDER(FACE_NUM), the number of vertices 
 !    making up each face.
 !
-!    Output, real ( kind = 8 ) AREA, the total surface area of the polyhedron.
+!    Output, real ( kind = fp ) AREA, the total surface area of the polyhedron.
 !
   implicit none
 
@@ -20692,24 +20956,24 @@ subroutine polyhedron_area_3d ( coord, order_max, face_num, node, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) node_num
 
-  real ( kind = 8 ) ainc
-  real ( kind = 8 ) area
-  real ( kind = 8 ) coord(dim_num,node_num)
+  real ( kind = fp ) ainc
+  real ( kind = fp ) area
+  real ( kind = fp ) coord(dim_num,node_num)
   integer ( kind = 4 ) face
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k1
   integer ( kind = 4 ) k2
   integer ( kind = 4 ) node(face_num,order_max)
   integer ( kind = 4 ) order(face_num)
-  real ( kind = 8 ) v(dim_num)
+  real ( kind = fp ) v(dim_num)
 
-  area = 0.0D+00
+  area = 0.0_fp
 !
 !  For each face
 !
   do face = 1, face_num
 
-    v(1:dim_num) = 0.0D+00
+    v(1:dim_num) = 0.0_fp
 !
 !  For each triangle in the face, compute the normal vector.
 !
@@ -20738,12 +21002,13 @@ subroutine polyhedron_area_3d ( coord, order_max, face_num, node, &
 
   end do
 
-  area = 0.5D+00 * area
+  area = 0.5_fp * area
 
   return
 end
 subroutine polyhedron_centroid_3d ( coord, order_max, face_num, node, &
   node_num, order, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20770,7 +21035,7 @@ subroutine polyhedron_centroid_3d ( coord, order_max, face_num, node, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) COORD(3,NODE_NUM), the vertices.
+!    Input, real ( kind = fp ) COORD(3,NODE_NUM), the vertices.
 !    The vertices may be listed in any order.
 !
 !    Input, integer ( kind = 4 ) ORDER_MAX, the maximum number of vertices 
@@ -20788,7 +21053,7 @@ subroutine polyhedron_centroid_3d ( coord, order_max, face_num, node, &
 !    Input, integer ( kind = 4 ) ORDER(FACE_NUM), the number of vertices making 
 !    up each face.
 !
-!    Output, real ( kind = 8 ) CENTROID(3), the centroid of the polyhedron.
+!    Output, real ( kind = fp ) CENTROID(3), the centroid of the polyhedron.
 !
   implicit none
 
@@ -20797,32 +21062,32 @@ subroutine polyhedron_centroid_3d ( coord, order_max, face_num, node, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) node_num
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) centroid(dim_num)
-  real ( kind = 8 ) coord(dim_num,node_num)
+  real ( kind = fp ) area
+  real ( kind = fp ) centroid(dim_num)
+  real ( kind = fp ) coord(dim_num,node_num)
   integer ( kind = 4 ) face
   integer ( kind = 4 ) n1
   integer ( kind = 4 ) n2
   integer ( kind = 4 ) n3
   integer ( kind = 4 ) node(face_num,order_max)
-  real ( kind = 8 ) normal(dim_num)
+  real ( kind = fp ) normal(dim_num)
   integer ( kind = 4 ) order(face_num)
-  real ( kind = 8 ) point(dim_num)
-  real ( kind = 8 ) polygon_area
-  real ( kind = 8 ) polygon_centroid(dim_num)
-  real ( kind = 8 ) tetra(dim_num,4)
-  real ( kind = 8 ) tetra_centroid(dim_num)
-  real ( kind = 8 ) tetra_volume
+  real ( kind = fp ) point(dim_num)
+  real ( kind = fp ) polygon_area
+  real ( kind = fp ) polygon_centroid(dim_num)
+  real ( kind = fp ) tetra(dim_num,4)
+  real ( kind = fp ) tetra_centroid(dim_num)
+  real ( kind = fp ) tetra_volume
   integer ( kind = 4 ) vert
   integer ( kind = 4 ) vert_num
-  real ( kind = 8 ) volume
-  real ( kind = 8 ) v(dim_num,order_max)
+  real ( kind = fp ) volume
+  real ( kind = fp ) v(dim_num,order_max)
 !
 !  Compute a point in the interior.
 !  We take the area-weighted centroid of each face.
 !
-  point(1:dim_num) = 0.0D+00
-  area = 0.0D+00
+  point(1:dim_num) = 0.0_fp
+  area = 0.0_fp
 
   do face = 1, face_num
 
@@ -20846,8 +21111,8 @@ subroutine polyhedron_centroid_3d ( coord, order_max, face_num, node, &
 !  Now triangulate each face.
 !  For each triangle, consider the tetrahedron created by including POINT.
 !
-  centroid(1:dim_num) = 0.0D+00
-  volume = 0.0D+00
+  centroid(1:dim_num) = 0.0_fp
+  volume = 0.0_fp
 
   do face = 1, face_num
 
@@ -20880,6 +21145,7 @@ subroutine polyhedron_centroid_3d ( coord, order_max, face_num, node, &
 end
 subroutine polyhedron_contains_point_3d ( node_num, face_num, &
   face_order_max, v, face_order, face_point, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -20923,14 +21189,14 @@ subroutine polyhedron_contains_point_3d ( node_num, face_num, &
 !
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum order of any face.
 !
-!    Input, real ( kind = 8 ) V(3,NODE_NUM), the coordinates of the vertices.
+!    Input, real ( kind = fp ) V(3,NODE_NUM), the coordinates of the vertices.
 !
 !    Input, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the order of each face.
 !
 !    Input, integer ( kind = 4 ) FACE_POINT(FACE_ORDER_MAX,FACE_NUM), the 
 !    indices of the nodes that make up each face.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be tested.
+!    Input, real ( kind = fp ) P(3), the point to be tested.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is true if the point 
 !    is inside the polyhedron.
@@ -20942,7 +21208,7 @@ subroutine polyhedron_contains_point_3d ( node_num, face_num, &
   integer ( kind = 4 ) face_order_max
   integer ( kind = 4 ) node_num
 
-  real ( kind = 8 ) area
+  real ( kind = fp ) area
   integer ( kind = 4 ) face
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
@@ -20950,13 +21216,13 @@ subroutine polyhedron_contains_point_3d ( node_num, face_num, &
   integer ( kind = 4 ) k
   integer ( kind = 4 ) node
   integer ( kind = 4 ) node_num_face
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) solid_angle
-  real ( kind = 8 ) v(dim_num,node_num)
-  real ( kind = 8 ) v_face(dim_num,face_order_max)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) solid_angle
+  real ( kind = fp ) v(dim_num,node_num)
+  real ( kind = fp ) v_face(dim_num,face_order_max)
 
-  area = 0.0D+00
+  area = 0.0_fp
 
   do face = 1, face_num
 
@@ -20979,7 +21245,7 @@ subroutine polyhedron_contains_point_3d ( node_num, face_num, &
 !  AREA should be -4*PI, 0, or 4*PI.
 !  So this test should be quite safe!
 !
-  if ( area < -2.0D+00 * r8_pi .or. 2.0D+00 * r8_pi < area ) then
+  if ( area < -2.0_fp * r8_pi .or. 2.0_fp * r8_pi < area ) then
     inside = .true.
   else
     inside = .false.
@@ -20989,6 +21255,7 @@ subroutine polyhedron_contains_point_3d ( node_num, face_num, &
 end
 subroutine polyhedron_volume_3d ( coord, order_max, face_num, node, &
   node_num, order, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21008,7 +21275,7 @@ subroutine polyhedron_volume_3d ( coord, order_max, face_num, node, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) COORD(3,NODE_NUM), the coordinates of 
+!    Input, real ( kind = fp ) COORD(3,NODE_NUM), the coordinates of 
 !    the vertices.  The vertices may be listed in any order.
 !
 !    Input, integer ( kind = 4 ) ORDER_MAX, the maximum number of vertices 
@@ -21026,7 +21293,7 @@ subroutine polyhedron_volume_3d ( coord, order_max, face_num, node, &
 !    Input, integer ( kind = 4 ) ORDER(FACE_NUM), the number of vertices making 
 !    up each face.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the polyhedron.
+!    Output, real ( kind = fp ) VOLUME, the volume of the polyhedron.
 !
   implicit none
 
@@ -21035,7 +21302,7 @@ subroutine polyhedron_volume_3d ( coord, order_max, face_num, node, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) node_num
 
-  real ( kind = 8 ) coord(dim_num,node_num)
+  real ( kind = fp ) coord(dim_num,node_num)
   integer ( kind = 4 ) face
   integer ( kind = 4 ) n1
   integer ( kind = 4 ) n2
@@ -21043,9 +21310,9 @@ subroutine polyhedron_volume_3d ( coord, order_max, face_num, node, &
   integer ( kind = 4 ) node(face_num,order_max)
   integer ( kind = 4 ) order(face_num)
   integer ( kind = 4 ) v
-  real ( kind = 8 ) volume
+  real ( kind = fp ) volume
 
-  volume = 0.0D+00
+  volume = 0.0_fp
 !
 !  Triangulate each face.
 !
@@ -21070,12 +21337,13 @@ subroutine polyhedron_volume_3d ( coord, order_max, face_num, node, &
 
   end do
 
-  volume = volume / 6.0D+00
+  volume = volume / 6.0_fp
 
   return
 end
 subroutine polyhedron_volume_3d_2 ( coord, order_max, face_num, node, &
   node_num, order, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21108,7 +21376,7 @@ subroutine polyhedron_volume_3d_2 ( coord, order_max, face_num, node, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) COORD(3,NODE_NUM), the vertices.
+!    Input, real ( kind = fp ) COORD(3,NODE_NUM), the vertices.
 !    The vertices may be listed in any order.
 !
 !    Input, integer ( kind = 4 ) ORDER_MAX, the maximum number of vertices 
@@ -21126,7 +21394,7 @@ subroutine polyhedron_volume_3d_2 ( coord, order_max, face_num, node, &
 !    Input, integer ( kind = 4 ) ORDER(FACE_NUM), the number of vertices making 
 !    up each face.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the polyhedron.
+!    Output, real ( kind = fp ) VOLUME, the volume of the polyhedron.
 !
   implicit none
 
@@ -21135,23 +21403,23 @@ subroutine polyhedron_volume_3d_2 ( coord, order_max, face_num, node, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) node_num
 
-  real ( kind = 8 ) coord(dim_num,node_num)
+  real ( kind = fp ) coord(dim_num,node_num)
   integer ( kind = 4 ) face
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) k1
   integer ( kind = 4 ) k2
   integer ( kind = 4 ) node(face_num,order_max)
-  real ( kind = 8 ) normal(dim_num)
+  real ( kind = fp ) normal(dim_num)
   integer ( kind = 4 ) order(face_num)
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) volume
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) volume
 
-  volume = 0.0D+00
+  volume = 0.0_fp
 
   do face = 1, face_num
 
-    v(1:dim_num) = 0.0D+00
+    v(1:dim_num) = 0.0_fp
 !
 !  Compute the area vector for this face.
 !
@@ -21182,11 +21450,12 @@ subroutine polyhedron_volume_3d_2 ( coord, order_max, face_num, node, &
 
   end do
 
-  volume = volume / 6.0D+00
+  volume = volume / 6.0_fp
 
   return
 end
 subroutine polyline_arclength_nd ( dim_num, n, p, s )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21220,9 +21489,9 @@ subroutine polyline_arclength_nd ( dim_num, n, p, s )
 !
 !    Input, integer ( kind = 4 ) N, the number of points defining the polyline.
 !
-!    Input, real ( kind = 8 ) P(DIM_NUM,N), the points defining the polyline.
+!    Input, real ( kind = fp ) P(DIM_NUM,N), the points defining the polyline.
 !
-!    Output, real ( kind = 8 ) S(N), the arclength coordinates
+!    Output, real ( kind = fp ) S(N), the arclength coordinates
 !    of each point.  The first point has S(1) = 0 and the 
 !    last point has S(N) = arclength of the entire polyline.
 !
@@ -21232,10 +21501,10 @@ subroutine polyline_arclength_nd ( dim_num, n, p, s )
   integer ( kind = 4 ) n
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) s(n)
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) s(n)
 
-  s(1) = 0.0D+00
+  s(1) = 0.0_fp
 
   do i = 2, n
 
@@ -21246,6 +21515,7 @@ subroutine polyline_arclength_nd ( dim_num, n, p, s )
   return
 end
 subroutine polyline_index_point_nd ( dim_num, n, p, t, pt )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21286,11 +21556,11 @@ subroutine polyline_index_point_nd ( dim_num, n, p, t, pt )
 !
 !    Input, integer ( kind = 4 ) N, the number of points defining the polyline.
 !
-!    Input, real ( kind = 8 ) P(DIM_NUM,N), the points defining the polyline.
+!    Input, real ( kind = fp ) P(DIM_NUM,N), the points defining the polyline.
 !
-!    Input, real ( kind = 8 ) T, the desired arclength coordinate.
+!    Input, real ( kind = fp ) T, the desired arclength coordinate.
 !
-!    Output, real ( kind = 8 ) PT(DIM_NUM), the point corresponding to the
+!    Output, real ( kind = fp ) PT(DIM_NUM), the point corresponding to the
 !    arclength.
 !
   implicit none
@@ -21299,11 +21569,11 @@ subroutine polyline_index_point_nd ( dim_num, n, p, t, pt )
   integer ( kind = 4 ) dim_num
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pt(dim_num)
-  real ( kind = 8 ) t
-  real ( kind = 8 ) t1
-  real ( kind = 8 ) t2
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pt(dim_num)
+  real ( kind = fp ) t
+  real ( kind = fp ) t1
+  real ( kind = fp ) t2
 
   if ( n <= 0 ) then
     write ( *, '(a)' ) ' '
@@ -21319,7 +21589,7 @@ subroutine polyline_index_point_nd ( dim_num, n, p, t, pt )
 
   else
 
-    t2 = 0.0D+00
+    t2 = 0.0_fp
 
     do i = 1, n - 1
 !
@@ -21344,6 +21614,7 @@ subroutine polyline_index_point_nd ( dim_num, n, p, t, pt )
   return
 end
 subroutine polyline_length_nd ( dim_num, nk, pk, length )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21377,9 +21648,9 @@ subroutine polyline_length_nd ( dim_num, nk, pk, length )
 !
 !    Input, integer ( kind = 4 ) NK, the number of points defining the polyline.
 !
-!    Input, real ( kind = 8 ) PK(DIM_NUM,NK), the points defining the polyline.
+!    Input, real ( kind = fp ) PK(DIM_NUM,NK), the points defining the polyline.
 !
-!    Output, real ( kind = 8 ) LENGTH, the length of the polyline.
+!    Output, real ( kind = fp ) LENGTH, the length of the polyline.
 !
   implicit none
 
@@ -21387,10 +21658,10 @@ subroutine polyline_length_nd ( dim_num, nk, pk, length )
   integer ( kind = 4 ) nk
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) length
-  real ( kind = 8 ) pk(dim_num,nk)
+  real ( kind = fp ) length
+  real ( kind = fp ) pk(dim_num,nk)
 
-  length = 0.0D+00
+  length = 0.0_fp
 
   do i = 2, nk
 
@@ -21402,6 +21673,7 @@ subroutine polyline_length_nd ( dim_num, nk, pk, length )
   return
 end
 subroutine polyline_points_nd ( dim_num, n, p, nt, pt )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21435,11 +21707,11 @@ subroutine polyline_points_nd ( dim_num, n, p, nt, pt )
 !
 !    Input, integer ( kind = 4 ) N, the number of points defining the polyline.
 !
-!    Input, real ( kind = 8 ) P(DIM_NUM,N), the points defining the polyline.
+!    Input, real ( kind = fp ) P(DIM_NUM,N), the points defining the polyline.
 !
 !    Input, integer ( kind = 4 ) NT, the number of points to be sampled.
 !
-!    Output, real ( kind = 8 ) PT(DIM_NUM,NT), equally spaced points
+!    Output, real ( kind = fp ) PT(DIM_NUM,NT), equally spaced points
 !    on the polyline.
 !
   implicit none
@@ -21450,10 +21722,10 @@ subroutine polyline_points_nd ( dim_num, n, p, nt, pt )
 
   integer ( kind = 4 ) it
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pt(dim_num,nt)
-  real ( kind = 8 ) s(n)
-  real ( kind = 8 ) st
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pt(dim_num,nt)
+  real ( kind = fp ) s(n)
+  real ( kind = fp ) st
 
   call polyline_arclength_nd ( dim_num, n, p, s )
 
@@ -21461,7 +21733,7 @@ subroutine polyline_points_nd ( dim_num, n, p, nt, pt )
 
   do it = 1,  nt
 
-    st = ( real ( nt - it,     kind = 8 ) * 0.0D+00 + &
+    st = ( real ( nt - it,     kind = 8 ) * 0.0_fp + &
            real (      it - 1, kind = 8 ) * s(n) ) &
          / real ( nt      - 1, kind = 8 )
 
@@ -21488,6 +21760,7 @@ subroutine polyline_points_nd ( dim_num, n, p, nt, pt )
   return
 end
 subroutine polyloop_arclength_nd ( dim_num, nk, pk, sk )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21519,9 +21792,9 @@ subroutine polyloop_arclength_nd ( dim_num, nk, pk, sk )
 !
 !    Input, integer ( kind = 4 ) NK, the number of points defining the polyloop.
 !
-!    Input, real ( kind = 8 ) PK(DIM_NUM,NK), the points defining the polyloop.
+!    Input, real ( kind = fp ) PK(DIM_NUM,NK), the points defining the polyloop.
 !
-!    Output, real ( kind = 8 ) SK(NK+1), the arclength coordinates
+!    Output, real ( kind = fp ) SK(NK+1), the arclength coordinates
 !    of each point.  The first point has two arc length values,
 !    namely SK(1) = 0 and SK(NK+1) = LENGTH.
 !
@@ -21532,10 +21805,10 @@ subroutine polyloop_arclength_nd ( dim_num, nk, pk, sk )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  real ( kind = 8 ) pk(dim_num,nk)
-  real ( kind = 8 ) sk(nk+1)
+  real ( kind = fp ) pk(dim_num,nk)
+  real ( kind = fp ) sk(nk+1)
 
-  sk(1) = 0.0D+00
+  sk(1) = 0.0_fp
 
   do i = 2, nk + 1
 
@@ -21553,6 +21826,7 @@ subroutine polyloop_arclength_nd ( dim_num, nk, pk, sk )
   return
 end
 subroutine polyloop_length_nd ( dim_num, nk, pk, length )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21584,9 +21858,9 @@ subroutine polyloop_length_nd ( dim_num, nk, pk, length )
 !
 !    Input, integer ( kind = 4 ) NK, the number of points defining the polyloop.
 !
-!    Input, real ( kind = 8 ) PK(DIM_NUM,NK), the points defining the polyloop.
+!    Input, real ( kind = fp ) PK(DIM_NUM,NK), the points defining the polyloop.
 !
-!    Output, real ( kind = 8 ) LENGTH, the length of the polyloop.
+!    Output, real ( kind = fp ) LENGTH, the length of the polyloop.
 !
   implicit none
 
@@ -21595,10 +21869,10 @@ subroutine polyloop_length_nd ( dim_num, nk, pk, length )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  real ( kind = 8 ) length
-  real ( kind = 8 ) pk(dim_num,nk)
+  real ( kind = fp ) length
+  real ( kind = fp ) pk(dim_num,nk)
 
-  length = 0.0D+00
+  length = 0.0_fp
 
   do i = 2, nk + 1
 
@@ -21616,6 +21890,7 @@ subroutine polyloop_length_nd ( dim_num, nk, pk, length )
   return
 end
 subroutine polyloop_points_nd ( dim_num, nk, pk, nt, pt )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21645,11 +21920,11 @@ subroutine polyloop_points_nd ( dim_num, nk, pk, nt, pt )
 !
 !    Input, integer ( kind = 4 ) NK, the number of points defining the polyloop.
 !
-!    Input, real ( kind = 8 ) PK(DIM_NUM,NK), the points defining the polyloop.
+!    Input, real ( kind = fp ) PK(DIM_NUM,NK), the points defining the polyloop.
 !
 !    Input, integer ( kind = 4 ) NT, the number of points to be sampled.
 !
-!    Input, real ( kind = 8 ) PT(DIM_NUM,NT), equally spaced points
+!    Input, real ( kind = fp ) PT(DIM_NUM,NT), equally spaced points
 !    on the polyloop.
 !
   implicit none
@@ -21662,10 +21937,10 @@ subroutine polyloop_points_nd ( dim_num, nk, pk, nt, pt )
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) pk(dim_num,nk)
-  real ( kind = 8 ) pt(dim_num,nt)
-  real ( kind = 8 ) sk(nk+1)
-  real ( kind = 8 ) st
+  real ( kind = fp ) pk(dim_num,nk)
+  real ( kind = fp ) pt(dim_num,nt)
+  real ( kind = fp ) sk(nk+1)
+  real ( kind = fp ) st
 
   call polyloop_arclength_nd ( dim_num, nk, pk, sk )
 
@@ -21673,7 +21948,7 @@ subroutine polyloop_points_nd ( dim_num, nk, pk, nt, pt )
 
   do it = 1,  nt
 
-    st = ( real ( nt - it,     kind = 8 ) * 0.0D+00 + &
+    st = ( real ( nt - it,     kind = 8 ) * 0.0_fp + &
            real (      it - 1, kind = 8 ) * sk(nk+1) ) &
          / real ( nt      - 1, kind = 8 )
 
@@ -21702,6 +21977,7 @@ subroutine polyloop_points_nd ( dim_num, nk, pk, nt, pt )
   return
 end
 subroutine provec ( m, n, base, vecm, vecn, vecnm )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21725,17 +22001,17 @@ subroutine provec ( m, n, base, vecm, vecn, vecnm )
 !
 !    Input, integer ( kind = 4 ) N, the dimension of the lower order space.
 !
-!    Input, real ( kind = 8 ) BASE(M,N).  The columns of BASE contain
+!    Input, real ( kind = fp ) BASE(M,N).  The columns of BASE contain
 !    N vectors, each of length M, which form the basis for
 !    a space of dimension N.
 !
-!    Input, real ( kind = 8 ) VECM(M), is an M dimensional vector.
+!    Input, real ( kind = fp ) VECM(M), is an M dimensional vector.
 !
-!    Output, real ( kind = 8 ) VECN(N), the projection of VECM into the
+!    Output, real ( kind = fp ) VECN(N), the projection of VECM into the
 !    lower dimensional space.  These values represent
 !    coordinates in the lower order space.
 !
-!    Output, real ( kind = 8 ) VECNM(M), the projection of VECM into the
+!    Output, real ( kind = fp ) VECNM(M), the projection of VECM into the
 !    lower dimensional space, but using coordinates in
 !    the higher dimensional space.
 !
@@ -21744,13 +22020,13 @@ subroutine provec ( m, n, base, vecm, vecn, vecnm )
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) base(m,n)
+  real ( kind = fp ) base(m,n)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  real ( kind = 8 ) temp
-  real ( kind = 8 ) vecm(m)
-  real ( kind = 8 ) vecn(n)
-  real ( kind = 8 ) vecnm(m)
+  real ( kind = fp ) temp
+  real ( kind = fp ) vecm(m)
+  real ( kind = fp ) vecn(n)
+  real ( kind = fp ) vecnm(m)
 !
 !  For each vector, remove all projections onto previous vectors,
 !  and then normalize.  This should result in a matrix BASE
@@ -21768,7 +22044,7 @@ subroutine provec ( m, n, base, vecm, vecn, vecnm )
 
     temp = sqrt ( sum ( base(1:m,j)**2 ) )
 
-    if ( 0.0D+00 < temp ) then
+    if ( 0.0_fp < temp ) then
       base(1:m,j) = base(1:m,j) / temp
     end if
 
@@ -21791,6 +22067,7 @@ subroutine provec ( m, n, base, vecm, vecn, vecnm )
   return
 end
 subroutine pyramid_volume_3d ( h, s, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21810,22 +22087,23 @@ subroutine pyramid_volume_3d ( h, s, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) H, S, the height of the pyramid, and the 
+!    Input, real ( kind = fp ) H, S, the height of the pyramid, and the 
 !    length of one side of the square base.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the pyramid.
+!    Output, real ( kind = fp ) VOLUME, the volume of the pyramid.
 !
   implicit none
 
-  real ( kind = 8 ) h
-  real ( kind = 8 ) s
-  real ( kind = 8 ) volume
+  real ( kind = fp ) h
+  real ( kind = fp ) s
+  real ( kind = fp ) volume
 
-  volume = s * s * h / 3.0D+00
+  volume = s * s * h / 3.0_fp
 
   return
 end
 function pyramid01_volume ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21856,20 +22134,21 @@ function pyramid01_volume ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) VALUE, the volume of the pyramid.
+!    Output, real ( kind = fp ) VALUE, the volume of the pyramid.
 !
   implicit none
 
-  real ( kind = 8 ) pyramid01_volume
-  real ( kind = 8 ) volume
+  real ( kind = fp ) pyramid01_volume
+  real ( kind = fp ) volume
 
-  volume = 4.0D+00 / 3.0D+00
+  volume = 4.0_fp / 3.0_fp
 
   pyramid01_volume = volume
 
   return
 end
 subroutine quad_area_2d ( q, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21898,21 +22177,21 @@ subroutine quad_area_2d ( q, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(2,4), the vertices, specified in
+!    Input, real ( kind = fp ) Q(2,4), the vertices, specified in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the quadrilateral.
+!    Output, real ( kind = fp ) AREA, the area of the quadrilateral.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) area_triangle
-  real ( kind = 8 ) q(dim_num,4)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) area
+  real ( kind = fp ) area_triangle
+  real ( kind = fp ) q(dim_num,4)
+  real ( kind = fp ) t(dim_num,3)
 
-  area = 0.0D+00
+  area = 0.0_fp
 
   t(1:dim_num,1:3) = reshape ( (/ &
     q(1:2,1), q(1:2,2), q(1:2,3) /), (/ dim_num, 3 /) )
@@ -21931,6 +22210,7 @@ subroutine quad_area_2d ( q, area )
   return
 end
 subroutine quad_area2_2d ( q, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -21957,21 +22237,21 @@ subroutine quad_area2_2d ( q, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(2,4), the vertices, specified in
+!    Input, real ( kind = fp ) Q(2,4), the vertices, specified in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the quadrilateral.
+!    Output, real ( kind = fp ) AREA, the area of the quadrilateral.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) p(2,4)
-  real ( kind = 8 ) q(2,4)
+  real ( kind = fp ) area
+  real ( kind = fp ) p(2,4)
+  real ( kind = fp ) q(2,4)
 !
 !  Define a parallelogram by averaging consecutive vertices.
 !
-  p(1:2,1:3) = ( q(1:2,1:3) + q(1:2,2:4) ) / 2.0D+00
-  p(1:2,  4) = ( q(1:2,  4) + q(1:2,1  ) ) / 2.0D+00
+  p(1:2,1:3) = ( q(1:2,1:3) + q(1:2,2:4) ) / 2.0_fp
+  p(1:2,  4) = ( q(1:2,  4) + q(1:2,1  ) ) / 2.0_fp
 !
 !  Compute the area.
 !
@@ -21979,11 +22259,12 @@ subroutine quad_area2_2d ( q, area )
 !
 !  The quadrilateral's area is twice that of the parallelogram.
 !
-  area = 2.0D+00 * area
+  area = 2.0_fp * area
 
   return
 end
 subroutine quad_area_3d ( q, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22013,21 +22294,21 @@ subroutine quad_area_3d ( q, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(3,4), the vertices, specified in
+!    Input, real ( kind = fp ) Q(3,4), the vertices, specified in
 !    counter clockwise order.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the quadrilateral.
+!    Output, real ( kind = fp ) AREA, the area of the quadrilateral.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) p(3,4)
-  real ( kind = 8 ) q(3,4)
+  real ( kind = fp ) area
+  real ( kind = fp ) p(3,4)
+  real ( kind = fp ) q(3,4)
 !
 !  Define a parallelogram by averaging consecutive vertices.
 !
-  p(1:3,1:3) = ( q(1:3,1:3) + q(1:3,2:4) ) / 2.0D+00
-  p(1:3,  4) = ( q(1:3,  4) + q(1:3,1  ) ) / 2.0D+00
+  p(1:3,1:3) = ( q(1:3,1:3) + q(1:3,2:4) ) / 2.0_fp
+  p(1:3,  4) = ( q(1:3,  4) + q(1:3,1  ) ) / 2.0_fp
 !
 !  Compute the area.
 !
@@ -22035,11 +22316,12 @@ subroutine quad_area_3d ( q, area )
 !
 !  The quadrilateral's area is twice that of the parallelogram.
 !
-  area = 2.0D+00 * area
+  area = 2.0_fp * area
 
   return
 end
 subroutine quad_contains_point_2d ( q, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22063,9 +22345,9 @@ subroutine quad_contains_point_2d ( q, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(2,4), the vertices of the quadrilateral.
+!    Input, real ( kind = fp ) Q(2,4), the vertices of the quadrilateral.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is in the
 !    quadrilateral.
@@ -22074,12 +22356,12 @@ subroutine quad_contains_point_2d ( q, p, inside )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle_1
-  real ( kind = 8 ) angle_2
-  real ( kind = 8 ) angle_rad_2d
+  real ( kind = fp ) angle_1
+  real ( kind = fp ) angle_2
+  real ( kind = fp ) angle_rad_2d
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) q(dim_num,4)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) q(dim_num,4)
 !
 !  This will only handle convex quadrilaterals.
 !
@@ -22118,6 +22400,7 @@ subroutine quad_contains_point_2d ( q, p, inside )
   return
 end
 subroutine quad_convex_random ( seed, xy )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22147,7 +22430,7 @@ subroutine quad_convex_random ( seed, xy )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) XY(2,NODE_NUM), the coordinates of the 
+!    Output, real ( kind = fp ) XY(2,NODE_NUM), the coordinates of the 
 !    nodes of the quadrilateral, given in counterclockwise order.
 !
   implicit none
@@ -22158,8 +22441,8 @@ subroutine quad_convex_random ( seed, xy )
   integer ( kind = 4 ) hull_num
   integer ( kind = 4 ) j
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) xy(2,node_num)
-  real ( kind = 8 ) xy_random(2,node_num)
+  real ( kind = fp ) xy(2,node_num)
+  real ( kind = fp ) xy_random(2,node_num)
 
   do
 !
@@ -22189,6 +22472,7 @@ subroutine quad_convex_random ( seed, xy )
   return
 end
 subroutine quad_point_dist_2d ( q, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22212,11 +22496,11 @@ subroutine quad_point_dist_2d ( q, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(2,4), the quadrilateral vertices.
+!    Input, real ( kind = fp ) Q(2,4), the quadrilateral vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    quadrilateral.
 !
   implicit none
@@ -22224,13 +22508,13 @@ subroutine quad_point_dist_2d ( q, p, dist )
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: side_num = 4
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) q(dim_num,side_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) q(dim_num,side_num)
 !
 !  Find the distance to each of the line segments.
 !
@@ -22251,6 +22535,7 @@ subroutine quad_point_dist_2d ( q, p, dist )
   return
 end
 subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22282,11 +22567,11 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(2,4), the vertices of the quadrilateral.
+!    Input, real ( kind = fp ) Q(2,4), the vertices of the quadrilateral.
 !
-!    Input, real ( kind = 8 ) P(2), the point which is to be checked.
+!    Input, real ( kind = fp ) P(2), the point which is to be checked.
 !
-!    Output, real ( kind = 8 ) DIST_SIGNED, the signed distance from the 
+!    Output, real ( kind = fp ) DIST_SIGNED, the signed distance from the 
 !    point to the convex quadrilateral.  If DIST_SIGNED is
 !    0.0, the point is on the boundary;
 !    negative, the point is in the interior;
@@ -22296,15 +22581,15 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dis
-  real ( kind = 8 ) dis12
-  real ( kind = 8 ) dis23
-  real ( kind = 8 ) dis34
-  real ( kind = 8 ) dis41
-  real ( kind = 8 ) dist_signed
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pm(dim_num)
-  real ( kind = 8 ) q(dim_num,4)
+  real ( kind = fp ) dis
+  real ( kind = fp ) dis12
+  real ( kind = fp ) dis23
+  real ( kind = fp ) dis34
+  real ( kind = fp ) dis41
+  real ( kind = fp ) dist_signed
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pm(dim_num)
+  real ( kind = fp ) q(dim_num,4)
 !
 !  Compare the signed distance from each line segment to the point,
 !  with the signed distance to the midpoint of the opposite line.
@@ -22315,11 +22600,11 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
 !
   call line_exp_point_dist_signed_2d ( q(1:2,1), q(1:2,2), p, dis12 )
 
-  pm(1:dim_num) = 0.5D+00 * ( q(1:dim_num,3) + q(1:dim_num,4) )
+  pm(1:dim_num) = 0.5_fp * ( q(1:dim_num,3) + q(1:dim_num,4) )
 
   call line_exp_point_dist_signed_2d ( q(1:2,1), q(1:2,2), pm, dis )
 
-  if ( 0.0D+00 < dis ) then
+  if ( 0.0_fp < dis ) then
     dis = -dis
     dis12 = -dis12
   end if
@@ -22328,11 +22613,11 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
 !
   call line_exp_point_dist_signed_2d ( q(1:2,2), q(1:2,3), p, dis23 )
 
-  pm(1:dim_num) = 0.5D+00 * ( q(1:dim_num,4) + q(1:dim_num,1) )
+  pm(1:dim_num) = 0.5_fp * ( q(1:dim_num,4) + q(1:dim_num,1) )
 
   call line_exp_point_dist_signed_2d ( q(1:2,2), q(1:2,3), pm, dis )
 
-  if ( 0.0D+00 < dis ) then
+  if ( 0.0_fp < dis ) then
     dis = -dis
     dis23 = -dis23
   end if
@@ -22341,11 +22626,11 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
 !
   call line_exp_point_dist_signed_2d ( q(1:2,3), q(1:2,4), p, dis34 )
 
-  pm(1:dim_num) = 0.5D+00 * ( q(1:dim_num,1) + q(1:dim_num,2) )
+  pm(1:dim_num) = 0.5_fp * ( q(1:dim_num,1) + q(1:dim_num,2) )
 
   call line_exp_point_dist_signed_2d ( q(1:2,3), q(1:2,4), pm, dis )
 
-  if ( 0.0D+00 < dis ) then
+  if ( 0.0_fp < dis ) then
     dis = -dis
     dis34 = -dis34
   end if
@@ -22354,11 +22639,11 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
 !
   call line_exp_point_dist_signed_2d ( q(1:2,4), q(1:2,1), p, dis41 )
 
-  pm(1:dim_num) = 0.5D+00 * ( q(1:dim_num,2) + q(1:dim_num,3) )
+  pm(1:dim_num) = 0.5_fp * ( q(1:dim_num,2) + q(1:dim_num,3) )
 
   call line_exp_point_dist_signed_2d ( q(1:2,4), q(1:2,1), pm, dis )
 
-  if ( 0.0D+00 < dis ) then
+  if ( 0.0_fp < dis ) then
     dis = -dis
     dis41 = -dis41
   end if
@@ -22368,6 +22653,7 @@ subroutine quad_point_dist_signed_2d ( q, p, dist_signed )
   return
 end
 subroutine quad_point_near_2d ( q, p, pn, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22391,14 +22677,14 @@ subroutine quad_point_near_2d ( q, p, pn, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Q(2,4), the quadrilateral vertices.
+!    Input, real ( kind = fp ) Q(2,4), the quadrilateral vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose nearest quadrilateral point
+!    Input, real ( kind = fp ) P(2), the point whose nearest quadrilateral point
 !    is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(2), the nearest point to P.
+!    Output, real ( kind = fp ) PN(2), the nearest point to P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    quadrilateral.
 !
   implicit none
@@ -22406,22 +22692,22 @@ subroutine quad_point_near_2d ( q, p, pn, dist )
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: side_num = 4
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) pn2(dim_num)
-  real ( kind = 8 ) q(dim_num,side_num)
-  real ( kind = 8 ) tval
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) pn2(dim_num)
+  real ( kind = fp ) q(dim_num,side_num)
+  real ( kind = fp ) tval
 !
 !  Find the distance to each of the line segments that make up the edges
 !  of the quadrilateral.
 !
   dist = huge ( dist )
-  pn(1:dim_num) = 0.0D+00
+  pn(1:dim_num) = 0.0_fp
 
   do j = 1, side_num
 
@@ -22440,6 +22726,7 @@ subroutine quad_point_near_2d ( q, p, pn, dist )
   return
 end
 function r8_acos ( c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22467,25 +22754,26 @@ function r8_acos ( c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) C, the argument.
+!    Input, real ( kind = fp ) C, the argument.
 !
-!    Output, real ( kind = 8 ) R8_ACOS, an angle whose cosine is C.
+!    Output, real ( kind = fp ) R8_ACOS, an angle whose cosine is C.
 !
   implicit none
 
-  real ( kind = 8 ) c
-  real ( kind = 8 ) c2
-  real ( kind = 8 ) r8_acos
+  real ( kind = fp ) c
+  real ( kind = fp ) c2
+  real ( kind = fp ) r8_acos
 
   c2 = c
-  c2 = max ( c2, -1.0D+00 )
-  c2 = min ( c2, +1.0D+00 )
+  c2 = max ( c2, -1.0_fp )
+  c2 = min ( c2, +1.0_fp )
 
   r8_acos = acos ( c2 )
 
   return
 end
 function r8_asin ( s )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22513,25 +22801,26 @@ function r8_asin ( s )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) S, the argument.
+!    Input, real ( kind = fp ) S, the argument.
 !
-!    Output, real ( kind = 8 ) R8_ASIN, an angle whose sine is S.
+!    Output, real ( kind = fp ) R8_ASIN, an angle whose sine is S.
 !
   implicit none
 
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ) s
-  real ( kind = 8 ) s2
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ) s
+  real ( kind = fp ) s2
 
   s2 = s
-  s2 = max ( s2, -1.0D+00 )
-  s2 = min ( s2, +1.0D+00 )
+  s2 = max ( s2, -1.0_fp )
+  s2 = min ( s2, +1.0_fp )
 
   r8_asin = asin ( s2 )
 
   return
 end
 function r8_atan ( y, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22566,41 +22855,41 @@ function r8_atan ( y, x )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) Y, X, two quantities which represent the
+!    Input, real ( kind = fp ) Y, X, two quantities which represent the
 !    tangent of an angle.  If Y is not zero, then the tangent is (Y/X).
 !
-!    Output, real ( kind = 8 ) R8_ATAN, an angle between 0 and 2 * PI, whose
+!    Output, real ( kind = fp ) R8_ATAN, an angle between 0 and 2 * PI, whose
 !    tangent is (Y/X), and which lies in the appropriate quadrant so that
 !    the signs of its cosine and sine match those of X and Y.
 !
   implicit none
 
-  real ( kind = 8 ) abs_x
-  real ( kind = 8 ) abs_y
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta_0
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) abs_x
+  real ( kind = fp ) abs_y
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta_0
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 !
 !  Special cases:
 !
-  if ( x == 0.0D+00 ) then
+  if ( x == 0.0_fp ) then
 
-    if ( 0.0D+00 < y ) then
-      theta = r8_pi / 2.0D+00
-    else if ( y < 0.0D+00 ) then
-      theta = 3.0D+00 * r8_pi / 2.0D+00
-    else if ( y == 0.0D+00 ) then
-      theta = 0.0D+00
+    if ( 0.0_fp < y ) then
+      theta = r8_pi / 2.0_fp
+    else if ( y < 0.0_fp ) then
+      theta = 3.0_fp * r8_pi / 2.0_fp
+    else if ( y == 0.0_fp ) then
+      theta = 0.0_fp
     end if
 
-  else if ( y == 0.0D+00 ) then
+  else if ( y == 0.0_fp ) then
 
-    if ( 0.0D+00 < x ) then
-      theta = 0.0D+00
-    else if ( x < 0.0D+00 ) then
+    if ( 0.0_fp < x ) then
+      theta = 0.0_fp
+    else if ( x < 0.0_fp ) then
       theta = r8_pi
     end if
 !
@@ -22613,14 +22902,14 @@ function r8_atan ( y, x )
 
     theta_0 = atan2 ( abs_y, abs_x )
 
-    if ( 0.0D+00 < x .and. 0.0D+00 < y ) then
+    if ( 0.0_fp < x .and. 0.0_fp < y ) then
       theta = theta_0
-    else if ( x < 0.0D+00 .and. 0.0D+00 < y ) then
+    else if ( x < 0.0_fp .and. 0.0_fp < y ) then
       theta = r8_pi - theta_0
-    else if ( x < 0.0D+00 .and. y < 0.0D+00 ) then
+    else if ( x < 0.0_fp .and. y < 0.0_fp ) then
       theta = r8_pi + theta_0
-    else if ( 0.0D+00 < x .and. y < 0.0D+00 ) then
-      theta = 2.0D+00 * r8_pi - theta_0
+    else if ( 0.0_fp < x .and. y < 0.0_fp ) then
+      theta = 2.0_fp * r8_pi - theta_0
     end if
 
   end if
@@ -22630,6 +22919,7 @@ function r8_atan ( y, x )
   return
 end
 function r8_cosd ( degrees )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22649,23 +22939,24 @@ function r8_cosd ( degrees )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DEGREES, the angle in degrees.
+!    Input, real ( kind = fp ) DEGREES, the angle in degrees.
 !
-!    Output, real ( kind = 8 ) R8_COSD, the cosine of the angle.
+!    Output, real ( kind = fp ) R8_COSD, the cosine of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) degrees
-  real ( kind = 8 ) r8_cosd
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians
+  real ( kind = fp ) degrees
+  real ( kind = fp ) r8_cosd
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radians
 
-  radians = r8_pi * ( degrees / 180.0D+00 )
+  radians = r8_pi * ( degrees / 180.0_fp )
   r8_cosd = cos ( radians )
 
   return
 end
 function r8_cotd ( degrees )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22685,23 +22976,24 @@ function r8_cotd ( degrees )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DEGREES, the angle in degrees.
+!    Input, real ( kind = fp ) DEGREES, the angle in degrees.
 !
-!    Output, real ( kind = 8 ) R8_COTD, the cotangent of the angle.
+!    Output, real ( kind = fp ) R8_COTD, the cotangent of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) degrees
-  real ( kind = 8 ) r8_cotd
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians
+  real ( kind = fp ) degrees
+  real ( kind = fp ) r8_cotd
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radians
 
-  radians = r8_pi * ( degrees / 180.0D+00 )
+  radians = r8_pi * ( degrees / 180.0_fp )
   r8_cotd = cos ( radians ) / sin ( radians )
 
   return
 end
 function r8_cscd ( degrees )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22721,23 +23013,24 @@ function r8_cscd ( degrees )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DEGREES, the angle in degrees.
+!    Input, real ( kind = fp ) DEGREES, the angle in degrees.
 !
-!    Output, real ( kind = 8 ) R8_CSCD, the cosecant of the angle.
+!    Output, real ( kind = fp ) R8_CSCD, the cosecant of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) degrees
-  real ( kind = 8 ) r8_cscd
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians
+  real ( kind = fp ) degrees
+  real ( kind = fp ) r8_cscd
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radians
 
-  radians = r8_pi * ( degrees / 180.0D+00 )
-  r8_cscd  = 1.0D+00 / sin ( radians )
+  radians = r8_pi * ( degrees / 180.0_fp )
+  r8_cscd  = 1.0_fp / sin ( radians )
 
   return
 end
 function r8_huge ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22768,17 +23061,18 @@ function r8_huge ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) R8_HUGE, a "huge" value.
+!    Output, real ( kind = fp ) R8_HUGE, a "huge" value.
 !
   implicit none
 
-  real ( kind = 8 ) r8_huge
+  real ( kind = fp ) r8_huge
 
   r8_huge = 1.0D+30
 
   return
 end
 function r8_is_int ( r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22798,14 +23092,14 @@ function r8_is_int ( r )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the number to be checked.
+!    Input, real ( kind = fp ) R, the number to be checked.
 !
 !    Output, logical ( kind = 4 ) R8_IS_INT, is TRUE if R is an integer value.
 !
   implicit none
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) r
+  real ( kind = fp ) r
   logical ( kind = 4 ) r8_is_int
 
   if ( real ( huge ( i ), kind = 8 ) < r ) then
@@ -22821,6 +23115,7 @@ function r8_is_int ( r )
   return
 end
 function r8_modp ( x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22866,20 +23161,20 @@ function r8_modp ( x, y )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X, the number to be divided.
+!    Input, real ( kind = fp ) X, the number to be divided.
 !
-!    Input, real ( kind = 8 ) Y, the number that divides X.
+!    Input, real ( kind = fp ) Y, the number that divides X.
 !
-!    Output, real ( kind = 8 ) R8_MODP, the nonnegative remainder 
+!    Output, real ( kind = fp ) R8_MODP, the nonnegative remainder 
 !    when X is divided by Y.
 !
   implicit none
 
-  real ( kind = 8 ) r8_modp
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
+  real ( kind = fp ) r8_modp
+  real ( kind = fp ) x
+  real ( kind = fp ) y
 
-  if ( y == 0.0D+00 ) then
+  if ( y == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'R8_MODP - Fatal error!'
     write ( *, '(a,g14.6)' ) '  R8_MODP ( X, Y ) called with Y = ', y
@@ -22888,13 +23183,14 @@ function r8_modp ( x, y )
 
   r8_modp = mod ( x, y )
 
-  if ( r8_modp < 0.0D+00 ) then
+  if ( r8_modp < 0.0_fp ) then
     r8_modp = r8_modp + abs ( y )
   end if
 
   return
 end
 function r8_normal_01 ( seed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -22936,21 +23232,21 @@ function r8_normal_01 ( seed )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number 
 !    generator.
 !
-!    Output, real ( kind = 8 ) R8_NORMAL_01, a sample of the standard 
+!    Output, real ( kind = fp ) R8_NORMAL_01, a sample of the standard 
 !    normal PDF.
 !
   implicit none
 
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) r8_normal_01
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_uniform_01
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ) r8_normal_01
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_uniform_01
   integer ( kind = 4 ) seed
   integer ( kind = 4 ), save :: seed2 = 0
   integer ( kind = 4 ), save :: used = 0
-  real ( kind = 8 ) x
-  real ( kind = 8 ), save :: y = 0.0D+00
+  real ( kind = fp ) x
+  real ( kind = fp ), save :: y = 0.0_fp
 !
 !  On odd numbered calls, generate two uniforms, create two normals,
 !  return the first normal and its corresponding seed.
@@ -22959,7 +23255,7 @@ function r8_normal_01 ( seed )
 
     r1 = r8_uniform_01 ( seed )
 
-    if ( r1 == 0.0D+00 ) then
+    if ( r1 == 0.0_fp ) then
       write ( *, '(a)' ) ' '
       write ( *, '(a)' ) 'R8_NORMAL_01 - Fatal error!'
       write ( *, '(a)' ) '  R8_UNIFORM_01 returned a value of 0.'
@@ -22969,8 +23265,8 @@ function r8_normal_01 ( seed )
     seed2 = seed
     r2 = r8_uniform_01 ( seed2 )
 
-    x = sqrt ( -2.0D+00 * log ( r1 ) ) * cos ( 2.0D+00 * r8_pi * r2 )
-    y = sqrt ( -2.0D+00 * log ( r1 ) ) * sin ( 2.0D+00 * r8_pi * r2 )
+    x = sqrt ( -2.0_fp * log ( r1 ) ) * cos ( 2.0_fp * r8_pi * r2 )
+    y = sqrt ( -2.0_fp * log ( r1 ) ) * sin ( 2.0_fp * r8_pi * r2 )
 !
 !  On odd calls, return the second normal and its corresponding seed.
 !
@@ -22988,6 +23284,7 @@ function r8_normal_01 ( seed )
   return
 end
 function r8_pi ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23007,17 +23304,18 @@ function r8_pi ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) R8_PI, the value of pi.
+!    Output, real ( kind = fp ) R8_PI, the value of pi.
 !
   implicit none
 
-  real ( kind = 8 ) r8_pi
+  real ( kind = fp ) r8_pi
 
-  r8_pi = 3.141592653589793D+00
+  r8_pi = 3.141592653589793_fp
 
   return
 end
 function r8_sign_opposite_strict ( r1, r2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23043,23 +23341,24 @@ function r8_sign_opposite_strict ( r1, r2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the values to check.
+!    Input, real ( kind = fp ) R1, R2, the values to check.
 !
 !    Output, logical ( kind = 4 ) R8_SIGN_OPPOSITE_STRICT, is TRUE 
 !    if ( R1 < 0 and 0 < R2 ) or ( R2 < 0 and 0 < R1 ).
 !
   implicit none
 
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
   logical ( kind = 4 ) r8_sign_opposite_strict
 
-  r8_sign_opposite_strict = ( r1 < 0.0D+00 .and. 0.0D+00 < r2 ) .or. &
-                            ( r2 < 0.0D+00 .and. 0.0D+00 < r1 )
+  r8_sign_opposite_strict = ( r1 < 0.0_fp .and. 0.0_fp < r2 ) .or. &
+                            ( r2 < 0.0_fp .and. 0.0_fp < r1 )
 
   return
 end
 function r8_sind ( degrees )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23079,23 +23378,24 @@ function r8_sind ( degrees )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DEGREES, the angle in degrees.
+!    Input, real ( kind = fp ) DEGREES, the angle in degrees.
 !
-!    Output, real ( kind = 8 ) R8_SIND, the sine of the angle.
+!    Output, real ( kind = fp ) R8_SIND, the sine of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) degrees
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_sind
-  real ( kind = 8 ) radians
+  real ( kind = fp ) degrees
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_sind
+  real ( kind = fp ) radians
 
-  radians = r8_pi * ( degrees / 180.0D+00 )
+  radians = r8_pi * ( degrees / 180.0_fp )
   r8_sind  = sin ( radians )
 
   return
 end
 function r8_secd ( degrees )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23115,23 +23415,24 @@ function r8_secd ( degrees )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DEGREES, the angle in degrees.
+!    Input, real ( kind = fp ) DEGREES, the angle in degrees.
 !
-!    Output, real ( kind = 8 ) R8_SECD, the secant of the angle.
+!    Output, real ( kind = fp ) R8_SECD, the secant of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) degrees
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_secd
-  real ( kind = 8 ) radians
+  real ( kind = fp ) degrees
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_secd
+  real ( kind = fp ) radians
 
-  radians = r8_pi * ( degrees / 180.0D+00 )
-  r8_secd = 1.0D+00 / cos ( radians )
+  radians = r8_pi * ( degrees / 180.0_fp )
+  r8_secd = 1.0_fp / cos ( radians )
 
   return
 end
 subroutine r8_swap ( x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23151,14 +23452,14 @@ subroutine r8_swap ( x, y )
 !
 !  Parameters:
 !
-!    Input/output, real ( kind = 8 ) X, Y.  On output, the values of X and
+!    Input/output, real ( kind = fp ) X, Y.  On output, the values of X and
 !    Y have been interchanged.
 !
   implicit none
 
-  real ( kind = 8 ) x
-  real ( kind = 8 ) y
-  real ( kind = 8 ) z
+  real ( kind = fp ) x
+  real ( kind = fp ) y
+  real ( kind = fp ) z
 
   z = x
   x = y
@@ -23167,6 +23468,7 @@ subroutine r8_swap ( x, y )
   return
 end
 function r8_tand ( degrees )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23186,23 +23488,24 @@ function r8_tand ( degrees )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DEGREES, the angle in degrees.
+!    Input, real ( kind = fp ) DEGREES, the angle in degrees.
 !
-!    Output, real ( kind = 8 ) R8_TAND, the tangent of the angle.
+!    Output, real ( kind = fp ) R8_TAND, the tangent of the angle.
 !
   implicit none
 
-  real ( kind = 8 ) degrees
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_tand
-  real ( kind = 8 ) radians
+  real ( kind = fp ) degrees
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_tand
+  real ( kind = fp ) radians
 
-  radians = r8_pi * ( degrees / 180.0D+00 )
+  radians = r8_pi * ( degrees / 180.0_fp )
   r8_tand  = tan ( radians )
 
   return
 end
 function r8_uniform ( a, b, seed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23210,7 +23513,7 @@ function r8_uniform ( a, b, seed )
 !
 !  Discussion:
 !
-!    An R8 is a real ( kind = 8 ) value.
+!    An R8 is a real ( kind = fp ) value.
 !
 !    For now, the input quantity SEED is an integer ( kind = 4 ) variable.
 !
@@ -23231,19 +23534,19 @@ function r8_uniform ( a, b, seed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, the limits of the interval.
+!    Input, real ( kind = fp ) A, B, the limits of the interval.
 !
 !    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which should
 !    NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R8_UNIFORM, a number strictly between A and B.
+!    Output, real ( kind = fp ) R8_UNIFORM, a number strictly between A and B.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
+  real ( kind = fp ) a
+  real ( kind = fp ) b
   integer ( kind = 4 ) k
-  real ( kind = 8 ) r8_uniform
+  real ( kind = fp ) r8_uniform
   integer ( kind = 4 )seed
 
   if ( seed == 0 ) then
@@ -23266,6 +23569,7 @@ function r8_uniform ( a, b, seed )
   return
 end
 function r8_uniform_01 ( seed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23273,7 +23577,7 @@ function r8_uniform_01 ( seed )
 !
 !  Discussion:
 !
-!    An R8 is a real ( kind = 8 ) value.
+!    An R8 is a real ( kind = fp ) value.
 !
 !    For now, the input quantity SEED is an integer ( kind = 4 ) variable.
 !
@@ -23335,13 +23639,13 @@ function r8_uniform_01 ( seed )
 !    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which should
 !    NOT be 0. On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R8_UNIFORM_01, a new pseudorandom variate,
+!    Output, real ( kind = fp ) R8_UNIFORM_01, a new pseudorandom variate,
 !    strictly between 0 and 1.
 !
   implicit none
 
   integer ( kind = 4 ) k
-  real ( kind = 8 ) r8_uniform_01
+  real ( kind = fp ) r8_uniform_01
   integer ( kind = 4 ) seed
 
   if ( seed == 0 ) then
@@ -23367,6 +23671,7 @@ function r8_uniform_01 ( seed )
   return
 end
 subroutine r82vec_permute ( n, p, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23417,14 +23722,14 @@ subroutine r82vec_permute ( n, p, a )
 !    of the integers from 1 to N, otherwise the algorithm will
 !    fail catastrophically.
 !
-!    Input/output, real ( kind = 8 ) A(2,N), the array to be permuted.
+!    Input/output, real ( kind = fp ) A(2,N), the array to be permuted.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(2,n)
-  real ( kind = 8 ) a_temp(2)
+  real ( kind = fp ) a(2,n)
+  real ( kind = fp ) a_temp(2)
   integer ( kind = 4 ) iget
   integer ( kind = 4 ) iput
   integer ( kind = 4 ) istart
@@ -23483,6 +23788,7 @@ subroutine r82vec_permute ( n, p, a )
   return
 end
 subroutine r82vec_sort_heap_index_a ( n, a, indx )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23522,7 +23828,7 @@ subroutine r82vec_sort_heap_index_a ( n, a, indx )
 !
 !    Input, integer ( kind = 4 ) N, the number of entries in the array.
 !
-!    Input, real ( kind = 8 ) A(2,N), an array to be index-sorted.
+!    Input, real ( kind = fp ) A(2,N), an array to be index-sorted.
 !
 !    Output, integer ( kind = 4 ) INDX(N), the sort index.  The
 !    I-th element of the sorted array is A(1:2,INDX(I)).
@@ -23531,8 +23837,8 @@ subroutine r82vec_sort_heap_index_a ( n, a, indx )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(2,n)
-  real ( kind = 8 ) aval(2)
+  real ( kind = fp ) a(2,n)
+  real ( kind = fp ) aval(2)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) indx(n)
   integer ( kind = 4 ) indxt
@@ -23608,6 +23914,7 @@ subroutine r82vec_sort_heap_index_a ( n, a, indx )
   return
 end
 subroutine r8ge_det ( n, a, pivot, det )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23636,22 +23943,22 @@ subroutine r8ge_det ( n, a, pivot, det )
 !    Input, integer ( kind = 4 ) N, the order of the matrix.
 !    N must be positive.
 !
-!    Input, real ( kind = 8 ) A(N,N), the LU factors computed by R8GE_FA.
+!    Input, real ( kind = fp ) A(N,N), the LU factors computed by R8GE_FA.
 !
 !    Input, integer ( kind = 4 ) PIVOT(N), as computed by R8GE_FA.
 !
-!    Output, real ( kind = 8 ) DET, the determinant of the matrix.
+!    Output, real ( kind = fp ) DET, the determinant of the matrix.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n,n)
-  real ( kind = 8 ) det
+  real ( kind = fp ) a(n,n)
+  real ( kind = fp ) det
   integer ( kind = 4 ) i
   integer ( kind = 4 ) pivot(n)
 
-  det = 1.0D+00
+  det = 1.0_fp
 
   do i = 1, n
     det = det * a(i,i)
@@ -23663,6 +23970,7 @@ subroutine r8ge_det ( n, a, pivot, det )
   return
 end
 subroutine r8ge_fa ( n, a, pivot, info )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23695,7 +24003,7 @@ subroutine r8ge_fa ( n, a, pivot, info )
 !    Input, integer ( kind = 4 ) N, the order of the matrix.
 !    N must be positive.
 !
-!    Input/output, real ( kind = 8 ) A(N,N), the matrix to be factored.
+!    Input/output, real ( kind = fp ) A(N,N), the matrix to be factored.
 !    On output, A contains an upper triangular matrix and the multipliers
 !    which were used to obtain it.  The factorization can be written
 !    A = L * U, where L is a product of permutation and unit lower
@@ -23711,14 +24019,14 @@ subroutine r8ge_fa ( n, a, pivot, info )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n,n)
+  real ( kind = fp ) a(n,n)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) info
   integer ( kind = 4 ) pivot(n)
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) l
-  real ( kind = 8 ) t
+  real ( kind = fp ) t
 
   info = 0
 
@@ -23737,7 +24045,7 @@ subroutine r8ge_fa ( n, a, pivot, info )
 !
 !  If the pivot index is zero, the algorithm has failed.
 !
-    if ( a(l,k) == 0.0D+00 ) then
+    if ( a(l,k) == 0.0_fp ) then
       info = k
       write ( *, '(a)' ) ' '
       write ( *, '(a)' ) 'R8GE_FA - Warning!'
@@ -23775,7 +24083,7 @@ subroutine r8ge_fa ( n, a, pivot, info )
 
   pivot(n) = n
 
-  if ( a(n,n) == 0.0D+00 ) then
+  if ( a(n,n) == 0.0_fp ) then
     info = n
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'R8GE_FA - Warning!'
@@ -23785,6 +24093,7 @@ subroutine r8ge_fa ( n, a, pivot, info )
   return
 end
 subroutine r8ge_sl ( n, a, pivot, b, job )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23811,11 +24120,11 @@ subroutine r8ge_sl ( n, a, pivot, b, job )
 !    Input, integer ( kind = 4 ) N, the order of the matrix.
 !    N must be positive.
 !
-!    Input, real ( kind = 8 ) A(N,N), the LU factors from R8GE_FA.
+!    Input, real ( kind = fp ) A(N,N), the LU factors from R8GE_FA.
 !
 !    Input, integer ( kind = 4 ) PIVOT(N), the pivot vector from R8GE_FA.
 !
-!    Input/output, real ( kind = 8 ) B(N).
+!    Input/output, real ( kind = fp ) B(N).
 !    On input, the right hand side vector.
 !    On output, the solution vector.
 !
@@ -23827,8 +24136,8 @@ subroutine r8ge_sl ( n, a, pivot, b, job )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n,n)
-  real ( kind = 8 ) b(n)
+  real ( kind = fp ) a(n,n)
+  real ( kind = fp ) b(n)
   integer ( kind = 4 ) pivot(n)
   integer ( kind = 4 ) job
   integer ( kind = 4 ) k
@@ -23888,6 +24197,7 @@ subroutine r8ge_sl ( n, a, pivot, b, job )
   return
 end
 function r8mat_det_2d ( a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23914,20 +24224,21 @@ function r8mat_det_2d ( a )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(2,2), the matrix whose determinant is desired.
+!    Input, real ( kind = fp ) A(2,2), the matrix whose determinant is desired.
 !
-!    Output, real ( kind = 8 ) R8MAT_DET_2D, the determinant of the matrix.
+!    Output, real ( kind = fp ) R8MAT_DET_2D, the determinant of the matrix.
 !
   implicit none
 
-  real ( kind = 8 ) a(2,2)
-  real ( kind = 8 ) r8mat_det_2d
+  real ( kind = fp ) a(2,2)
+  real ( kind = fp ) r8mat_det_2d
 
   r8mat_det_2d = a(1,1) * a(2,2) - a(1,2) * a(2,1)
 
   return
 end
 function r8mat_det_3d ( a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23956,14 +24267,14 @@ function r8mat_det_3d ( a )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(3,3), the matrix whose determinant is desired.
+!    Input, real ( kind = fp ) A(3,3), the matrix whose determinant is desired.
 !
-!    Output, real ( kind = 8 ) R8MAT_DET_3D, the determinant of the matrix.
+!    Output, real ( kind = fp ) R8MAT_DET_3D, the determinant of the matrix.
 !
   implicit none
 
-  real ( kind = 8 ) a(3,3)
-  real ( kind = 8 ) r8mat_det_3d
+  real ( kind = fp ) a(3,3)
+  real ( kind = fp ) r8mat_det_3d
 
   r8mat_det_3d =   a(1,1) * ( a(2,2) * a(3,3) - a(2,3) * a(3,2) ) &
               + a(1,2) * ( a(2,3) * a(3,1) - a(2,1) * a(3,3) ) &
@@ -23972,6 +24283,7 @@ function r8mat_det_3d ( a )
   return
 end
 function r8mat_det_4d ( a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -23991,14 +24303,14 @@ function r8mat_det_4d ( a )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the matrix whose determinant is desired.
+!    Input, real ( kind = fp ) A(4,4), the matrix whose determinant is desired.
 !
-!    Output, real ( kind = 8 ) R8MAT_DET_4D, the determinant of the matrix.
+!    Output, real ( kind = fp ) R8MAT_DET_4D, the determinant of the matrix.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) r8mat_det_4d
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) r8mat_det_4d
 
   r8mat_det_4d = &
       a(1,1) * ( &
@@ -24021,6 +24333,7 @@ function r8mat_det_4d ( a )
   return
 end
 function r8mat_det_5d ( a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24040,16 +24353,16 @@ function r8mat_det_5d ( a )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(5,5), the matrix whose determinant is desired.
+!    Input, real ( kind = fp ) A(5,5), the matrix whose determinant is desired.
 !
-!    Output, real ( kind = 8 ) R8MAT_DET_5D, the determinant of the matrix.
+!    Output, real ( kind = fp ) R8MAT_DET_5D, the determinant of the matrix.
 !
   implicit none
 
-  real ( kind = 8 ) a(5,5)
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) r8mat_det_4d
-  real ( kind = 8 ) r8mat_det_5d
+  real ( kind = fp ) a(5,5)
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) r8mat_det_4d
+  real ( kind = fp ) r8mat_det_5d
   integer ( kind = 4 ) i
   integer ( kind = 4 ) inc
   integer ( kind = 4 ) j
@@ -24058,7 +24371,7 @@ function r8mat_det_5d ( a )
 !  Expand the determinant into the sum of the determinants of the
 !  five 4 by 4 matrices created by dropping row 1, and column k.
 !
-  r8mat_det_5d = 0.0D+00
+  r8mat_det_5d = 0.0_fp
 
   do k = 1, 5
 
@@ -24083,6 +24396,7 @@ function r8mat_det_5d ( a )
   return
 end
 subroutine r8mat_inverse_2d ( a, b, det )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24111,17 +24425,17 @@ subroutine r8mat_inverse_2d ( a, b, det )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(2,2), the matrix to be inverted.
+!    Input, real ( kind = fp ) A(2,2), the matrix to be inverted.
 !
-!    Output, real ( kind = 8 ) B(2,2), the inverse of the matrix A.
+!    Output, real ( kind = fp ) B(2,2), the inverse of the matrix A.
 !
-!    Output, real ( kind = 8 ) DET, the determinant of the matrix A.
+!    Output, real ( kind = fp ) DET, the determinant of the matrix A.
 !
   implicit none
 
-  real ( kind = 8 ) a(2,2)
-  real ( kind = 8 ) b(2,2)
-  real ( kind = 8 ) det
+  real ( kind = fp ) a(2,2)
+  real ( kind = fp ) b(2,2)
+  real ( kind = fp ) det
 !
 !  Compute the determinant.
 !
@@ -24129,9 +24443,9 @@ subroutine r8mat_inverse_2d ( a, b, det )
 !
 !  If the determinant is zero, bail out.
 !
-  if ( det == 0.0D+00 ) then
+  if ( det == 0.0_fp ) then
 
-    b(1:2,1:2) = 0.0D+00
+    b(1:2,1:2) = 0.0_fp
 
     return
   end if
@@ -24146,6 +24460,7 @@ subroutine r8mat_inverse_2d ( a, b, det )
   return
 end
 subroutine r8mat_inverse_3d ( a, b, det )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24174,17 +24489,17 @@ subroutine r8mat_inverse_3d ( a, b, det )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(3,3), the matrix to be inverted.
+!    Input, real ( kind = fp ) A(3,3), the matrix to be inverted.
 !
-!    Output, real ( kind = 8 ) B(3,3), the inverse of the matrix A.
+!    Output, real ( kind = fp ) B(3,3), the inverse of the matrix A.
 !
-!    Output, real ( kind = 8 ) DET, the determinant of the matrix A.
+!    Output, real ( kind = fp ) DET, the determinant of the matrix A.
 !
   implicit none
 
-  real ( kind = 8 ) a(3,3)
-  real ( kind = 8 ) b(3,3)
-  real ( kind = 8 ) det
+  real ( kind = fp ) a(3,3)
+  real ( kind = fp ) b(3,3)
+  real ( kind = fp ) det
 !
 !  Compute the determinant of A
 !
@@ -24194,9 +24509,9 @@ subroutine r8mat_inverse_3d ( a, b, det )
 !
 !  If the determinant is zero, bail out.
 !
-  if ( det == 0.0D+00 ) then
+  if ( det == 0.0_fp ) then
 
-    b(1:3,1:3) = 0.0D+00
+    b(1:3,1:3) = 0.0_fp
 
     return
   end if
@@ -24219,6 +24534,7 @@ subroutine r8mat_inverse_3d ( a, b, det )
   return
 end
 subroutine r8mat_print ( m, n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24242,7 +24558,7 @@ subroutine r8mat_print ( m, n, a, title )
 !
 !    Input, integer ( kind = 4 ) N, the number of columns in A.
 !
-!    Input, real ( kind = 8 ) A(M,N), the matrix.
+!    Input, real ( kind = fp ) A(M,N), the matrix.
 !
 !    Input, character ( len = * ) TITLE, a title.
 !
@@ -24251,7 +24567,7 @@ subroutine r8mat_print ( m, n, a, title )
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(m,n)
+  real ( kind = fp ) a(m,n)
   character ( len = * ) title
 
   call r8mat_print_some ( m, n, a, 1, 1, m, n, title )
@@ -24259,6 +24575,7 @@ subroutine r8mat_print ( m, n, a, title )
   return
 end
 subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24284,7 +24601,7 @@ subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
 !
 !    Input, integer ( kind = 4 ) M, N, the number of rows and columns.
 !
-!    Input, real ( kind = 8 ) A(M,N), an M by N matrix to be printed.
+!    Input, real ( kind = fp ) A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer ( kind = 4 ) ILO, JLO, the first row and column to print.
 !
@@ -24298,7 +24615,7 @@ subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(m,n)
+  real ( kind = fp ) a(m,n)
   character ( len = 14 ) ctemp(incx)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i2hi
@@ -24362,6 +24679,7 @@ subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   return
 end
 subroutine r8mat_solve ( n, rhs_num, a, info )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24386,7 +24704,7 @@ subroutine r8mat_solve ( n, rhs_num, a, info )
 !    Input, integer ( kind = 4 ) RHS_NUM, the number of right hand sides.  
 !    RHS_NUM must be at least 0.
 !
-!    Input/output, real ( kind = 8 ) A(N,N+rhs_num), contains in rows and
+!    Input/output, real ( kind = fp ) A(N,N+rhs_num), contains in rows and
 !    columns 1 to N the coefficient matrix, and in columns N+1 through
 !    N+rhs_num, the right hand sides.  On output, the coefficient matrix
 !    area has been destroyed, while the right hand sides have
@@ -24402,9 +24720,9 @@ subroutine r8mat_solve ( n, rhs_num, a, info )
   integer ( kind = 4 ) n
   integer ( kind = 4 ) rhs_num
 
-  real ( kind = 8 ) a(n,n+rhs_num)
-  real ( kind = 8 ) apivot
-  real ( kind = 8 ) factor
+  real ( kind = fp ) a(n,n+rhs_num)
+  real ( kind = fp ) apivot
+  real ( kind = fp ) factor
   integer ( kind = 4 ) i
   integer ( kind = 4 ) info
   integer ( kind = 4 ) ipivot
@@ -24426,7 +24744,7 @@ subroutine r8mat_solve ( n, rhs_num, a, info )
       end if
     end do
 
-    if ( apivot == 0.0D+00 ) then
+    if ( apivot == 0.0_fp ) then
       info = j
       return
     end if
@@ -24439,7 +24757,7 @@ subroutine r8mat_solve ( n, rhs_num, a, info )
 !
 !  A(J,J) becomes 1.
 !
-    a(j,j) = 1.0D+00
+    a(j,j) = 1.0_fp
     a(j,j+1:n+rhs_num) = a(j,j+1:n+rhs_num) / apivot
 !
 !  A(I,J) becomes 0.
@@ -24449,7 +24767,7 @@ subroutine r8mat_solve ( n, rhs_num, a, info )
       if ( i /= j ) then
 
         factor = a(i,j)
-        a(i,j) = 0.0D+00
+        a(i,j) = 0.0_fp
         a(i,j+1:n+rhs_num) = a(i,j+1:n+rhs_num) - factor * a(j,j+1:n+rhs_num)
 
       end if
@@ -24461,6 +24779,7 @@ subroutine r8mat_solve ( n, rhs_num, a, info )
   return
 end
 subroutine r8mat_solve_2d ( a, b, det, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24489,21 +24808,21 @@ subroutine r8mat_solve_2d ( a, b, det, x )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(2,2), the matrix.
+!    Input, real ( kind = fp ) A(2,2), the matrix.
 !
-!    Input, real ( kind = 8 ) B(2), the right hand side.
+!    Input, real ( kind = fp ) B(2), the right hand side.
 !
-!    Output, real ( kind = 8 ) DET, the determinant of the matrix A.
+!    Output, real ( kind = fp ) DET, the determinant of the matrix A.
 !
-!    Output, real ( kind = 8 ) X(2), the solution of the system, 
+!    Output, real ( kind = fp ) X(2), the solution of the system, 
 !    if DET is nonzero.
 !
   implicit none
 
-  real ( kind = 8 ) a(2,2)
-  real ( kind = 8 ) b(2)
-  real ( kind = 8 ) det
-  real ( kind = 8 ) x(2)
+  real ( kind = fp ) a(2,2)
+  real ( kind = fp ) b(2)
+  real ( kind = fp ) det
+  real ( kind = fp ) x(2)
 !
 !  Compute the determinant.
 !
@@ -24511,8 +24830,8 @@ subroutine r8mat_solve_2d ( a, b, det, x )
 !
 !  If the determinant is zero, bail out.
 !
-  if ( det == 0.0D+00 ) then
-    x(1:2) = 0.0D+00
+  if ( det == 0.0_fp ) then
+    x(1:2) = 0.0_fp
     return
   end if
 !
@@ -24524,6 +24843,7 @@ subroutine r8mat_solve_2d ( a, b, det, x )
   return
 end
 subroutine r8mat_transpose_print ( m, n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24545,7 +24865,7 @@ subroutine r8mat_transpose_print ( m, n, a, title )
 !
 !    Input, integer ( kind = 4 ) M, N, the number of rows and columns.
 !
-!    Input, real ( kind = 8 ) A(M,N), an M by N matrix to be printed.
+!    Input, real ( kind = fp ) A(M,N), an M by N matrix to be printed.
 !
 !    Input, character ( len = * ) TITLE, a title.
 !
@@ -24554,7 +24874,7 @@ subroutine r8mat_transpose_print ( m, n, a, title )
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(m,n)
+  real ( kind = fp ) a(m,n)
   character ( len = * ) title
 
   call r8mat_transpose_print_some ( m, n, a, 1, 1, m, n, title )
@@ -24562,6 +24882,7 @@ subroutine r8mat_transpose_print ( m, n, a, title )
   return
 end
 subroutine r8mat_transpose_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24587,7 +24908,7 @@ subroutine r8mat_transpose_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
 !
 !    Input, integer ( kind = 4 ) M, N, the number of rows and columns.
 !
-!    Input, real ( kind = 8 ) A(M,N), an M by N matrix to be printed.
+!    Input, real ( kind = fp ) A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer ( kind = 4 ) ILO, JLO, the first row and column to print.
 !
@@ -24601,7 +24922,7 @@ subroutine r8mat_transpose_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(m,n)
+  real ( kind = fp ) a(m,n)
   character ( len = 14 ) ctemp(incx)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i2
@@ -24658,6 +24979,7 @@ subroutine r8mat_transpose_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
   return
 end
 subroutine r8mat_uniform ( m, n, a, b, seed, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24665,7 +24987,7 @@ subroutine r8mat_uniform ( m, n, a, b, seed, r )
 !
 !  Discussion:
 !
-!    An R8MAT is an array of real ( kind = 8 ) values.
+!    An R8MAT is an array of real ( kind = fp ) values.
 !
 !    For now, the input quantity SEED is an integer ( kind = 4 ) variable.
 !
@@ -24704,25 +25026,25 @@ subroutine r8mat_uniform ( m, n, a, b, seed, r )
 !    Input, integer ( kind = 4 ) M, N, the number of rows and columns
 !    in the array.
 !
-!    Input, real ( kind = 8 ) A, B, the lower and upper limits.
+!    Input, real ( kind = fp ) A, B, the lower and upper limits.
 !
 !    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which 
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(M,N), the array of pseudorandom values.
+!    Output, real ( kind = fp ) R(M,N), the array of pseudorandom values.
 !
   implicit none
 
   integer ( kind = 4 ) m
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
+  real ( kind = fp ) a
+  real ( kind = fp ) b
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(m,n)
+  real ( kind = fp ) r(m,n)
 
   if ( seed == 0 ) then
     write ( *, '(a)' ) ' '
@@ -24751,6 +25073,7 @@ subroutine r8mat_uniform ( m, n, a, b, seed, r )
   return
 end
 subroutine r8mat_uniform_01 ( m, n, seed, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24758,7 +25081,7 @@ subroutine r8mat_uniform_01 ( m, n, seed, r )
 !
 !  Discussion:
 !
-!    An R8MAT is an array of real ( kind = 8 ) values.
+!    An R8MAT is an array of real ( kind = fp ) values.
 !
 !    For now, the input quantity SEED is an integer ( kind = 4 ) variable.
 !
@@ -24800,7 +25123,7 @@ subroutine r8mat_uniform_01 ( m, n, seed, r )
 !    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which 
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(M,N), the array of pseudorandom values.
+!    Output, real ( kind = fp ) R(M,N), the array of pseudorandom values.
 !
   implicit none
 
@@ -24811,7 +25134,7 @@ subroutine r8mat_uniform_01 ( m, n, seed, r )
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(m,n)
+  real ( kind = fp ) r(m,n)
 
   if ( seed == 0 ) then
     write ( *, '(a)' ) ' '
@@ -24840,6 +25163,7 @@ subroutine r8mat_uniform_01 ( m, n, seed, r )
   return
 end
 subroutine r8vec_angle_3d ( u, v, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24855,20 +25179,20 @@ subroutine r8vec_angle_3d ( u, v, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) U(3), V(3), the vectors.
+!    Input, real ( kind = fp ) U(3), V(3), the vectors.
 !
-!    Output, real ( kind = 8 ) ANGLE, the angle between the two vectors.
+!    Output, real ( kind = fp ) ANGLE, the angle between the two vectors.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angle_cos
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) u(3)
-  real ( kind = 8 ) u_norm
-  real ( kind = 8 ) uv_dot
-  real ( kind = 8 ) v(3)
-  real ( kind = 8 ) v_norm
+  real ( kind = fp ) angle
+  real ( kind = fp ) angle_cos
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) u(3)
+  real ( kind = fp ) u_norm
+  real ( kind = fp ) uv_dot
+  real ( kind = fp ) v(3)
+  real ( kind = fp ) v_norm
 
   uv_dot = dot_product ( u(1:3), v(1:3) )
 
@@ -24883,6 +25207,7 @@ subroutine r8vec_angle_3d ( u, v, angle )
   return
 end
 subroutine r8vec_any_normal ( dim_num, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -24913,23 +25238,23 @@ subroutine r8vec_any_normal ( dim_num, v1, v2 )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V1(DIM_NUM), the vector.
+!    Input, real ( kind = fp ) V1(DIM_NUM), the vector.
 !
-!    Output, real ( kind = 8 ) V2(DIM_NUM), a vector that is
+!    Output, real ( kind = fp ) V2(DIM_NUM), a vector that is
 !    normal to V2, and has unit Euclidean length.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) r8vec_norm
+  real ( kind = fp ) r8vec_norm
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
-  real ( kind = 8 ) vj
-  real ( kind = 8 ) vk
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
+  real ( kind = fp ) vj
+  real ( kind = fp ) vk
 
   if ( dim_num < 2 ) then
     write ( *, '(a)' ) ' '
@@ -24938,9 +25263,9 @@ subroutine r8vec_any_normal ( dim_num, v1, v2 )
     stop 1
   end if
 
-  if ( r8vec_norm ( dim_num, v1 ) == 0.0D+00 ) then
-    v2(1) = 1.0D+00
-    v2(2:dim_num) = 0.0D+00
+  if ( r8vec_norm ( dim_num, v1 ) == 0.0_fp ) then
+    v2(1) = 1.0_fp
+    v2(2:dim_num) = 0.0_fp
     return
   end if
 !
@@ -24951,10 +25276,10 @@ subroutine r8vec_any_normal ( dim_num, v1, v2 )
 !  VJ, at least, is not zero.
 !
   j = -1
-  vj = 0.0D+00
+  vj = 0.0_fp
 
   k = -1
-  vk = 0.0D+00
+  vk = 0.0_fp
 
   do i = 1, dim_num
 
@@ -24977,7 +25302,7 @@ subroutine r8vec_any_normal ( dim_num, v1, v2 )
 !  Setting V2 to zero, except that V2(J) = -VK, and V2(K) = VJ,
 !  will just about do the trick.
 !
-  v2(1:dim_num) = 0.0D+00
+  v2(1:dim_num) = 0.0_fp
 
   v2(j) = -vk / sqrt ( vk * vk + vj * vj )
   v2(k) =  vj / sqrt ( vk * vk + vj * vj )
@@ -24985,6 +25310,7 @@ subroutine r8vec_any_normal ( dim_num, v1, v2 )
   return
 end
 subroutine r8vec_bracket ( n, x, xval, left, right )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25012,10 +25338,10 @@ subroutine r8vec_bracket ( n, x, xval, left, right )
 !
 !    Input, integer ( kind = 4 ) N, length of input array.
 !
-!    Input, real ( kind = 8 ) X(N), an array that has been sorted into
+!    Input, real ( kind = fp ) X(N), an array that has been sorted into
 !    ascending order.
 !
-!    Input, real ( kind = 8 ) XVAL, a value to be bracketed.
+!    Input, real ( kind = fp ) XVAL, a value to be bracketed.
 !
 !    Output, integer ( kind = 4 ) LEFT, RIGHT, the results of the search.
 !    Either:
@@ -25031,8 +25357,8 @@ subroutine r8vec_bracket ( n, x, xval, left, right )
   integer ( kind = 4 ) i
   integer ( kind = 4 ) left
   integer ( kind = 4 ) right
-  real ( kind = 8 ) x(n)
-  real ( kind = 8 ) xval
+  real ( kind = fp ) x(n)
+  real ( kind = fp ) xval
 
   do i = 2, n - 1
 
@@ -25050,6 +25376,7 @@ subroutine r8vec_bracket ( n, x, xval, left, right )
   return
 end
 function r8vec_cross_product_2d ( v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25076,21 +25403,22 @@ function r8vec_cross_product_2d ( v1, v2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(2), V2(2), the vectors.
+!    Input, real ( kind = fp ) V1(2), V2(2), the vectors.
 !
-!    Output, real ( kind = 8 ) R8VEC_CROSS_PRODUCT_2D, the cross product.
+!    Output, real ( kind = fp ) R8VEC_CROSS_PRODUCT_2D, the cross product.
 !
   implicit none
 
-  real ( kind = 8 ) r8vec_cross_product_2d
-  real ( kind = 8 ) v1(2)
-  real ( kind = 8 ) v2(2)
+  real ( kind = fp ) r8vec_cross_product_2d
+  real ( kind = fp ) v1(2)
+  real ( kind = fp ) v2(2)
 
   r8vec_cross_product_2d = v1(1) * v2(2) - v1(2) * v2(1)
 
   return
 end
 function r8vec_cross_product_affine_2d ( v0, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25117,19 +25445,19 @@ function r8vec_cross_product_affine_2d ( v0, v1, v2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V0(2), the base vector.
+!    Input, real ( kind = fp ) V0(2), the base vector.
 !
-!    Input, real ( kind = 8 ) V1(2), V2(2), the vectors.
+!    Input, real ( kind = fp ) V1(2), V2(2), the vectors.
 !
-!    Output, real ( kind = 8 ) R8VEC_CROSS_PRODUCT_AFFINE_2D, 
+!    Output, real ( kind = fp ) R8VEC_CROSS_PRODUCT_AFFINE_2D, 
 !    the cross product (V1-V0) x (V2-V0).
 !
   implicit none
 
-  real ( kind = 8 ) r8vec_cross_product_affine_2d
-  real ( kind = 8 ) v0(2)
-  real ( kind = 8 ) v1(2)
-  real ( kind = 8 ) v2(2)
+  real ( kind = fp ) r8vec_cross_product_affine_2d
+  real ( kind = fp ) v0(2)
+  real ( kind = fp ) v1(2)
+  real ( kind = fp ) v2(2)
 
   r8vec_cross_product_affine_2d = &
       ( v1(1) - v0(1) ) * ( v2(2) - v0(2) ) &
@@ -25138,6 +25466,7 @@ function r8vec_cross_product_affine_2d ( v0, v1, v2 )
   return
 end
 subroutine r8vec_cross_product_3d ( v1, v2, v3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25170,15 +25499,15 @@ subroutine r8vec_cross_product_3d ( v1, v2, v3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), the two vectors.
+!    Input, real ( kind = fp ) V1(3), V2(3), the two vectors.
 !
-!    Output, real ( kind = 8 ) V3(3), the cross product vector.
+!    Output, real ( kind = fp ) V3(3), the cross product vector.
 !
   implicit none
 
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 
   v3(1) = v1(2) * v2(3) - v1(3) * v2(2)
   v3(2) = v1(3) * v2(1) - v1(1) * v2(3)
@@ -25187,6 +25516,7 @@ subroutine r8vec_cross_product_3d ( v1, v2, v3 )
   return
 end
 subroutine r8vec_cross_product_affine_3d ( v0, v1, v2, v3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25222,19 +25552,19 @@ subroutine r8vec_cross_product_affine_3d ( v0, v1, v2, v3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V0(3), the base vector.
+!    Input, real ( kind = fp ) V0(3), the base vector.
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), the two vectors.
+!    Input, real ( kind = fp ) V1(3), V2(3), the two vectors.
 !
-!    Output, real ( kind = 8 ) V3(3), the cross product vector
+!    Output, real ( kind = fp ) V3(3), the cross product vector
 !    ( V1-V0) x (V2-V0).
 !
   implicit none
 
-  real ( kind = 8 ) v0(3)
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) v0(3)
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 
   v3(1) = ( v1(2) - v0(2) ) * ( v2(3) - v0(3) ) &
         - ( v2(2) - v0(2) ) * ( v1(3) - v0(3) )
@@ -25248,6 +25578,7 @@ subroutine r8vec_cross_product_affine_3d ( v0, v1, v2, v3 )
   return
 end
 function r8vec_distance ( dim_num, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25269,24 +25600,25 @@ function r8vec_distance ( dim_num, v1, v2 )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V1(DIM_NUM), V2(DIM_NUM), the vectors.
+!    Input, real ( kind = fp ) V1(DIM_NUM), V2(DIM_NUM), the vectors.
 !
-!    Output, real ( kind = 8 ) R8VEC_DISTANCE, the Euclidean distance 
+!    Output, real ( kind = fp ) R8VEC_DISTANCE, the Euclidean distance 
 !    between the vectors.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) r8vec_distance
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) r8vec_distance
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 
   r8vec_distance = sqrt ( sum ( ( v1(1:dim_num) - v2(1:dim_num) )**2 ) )
 
   return
 end
 function r8vec_dot_product ( dim_num, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25313,23 +25645,24 @@ function r8vec_dot_product ( dim_num, v1, v2 )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V1(DIM_NUM), V2(DIM_NUM), the vectors.
+!    Input, real ( kind = fp ) V1(DIM_NUM), V2(DIM_NUM), the vectors.
 !
-!    Output, real ( kind = 8 ) R8VEC_DOT_PRODUCT, the dot product.
+!    Output, real ( kind = fp ) R8VEC_DOT_PRODUCT, the dot product.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) r8vec_dot_product
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) r8vec_dot_product
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 
   r8vec_dot_product = dot_product ( v1(1:dim_num), v2(1:dim_num) )
 
   return
 end
 function r8vec_dot_product_affine ( n, v0, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25351,20 +25684,20 @@ function r8vec_dot_product_affine ( n, v0, v1, v2 )
 !
 !    Input, integer ( kind = 4 ) N, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V0(N), the base vector.
+!    Input, real ( kind = fp ) V0(N), the base vector.
 !
-!    Input, real ( kind = 8 ) V1(N), V2(N), the vectors.
+!    Input, real ( kind = fp ) V1(N), V2(N), the vectors.
 !
-!    Output, real ( kind = 8 ) R8VEC_DOT_PRODUCT_AFFINE, the dot product.
+!    Output, real ( kind = fp ) R8VEC_DOT_PRODUCT_AFFINE, the dot product.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) r8vec_dot_product_affine
-  real ( kind = 8 ) v0(n)
-  real ( kind = 8 ) v1(n)
-  real ( kind = 8 ) v2(n)
+  real ( kind = fp ) r8vec_dot_product_affine
+  real ( kind = fp ) v0(n)
+  real ( kind = fp ) v1(n)
+  real ( kind = fp ) v2(n)
 
   r8vec_dot_product_affine = dot_product ( &
     v1(1:n) - v0(1:n),  &
@@ -25373,6 +25706,7 @@ function r8vec_dot_product_affine ( n, v0, v1, v2 )
   return
 end
 function r8vec_eq ( n, a1, a2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25394,7 +25728,7 @@ function r8vec_eq ( n, a1, a2 )
 !
 !    Input, integer ( kind = 4 ) N, the number of entries in the vectors.
 !
-!    Input, real ( kind = 8 ) A1(N), A2(N), two vectors to compare.
+!    Input, real ( kind = fp ) A1(N), A2(N), two vectors to compare.
 !
 !    Output, logical ( kind = 4 ) R8VEC_EQ.
 !    R8VEC_EQ is TRUE if every pair of elements A1(I) and A2(I) are equal.
@@ -25403,8 +25737,8 @@ function r8vec_eq ( n, a1, a2 )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a1(n)
-  real ( kind = 8 ) a2(n)
+  real ( kind = fp ) a1(n)
+  real ( kind = fp ) a2(n)
   logical ( kind = 4 ) r8vec_eq
 
   r8vec_eq = ( all ( a1(1:n) == a2(1:n) ) )
@@ -25412,6 +25746,7 @@ function r8vec_eq ( n, a1, a2 )
   return
 end
 function r8vec_gt ( n, a1, a2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25442,7 +25777,7 @@ function r8vec_gt ( n, a1, a2 )
 !
 !    Input, integer ( kind = 4 ) N, the dimension of the vectors.
 !
-!    Input, real ( kind = 8 ) A1(N), A2(N), the vectors to be compared.
+!    Input, real ( kind = fp ) A1(N), A2(N), the vectors to be compared.
 !
 !    Output, logical ( kind = 4 ) R8VEC_GT, is TRUE if and only if A1 > A2.
 !
@@ -25450,8 +25785,8 @@ function r8vec_gt ( n, a1, a2 )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a1(n)
-  real ( kind = 8 ) a2(n)
+  real ( kind = fp ) a1(n)
+  real ( kind = fp ) a2(n)
   integer ( kind = 4 ) i
   logical ( kind = 4 ) r8vec_gt
 
@@ -25472,6 +25807,7 @@ function r8vec_gt ( n, a1, a2 )
   return
 end
 function r8vec_lt ( n, a1, a2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25502,7 +25838,7 @@ function r8vec_lt ( n, a1, a2 )
 !
 !    Input, integer ( kind = 4 ) N, the dimension of the vectors.
 !
-!    Input, real ( kind = 8 ) A1(N), A2(N), the vectors to be compared.
+!    Input, real ( kind = fp ) A1(N), A2(N), the vectors to be compared.
 !
 !    Output, logical ( kind = 4 ) R8VEC_LT, is TRUE if and only if A1 < A2.
 !
@@ -25510,8 +25846,8 @@ function r8vec_lt ( n, a1, a2 )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a1(n)
-  real ( kind = 8 ) a2(n)
+  real ( kind = fp ) a1(n)
+  real ( kind = fp ) a2(n)
   integer ( kind = 4 ) i
   logical ( kind = 4 ) r8vec_lt
 
@@ -25532,6 +25868,7 @@ function r8vec_lt ( n, a1, a2 )
   return
 end
 function r8vec_norm ( n, a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25561,22 +25898,23 @@ function r8vec_norm ( n, a )
 !
 !    Input, integer ( kind = 4 ) N, the number of entries in A.
 !
-!    Input, real ( kind = 8 ) A(N), the vector whose L2 norm is desired.
+!    Input, real ( kind = fp ) A(N), the vector whose L2 norm is desired.
 !
-!    Output, real ( kind = 8 ) R8VEC_NORM, the L2 norm of A.
+!    Output, real ( kind = fp ) R8VEC_NORM, the L2 norm of A.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n)
-  real ( kind = 8 ) r8vec_norm
+  real ( kind = fp ) a(n)
+  real ( kind = fp ) r8vec_norm
 
   r8vec_norm = sqrt ( sum ( a(1:n)**2 ) )
 
   return
 end
 function r8vec_norm_affine ( n, v0, v1 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25607,25 +25945,26 @@ function r8vec_norm_affine ( n, v0, v1 )
 !
 !    Input, integer ( kind = 4 ) N, the order of the vectors.
 !
-!    Input, real ( kind = 8 ) V0(N), the base vector.
+!    Input, real ( kind = fp ) V0(N), the base vector.
 !
-!    Input, real ( kind = 8 ) V1(N), the vector whose affine norm is desired.
+!    Input, real ( kind = fp ) V1(N), the vector whose affine norm is desired.
 !
-!    Output, real ( kind = 8 ) R8VEC_NORM_AFFINE, the L2 norm of V1-V0.
+!    Output, real ( kind = fp ) R8VEC_NORM_AFFINE, the L2 norm of V1-V0.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) r8vec_norm_affine
-  real ( kind = 8 ) v0(n)
-  real ( kind = 8 ) v1(n)
+  real ( kind = fp ) r8vec_norm_affine
+  real ( kind = fp ) v0(n)
+  real ( kind = fp ) v1(n)
 
   r8vec_norm_affine = sqrt ( sum ( ( v0(1:n) - v1(1:n) )**2 ) )
 
   return
 end
 subroutine r8vec_normal_01 ( n, seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25669,7 +26008,7 @@ subroutine r8vec_normal_01 ( n, seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number 
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(N), a sample of the standard normal PDF.
+!    Output, real ( kind = fp ) X(N), a sample of the standard normal PDF.
 !
 !  Local parameters:
 !
@@ -25678,7 +26017,7 @@ subroutine r8vec_normal_01 ( n, seed, x )
 !    the return value of N, so the user can get an accounting of
 !    how much work has been done.
 !
-!    Local, real ( kind = 8 ) R(N+1), is used to store some uniform
+!    Local, real ( kind = fp ) R(N+1), is used to store some uniform
 !    random values.  Its dimension is N+1, but really it is only needed
 !    to be the smallest even number greater than or equal to N.
 !
@@ -25690,7 +26029,7 @@ subroutine r8vec_normal_01 ( n, seed, x )
 !    if we have a saved value that can be immediately stored in X(1),
 !    and so on.
 !
-!    Local, real ( kind = 8 ) Y, the value saved from the previous call, if
+!    Local, real ( kind = fp ) Y, the value saved from the previous call, if
 !    SAVED is 1.
 !
   implicit none
@@ -25699,15 +26038,15 @@ subroutine r8vec_normal_01 ( n, seed, x )
 
   integer ( kind = 4 ) m
   integer ( kind = 4 ), save :: made = 0
-  real ( kind = 8 ) r(n+1)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_uniform_01
+  real ( kind = fp ) r(n+1)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_uniform_01
   integer ( kind = 4 ), save :: saved = 0
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) x(n)
+  real ( kind = fp ) x(n)
   integer ( kind = 4 ) x_hi_index
   integer ( kind = 4 ) x_lo_index
-  real ( kind = 8 ), save :: y = 0.0D+00
+  real ( kind = fp ), save :: y = 0.0_fp
 !
 !  I'd like to allow the user to reset the internal data.
 !  But this won't work properly if we have a saved value Y.
@@ -25719,7 +26058,7 @@ subroutine r8vec_normal_01 ( n, seed, x )
     n = made
     made = 0
     saved = 0
-    y = 0.0D+00
+    y = 0.0_fp
     return
   else if ( n == 0 ) then
     return
@@ -25748,7 +26087,7 @@ subroutine r8vec_normal_01 ( n, seed, x )
 
     r(1) = r8_uniform_01 ( seed )
 
-    if ( r(1) == 0.0D+00 ) then
+    if ( r(1) == 0.0_fp ) then
       write ( *, '(a)' ) ' '
       write ( *, '(a)' ) 'R8VEC_NORMAL_01 - Fatal error!'
       write ( *, '(a)' ) '  R8_UNIFORM_01 returned a value of 0.'
@@ -25758,8 +26097,8 @@ subroutine r8vec_normal_01 ( n, seed, x )
     r(2) = r8_uniform_01 ( seed )
 
     x(x_hi_index) = &
-             sqrt ( -2.0D+00 * log ( r(1) ) ) * cos ( 2.0D+00 * r8_pi * r(2) )
-    y =      sqrt ( -2.0D+00 * log ( r(1) ) ) * sin ( 2.0D+00 * r8_pi * r(2) )
+             sqrt ( -2.0_fp * log ( r(1) ) ) * cos ( 2.0_fp * r8_pi * r(2) )
+    y =      sqrt ( -2.0_fp * log ( r(1) ) ) * sin ( 2.0_fp * r8_pi * r(2) )
 
     saved = 1
 
@@ -25774,12 +26113,12 @@ subroutine r8vec_normal_01 ( n, seed, x )
     call r8vec_uniform_01 ( 2*m, seed, r )
 
     x(x_lo_index:x_hi_index-1:2) = &
-      sqrt ( -2.0D+00 * log ( r(1:2*m-1:2) ) ) &
-      * cos ( 2.0D+00 * r8_pi * r(2:2*m:2) )
+      sqrt ( -2.0_fp * log ( r(1:2*m-1:2) ) ) &
+      * cos ( 2.0_fp * r8_pi * r(2:2*m:2) )
 
     x(x_lo_index+1:x_hi_index:2) = &
-      sqrt ( -2.0D+00 * log ( r(1:2*m-1:2) ) ) &
-      * sin ( 2.0D+00 * r8_pi * r(2:2*m:2) )
+      sqrt ( -2.0_fp * log ( r(1:2*m-1:2) ) ) &
+      * sin ( 2.0_fp * r8_pi * r(2:2*m:2) )
 
     made = made + x_hi_index - x_lo_index + 1
 !
@@ -25796,18 +26135,18 @@ subroutine r8vec_normal_01 ( n, seed, x )
     call r8vec_uniform_01 ( 2*m, seed, r )
 
     x(x_lo_index:x_hi_index-1:2) = &
-      sqrt ( -2.0D+00 * log ( r(1:2*m-3:2) ) ) &
-      * cos ( 2.0D+00 * r8_pi * r(2:2*m-2:2) )
+      sqrt ( -2.0_fp * log ( r(1:2*m-3:2) ) ) &
+      * cos ( 2.0_fp * r8_pi * r(2:2*m-2:2) )
 
     x(x_lo_index+1:x_hi_index:2) = &
-      sqrt ( -2.0D+00 * log ( r(1:2*m-3:2) ) ) &
-      * sin ( 2.0D+00 * r8_pi * r(2:2*m-2:2) )
+      sqrt ( -2.0_fp * log ( r(1:2*m-3:2) ) ) &
+      * sin ( 2.0_fp * r8_pi * r(2:2*m-2:2) )
 
     x(n) = sqrt ( -2.0E+00 * log ( r(2*m-1) ) ) &
-      * cos ( 2.0D+00 * r8_pi * r(2*m) )
+      * cos ( 2.0_fp * r8_pi * r(2*m) )
 
-    y = sqrt ( -2.0D+00 * log ( r(2*m-1) ) ) &
-      * sin ( 2.0D+00 * r8_pi * r(2*m) )
+    y = sqrt ( -2.0_fp * log ( r(2*m-1) ) ) &
+      * sin ( 2.0_fp * r8_pi * r(2*m) )
 
     saved = 1
 
@@ -25818,6 +26157,7 @@ subroutine r8vec_normal_01 ( n, seed, x )
   return
 end
 function r8vec_normsq ( n, v )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25847,22 +26187,23 @@ function r8vec_normsq ( n, v )
 !
 !    Input, integer ( kind = 4 ) N, the vector dimension.
 !
-!    Input, real ( kind = 8 ) V(N), the vector.
+!    Input, real ( kind = fp ) V(N), the vector.
 !
-!    Output, real ( kind = 8 ) R8VEC_NORMSQ, the squared L2 norm.
+!    Output, real ( kind = fp ) R8VEC_NORMSQ, the squared L2 norm.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) r8vec_normsq
-  real ( kind = 8 ) v(n)
+  real ( kind = fp ) r8vec_normsq
+  real ( kind = fp ) v(n)
 
   r8vec_normsq = sum ( v(1:n)**2 )
 
   return
 end
 function r8vec_normsq_affine ( n, v0, v1 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25893,25 +26234,26 @@ function r8vec_normsq_affine ( n, v0, v1 )
 !
 !    Input, integer ( kind = 4 ) N, the vector dimension.
 !
-!    Input, real ( kind = 8 ) V0(N), the base vector.
+!    Input, real ( kind = fp ) V0(N), the base vector.
 !
-!    Input, real ( kind = 8 ) V1(N), the vector.
+!    Input, real ( kind = fp ) V1(N), the vector.
 !
-!    Output, real ( kind = 8 ) R8VEC_NORMSQ_AFFINE, the affine squared L2 norm.
+!    Output, real ( kind = fp ) R8VEC_NORMSQ_AFFINE, the affine squared L2 norm.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) r8vec_normsq_affine
-  real ( kind = 8 ) v0(n)
-  real ( kind = 8 ) v1(n)
+  real ( kind = fp ) r8vec_normsq_affine
+  real ( kind = fp ) v0(n)
+  real ( kind = fp ) v1(n)
 
   r8vec_normsq_affine = sum ( ( v0(1:n) - v1(1:n) )**2 )
 
   return
 end
 subroutine r8vec_polarize ( n, a, p, a_normal, a_parallel )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -25946,29 +26288,29 @@ subroutine r8vec_polarize ( n, a, p, a_normal, a_parallel )
 !
 !    Input, integer ( kind = 4 ) N, the number of entries in the array.
 !
-!    Input, real ( kind = 8 ) A(N), the vector to be polarized.
+!    Input, real ( kind = fp ) A(N), the vector to be polarized.
 !
-!    Input, real ( kind = 8 ) P(N), the polarizing direction.
+!    Input, real ( kind = fp ) P(N), the polarizing direction.
 !
-!    Output, real ( kind = 8 ) A_NORMAL(N), A_PARALLEL(N), the normal
+!    Output, real ( kind = fp ) A_NORMAL(N), A_PARALLEL(N), the normal
 !    and parallel components of A.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n)
-  real ( kind = 8 ) a_dot_p
-  real ( kind = 8 ) a_normal(n)
-  real ( kind = 8 ) a_parallel(n)
-  real ( kind = 8 ) p(n)
-  real ( kind = 8 ) p_norm
+  real ( kind = fp ) a(n)
+  real ( kind = fp ) a_dot_p
+  real ( kind = fp ) a_normal(n)
+  real ( kind = fp ) a_parallel(n)
+  real ( kind = fp ) p(n)
+  real ( kind = fp ) p_norm
 
   p_norm = sqrt ( sum ( p(1:n)**2 ) )
 
-  if ( p_norm == 0.0D+00 ) then
+  if ( p_norm == 0.0_fp ) then
     a_normal(1:n) = a(1:n)
-    a_parallel(1:n) = 0.0D+00
+    a_parallel(1:n) = 0.0_fp
     return
   end if
 
@@ -25981,6 +26323,7 @@ subroutine r8vec_polarize ( n, a, p, a_normal, a_parallel )
   return
 end
 subroutine r8vec_print ( n, a, title )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26006,7 +26349,7 @@ subroutine r8vec_print ( n, a, title )
 !
 !    Input, integer ( kind = 4 ) N, the number of components of the vector.
 !
-!    Input, real ( kind = 8 ) A(N), the vector to be printed.
+!    Input, real ( kind = fp ) A(N), the vector to be printed.
 !
 !    Input, character ( len = * ) TITLE, a title.
 !
@@ -26014,7 +26357,7 @@ subroutine r8vec_print ( n, a, title )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n)
+  real ( kind = fp ) a(n)
   integer ( kind = 4 ) i
   character ( len = * )  title
 
@@ -26029,6 +26372,7 @@ subroutine r8vec_print ( n, a, title )
   return
 end
 function r8vec_scalar_triple_product ( v1, v2, v3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26067,18 +26411,18 @@ function r8vec_scalar_triple_product ( v1, v2, v3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vectors.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vectors.
 !
-!    Output, real ( kind = 8 ) R8VEC_SCALAR_TRIPLE_PRODUCT, the scalar
+!    Output, real ( kind = fp ) R8VEC_SCALAR_TRIPLE_PRODUCT, the scalar
 !    triple product.
 !
   implicit none
 
-  real ( kind = 8 ) r8vec_scalar_triple_product
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
-  real ( kind = 8 ) v4(3)
+  real ( kind = fp ) r8vec_scalar_triple_product
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
+  real ( kind = fp ) v4(3)
 
   call r8vec_cross_product_3d ( v2, v3, v4 )
 
@@ -26087,6 +26431,7 @@ function r8vec_scalar_triple_product ( v1, v2, v3 )
   return
 end
 subroutine r8vec_swap ( n, a1, a2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26108,15 +26453,15 @@ subroutine r8vec_swap ( n, a1, a2 )
 !
 !    Input, integer ( kind = 4 ) N, the number of entries in the arrays.
 !
-!    Input/output, real ( kind = 8 ) A1(N), A2(N), the vectors to swap.
+!    Input/output, real ( kind = fp ) A1(N), A2(N), the vectors to swap.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a1(n)
-  real ( kind = 8 ) a2(n)
-  real ( kind = 8 ) a3(n)
+  real ( kind = fp ) a1(n)
+  real ( kind = fp ) a2(n)
+  real ( kind = fp ) a3(n)
 
   a3(1:n) = a1(1:n)
   a1(1:n) = a2(1:n)
@@ -26125,6 +26470,7 @@ subroutine r8vec_swap ( n, a1, a2 )
   return
 end
 subroutine r8vec_uniform_01 ( n, seed, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26132,7 +26478,7 @@ subroutine r8vec_uniform_01 ( n, seed, r )
 !
 !  Discussion:
 !
-!    An R8VEC is a vector of real ( kind = 8 ) values.
+!    An R8VEC is a vector of real ( kind = fp ) values.
 !
 !    For now, the input quantity SEED is an integer ( kind = 4 ) variable.
 !
@@ -26173,7 +26519,7 @@ subroutine r8vec_uniform_01 ( n, seed, r )
 !    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which 
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(N), the vector of pseudorandom values.
+!    Output, real ( kind = fp ) R(N), the vector of pseudorandom values.
 !
   implicit none
 
@@ -26182,7 +26528,7 @@ subroutine r8vec_uniform_01 ( n, seed, r )
   integer ( kind = 4 ) i
   integer ( kind = 4 ) k
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(n)
+  real ( kind = fp ) r(n)
 
   if ( seed == 0 ) then
     write ( *, '(a)' ) ' '
@@ -26208,6 +26554,7 @@ subroutine r8vec_uniform_01 ( n, seed, r )
   return
 end
 subroutine r8vec_uniform_ab ( n, a, b, seed, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26215,7 +26562,7 @@ subroutine r8vec_uniform_ab ( n, a, b, seed, r )
 !
 !  Discussion:
 !
-!    An R8VEC is a vector of real ( kind = 8 ) values.
+!    An R8VEC is a vector of real ( kind = fp ) values.
 !
 !  Licensing:
 !
@@ -26251,23 +26598,23 @@ subroutine r8vec_uniform_ab ( n, a, b, seed, r )
 !
 !    Input, integer ( kind = 4 ) M, the number of entries in the vector.
 !
-!    Input, real ( kind = 8 ) A, B, the lower and upper limits.
+!    Input, real ( kind = fp ) A, B, the lower and upper limits.
 !
 !    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which 
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(N), the vector of pseudorandom values.
+!    Output, real ( kind = fp ) R(N), the vector of pseudorandom values.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
+  real ( kind = fp ) a
+  real ( kind = fp ) b
   integer ( kind = 4 ) i
   integer ( kind = 4 ) k
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(n)
+  real ( kind = fp ) r(n)
 
   if ( seed == 0 ) then
     write ( *, '(a)' ) ' '
@@ -26293,6 +26640,7 @@ subroutine r8vec_uniform_ab ( n, a, b, seed, r )
   return
 end
 subroutine r8vec_uniform_unit ( m, seed, w )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26317,16 +26665,16 @@ subroutine r8vec_uniform_unit ( m, seed, w )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number 
 !    generator.
 !
-!    Output, real ( kind = 8 ) W(M), a random direction vector,
+!    Output, real ( kind = fp ) W(M), a random direction vector,
 !    with unit norm.
 !
   implicit none
 
   integer ( kind = 4 ) m
 
-  real ( kind = 8 ) norm
+  real ( kind = fp ) norm
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) w(m)
+  real ( kind = fp ) w(m)
 !
 !  Get M values from a standard normal distribution.
 !
@@ -26343,6 +26691,7 @@ subroutine r8vec_uniform_unit ( m, seed, w )
   return
 end
 subroutine radec_distance_3d ( ra1, dec1, ra2, dec2, theta )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26375,34 +26724,34 @@ subroutine radec_distance_3d ( ra1, dec1, ra2, dec2, theta )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) RA1, DEC1, RA2, DEC2, the right ascension and
+!    Input, real ( kind = fp ) RA1, DEC1, RA2, DEC2, the right ascension and
 !    declination of the two points.
 !
-!    Output, real ( kind = 8 ) THETA, the angular separation between the points,
+!    Output, real ( kind = fp ) THETA, the angular separation between the points,
 !    in radians.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) cos_theta
-  real ( kind = 8 ) dec1
-  real ( kind = 8 ) dec2
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ) norm_v1
-  real ( kind = 8 ) norm_v2
-  real ( kind = 8 ) phi1
-  real ( kind = 8 ) phi2
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) ra1
-  real ( kind = 8 ) ra2
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) theta1
-  real ( kind = 8 ) theta2
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) cos_theta
+  real ( kind = fp ) dec1
+  real ( kind = fp ) dec2
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ) norm_v1
+  real ( kind = fp ) norm_v2
+  real ( kind = fp ) phi1
+  real ( kind = fp ) phi2
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) ra1
+  real ( kind = fp ) ra2
+  real ( kind = fp ) theta
+  real ( kind = fp ) theta1
+  real ( kind = fp ) theta2
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 
-  theta1 = degrees_to_radians ( 15.0D+00 * ra1 )
+  theta1 = degrees_to_radians ( 15.0_fp * ra1 )
   phi1 = degrees_to_radians ( dec1 )
 
   v1(1:dim_num) = (/ cos ( theta1 ) * cos ( phi1 ), &
@@ -26411,7 +26760,7 @@ subroutine radec_distance_3d ( ra1, dec1, ra2, dec2, theta )
 
   norm_v1 = sqrt ( sum ( v1(1:dim_num)**2 ) )
 
-  theta2 = degrees_to_radians ( 15.0D+00 * ra2 )
+  theta2 = degrees_to_radians ( 15.0_fp * ra2 )
   phi2 = degrees_to_radians ( dec2 )
 
   v2(1:dim_num) = (/ cos ( theta2 ) * cos ( phi2 ), &
@@ -26428,6 +26777,7 @@ subroutine radec_distance_3d ( ra1, dec1, ra2, dec2, theta )
   return
 end
 subroutine radec_to_xyz ( ra, dec, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26455,24 +26805,24 @@ subroutine radec_to_xyz ( ra, dec, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) RA, DEC, the right ascension and declination
+!    Input, real ( kind = fp ) RA, DEC, the right ascension and declination
 !    of a point.
 !
-!    Output, real ( kind = 8 ) P(3), the corresponding coordinates of
+!    Output, real ( kind = fp ) P(3), the corresponding coordinates of
 !    a point with radius 1.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dec
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) ra
-  real ( kind = 8 ) theta
+  real ( kind = fp ) dec
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) phi
+  real ( kind = fp ) ra
+  real ( kind = fp ) theta
 
-  theta = degrees_to_radians ( 15.0D+00 * ra )
+  theta = degrees_to_radians ( 15.0_fp * ra )
   phi = degrees_to_radians ( dec )
 
   p(1) = cos ( theta ) * cos ( phi )
@@ -26482,6 +26832,7 @@ subroutine radec_to_xyz ( ra, dec, p )
   return
 end
 function radians_to_degrees ( angle_rad )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26501,22 +26852,23 @@ function radians_to_degrees ( angle_rad )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGLE_RAD, an angle in radians.
+!    Input, real ( kind = fp ) ANGLE_RAD, an angle in radians.
 !
-!    Output, real ( kind = 8 ) RADIANS_TO_DEGREES, the equivalent angle
+!    Output, real ( kind = fp ) RADIANS_TO_DEGREES, the equivalent angle
 !    in degrees.
 !
   implicit none
 
-  real ( kind = 8 ) angle_rad
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radians_to_degrees
+  real ( kind = fp ) angle_rad
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radians_to_degrees
 
-  radians_to_degrees = ( angle_rad / r8_pi ) * 180.0D+00
+  radians_to_degrees = ( angle_rad / r8_pi ) * 180.0_fp
 
   return
 end
 subroutine radians_to_dms ( angle_rad, degrees, minutes, seconds )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26536,29 +26888,29 @@ subroutine radians_to_dms ( angle_rad, degrees, minutes, seconds )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) ANGLE_RAD, the angle in radians.
+!    Input, real ( kind = fp ) ANGLE_RAD, the angle in radians.
 !
 !    Output, integer ( kind = 4 ) DEGREES, MINUTES, SECONDS, the equivalent 
 !    angle in degrees, minutes, and seconds.
 !
   implicit none
 
-  real ( kind = 8 ) angle_deg
-  real ( kind = 8 ) angle_rad
+  real ( kind = fp ) angle_deg
+  real ( kind = fp ) angle_rad
   integer ( kind = 4 ) degrees
   integer ( kind = 4 ) minutes
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seconds
 
-  angle_deg = 180.0D+00 * abs ( angle_rad ) / r8_pi
+  angle_deg = 180.0_fp * abs ( angle_rad ) / r8_pi
 
   degrees = int ( angle_deg )
-  angle_deg = ( angle_deg - real ( degrees, kind = 8 ) ) * 60.0D+00
+  angle_deg = ( angle_deg - real ( degrees, kind = 8 ) ) * 60.0_fp
   minutes = int ( angle_deg )
-  angle_deg = ( angle_deg - real ( minutes, kind = 8 ) ) * 60.0D+00
+  angle_deg = ( angle_deg - real ( minutes, kind = 8 ) ) * 60.0_fp
   seconds = nint ( angle_deg )
 
-  if ( angle_rad < 0.0D+00 ) then
+  if ( angle_rad < 0.0_fp ) then
     degrees = - degrees
     minutes = - minutes
     seconds = - seconds
@@ -26567,6 +26919,7 @@ subroutine radians_to_dms ( angle_rad, degrees, minutes, seconds )
   return
 end
 subroutine random_initialize ( seed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26615,7 +26968,7 @@ subroutine random_initialize ( seed )
   integer ( kind = 4 ) seed
   integer ( kind = 4 ), allocatable :: seed_vector(:)
   integer ( kind = 4 ) seed_size
-  real ( kind = 8 ) t
+  real ( kind = fp ) t
 !
 !  Initialize the random number seed.
 !
@@ -26667,6 +27020,7 @@ subroutine random_initialize ( seed )
   return
 end
 subroutine rotation_axis_vector_3d ( axis, angle, v, w )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26691,31 +27045,31 @@ subroutine rotation_axis_vector_3d ( axis, angle, v, w )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) AXIS(3), the axis vector for the rotation.
+!    Input, real ( kind = fp ) AXIS(3), the axis vector for the rotation.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle, in radians, of the rotation.
+!    Input, real ( kind = fp ) ANGLE, the angle, in radians, of the rotation.
 !
-!    Input, real ( kind = 8 ) V(3), the vector to be rotated.
+!    Input, real ( kind = fp ) V(3), the vector to be rotated.
 !
-!    Output, real ( kind = 8 ) W(3), the rotated vector.
+!    Output, real ( kind = fp ) W(3), the rotated vector.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) axis(dim_num)
-  real ( kind = 8 ) axis_norm
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) normal_component
-  real ( kind = 8 ) normal2(dim_num)
-  real ( kind = 8 ) parallel(dim_num)
-  real ( kind = 8 ) rot(dim_num)
-  real ( kind = 8 ) u(dim_num)
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) w(dim_num)
+  real ( kind = fp ) angle
+  real ( kind = fp ) axis(dim_num)
+  real ( kind = fp ) axis_norm
+  real ( kind = fp ) dot
+  real ( kind = fp ) norm
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) normal_component
+  real ( kind = fp ) normal2(dim_num)
+  real ( kind = fp ) parallel(dim_num)
+  real ( kind = fp ) rot(dim_num)
+  real ( kind = fp ) u(dim_num)
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) w(dim_num)
 !
 !  Compute the length of the rotation axis.
 !
@@ -26723,8 +27077,8 @@ subroutine rotation_axis_vector_3d ( axis, angle, v, w )
 
   axis_norm = sqrt ( sum ( u(1:dim_num)**2 ) )
 
-  if ( axis_norm == 0.0D+00 ) then
-    w(1:dim_num) = 0.0D+00
+  if ( axis_norm == 0.0_fp ) then
+    w(1:dim_num) = 0.0_fp
     return
   end if
 
@@ -26744,7 +27098,7 @@ subroutine rotation_axis_vector_3d ( axis, angle, v, w )
 
   normal_component = sqrt ( sum ( normal(1:dim_num)**2 ) )
 
-  if ( normal_component == 0.0D+00 ) then
+  if ( normal_component == 0.0_fp ) then
     w(1:dim_num) = parallel(1:dim_num)
     return
   end if
@@ -26776,6 +27130,7 @@ subroutine rotation_axis_vector_3d ( axis, angle, v, w )
   return
 end
 subroutine rtp_to_xyz ( r, theta, phi, xyz )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26803,17 +27158,17 @@ subroutine rtp_to_xyz ( r, theta, phi, xyz )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, THETA, PHI, the radius, longitude, and
+!    Input, real ( kind = fp ) R, THETA, PHI, the radius, longitude, and
 !    declination of a point.
 !
-!    Output, real ( kind = 8 ) XYZ(3), the corresponding Cartesian coordinates. 
+!    Output, real ( kind = fp ) XYZ(3), the corresponding Cartesian coordinates. 
 !
   implicit none
 
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) xyz(3)
+  real ( kind = fp ) phi
+  real ( kind = fp ) r
+  real ( kind = fp ) theta
+  real ( kind = fp ) xyz(3)
 
   xyz(1) = r * cos ( theta ) * sin ( phi )
   xyz(2) = r * sin ( theta ) * sin ( phi )
@@ -26822,6 +27177,7 @@ subroutine rtp_to_xyz ( r, theta, phi, xyz )
   return
 end
 subroutine segment_contains_point_1d ( p1, p2, p, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26846,28 +27202,28 @@ subroutine segment_contains_point_1d ( p1, p2, p, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1, P2, two points defining a line segment.
+!    Input, real ( kind = fp ) P1, P2, two points defining a line segment.
 !    The line segment has T = 0 at P1, and T = 1 at P2.
 !
-!    Input, real ( kind = 8 ) P, a point to be tested.
+!    Input, real ( kind = fp ) P, a point to be tested.
 !
-!    Output, real ( kind = 8 ) T, the coordinate of P3 in units of (P2-P1).
+!    Output, real ( kind = fp ) T, the coordinate of P3 in units of (P2-P1).
 !    The point P3 is contained in the line segment if 0 <= T <= 1.
 !
   implicit none
 
-  real ( kind = 8 ) p
-  real ( kind = 8 ) p1
-  real ( kind = 8 ) p2
-  real ( kind = 8 ) t
-  real ( kind = 8 ) unit
+  real ( kind = fp ) p
+  real ( kind = fp ) p1
+  real ( kind = fp ) p2
+  real ( kind = fp ) t
+  real ( kind = fp ) unit
 
   unit = p2 - p1
 
-  if ( unit == 0.0D+00 ) then
+  if ( unit == 0.0_fp ) then
 
     if ( p == p1 ) then
-      t = 0.5D+00
+      t = 0.5_fp
     else if ( p < p1 ) then
       t = - huge ( t )
     else if ( p1 < p ) then
@@ -26883,6 +27239,7 @@ subroutine segment_contains_point_1d ( p1, p2, p, t )
   return
 end
 subroutine segment_contains_point_2d ( p1, p2, p, u )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26910,11 +27267,11 @@ subroutine segment_contains_point_2d ( p1, p2, p, u )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the endpoints of the line segment.
+!    Input, real ( kind = fp ) P1(2), P2(2), the endpoints of the line segment.
 !
-!    Input, real ( kind = 8 ) P(2), a point to be tested.
+!    Input, real ( kind = fp ) P(2), a point to be tested.
 !
-!    Output, real ( kind = 8 ) U(2), the components of P, with the first
+!    Output, real ( kind = fp ) U(2), the components of P, with the first
 !    component measured along the axis with origin at P1 and unit at P2, 
 !    and second component the magnitude of the off-axis portion of the
 !    vector P-P1, measured in units of (P2-P1).
@@ -26923,21 +27280,21 @@ subroutine segment_contains_point_2d ( p1, p2, p, u )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) normsq
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) u(dim_num)
+  real ( kind = fp ) normsq
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) u(dim_num)
 
   normsq = sum ( ( p2(1:dim_num) - p1(1:dim_num) )**2 )
 
-  if ( normsq == 0.0D+00 ) then
+  if ( normsq == 0.0_fp ) then
 
     if ( all ( p(1:dim_num) == p1(1:dim_num) ) ) then
-      u(1) = 0.5D+00
-      u(2) = 0.0D+00
+      u(1) = 0.5_fp
+      u(2) = 0.0_fp
     else
-      u(1) = 0.5D+00
+      u(1) = 0.5_fp
       u(2) = huge ( u(2) )
     end if
 
@@ -26946,8 +27303,8 @@ subroutine segment_contains_point_2d ( p1, p2, p, u )
     u(1) = sum ( ( p(1:dim_num)  - p1(1:dim_num) ) &
                * ( p2(1:dim_num) - p1(1:dim_num) ) ) / normsq
 
-    u(2) = sqrt ( ( ( u(1) - 1.0D+00 ) * p1(1) - u(1) * p2(1) + p(1) )**2 &
-                + ( ( u(1) - 1.0D+00 ) * p1(2) - u(1) * p2(2) + p(2) )**2 ) &
+    u(2) = sqrt ( ( ( u(1) - 1.0_fp ) * p1(1) - u(1) * p2(1) + p(1) )**2 &
+                + ( ( u(1) - 1.0_fp ) * p1(2) - u(1) * p2(2) + p(2) )**2 ) &
                 / sqrt ( normsq )
 
   end if
@@ -26955,6 +27312,7 @@ subroutine segment_contains_point_2d ( p1, p2, p, u )
   return
 end
 subroutine segment_point_coords_2d ( p1, p2, p, s, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -26997,33 +27355,33 @@ subroutine segment_point_coords_2d ( p1, p2, p, s, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the endpoints of the line segment.
+!    Input, real ( kind = fp ) P1(2), P2(2), the endpoints of the line segment.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be considered.
+!    Input, real ( kind = fp ) P(2), the point to be considered.
 !
-!    Output, real ( kind = 8 ) S, the distance of P to the nearest point PN
+!    Output, real ( kind = fp ) S, the distance of P to the nearest point PN
 !    on the line through P1 and P2.  (S will always be nonnegative.)
 !
-!    Output, real ( kind = 8 ) T, the relative position of the point PN
+!    Output, real ( kind = fp ) T, the relative position of the point PN
 !    to the points P1 and P2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) s
-  real ( kind = 8 ) t
+  real ( kind = fp ) bot
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) s
+  real ( kind = fp ) t
 !
 !  If the line segment is actually a point, then the answer is easy.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
   else
 
@@ -27041,6 +27399,7 @@ subroutine segment_point_coords_2d ( p1, p2, p, s, t )
   return
 end
 subroutine segment_point_coords_3d ( p1, p2, p, s, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27083,33 +27442,33 @@ subroutine segment_point_coords_3d ( p1, p2, p, s, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the endpoints of the line segment.
+!    Input, real ( kind = fp ) P1(3), P2(3), the endpoints of the line segment.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be considered.
+!    Input, real ( kind = fp ) P(3), the point to be considered.
 !
-!    Output, real ( kind = 8 ) S, the distance of P to the nearest point PN
+!    Output, real ( kind = fp ) S, the distance of P to the nearest point PN
 !    on the line through P1 and P2.  (S will always be nonnegative.)
 !
-!    Output, real ( kind = 8 ) T, the relative position of the point PN
+!    Output, real ( kind = fp ) T, the relative position of the point PN
 !    to the points P1 and P2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) s
-  real ( kind = 8 ) t
+  real ( kind = fp ) bot
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) s
+  real ( kind = fp ) t
 !
 !  If the line segment is actually a point, then the answer is easy.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
   else
 
@@ -27127,6 +27486,7 @@ subroutine segment_point_coords_3d ( p1, p2, p, s, t )
   return
 end
 subroutine segment_point_dist_2d ( p1, p2, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27157,31 +27517,31 @@ subroutine segment_point_dist_2d ( p1, p2, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the endpoints of the line segment.
+!    Input, real ( kind = fp ) P1(2), P2(2), the endpoints of the line segment.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose nearest neighbor on the line
+!    Input, real ( kind = fp ) P(2), the point whose nearest neighbor on the line
 !    segment is to be determined.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    line segment.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 !
 !  If the line segment is actually a point, then the answer is easy.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
   else
 
@@ -27190,8 +27550,8 @@ subroutine segment_point_dist_2d ( p1, p2, p, dist )
     t = sum ( ( p(1:dim_num)  - p1(1:dim_num) ) &
             * ( p2(1:dim_num) - p1(1:dim_num) ) ) / bot
 
-    t = max ( t, 0.0D+00 )
-    t = min ( t, 1.0D+00 )
+    t = max ( t, 0.0_fp )
+    t = min ( t, 1.0_fp )
 
   end if
 
@@ -27202,6 +27562,7 @@ subroutine segment_point_dist_2d ( p1, p2, p, dist )
   return
 end
 subroutine segment_point_dist_3d ( p1, p2, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27232,31 +27593,31 @@ subroutine segment_point_dist_3d ( p1, p2, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the endpoints of the segment.
+!    Input, real ( kind = fp ) P1(3), P2(3), the endpoints of the segment.
 !
-!    Input, real ( kind = 8 ) P(3), the point whose nearest neighbor on
+!    Input, real ( kind = fp ) P(3), the point whose nearest neighbor on
 !    the line segment is to be determined.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    line segment.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 !
 !  If the line segment is actually a point, then the answer is easy.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
   else
 
@@ -27265,8 +27626,8 @@ subroutine segment_point_dist_3d ( p1, p2, p, dist )
     t = sum ( ( p(1:dim_num)  - p1(1:dim_num) ) &
             * ( p2(1:dim_num) - p1(1:dim_num) ) ) / bot
 
-    t = max ( t, 0.0D+00 )
-    t = min ( t, 1.0D+00 )
+    t = max ( t, 0.0_fp )
+    t = min ( t, 1.0_fp )
 
   end if
 
@@ -27277,6 +27638,7 @@ subroutine segment_point_dist_3d ( p1, p2, p, dist )
   return
 end
 subroutine segment_point_near_2d ( p1, p2, p, pn, dist, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27307,37 +27669,37 @@ subroutine segment_point_near_2d ( p1, p2, p, pn, dist, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the endpoints of the line segment.
+!    Input, real ( kind = fp ) P1(2), P2(2), the endpoints of the line segment.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose nearest neighbor
+!    Input, real ( kind = fp ) P(2), the point whose nearest neighbor
 !    on the line segment is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(2), the point on the line segment which is
+!    Output, real ( kind = fp ) PN(2), the point on the line segment which is
 !    nearest the point P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the 
+!    Output, real ( kind = fp ) DIST, the distance from the point to the 
 !    nearest point on the line segment.
 !
-!    Output, real ( kind = 8 ) T, the relative position of the point PN
+!    Output, real ( kind = fp ) T, the relative position of the point PN
 !    to the points P1 and P2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 !
 !  If the line segment is actually a point, then the answer is easy.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
   else
 
@@ -27346,8 +27708,8 @@ subroutine segment_point_near_2d ( p1, p2, p, pn, dist, t )
     t = sum ( ( p(1:dim_num)  - p1(1:dim_num) ) &
             * ( p2(1:dim_num) - p1(1:dim_num) ) ) / bot
 
-    t = max ( t, 0.0D+00 )
-    t = min ( t, 1.0D+00 )
+    t = max ( t, 0.0_fp )
+    t = min ( t, 1.0_fp )
 
   end if
 
@@ -27358,6 +27720,7 @@ subroutine segment_point_near_2d ( p1, p2, p, pn, dist, t )
   return
 end
 subroutine segment_point_near_3d ( p1, p2, p, pn, dist, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27388,37 +27751,37 @@ subroutine segment_point_near_3d ( p1, p2, p, pn, dist, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the endpoints of the segment.
+!    Input, real ( kind = fp ) P1(3), P2(3), the endpoints of the segment.
 !
-!    Input, real ( kind = 8 ) P(3), the point whose nearest neighbor
+!    Input, real ( kind = fp ) P(3), the point whose nearest neighbor
 !    on the line segment is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(3), the point on the line segment
+!    Output, real ( kind = fp ) PN(3), the point on the line segment
 !    nearest to P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    nearest point on the line segment.
 !
-!    Output, real ( kind = 8 ) T, the relative position of the nearest point
+!    Output, real ( kind = fp ) T, the relative position of the nearest point
 !    P to P1 and P2, that is PN = (1-T)*P1 + T*P2.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) t
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) t
 !
 !  If the line segment is actually a point, then the answer is easy.
 !
   if ( all ( p1(1:dim_num) == p2(1:dim_num) ) ) then
 
-    t = 0.0D+00
+    t = 0.0_fp
 
   else
 
@@ -27427,8 +27790,8 @@ subroutine segment_point_near_3d ( p1, p2, p, pn, dist, t )
     t = sum ( ( p(1:dim_num)  - p1(1:dim_num) ) &
             * ( p2(1:dim_num) - p1(1:dim_num) ) ) / bot
 
-    t = max ( t, 0.0D+00 )
-    t = min ( t, 1.0D+00 )
+    t = max ( t, 0.0_fp )
+    t = min ( t, 1.0_fp )
 
   end if
 
@@ -27439,6 +27802,7 @@ subroutine segment_point_near_3d ( p1, p2, p, pn, dist, t )
   return
 end
 subroutine segments_curvature_2d ( p1, p2, p3, curvature )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27473,32 +27837,33 @@ subroutine segments_curvature_2d ( p1, p2, p3, curvature )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), P3(2), the points.
+!    Input, real ( kind = fp ) P1(2), P2(2), P3(2), the points.
 !
-!    Output, real ( kind = 8 ) CURVATURE, the local curvature.
+!    Output, real ( kind = fp ) CURVATURE, the local curvature.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) curvature
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) curvature
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
 
   call circle_exp2imp_2d ( p1, p2, p3, r, pc )
 
-  if ( 0.0D+00 < r ) then
-    curvature = 1.0D+00 / r
+  if ( 0.0_fp < r ) then
+    curvature = 1.0_fp / r
   else
-    curvature = 0.0D+00
+    curvature = 0.0_fp
   end if
 
   return
 end
 subroutine segments_dist_2d ( p1, p2, q1, q2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27545,30 +27910,30 @@ subroutine segments_dist_2d ( p1, p2, q1, q2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the endpoints of the first
+!    Input, real ( kind = fp ) P1(2), P2(2), the endpoints of the first
 !    segment.
 !
-!    Input, real ( kind = 8 ) Q1(2), Q2(2), the endpoints of the second
+!    Input, real ( kind = fp ) Q1(2), Q2(2), the endpoints of the second
 !    segment.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the line segments.
+!    Output, real ( kind = fp ) DIST, the distance between the line segments.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) ival
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) r(dim_num)
-  real ( kind = 8 ) rps
-  real ( kind = 8 ) rpt
-  real ( kind = 8 ) rqs
-  real ( kind = 8 ) rqt
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) r(dim_num)
+  real ( kind = fp ) rps
+  real ( kind = fp ) rpt
+  real ( kind = fp ) rqs
+  real ( kind = fp ) rqt
 !
 !  Determine whether and where the underlying lines intersect.
 !
@@ -27582,9 +27947,9 @@ subroutine segments_dist_2d ( p1, p2, q1, q2, dist )
     call segment_point_coords_2d ( p1, p2, r, rps, rpt )
     call segment_point_coords_2d ( q1, q2, r, rqs, rqt )
 
-    if ( 0.0D+00 <= rpt .and. rpt <= 1.0D+00 .and. &
-         0.0D+00 <= rqt .and. rqt <= 1.0D+00 ) then
-      dist = 0.0D+00
+    if ( 0.0_fp <= rpt .and. rpt <= 1.0_fp .and. &
+         0.0_fp <= rqt .and. rqt <= 1.0_fp ) then
+      dist = 0.0_fp
       return
     end if
 
@@ -27606,6 +27971,7 @@ subroutine segments_dist_2d ( p1, p2, q1, q2, dist )
   return
 end
 subroutine segments_dist_3d ( p1, p2, q1, q2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27669,37 +28035,37 @@ subroutine segments_dist_3d ( p1, p2, q1, q2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the endpoints of the first
+!    Input, real ( kind = fp ) P1(3), P2(3), the endpoints of the first
 !    segment.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), the endpoints of the second
+!    Input, real ( kind = fp ) Q1(3), Q2(3), the endpoints of the second
 !    segment.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the line segments.
+!    Output, real ( kind = fp ) DIST, the distance between the line segments.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) det
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) e
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) qn(dim_num)
-  real ( kind = 8 ) sn
-  real ( kind = 8 ) tn
-  real ( kind = 8 ) u(dim_num)
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) w0(dim_num)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) det
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
+  real ( kind = fp ) e
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) qn(dim_num)
+  real ( kind = fp ) sn
+  real ( kind = fp ) tn
+  real ( kind = fp ) u(dim_num)
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) w0(dim_num)
 !
 !  The lines are identical.
 !  THIS CASE NOT SET UP YET
@@ -27764,8 +28130,8 @@ subroutine segments_dist_3d ( p1, p2, q1, q2, dist )
 !
   det = - a * c + b * b
 
-  if ( det == 0.0D+00 ) then
-    sn = 0.0D+00
+  if ( det == 0.0_fp ) then
+    sn = 0.0_fp
     if ( abs ( b ) < abs ( c ) ) then
       tn = e / c
     else
@@ -27780,8 +28146,8 @@ subroutine segments_dist_3d ( p1, p2, q1, q2, dist )
 !  also happen to lie inside their line segments,
 !  then we have found the nearest points on the line segments.
 !
-  if ( 0.0D+00 <= sn .and. sn <= 1.0D+00 .and. &
-       0.0D+00 <= tn .and. tn <= 1.0D+00 ) then
+  if ( 0.0_fp <= sn .and. sn <= 1.0_fp .and. &
+       0.0_fp <= tn .and. tn <= 1.0_fp ) then
     pn(1:dim_num) = p1(1:dim_num) + sn * ( p2(1:dim_num) - p1(1:dim_num) )
     qn(1:dim_num) = q1(1:dim_num) + tn * ( q2(1:dim_num) - q1(1:dim_num) )
     dist = sqrt ( sum ( ( pn(1:dim_num) - qn(1:dim_num) )**2 ) )
@@ -27803,6 +28169,7 @@ subroutine segments_dist_3d ( p1, p2, q1, q2, dist )
   return
 end
 subroutine segments_dist_3d_old ( p1, p2, q1, q2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27827,37 +28194,37 @@ subroutine segments_dist_3d_old ( p1, p2, q1, q2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), the endpoints of the
+!    Input, real ( kind = fp ) P1(3), P2(3), the endpoints of the
 !    first segment.
 !
-!    Input, real ( kind = 8 ) Q1(3), Q2(3), the endpoints of the
+!    Input, real ( kind = fp ) Q1(3), Q2(3), the endpoints of the
 !    second segment.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the line segments.
+!    Output, real ( kind = fp ) DIST, the distance between the line segments.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) d1
-  real ( kind = 8 ) d2
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dl
-  real ( kind = 8 ) dm
-  real ( kind = 8 ) dr
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pm(dim_num)
-  real ( kind = 8 ) pn1(dim_num)
-  real ( kind = 8 ) pn2(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) t1
-  real ( kind = 8 ) t2
-  real ( kind = 8 ) tl
-  real ( kind = 8 ) tm
-  real ( kind = 8 ) tmin
-  real ( kind = 8 ) tr
+  real ( kind = fp ) d1
+  real ( kind = fp ) d2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dl
+  real ( kind = fp ) dm
+  real ( kind = fp ) dr
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pm(dim_num)
+  real ( kind = fp ) pn1(dim_num)
+  real ( kind = fp ) pn2(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) t1
+  real ( kind = fp ) t2
+  real ( kind = fp ) tl
+  real ( kind = fp ) tm
+  real ( kind = fp ) tmin
+  real ( kind = fp ) tr
 !
 !  Find the nearest points on line 2 to the endpoints of line 1.
 !
@@ -27869,7 +28236,7 @@ subroutine segments_dist_3d_old ( p1, p2, q1, q2, dist )
     return
   end if
 
-  pm(1:dim_num) = 0.5D+00 * ( pn1(1:dim_num) + pn2(1:dim_num) )
+  pm(1:dim_num) = 0.5_fp * ( pn1(1:dim_num) + pn2(1:dim_num) )
 !
 !  On line 2, over the interval between the points nearest to line 1,
 !  the square of the distance of any point to line 1 is a quadratic function.
@@ -27879,9 +28246,9 @@ subroutine segments_dist_3d_old ( p1, p2, q1, q2, dist )
   call segment_point_dist_3d ( p1, p2, pm, dm )
   call segment_point_dist_3d ( p1, p2, pn2, dr )
 
-  tl = 0.0D+00
-  tm = 0.5D+00
-  tr = 1.0D+00
+  tl = 0.0_fp
+  tm = 0.5_fp
+  tr = 1.0_fp
 
   dl = dl * dl
   dm = dm * dm
@@ -27894,6 +28261,7 @@ subroutine segments_dist_3d_old ( p1, p2, q1, q2, dist )
   return
 end
 subroutine segments_int_1d ( p1, p2, q1, q2, dist, r1, r2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27924,17 +28292,17 @@ subroutine segments_int_1d ( p1, p2, q1, q2, dist, r1, r2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1, P2, the endpoints of the first segment.
+!    Input, real ( kind = fp ) P1, P2, the endpoints of the first segment.
 !
-!    Input, real ( kind = 8 ) Q1, Q2, the endpoints of the second segment.
+!    Input, real ( kind = fp ) Q1, Q2, the endpoints of the second segment.
 !
-!    Output, real ( kind = 8 ) DIST, the "distance" between the segments.
+!    Output, real ( kind = fp ) DIST, the "distance" between the segments.
 !    < 0, the segments overlap, and the overlap is DIST units long;
 !    = 0, the segments overlap at a single point;
 !    > 0, the segments do not overlap.  The distance between the nearest
 !    points is DIST units.
 !
-!    Output, real ( kind = 8 ) R1, R2, the endpoints of the intersection
+!    Output, real ( kind = fp ) R1, R2, the endpoints of the intersection
 !    segment.  
 !    If DIST < 0, then the interval [R1,R2] is the common intersection
 !    of the two segments.
@@ -27944,13 +28312,13 @@ subroutine segments_int_1d ( p1, p2, q1, q2, dist, r1, r2 )
 !
   implicit none
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p1
-  real ( kind = 8 ) p2
-  real ( kind = 8 ) q1
-  real ( kind = 8 ) q2
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
+  real ( kind = fp ) dist
+  real ( kind = fp ) p1
+  real ( kind = fp ) p2
+  real ( kind = fp ) q1
+  real ( kind = fp ) q2
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
 
   r1 = max ( min ( p1, p2 ), &
              min ( q1, q2 ) )
@@ -27963,6 +28331,7 @@ subroutine segments_int_1d ( p1, p2, q1, q2, dist, r1, r2 )
   return
 end
 subroutine segments_int_2d ( p1, p2, q1, q2, flag, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -27990,17 +28359,17 @@ subroutine segments_int_2d ( p1, p2, q1, q2, flag, r )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), P2(2), the endpoints of the first
+!    Input, real ( kind = fp ) P1(2), P2(2), the endpoints of the first
 !    segment.
 !
-!    Input, real ( kind = 8 ) Q1(2), Q2(2), the endpoints of the second
+!    Input, real ( kind = fp ) Q1(2), Q2(2), the endpoints of the second
 !    segment.
 !
 !    Output, integer ( kind = 4 ) FLAG, records the results.
 !    0, the line segments do not intersect.
 !    1, the line segments intersect.
 !
-!    Output, real ( kind = 8 ) R(2), an intersection point, if there is one.
+!    Output, real ( kind = fp ) R(2), an intersection point, if there is one.
 !
   implicit none
 
@@ -28008,17 +28377,17 @@ subroutine segments_int_2d ( p1, p2, q1, q2, flag, r )
 
   integer ( kind = 4 ) flag
   integer ( kind = 4 ) ival
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) q1(dim_num)
-  real ( kind = 8 ) q2(dim_num)
-  real ( kind = 8 ) r(dim_num)
-  real ( kind = 8 ), parameter :: tol = 0.001D+00
-  real ( kind = 8 ) u(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) q1(dim_num)
+  real ( kind = fp ) q2(dim_num)
+  real ( kind = fp ) r(dim_num)
+  real ( kind = fp ), parameter :: tol = 0.001_fp
+  real ( kind = fp ) u(dim_num)
 !
 !  Find the intersection of the two lines.
 !
-  r(1:dim_num) = (/ 0.0D+00, 0.0D+00 /)
+  r(1:dim_num) = (/ 0.0_fp, 0.0_fp /)
 
   call lines_exp_int_2d ( p1, p2, q1, q2, ival, r )
 
@@ -28031,7 +28400,7 @@ subroutine segments_int_2d ( p1, p2, q1, q2, flag, r )
 !
   call segment_contains_point_2d ( p1, p2, r, u )
 
-  if ( u(1) < 0.0D+00 .or. 1.0D+00 < u(1) .or. tol < u(2) ) then
+  if ( u(1) < 0.0_fp .or. 1.0_fp < u(1) .or. tol < u(2) ) then
     flag = 0
     return
   end if
@@ -28040,7 +28409,7 @@ subroutine segments_int_2d ( p1, p2, q1, q2, flag, r )
 !
   call segment_contains_point_2d ( q1, q2, r, u )
 
-  if ( u(1) < 0.0D+00 .or. 1.0D+00 < u(1) .or. tol < u(2) ) then
+  if ( u(1) < 0.0_fp .or. 1.0_fp < u(1) .or. tol < u(2) ) then
     flag = 0
     return
   end if
@@ -28050,6 +28419,7 @@ subroutine segments_int_2d ( p1, p2, q1, q2, flag, r )
   return
 end
 subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28074,39 +28444,39 @@ subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the shape.
+!    Input, real ( kind = fp ) PC(2), the center of the shape.
 !
-!    Input, real ( kind = 8 ) P1(2), the first vertex of the shape.
+!    Input, real ( kind = fp ) P1(2), the first vertex of the shape.
 !
 !    Input, integer ( kind = 4 ) SIDE_NUM, the number of sides.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the shape.
+!    Output, real ( kind = fp ) DIST, the distance from the point to the shape.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angle_deg_2d
-  real ( kind = 8 ) angle2
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) pa(dim_num)
-  real ( kind = 8 ) pb(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radius
-  real ( kind = 8 ) sector_angle
+  real ( kind = fp ) angle
+  real ( kind = fp ) angle_deg_2d
+  real ( kind = fp ) angle2
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) pa(dim_num)
+  real ( kind = fp ) pb(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radius
+  real ( kind = fp ) sector_angle
   integer ( kind = 4 ) sector_index
   integer ( kind = 4 ) side_num
 !
 !  Determine the angle subtended by a single side.
 !
-  sector_angle = 360.0D+00 / real ( side_num, kind = 8 )
+  sector_angle = 360.0_fp / real ( side_num, kind = 8 )
 !
 !  How long is the half-diagonal?
 !
@@ -28114,7 +28484,7 @@ subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
 !
 !  If the radius is zero, then the shape is a point and the computation is easy.
 !
-  if ( radius == 0.0D+00 ) then
+  if ( radius == 0.0_fp ) then
     dist = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
     return
   end if
@@ -28157,6 +28527,7 @@ subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
   return
 end
 subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28181,45 +28552,45 @@ subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the shape.
+!    Input, real ( kind = fp ) PC(2), the center of the shape.
 !
-!    Input, real ( kind = 8 ) P1(2), the first vertex of the shape.
+!    Input, real ( kind = fp ) P1(2), the first vertex of the shape.
 !
 !    Input, integer ( kind = 4 ) SIDE_NUM, the number of sides.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) PN(2), the point on the shape that is nearest
+!    Output, real ( kind = fp ) PN(2), the point on the shape that is nearest
 !    to the given point.
 !
-!    Output, real ( kind = 8 ) DIST, the distance between the points.
+!    Output, real ( kind = fp ) DIST, the distance between the points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angle_deg_2d
-  real ( kind = 8 ) angle2
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) pa(dim_num)
-  real ( kind = 8 ) pb(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pd(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) radius
-  real ( kind = 8 ) sector_angle
+  real ( kind = fp ) angle
+  real ( kind = fp ) angle_deg_2d
+  real ( kind = fp ) angle2
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ) dist
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) pa(dim_num)
+  real ( kind = fp ) pb(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pd(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) radius
+  real ( kind = fp ) sector_angle
   integer ( kind = 4 ) sector_index
   integer ( kind = 4 ) side_num
-  real ( kind = 8 ) t
+  real ( kind = fp ) t
 !
 !  Determine the angle subtended by a single side.
 !
-  sector_angle = 360.0D+00 / real ( side_num, kind = 8 )
+  sector_angle = 360.0_fp / real ( side_num, kind = 8 )
 !
 !  How long is the half-diagonal?
 !
@@ -28227,7 +28598,7 @@ subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
 !
 !  If the radius is zero, then the shape is a point and the computation is easy.
 !
-  if ( radius == 0.0D+00 ) then
+  if ( radius == 0.0_fp ) then
     pn(1:dim_num) = pc(1:dim_num)
     dist = sqrt ( sum ( ( p(1:dim_num) - pn(1:dim_num) )**2 ) )
     return
@@ -28279,6 +28650,7 @@ subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
 end
 subroutine shape_print_3d ( point_num, face_num, face_order_max, &
   point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28305,7 +28677,7 @@ subroutine shape_print_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the number of vertices 
 !    per face.
 !
-!    Input, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the vertices.
+!    Input, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the vertices.
 !
 !    Input, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of vertices
 !    per face.
@@ -28325,7 +28697,7 @@ subroutine shape_print_3d ( point_num, face_num, face_order_max, &
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 
   write ( *, '(a)' ) ' '
   write ( *, '(a)' ) 'SHAPE_PRINT_3D'
@@ -28358,6 +28730,7 @@ subroutine shape_print_3d ( point_num, face_num, face_order_max, &
   return
 end
 subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28385,38 +28758,38 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the shape.
+!    Input, real ( kind = fp ) PC(2), the center of the shape.
 !
-!    Input, real ( kind = 8 ) P1(2), the first vertex of the shape.
+!    Input, real ( kind = fp ) P1(2), the first vertex of the shape.
 !
 !    Input, integer ( kind = 4 ) SIDE_NUM, the number of sides.
 !
-!    Input, real ( kind = 8 ) PA(2), the origin of the ray.
+!    Input, real ( kind = fp ) PA(2), the origin of the ray.
 !
-!    Input, real ( kind = 8 ) PB(2), a second point on the ray.
+!    Input, real ( kind = fp ) PB(2), a second point on the ray.
 !
-!    Output, real ( kind = 8 ) PINT(2), the point on the shape intersected
+!    Output, real ( kind = fp ) PINT(2), the point on the shape intersected
 !    by the ray.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle2
-  real ( kind = 8 ) degrees_to_radians
+  real ( kind = fp ) angle2
+  real ( kind = fp ) degrees_to_radians
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) ival
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) pa(dim_num)
-  real ( kind = 8 ) pb(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pint(dim_num)
-  real ( kind = 8 ) radius
-  real ( kind = 8 ) sector_angle
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) pa(dim_num)
+  real ( kind = fp ) pb(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pint(dim_num)
+  real ( kind = fp ) radius
+  real ( kind = fp ) sector_angle
   integer ( kind = 4 ) sector_index
   integer ( kind = 4 ) side_num
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 !
 !  Warning!
 !  No check is made to ensure that the ray origin is inside the shape.
@@ -28424,7 +28797,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 !
 !  Determine the angle subtended by a single side.
 !
-  sector_angle = 360.0D+00 / real ( side_num, kind = 8 )
+  sector_angle = 360.0_fp / real ( side_num, kind = 8 )
 !
 !  How long is the half-diagonal?
 !
@@ -28432,7 +28805,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 !
 !  If the radius is zero, refuse to continue.
 !
-  if ( radius == 0.0D+00 ) then
+  if ( radius == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'SHAPE_RAY_INT_2D - Fatal error!'
     write ( *, '(a)' ) '  The shape has radius zero.'
@@ -28441,7 +28814,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 !
 !  Determine which sector side intersects the ray.
 !
-  v2(1:dim_num) = (/ 0.0D+00, 0.0D+00 /)
+  v2(1:dim_num) = (/ 0.0_fp, 0.0_fp /)
 
   do sector_index = 1, side_num
 !
@@ -28494,6 +28867,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
   stop 1
 end
 subroutine simplex_lattice_layer_point_next ( n, c, v, more )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28626,6 +29000,7 @@ subroutine simplex_lattice_layer_point_next ( n, c, v, more )
   return
 end
 subroutine simplex_lattice_point_next ( n, c, v, more )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28734,6 +29109,7 @@ subroutine simplex_lattice_point_next ( n, c, v, more )
   return
 end
 subroutine simplex01_lattice_point_num_nd ( d, s, n )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28795,6 +29171,7 @@ subroutine simplex01_lattice_point_num_nd ( d, s, n )
   return
 end
 subroutine simplex01_volume_nd ( dim_num, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28820,15 +29197,15 @@ subroutine simplex01_volume_nd ( dim_num, volume )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume.
+!    Output, real ( kind = fp ) VOLUME, the volume.
 !
   implicit none
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) dim_num
-  real ( kind = 8 ) volume
+  real ( kind = fp ) volume
 
-  volume = 1.0D+00
+  volume = 1.0_fp
   do i = 1, dim_num
     volume = volume / real ( i, kind = 8 )
   end do
@@ -28836,6 +29213,7 @@ subroutine simplex01_volume_nd ( dim_num, volume )
   return
 end
 subroutine simplex_volume_nd ( dim_num, a, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28866,22 +29244,22 @@ subroutine simplex_volume_nd ( dim_num, a, volume )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Input, real ( kind = 8 ) A(DIM_NUM,DIM_NUM+1), the vertices.
+!    Input, real ( kind = fp ) A(DIM_NUM,DIM_NUM+1), the vertices.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the simplex.
+!    Output, real ( kind = fp ) VOLUME, the volume of the simplex.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) a(dim_num,dim_num+1)
-  real ( kind = 8 ) b(dim_num,dim_num)
-  real ( kind = 8 ) det
+  real ( kind = fp ) a(dim_num,dim_num+1)
+  real ( kind = fp ) b(dim_num,dim_num)
+  real ( kind = fp ) det
   integer ( kind = 4 ) i
   integer ( kind = 4 ) info
   integer ( kind = 4 ) j
   integer ( kind = 4 ) pivot(dim_num)
-  real ( kind = 8 ) volume
+  real ( kind = fp ) volume
 
   b(1:dim_num,1:dim_num) = a(1:dim_num,1:dim_num)
   do j = 1, dim_num
@@ -28892,7 +29270,7 @@ subroutine simplex_volume_nd ( dim_num, a, volume )
 
   if ( info /= 0 ) then
 
-    volume = -1.0D+00
+    volume = -1.0_fp
 
   else
 
@@ -28908,6 +29286,7 @@ subroutine simplex_volume_nd ( dim_num, a, volume )
   return
 end
 function sin_power_int ( a, b, n )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -28938,31 +29317,31 @@ function sin_power_int ( a, b, n )
 !
 !  Parameters
 !
-!    Input, real ( kind = 8 ) A, B, the limits of integration.
+!    Input, real ( kind = fp ) A, B, the limits of integration.
 !
 !    Input, integer ( kind = 4 ) N, the power of the sine function.
 !
-!    Output, real ( kind = 8 ) SIN_POWER_INT, the value of the integral.
+!    Output, real ( kind = fp ) SIN_POWER_INT, the value of the integral.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) ca
-  real ( kind = 8 ) cb
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) ca
+  real ( kind = fp ) cb
   integer ( kind = 4 ) m
   integer ( kind = 4 ) mlo
   integer ( kind = 4 ) n
-  real ( kind = 8 ) sa
-  real ( kind = 8 ) sb
-  real ( kind = 8 ) sin_power_int
-  real ( kind = 8 ) value
+  real ( kind = fp ) sa
+  real ( kind = fp ) sb
+  real ( kind = fp ) sin_power_int
+  real ( kind = fp ) value
 
   if ( n < 0 ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'SIN_POWER_INT - Fatal error!'
     write ( *, '(a)' ) '  Power N < 0.'
-    value = 0.0D+00
+    value = 0.0_fp
     stop 1
   end if
 
@@ -28992,6 +29371,7 @@ function sin_power_int ( a, b, n )
 end
 subroutine soccer_shape_3d ( point_num, face_num, face_order_max, point_coord, &
   face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29035,7 +29415,7 @@ subroutine soccer_shape_3d ( point_num, face_num, face_order_max, point_coord, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum order of any 
 !    face (6).
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the vertices.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the vertices.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of
 !    vertices per face.
@@ -29054,71 +29434,71 @@ subroutine soccer_shape_3d ( point_num, face_num, face_order_max, point_coord, &
 
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 !
 !  Set the point coordinates.
 !
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
-       -0.100714D+01,   0.153552D+00,   0.067258D+00, &
-       -0.960284D+00,   0.0848813D+00, -0.336290D+00, &
-       -0.951720D+00,  -0.153552D+00,   0.336290D+00, &
-       -0.860021D+00,   0.529326D+00,   0.150394D+00, &
-       -0.858000D+00,  -0.290893D+00,  -0.470806D+00, &
-       -0.849436D+00,  -0.529326D+00,   0.201774D+00, &
-       -0.802576D+00,  -0.597996D+00,  -0.201774D+00, &
-       -0.784200D+00,   0.418215D+00,  -0.502561D+00, &
-       -0.749174D+00,  -0.0848813D+00,  0.688458D+00, &
-       -0.722234D+00,   0.692896D+00,  -0.201774D+00, &
-       -0.657475D+00,   0.597996D+00,   0.502561D+00, &
-       -0.602051D+00,   0.290893D+00,   0.771593D+00, &
-       -0.583675D+00,  -0.692896D+00,   0.470806D+00, &
-       -0.579632D+00,  -0.333333D+00,  -0.771593D+00, &
-       -0.521710D+00,  -0.418215D+00,   0.771593D+00, &
-       -0.505832D+00,   0.375774D+00,  -0.803348D+00, &
-       -0.489955D+00,  -0.830237D+00,  -0.336290D+00, &
-       -0.403548D+00,   0.000000D+00,  -0.937864D+00, &
-       -0.381901D+00,   0.925138D+00,  -0.201774D+00, &
-       -0.352168D+00,  -0.666667D+00,  -0.688458D+00, &
-       -0.317142D+00,   0.830237D+00,   0.502561D+00, &
-       -0.271054D+00,  -0.925138D+00,   0.336290D+00, &
-       -0.227464D+00,   0.333333D+00,   0.937864D+00, &
-       -0.224193D+00,  -0.993808D+00,  -0.067258D+00, &
-       -0.179355D+00,   0.993808D+00,   0.150394D+00, &
-       -0.165499D+00,   0.608015D+00,  -0.803348D+00, &
-       -0.147123D+00,  -0.375774D+00,   0.937864D+00, &
-       -0.103533D+00,   0.882697D+00,  -0.502561D+00, &
-       -0.513806D-01,   0.666667D+00,   0.771593D+00, &
-        0.000000D+00,   0.000000D+00,   1.021000D+00, &
-        0.000000D+00,   0.000000D+00,  -1.021000D+00, &
-        0.513806D-01,  -0.666667D+00,  -0.771593D+00, &
-        0.103533D+00,  -0.882697D+00,   0.502561D+00, &
-        0.147123D+00,   0.375774D+00,  -0.937864D+00, &
-        0.165499D+00,  -0.608015D+00,   0.803348D+00, &
-        0.179355D+00,  -0.993808D+00,  -0.150394D+00, &
-        0.224193D+00,   0.993808D+00,   0.067258D+00, &
-        0.227464D+00,  -0.333333D+00,  -0.937864D+00, &
-        0.271054D+00,   0.925138D+00,  -0.336290D+00, &
-        0.317142D+00,  -0.830237D+00,  -0.502561D+00, &
-        0.352168D+00,   0.666667D+00,   0.688458D+00, &
-        0.381901D+00,  -0.925138D+00,   0.201774D+00, &
-        0.403548D+00,   0.000000D+00,   0.937864D+00, &
-        0.489955D+00,   0.830237D+00,   0.336290D+00, &
-        0.505832D+00,  -0.375774D+00,   0.803348D+00, &
-        0.521710D+00,   0.418215D+00,  -0.771593D+00, &
-        0.579632D+00,   0.333333D+00,   0.771593D+00, &
-        0.583675D+00,   0.692896D+00,  -0.470806D+00, &
-        0.602051D+00,  -0.290893D+00,  -0.771593D+00, &
-        0.657475D+00,  -0.597996D+00,  -0.502561D+00, &
-        0.722234D+00,  -0.692896D+00,   0.201774D+00, &
-        0.749174D+00,   0.0848813D+00, -0.688458D+00, &
-        0.784200D+00,  -0.418215D+00,   0.502561D+00, &
-        0.802576D+00,   0.597996D+00,   0.201774D+00, &
-        0.849436D+00,   0.529326D+00,  -0.201774D+00, &
-        0.858000D+00,   0.290893D+00,   0.470806D+00, &
-        0.860021D+00,  -0.529326D+00,  -0.150394D+00, &
-        0.951720D+00,   0.153552D+00,  -0.336290D+00, &
-        0.960284D+00,  -0.0848813D+00,  0.336290D+00, &
-        1.007140D+00,  -0.153552D+00,  -0.067258D+00 /), &
+       -0.100714D+01,   0.153552_fp,   0.067258_fp, &
+       -0.960284_fp,   0.0848813_fp, -0.336290_fp, &
+       -0.951720_fp,  -0.153552_fp,   0.336290_fp, &
+       -0.860021_fp,   0.529326_fp,   0.150394_fp, &
+       -0.858000_fp,  -0.290893_fp,  -0.470806_fp, &
+       -0.849436_fp,  -0.529326_fp,   0.201774_fp, &
+       -0.802576_fp,  -0.597996_fp,  -0.201774_fp, &
+       -0.784200_fp,   0.418215_fp,  -0.502561_fp, &
+       -0.749174_fp,  -0.0848813_fp,  0.688458_fp, &
+       -0.722234_fp,   0.692896_fp,  -0.201774_fp, &
+       -0.657475_fp,   0.597996_fp,   0.502561_fp, &
+       -0.602051_fp,   0.290893_fp,   0.771593_fp, &
+       -0.583675_fp,  -0.692896_fp,   0.470806_fp, &
+       -0.579632_fp,  -0.333333_fp,  -0.771593_fp, &
+       -0.521710_fp,  -0.418215_fp,   0.771593_fp, &
+       -0.505832_fp,   0.375774_fp,  -0.803348_fp, &
+       -0.489955_fp,  -0.830237_fp,  -0.336290_fp, &
+       -0.403548_fp,   0.000000_fp,  -0.937864_fp, &
+       -0.381901_fp,   0.925138_fp,  -0.201774_fp, &
+       -0.352168_fp,  -0.666667_fp,  -0.688458_fp, &
+       -0.317142_fp,   0.830237_fp,   0.502561_fp, &
+       -0.271054_fp,  -0.925138_fp,   0.336290_fp, &
+       -0.227464_fp,   0.333333_fp,   0.937864_fp, &
+       -0.224193_fp,  -0.993808_fp,  -0.067258_fp, &
+       -0.179355_fp,   0.993808_fp,   0.150394_fp, &
+       -0.165499_fp,   0.608015_fp,  -0.803348_fp, &
+       -0.147123_fp,  -0.375774_fp,   0.937864_fp, &
+       -0.103533_fp,   0.882697_fp,  -0.502561_fp, &
+       -0.513806D-01,   0.666667_fp,   0.771593_fp, &
+        0.000000_fp,   0.000000_fp,   1.021000_fp, &
+        0.000000_fp,   0.000000_fp,  -1.021000_fp, &
+        0.513806D-01,  -0.666667_fp,  -0.771593_fp, &
+        0.103533_fp,  -0.882697_fp,   0.502561_fp, &
+        0.147123_fp,   0.375774_fp,  -0.937864_fp, &
+        0.165499_fp,  -0.608015_fp,   0.803348_fp, &
+        0.179355_fp,  -0.993808_fp,  -0.150394_fp, &
+        0.224193_fp,   0.993808_fp,   0.067258_fp, &
+        0.227464_fp,  -0.333333_fp,  -0.937864_fp, &
+        0.271054_fp,   0.925138_fp,  -0.336290_fp, &
+        0.317142_fp,  -0.830237_fp,  -0.502561_fp, &
+        0.352168_fp,   0.666667_fp,   0.688458_fp, &
+        0.381901_fp,  -0.925138_fp,   0.201774_fp, &
+        0.403548_fp,   0.000000_fp,   0.937864_fp, &
+        0.489955_fp,   0.830237_fp,   0.336290_fp, &
+        0.505832_fp,  -0.375774_fp,   0.803348_fp, &
+        0.521710_fp,   0.418215_fp,  -0.771593_fp, &
+        0.579632_fp,   0.333333_fp,   0.771593_fp, &
+        0.583675_fp,   0.692896_fp,  -0.470806_fp, &
+        0.602051_fp,  -0.290893_fp,  -0.771593_fp, &
+        0.657475_fp,  -0.597996_fp,  -0.502561_fp, &
+        0.722234_fp,  -0.692896_fp,   0.201774_fp, &
+        0.749174_fp,   0.0848813_fp, -0.688458_fp, &
+        0.784200_fp,  -0.418215_fp,   0.502561_fp, &
+        0.802576_fp,   0.597996_fp,   0.201774_fp, &
+        0.849436_fp,   0.529326_fp,  -0.201774_fp, &
+        0.858000_fp,   0.290893_fp,   0.470806_fp, &
+        0.860021_fp,  -0.529326_fp,  -0.150394_fp, &
+        0.951720_fp,   0.153552_fp,  -0.336290_fp, &
+        0.960284_fp,  -0.0848813_fp,  0.336290_fp, &
+        1.007140_fp,  -0.153552_fp,  -0.067258_fp /), &
     (/ dim_num, point_num /) )
 !
 !  Set the face orders.
@@ -29168,6 +29548,7 @@ subroutine soccer_shape_3d ( point_num, face_num, face_order_max, point_coord, &
   return
 end
 subroutine soccer_size_3d ( point_num, edge_num, face_num, face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29219,6 +29600,7 @@ subroutine soccer_size_3d ( point_num, edge_num, face_num, face_order_max )
   return
 end
 subroutine sort_heap_external ( n, indx, i, j, isgn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29227,7 +29609,7 @@ subroutine sort_heap_external ( n, indx, i, j, isgn )
 !  Discussion:
 !
 !    The actual list of data is not passed to the routine.  Hence this
-!    routine may be used to sort integers, real ( kind = 8 )s, numbers, names,
+!    routine may be used to sort integers, real ( kind = fp )s, numbers, names,
 !    dates, shoe sizes, and so on.  After each call, the routine asks
 !    the user to compare or interchange two items, until a special
 !    return value signals that the sorting is completed.
@@ -29410,6 +29792,7 @@ subroutine sort_heap_external ( n, indx, i, j, isgn )
   return
 end
 subroutine sphere_cap_area_2d ( r, h, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29439,33 +29822,33 @@ subroutine sphere_cap_area_2d ( r, h, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H, the "height" of the spherical cap. 
+!    Input, real ( kind = fp ) H, the "height" of the spherical cap. 
 !    H must be between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the spherical cap.
+!    Output, real ( kind = fp ) AREA, the area of the spherical cap.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
+  real ( kind = fp ) area
+  real ( kind = fp ) h
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
 
-  if ( h <= 0.0D+00 ) then
-    area = 0.0D+00
-  else if ( 2.0D+00 * r <= h ) then
-    area = 2.0D+00 * r8_pi * r
+  if ( h <= 0.0_fp ) then
+    area = 0.0_fp
+  else if ( 2.0_fp * r <= h ) then
+    area = 2.0_fp * r8_pi * r
   else
 
-    theta = 2.0D+00 * r8_asin ( sqrt ( r * r - ( r - h )**2 ) / r )
+    theta = 2.0_fp * r8_asin ( sqrt ( r * r - ( r - h )**2 ) / r )
     area = r * theta
 
     if ( r <= h ) then
-      area = 2.0D+00 * r8_pi * r - area
+      area = 2.0_fp * r8_pi * r - area
     end if
 
   end if
@@ -29473,6 +29856,7 @@ subroutine sphere_cap_area_2d ( r, h, area )
   return
 end
 subroutine sphere_cap_area_3d ( r, h, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29502,31 +29886,32 @@ subroutine sphere_cap_area_3d ( r, h, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H, the "height" of the spherical cap. 
+!    Input, real ( kind = fp ) H, the "height" of the spherical cap. 
 !    H must be between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the spherical cap.
+!    Output, real ( kind = fp ) AREA, the area of the spherical cap.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) h
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
-  if ( h <= 0.0D+00 ) then
-    area = 0.0D+00
-  else if ( 2.0D+00 * r <= h ) then
-    area = 4.0D+00 * r8_pi * r * r
+  if ( h <= 0.0_fp ) then
+    area = 0.0_fp
+  else if ( 2.0_fp * r <= h ) then
+    area = 4.0_fp * r8_pi * r * r
   else
-    area = 2.0D+00 * r8_pi * r * h
+    area = 2.0_fp * r8_pi * r * h
   end if
 
   return
 end
 subroutine sphere_cap_area_nd ( dim_num, r, h, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29563,64 +29948,64 @@ subroutine sphere_cap_area_nd ( dim_num, r, h, area )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H, the "thickness" of the spherical cap,
+!    Input, real ( kind = fp ) H, the "thickness" of the spherical cap,
 !    which is normally between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the spherical cap.
+!    Output, real ( kind = fp ) AREA, the area of the spherical cap.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) area2
-  real ( kind = 8 ) h
-  real ( kind = 8 ) haver_sine
+  real ( kind = fp ) area
+  real ( kind = fp ) area2
+  real ( kind = fp ) h
+  real ( kind = fp ) haver_sine
   integer ( kind = 4 ) i
   integer ( kind = 4 ) dim_num
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ) sphere_k
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) ti
-  real ( kind = 8 ) tj
-  real ( kind = 8 ) tk
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ) sphere_k
+  real ( kind = fp ) theta
+  real ( kind = fp ) ti
+  real ( kind = fp ) tj
+  real ( kind = fp ) tk
 
-  if ( h <= 0.0D+00 ) then
-    area = 0.0D+00
+  if ( h <= 0.0_fp ) then
+    area = 0.0_fp
     return
   end if
 
-  if ( 2.0D+00 * r <= h ) then
+  if ( 2.0_fp * r <= h ) then
     call sphere_imp_area_nd ( dim_num, r, area )
     return
   end if
 !
 !  For cases where R < H < 2 * R, work with the complementary region.
 !
-  haver_sine = sqrt ( ( 2.0D+00 * r - h ) * h )
+  haver_sine = sqrt ( ( 2.0_fp * r - h ) * h )
 
   theta = r8_asin ( haver_sine / r )
 
   if ( dim_num < 1 ) then
 
-    area = -1.0D+00
+    area = -1.0_fp
     return
 
   else if ( dim_num == 1 ) then
 
-    area = 0.0D+00
+    area = 0.0_fp
 
   else if ( dim_num == 2 ) then
 
-    area = 2.0D+00 * theta * r
+    area = 2.0_fp * theta * r
 
   else
 
     ti = theta
 
     tj = ti
-    ti = 1.0D+00 - cos ( theta )
+    ti = 1.0_fp - cos ( theta )
 
     do i = 2, dim_num-2
       tk = tj
@@ -29644,6 +30029,7 @@ subroutine sphere_cap_area_nd ( dim_num, r, h, area )
   return
 end
 subroutine sphere_cap_volume_2d ( r, h, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29672,34 +30058,34 @@ subroutine sphere_cap_volume_2d ( r, h, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H, the "height" of the spherical cap.  H must
+!    Input, real ( kind = fp ) H, the "height" of the spherical cap.  H must
 !    be between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume (area) of the spherical cap.
+!    Output, real ( kind = fp ) VOLUME, the volume (area) of the spherical cap.
 !
   implicit none
 
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) volume
+  real ( kind = fp ) h
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
+  real ( kind = fp ) volume
 
-  if ( h <= 0.0D+00 ) then
+  if ( h <= 0.0_fp ) then
 
-    volume = 0.0D+00
+    volume = 0.0_fp
 
-  else if ( 2.0D+00 * r <= h ) then
+  else if ( 2.0_fp * r <= h ) then
 
     volume = r8_pi * r * r
 
   else
 
-    theta = 2.0D+00 * r8_asin ( sqrt ( r * r - ( r - h )**2 ) / r )
-    volume = r * r * ( theta - sin ( theta ) ) / 2.0D+00
+    theta = 2.0_fp * r8_asin ( sqrt ( r * r - ( r - h )**2 ) / r )
+    volume = r * r * ( theta - sin ( theta ) ) / 2.0_fp
 
     if ( r < h ) then
       volume = r8_pi * r * r - volume
@@ -29710,6 +30096,7 @@ subroutine sphere_cap_volume_2d ( r, h, volume )
   return
 end
 subroutine sphere_cap_volume_3d ( r, h, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29739,31 +30126,32 @@ subroutine sphere_cap_volume_3d ( r, h, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H, the "height" of the spherical cap.  H must
+!    Input, real ( kind = fp ) H, the "height" of the spherical cap.  H must
 !    be between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the spherical cap.
+!    Output, real ( kind = fp ) VOLUME, the volume of the spherical cap.
 !
   implicit none
 
-  real ( kind = 8 ) h
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ) h
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
-  if ( h <= 0.0D+00 ) then
-    volume = 0.0D+00
-  else if ( 2.0D+00 * r <= h ) then
-    volume = ( 4.0D+00 / 3.0D+00 ) * r8_pi * r * r * r
+  if ( h <= 0.0_fp ) then
+    volume = 0.0_fp
+  else if ( 2.0_fp * r <= h ) then
+    volume = ( 4.0_fp / 3.0_fp ) * r8_pi * r * r * r
   else
-    volume = ( 1.0D+00 / 3.0D+00 ) * r8_pi * h * h * ( 3.0D+00 * r - h )
+    volume = ( 1.0_fp / 3.0_fp ) * r8_pi * h * h * ( 3.0_fp * r - h )
   end if
 
   return
 end
 subroutine sphere_cap_volume_nd ( dim_num, r, h, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29793,7 +30181,7 @@ subroutine sphere_cap_volume_nd ( dim_num, r, h, volume )
 ! 
 !    After factoring out the constant terms, and writing RC = R * cos ( T ),
 !    and RS = R * sin ( T ), and letting 
-!      T_MAX = arc_sine ( sqrt ( ( 2.0D+00 * r - h ) * h / r ) ),
+!      T_MAX = arc_sine ( sqrt ( ( 2.0_fp * r - h ) * h / r ) ),
 !    the "interesting part" of our integral becomes
 !
 !      constants * R^N * Integral ( T = 0 to T_MAX ) sin^N ( T ) dT
@@ -29816,40 +30204,40 @@ subroutine sphere_cap_volume_nd ( dim_num, r, h, volume )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H, the "thickness" of the spherical cap,
+!    Input, real ( kind = fp ) H, the "thickness" of the spherical cap,
 !    which is normally between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the spherical cap.
+!    Output, real ( kind = fp ) VOLUME, the volume of the spherical cap.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) factor1
-  real ( kind = 8 ) factor2
-  real ( kind = 8 ) h
+  real ( kind = fp ) angle
+  real ( kind = fp ) factor1
+  real ( kind = fp ) factor2
+  real ( kind = fp ) h
   integer ( kind = 4 ) dim_num
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ) sin_power_int
-  real ( kind = 8 ) sphere01_volume_nd
-  real ( kind = 8 ) volume
-  real ( kind = 8 ) volume2
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ) sin_power_int
+  real ( kind = fp ) sphere01_volume_nd
+  real ( kind = fp ) volume
+  real ( kind = fp ) volume2
 
-  if ( h <= 0.0D+00 ) then
-    volume = 0.0D+00
+  if ( h <= 0.0_fp ) then
+    volume = 0.0_fp
     return
   end if
 
-  if ( 2.0D+00 * r <= h ) then
+  if ( 2.0_fp * r <= h ) then
     call sphere_imp_volume_nd ( dim_num, r, volume )
     return
   end if
 
   if ( dim_num < 1 ) then
 
-    volume = -1.0D+00
+    volume = -1.0_fp
 
   else if ( dim_num == 1 ) then
 
@@ -29859,9 +30247,9 @@ subroutine sphere_cap_volume_nd ( dim_num, r, h, volume )
 
     factor1 = sphere01_volume_nd ( dim_num - 1 )
 
-    angle = r8_asin ( sqrt ( ( 2.0D+00 * r - h ) * h / r ) )
+    angle = r8_asin ( sqrt ( ( 2.0_fp * r - h ) * h / r ) )
 
-    factor2 = sin_power_int ( 0.0D+00, angle, dim_num )
+    factor2 = sin_power_int ( 0.0_fp, angle, dim_num )
 
     volume = factor1 * factor2 * r**dim_num
 
@@ -29875,6 +30263,7 @@ subroutine sphere_cap_volume_nd ( dim_num, r, h, volume )
   return
 end
 subroutine sphere_dia2imp_3d ( p1, p2, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29900,28 +30289,29 @@ subroutine sphere_dia2imp_3d ( p1, p2, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), are two points which form a 
+!    Input, real ( kind = fp ) P1(3), P2(3), are two points which form a 
 !    diameter of the sphere.
 !
-!    Output, real ( kind = 8 ) R, the computed radius of the sphere.
+!    Output, real ( kind = fp ) R, the computed radius of the sphere.
 !
-!    Output, real ( kind = 8 ) PC(3), the computed center of the sphere.
+!    Output, real ( kind = fp ) PC(3), the computed center of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) p1(3)
-  real ( kind = 8 ) p2(3)
-  real ( kind = 8 ) pc(3)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8vec_norm_affine
+  real ( kind = fp ) p1(3)
+  real ( kind = fp ) p2(3)
+  real ( kind = fp ) pc(3)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8vec_norm_affine
 
-  r = 0.5D+00 * r8vec_norm_affine ( 3, p1, p2 )
+  r = 0.5_fp * r8vec_norm_affine ( 3, p1, p2 )
 
-  pc(1:3) = 0.5D+00 * ( p1(1:3) + p2(1:3) )
+  pc(1:3) = 0.5_fp * ( p1(1:3) + p2(1:3) )
 
   return
 end
 subroutine sphere_distance_xyz ( xyz1, xyz2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -29956,28 +30346,28 @@ subroutine sphere_distance_xyz ( xyz1, xyz2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XYZ1(3), the coordinates of the first point.
+!    Input, real ( kind = fp ) XYZ1(3), the coordinates of the first point.
 !
-!    Input, real ( kind = 8 ) XYZ2(3), the coordinates of the second point.
+!    Input, real ( kind = fp ) XYZ2(3), the coordinates of the second point.
 !
-!    Output, real ( kind = 8 ) DIST, the great circle distance between
+!    Output, real ( kind = fp ) DIST, the great circle distance between
 !    the points.
 !
   implicit none
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) lat1
-  real ( kind = 8 ) lat2
-  real ( kind = 8 ) lon1
-  real ( kind = 8 ) lon2
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) top
-  real ( kind = 8 ) xyz1(3)
-  real ( kind = 8 ) xyz2(3)
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) lat1
+  real ( kind = fp ) lat2
+  real ( kind = fp ) lon1
+  real ( kind = fp ) lon2
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) top
+  real ( kind = fp ) xyz1(3)
+  real ( kind = fp ) xyz2(3)
 
   r = r8vec_norm ( 3, xyz1 )
 
@@ -30001,6 +30391,7 @@ subroutine sphere_distance_xyz ( xyz1, xyz2, dist )
   return
 end
 subroutine sphere_distance1 ( lat1, lon1, lat2, lon2, r, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30036,26 +30427,26 @@ subroutine sphere_distance1 ( lat1, lon1, lat2, lon2, r, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) LAT1, LON1, the latitude and longitude of 
+!    Input, real ( kind = fp ) LAT1, LON1, the latitude and longitude of 
 !    the first point.
 !
-!    Input, real ( kind = 8 ) LAT2, LON2, the latitude and longitude of 
+!    Input, real ( kind = fp ) LAT2, LON2, the latitude and longitude of 
 !    the second point.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) DIST, the great circle distance between
+!    Output, real ( kind = fp ) DIST, the great circle distance between
 !    the points, measured in the same units as R.
 !
   implicit none
 
-  real ( kind = 8 ) c
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) lat1
-  real ( kind = 8 ) lat2
-  real ( kind = 8 ) lon1
-  real ( kind = 8 ) lon2
-  real ( kind = 8 ) r
+  real ( kind = fp ) c
+  real ( kind = fp ) dist
+  real ( kind = fp ) lat1
+  real ( kind = fp ) lat2
+  real ( kind = fp ) lon1
+  real ( kind = fp ) lon2
+  real ( kind = fp ) r
 
   c = cos ( lat1 ) * cos ( lat2 ) * cos ( lon1 - lon2 ) &
     + sin ( lat1 ) * sin ( lat2 )
@@ -30065,6 +30456,7 @@ subroutine sphere_distance1 ( lat1, lon1, lat2, lon2, r, dist )
   return
 end
 subroutine sphere_distance2 ( lat1, lon1, lat2, lon2, r, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30100,36 +30492,37 @@ subroutine sphere_distance2 ( lat1, lon1, lat2, lon2, r, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) LAT1, LON1, the latitude and longitude of 
+!    Input, real ( kind = fp ) LAT1, LON1, the latitude and longitude of 
 !    the first point.
 !
-!    Input, real ( kind = 8 ) LAT2, LON2, the latitude and longitude of 
+!    Input, real ( kind = fp ) LAT2, LON2, the latitude and longitude of 
 !    the second point.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) DIST, the great circle distance between
+!    Output, real ( kind = fp ) DIST, the great circle distance between
 !    the points, measured in the same units as R.
 !
   implicit none
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) lat1
-  real ( kind = 8 ) lat2
-  real ( kind = 8 ) lon1
-  real ( kind = 8 ) lon2
-  real ( kind = 8 ) r
-  real ( kind = 8 ) s
+  real ( kind = fp ) dist
+  real ( kind = fp ) lat1
+  real ( kind = fp ) lat2
+  real ( kind = fp ) lon1
+  real ( kind = fp ) lon2
+  real ( kind = fp ) r
+  real ( kind = fp ) s
 
-  s = ( sin ( ( lat1 - lat2 ) / 2.0D+00 ) )**2 &
-    + cos ( lat1 ) * cos ( lat2 ) * ( sin ( ( lon1 - lon2 ) / 2.0D+00 ) )**2
+  s = ( sin ( ( lat1 - lat2 ) / 2.0_fp ) )**2 &
+    + cos ( lat1 ) * cos ( lat2 ) * ( sin ( ( lon1 - lon2 ) / 2.0_fp ) )**2
   s = sqrt ( s )
 
-  dist = 2.0D+00 * r * asin ( s )
+  dist = 2.0_fp * r * asin ( s )
 
   return
 end
 subroutine sphere_distance3 ( lat1, lon1, lat2, lon2, r, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30165,27 +30558,27 @@ subroutine sphere_distance3 ( lat1, lon1, lat2, lon2, r, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) LAT1, LON1, the latitude and longitude of 
+!    Input, real ( kind = fp ) LAT1, LON1, the latitude and longitude of 
 !    the first point.
 !
-!    Input, real ( kind = 8 ) LAT2, LON2, the latitude and longitude of 
+!    Input, real ( kind = fp ) LAT2, LON2, the latitude and longitude of 
 !    the second point.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) DIST, the great circle distance between
+!    Output, real ( kind = fp ) DIST, the great circle distance between
 !    the points, measured in the same units as R.
 !
   implicit none
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) lat1
-  real ( kind = 8 ) lat2
-  real ( kind = 8 ) lon1
-  real ( kind = 8 ) lon2
-  real ( kind = 8 ) r
-  real ( kind = 8 ) top
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) lat1
+  real ( kind = fp ) lat2
+  real ( kind = fp ) lon1
+  real ( kind = fp ) lon2
+  real ( kind = fp ) r
+  real ( kind = fp ) top
 
   top = ( cos ( lat2 ) * sin ( lon1 - lon2 ) )**2 &
       + ( cos ( lat1 ) * sin ( lat2 ) &
@@ -30201,6 +30594,7 @@ subroutine sphere_distance3 ( lat1, lon1, lat2, lon2, r, dist )
   return
 end
 subroutine sphere_exp_contains_point_3d ( p1, p2, p3, p4, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30233,10 +30627,10 @@ subroutine sphere_exp_contains_point_3d ( p1, p2, p3, p4, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), P4(3),
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), P4(3),
 !    four distinct noncoplanar points on the sphere.
 !
-!    Input, real ( kind = 8 ) P(3), the coordinates of a point, whose
+!    Input, real ( kind = fp ) P(3), the coordinates of a point, whose
 !    position relative to the sphere is desired.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is in the sphere.
@@ -30245,49 +30639,50 @@ subroutine sphere_exp_contains_point_3d ( p1, p2, p3, p4, p, inside )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a(5,5)
-  real ( kind = 8 ) det
+  real ( kind = fp ) a(5,5)
+  real ( kind = fp ) det
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) r8mat_det_5d
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) r8mat_det_5d
 !
 !  Compute the determinant.
 !
   a(1,1:dim_num) = p1(1:dim_num)
   a(1,4) = sum ( p1(1:dim_num)**2 )
-  a(1,5) = 1.0D+00
+  a(1,5) = 1.0_fp
 
   a(2,1:dim_num) = p2(1:dim_num)
   a(2,4) = sum ( p2(1:dim_num)**2 )
-  a(2,5) = 1.0D+00
+  a(2,5) = 1.0_fp
 
   a(3,1:dim_num) = p3(1:dim_num)
   a(3,4) = sum ( p3(1:dim_num)**2 )
-  a(3,5) = 1.0D+00
+  a(3,5) = 1.0_fp
 
   a(4,1:dim_num) = p4(1:dim_num)
   a(4,4) = sum ( p4(1:dim_num)**2 )
-  a(4,5) = 1.0D+00
+  a(4,5) = 1.0_fp
 
   a(5,1:dim_num) = p(1:dim_num)
   a(5,4) = sum ( p(1:dim_num)**2 )
-  a(5,5) = 1.0D+00
+  a(5,5) = 1.0_fp
 
   det = r8mat_det_5d ( a )
 
-  if ( det < 0.0D+00 ) then
+  if ( det < 0.0_fp ) then
     inside = .false.
-  else if ( 0.0D+00 <= det ) then
+  else if ( 0.0_fp <= det ) then
     inside = .true.
   end if
 
   return
 end
 subroutine sphere_exp_point_near_3d ( p1, p2, p3, p4, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30316,27 +30711,27 @@ subroutine sphere_exp_point_near_3d ( p1, p2, p3, p4, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), P4(3),
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), P4(3),
 !    four distinct noncoplanar points on the sphere.
 !
-!    Input, real ( kind = 8 ) P(3), a point whose nearest point on the 
+!    Input, real ( kind = fp ) P(3), a point whose nearest point on the 
 !    sphere is desired.
 !
-!    Output, real ( kind = 8 ) PN(3), the nearest point on the sphere.
+!    Output, real ( kind = fp ) PN(3), the nearest point on the sphere.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) r
 !
 !  Find the center.
 !
@@ -30346,7 +30741,7 @@ subroutine sphere_exp_point_near_3d ( p1, p2, p3, p4, p, pn )
 !
   norm = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = 8 ) )
     return
   end if
@@ -30358,6 +30753,7 @@ subroutine sphere_exp_point_near_3d ( p1, p2, p3, p4, p, pn )
   return
 end
 subroutine sphere_exp2imp_3d ( p1, p2, p3, p4, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30393,10 +30789,10 @@ subroutine sphere_exp2imp_3d ( p1, p2, p3, p4, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), P3(3), P4(3),
+!    Input, real ( kind = fp ) P1(3), P2(3), P3(3), P4(3),
 !    four distinct noncoplanar points on the sphere.
 !
-!    Output, real ( kind = 8 ) R, PC(3), the radius and the center
+!    Output, real ( kind = fp ) R, PC(3), the radius and the center
 !    of the sphere.  If the linear system is
 !    singular, then R = -1, PC(1:3) = 0.
 !
@@ -30404,13 +30800,13 @@ subroutine sphere_exp2imp_3d ( p1, p2, p3, p4, r, pc )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) tetra(dim_num,4)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) tetra(dim_num,4)
 
   tetra(1:dim_num,1:4) = reshape ( (/ &
     p1(1:dim_num), p2(1:dim_num), p3(1:dim_num), p4(1:dim_num) /), &
@@ -30421,6 +30817,7 @@ subroutine sphere_exp2imp_3d ( p1, p2, p3, p4, r, pc )
   return
 end
 subroutine sphere_exp2imp_nd ( n, p, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30444,20 +30841,20 @@ subroutine sphere_exp2imp_nd ( n, p, r, pc )
 !
 !    Input, real ( kind = 4 ) P(N,N+1), the points.
 !
-!    Output, real ( kind = 8 ) R, PC(N), the radius and center of the
+!    Output, real ( kind = fp ) R, PC(N), the radius and center of the
 !    sphere.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(n,n+1)
+  real ( kind = fp ) a(n,n+1)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) info
   integer ( kind = 4 ) j
-  real ( kind = 8 ) pc(n)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) p(n,n+1)
+  real ( kind = fp ) pc(n)
+  real ( kind = fp ) r
+  real ( kind = fp ) p(n,n+1)
 !
 !  Set up the linear system.
 !
@@ -30478,20 +30875,21 @@ subroutine sphere_exp2imp_nd ( n, p, r, pc )
 !  If the system was singular, return a consolation prize.
 !
   if ( info /= 0 ) then
-    r = -1.0D+00
-    pc(1:n) = 0.0D+00
+    r = -1.0_fp
+    pc(1:n) = 0.0_fp
     return
   end if
 !
 !  Compute the radius and center.
 !
-  r = 0.5D+00 * sqrt ( sum ( a(1:n,n+1)**2 ) )
+  r = 0.5_fp * sqrt ( sum ( a(1:n,n+1)**2 ) )
 
-  pc(1:n) = p(1:n,1) + 0.5D+00 * a(1:n,n+1)
+  pc(1:n) = p(1:n,1) + 0.5_fp * a(1:n,n+1)
 
   return
 end
 subroutine sphere_imp_area_3d ( r, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30517,21 +30915,22 @@ subroutine sphere_imp_area_3d ( r, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the sphere.
+!    Output, real ( kind = fp ) AREA, the area of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
-  area = 4.0D+00 * r8_pi * r * r
+  area = 4.0_fp * r8_pi * r * r
 
   return
 end
 subroutine sphere_imp_area_nd ( dim_num, r, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30571,22 +30970,23 @@ subroutine sphere_imp_area_nd ( dim_num, r, area )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the sphere.
+!    Output, real ( kind = fp ) AREA, the area of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) area
+  real ( kind = fp ) area
   integer ( kind = 4 ) dim_num
-  real ( kind = 8 ) r
-  real ( kind = 8 ) sphere01_area_nd
+  real ( kind = fp ) r
+  real ( kind = fp ) sphere01_area_nd
 
   area = r**( dim_num - 1  ) * sphere01_area_nd ( dim_num )
 
   return
 end
 subroutine sphere_imp_contains_point_3d ( r, pc, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30612,11 +31012,11 @@ subroutine sphere_imp_contains_point_3d ( r, pc, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the sphere.
+!    Input, real ( kind = fp ) PC(3), the center of the sphere.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be checked.
+!    Input, real ( kind = fp ) P(3), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is
 !    inside the sphere.
@@ -30624,9 +31024,9 @@ subroutine sphere_imp_contains_point_3d ( r, pc, p, inside )
   implicit none
 
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(3)
-  real ( kind = 8 ) pc(3)
-  real ( kind = 8 ) r
+  real ( kind = fp ) p(3)
+  real ( kind = fp ) pc(3)
+  real ( kind = fp ) r
 
   if ( sum ( ( p(1:3) - pc(1:3) ) ** 2 ) <= r * r ) then
     inside = .true.
@@ -30638,6 +31038,7 @@ subroutine sphere_imp_contains_point_3d ( r, pc, p, inside )
 end
 subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
   theta_min, theta_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30673,17 +31074,17 @@ subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.  If R is
+!    Input, real ( kind = fp ) R, the radius of the sphere.  If R is
 !    zero, PP will be returned as the pc, and if R is
 !    negative, points will end up diametrically opposite from where
 !    you would expect them for a positive R.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the sphere.
+!    Input, real ( kind = fp ) PC(3), the center of the sphere.
 !
 !    Input, integer ( kind = 4 ) N, the number of points on the line that is
 !    to be projected.
 !
-!    Input, real ( kind = 8 ) P(3,N), the coordinates of
+!    Input, real ( kind = fp ) P(3,N), the coordinates of
 !    the points on the line that is to be projected.
 !
 !    Input, integer ( kind = 4 ) MAXPNT2, the maximum number of points on the
@@ -30694,12 +31095,12 @@ subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
 !    line.  N2 can be zero, if the line has an angular projection of less
 !    than THETA_MIN radians.
 !
-!    Output, real ( kind = 8 ) PP(3,N2), the coordinates
+!    Output, real ( kind = fp ) PP(3,N2), the coordinates
 !    of the points representing the projected line.  These points lie on the
 !    sphere.  Successive points are separated by at least THETA_MIN
 !    radians, and by no more than THETA_MAX radians.
 !
-!    Input, real ( kind = 8 ) THETA_MIN, THETA_MAX, the minimum and maximum
+!    Input, real ( kind = fp ) THETA_MIN, THETA_MAX, the minimum and maximum
 !    angular projections allowed between successive projected points.
 !    If two successive points on the original line have projections
 !    separated by more than THETA_MAX radians, then intermediate points
@@ -30714,28 +31115,28 @@ subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) ang3d
-  real ( kind = 8 ) dot
+  real ( kind = fp ) alpha
+  real ( kind = fp ) ang3d
+  real ( kind = fp ) dot
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
   integer ( kind = 4 ) nfill
   integer ( kind = 4 ) n2
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pd(dim_num)
-  real ( kind = 8 ) pp(dim_num,maxpnt2)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) theta_max
-  real ( kind = 8 ) theta_min
-  real ( kind = 8 ) tnorm
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pd(dim_num)
+  real ( kind = fp ) pp(dim_num,maxpnt2)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) theta_max
+  real ( kind = fp ) theta_min
+  real ( kind = fp ) tnorm
 !
 !  Check the input.
 !
-  if ( r == 0.0D+00 ) then
+  if ( r == 0.0_fp ) then
     n2 = 0
     return
   end if
@@ -30795,7 +31196,7 @@ subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
 
               tnorm = sqrt ( sum ( pd(1:dim_num)**2 ) )
 
-              if ( tnorm /= 0.0D+00 ) then
+              if ( tnorm /= 0.0_fp ) then
                 pd(1:dim_num) = pc(1:dim_num) + r * pd(1:dim_num) / tnorm
                 n2 = n2 + 1
                 pp(1:dim_num,n2) = pd(1:dim_num)
@@ -30821,6 +31222,7 @@ subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
   return
 end
 subroutine sphere_imp_local2xyz_3d ( r, pc, theta, phi, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30851,25 +31253,25 @@ subroutine sphere_imp_local2xyz_3d ( r, pc, theta, phi, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the sphere.
+!    Input, real ( kind = fp ) PC(3), the center of the sphere.
 !
-!    Input, real ( kind = 8 ) THETA, PHI, the local (THETA,PHI) spherical
+!    Input, real ( kind = fp ) THETA, PHI, the local (THETA,PHI) spherical
 !    coordinates of a point on the sphere.  THETA and PHI are angles,
 !    measured in radians.  Usually, 0 <= THETA < 2 * PI, and 0 <= PHI <= PI.
 !
-!    Output, real ( kind = 8 ) P(3), the XYZ coordinates of the point.
+!    Output, real ( kind = fp ) P(3), the XYZ coordinates of the point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) r
-  real ( kind = 8 ) theta
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) phi
+  real ( kind = fp ) r
+  real ( kind = fp ) theta
 
   p(1) = pc(1) + r * sin ( phi ) * cos ( theta )
   p(2) = pc(2) + r * sin ( phi ) * sin ( theta )
@@ -30878,6 +31280,7 @@ subroutine sphere_imp_local2xyz_3d ( r, pc, theta, phi, p )
   return
 end
 subroutine sphere_imp_point_near_3d ( r, pc, p, pn )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30907,30 +31310,30 @@ subroutine sphere_imp_point_near_3d ( r, pc, p, pn )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the sphere.
+!    Input, real ( kind = fp ) PC(3), the center of the sphere.
 !
-!    Input, real ( kind = 8 ) P(3), a point whose
+!    Input, real ( kind = fp ) P(3), a point whose
 !    nearest point on the sphere is desired.
 !
-!    Output, real ( kind = 8 ) PN(3), the nearest point on the sphere.
+!    Output, real ( kind = fp ) PN(3), the nearest point on the sphere.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(3)
-  real ( kind = 8 ) pc(3)
-  real ( kind = 8 ) pn(3)
-  real ( kind = 8 ) r
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(3)
+  real ( kind = fp ) pc(3)
+  real ( kind = fp ) pn(3)
+  real ( kind = fp ) r
 !
 !  If P = PC, bail out now.
 !
   norm = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = 8 ) )
     return
   end if
@@ -30942,6 +31345,7 @@ subroutine sphere_imp_point_near_3d ( r, pc, p, pn )
   return
 end
 subroutine sphere_imp_point_project_3d ( r, pc, p, pp )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -30967,25 +31371,25 @@ subroutine sphere_imp_point_project_3d ( r, pc, p, pp )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) PC(3), the center of the sphere.
+!    Input, real ( kind = fp ) PC(3), the center of the sphere.
 !
-!    Input, real ( kind = 8 ) P(3), a point.
+!    Input, real ( kind = fp ) P(3), a point.
 !
-!    Output, real ( kind = 8 ) PP(3), the projected point.
+!    Output, real ( kind = fp ) PP(3), the projected point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) pp(dim_num)
-  real ( kind = 8 ) r
+  real ( kind = fp ) norm
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) pp(dim_num)
+  real ( kind = fp ) r
 
-  if ( r == 0.0D+00 ) then
+  if ( r == 0.0_fp ) then
 
     pp(1:dim_num) = pc(1:dim_num)
 
@@ -31004,6 +31408,7 @@ subroutine sphere_imp_point_project_3d ( r, pc, p, pp )
   return
 end
 subroutine sphere_imp_volume_3d ( r, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31029,21 +31434,22 @@ subroutine sphere_imp_volume_3d ( r, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the sphere.
+!    Output, real ( kind = fp ) VOLUME, the volume of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
-  volume = ( 4.0D+00 / 3.0D+00 ) * r8_pi * r * r * r
+  volume = ( 4.0_fp / 3.0_fp ) * r8_pi * r * r * r
 
   return
 end
 subroutine sphere_imp_volume_nd ( dim_num, r, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31084,22 +31490,23 @@ subroutine sphere_imp_volume_nd ( dim_num, r, volume )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the sphere.
+!    Output, real ( kind = fp ) VOLUME, the volume of the sphere.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
-  real ( kind = 8 ) r
-  real ( kind = 8 ) sphere01_volume_nd
-  real ( kind = 8 ) volume
+  real ( kind = fp ) r
+  real ( kind = fp ) sphere01_volume_nd
+  real ( kind = fp ) volume
 
   volume = r**dim_num * sphere01_volume_nd ( dim_num )
 
   return
 end
 subroutine sphere_imp_zone_area_3d ( r, h1, h2, area  )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31132,35 +31539,36 @@ subroutine sphere_imp_zone_area_3d ( r, h1, h2, area  )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H1, H2, the distances that define the 
+!    Input, real ( kind = fp ) H1, H2, the distances that define the 
 !    thickness of the zone.  H1 and H2 must be between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the spherical zone.
+!    Output, real ( kind = fp ) AREA, the area of the spherical zone.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) h
-  real ( kind = 8 ) h1
-  real ( kind = 8 ) h2
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) h
+  real ( kind = fp ) h1
+  real ( kind = fp ) h2
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 
   h = abs ( h1 - h2 )
 
-  if ( h <= 0.0D+00 ) then
-    area = 0.0D+00
-  else if ( 2.0D+00 * r <= h ) then
-    area = 4.0D+00 * r8_pi * r * r
+  if ( h <= 0.0_fp ) then
+    area = 0.0_fp
+  else if ( 2.0_fp * r <= h ) then
+    area = 4.0_fp * r8_pi * r * r
   else
-    area = 2.0D+00 * r8_pi * r * h
+    area = 2.0_fp * r8_pi * r * h
   end if
 
   return
 end
 subroutine sphere_imp_zone_volume_3d ( r, h1, h2, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31193,46 +31601,47 @@ subroutine sphere_imp_zone_volume_3d ( r, h1, h2, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) H1, H2, the distances that define the 
+!    Input, real ( kind = fp ) H1, H2, the distances that define the 
 !    thickness of the zone.  H1 and H2 must be between 0 and 2 * R.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the spherical zone
+!    Output, real ( kind = fp ) VOLUME, the volume of the spherical zone
 !
   implicit none
 
-  real ( kind = 8 ) h1
-  real ( kind = 8 ) h11
-  real ( kind = 8 ) h2
-  real ( kind = 8 ) h22
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ) h1
+  real ( kind = fp ) h11
+  real ( kind = fp ) h2
+  real ( kind = fp ) h22
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
   h11 = min ( h1, h2 )
-  h11 = max ( h11, 0.0D+00 )
+  h11 = max ( h11, 0.0_fp )
 
-  if ( 2.0D+00 * r <= h11 ) then
-    volume = 0.0D+00
+  if ( 2.0_fp * r <= h11 ) then
+    volume = 0.0_fp
     return
   end if
 
   h22 = max ( h1, h2 )
-  h22 = min ( h22, 2.0D+00 * r )
+  h22 = min ( h22, 2.0_fp * r )
 
-  if ( h22 <= 0.0D+00 ) then
-    volume = 0.0D+00
+  if ( h22 <= 0.0_fp ) then
+    volume = 0.0_fp
     return
   end if
 
-  volume = ( 1.0D+00 / 3.0D+00 ) * r8_pi * ( &
-      h22 * h22 * ( 3.0D+00 * r - h22 ) &
-    - h11 * h11 * ( 3.0D+00 * r - h11 ) )
+  volume = ( 1.0_fp / 3.0_fp ) * r8_pi * ( &
+      h22 * h22 * ( 3.0_fp * r - h22 ) &
+    - h11 * h11 * ( 3.0_fp * r - h11 ) )
 
   return
 end
 subroutine sphere_imp2exp_3d ( r, pc, p1, p2, p3, p4 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31268,48 +31677,48 @@ subroutine sphere_imp2exp_3d ( r, pc, p1, p2, p3, p4 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, PC(3), the radius and center of the sphere.
+!    Input, real ( kind = fp ) R, PC(3), the radius and center of the sphere.
 !
-!    Output, real ( kind = 8 ) P1(3), P2(3), P3(3), P4(3),
+!    Output, real ( kind = fp ) P1(3), P2(3), P3(3), P4(3),
 !    four distinct noncoplanar points on the sphere.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) p3(dim_num)
-  real ( kind = 8 ) p4(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) theta
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) p3(dim_num)
+  real ( kind = fp ) p4(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) phi
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) theta
 
-  theta = 0.0D+00
-  phi = 0.0D+00
+  theta = 0.0_fp
+  phi = 0.0_fp
 
   p1(1) = pc(1) + r * cos ( theta ) * sin ( phi )
   p1(2) = pc(2) + r * sin ( theta ) * sin ( phi )
   p1(3) = pc(3) + r                 * cos ( phi )
 
-  theta = 0.0D+00
-  phi = 2.0D+00 * r8_pi / 3.0D+00
+  theta = 0.0_fp
+  phi = 2.0_fp * r8_pi / 3.0_fp
 
   p2(1) = pc(1) + r * cos ( theta ) * sin ( phi )
   p2(2) = pc(2) + r * sin ( theta ) * sin ( phi )
   p2(3) = pc(3) + r                 * cos ( phi )
 
-  theta = 2.0D+00 * r8_pi / 3.0D+00
-  phi = 2.0D+00 * r8_pi / 3.0D+00
+  theta = 2.0_fp * r8_pi / 3.0_fp
+  phi = 2.0_fp * r8_pi / 3.0_fp
 
   p3(1) = pc(1) + r * cos ( theta ) * sin ( phi )
   p3(2) = pc(2) + r * sin ( theta ) * sin ( phi )
   p3(3) = pc(3) + r                 * cos ( phi )
 
-  theta = 4.0D+00 * r8_pi / 3.0D+00
-  phi = 2.0D+00 * r8_pi / 3.0D+00
+  theta = 4.0_fp * r8_pi / 3.0_fp
+  phi = 2.0_fp * r8_pi / 3.0_fp
 
   p4(1) = pc(1) + r * cos ( theta ) * sin ( phi )
   p4(2) = pc(2) + r * sin ( theta ) * sin ( phi )
@@ -31318,6 +31727,7 @@ subroutine sphere_imp2exp_3d ( r, pc, p1, p2, p3, p4 )
   return
 end
 function sphere_k ( dim_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31346,19 +31756,19 @@ function sphere_k ( dim_num )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Output, real ( kind = 8 ) SPHERE_K, the factor.
+!    Output, real ( kind = fp ) SPHERE_K, the factor.
 !
   implicit none
 
   integer ( kind = 4 ) i4_factorial2
   integer ( kind = 4 ) dim_num
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) sphere_k
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) sphere_k
 
   if ( mod ( dim_num, 2 ) == 0 ) then
-    sphere_k = ( 2.0D+00 * r8_pi ) ** ( dim_num / 2 )
+    sphere_k = ( 2.0_fp * r8_pi ) ** ( dim_num / 2 )
   else
-    sphere_k = 2.0D+00 * ( 2.0D+00 * r8_pi ) ** ( ( dim_num - 1 ) / 2 )
+    sphere_k = 2.0_fp * ( 2.0_fp * r8_pi ) ** ( ( dim_num - 1 ) / 2 )
   end if
 
   sphere_k = sphere_k / real ( i4_factorial2 ( dim_num - 2 ), kind = 8 )
@@ -31366,6 +31776,7 @@ function sphere_k ( dim_num )
   return
 end
 subroutine sphere_triangle_angles_to_area ( r, a, b, c, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31402,20 +31813,20 @@ subroutine sphere_triangle_angles_to_area ( r, a, b, c, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) A, B, C, the angles of the triangle.
+!    Input, real ( kind = fp ) A, B, C, the angles of the triangle.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the spherical triangle.
+!    Output, real ( kind = fp ) AREA, the area of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) area
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) r
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) a
+  real ( kind = fp ) area
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) r
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 !
 !  Apply Girard's formula.
 !
@@ -31424,6 +31835,7 @@ subroutine sphere_triangle_angles_to_area ( r, a, b, c, area )
   return
 end
 subroutine sphere_triangle_sides_to_angles ( r, as, bs, cs, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31443,54 +31855,55 @@ subroutine sphere_triangle_sides_to_angles ( r, as, bs, cs, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) AS, BS, CS, the (geodesic) length of the 
+!    Input, real ( kind = fp ) AS, BS, CS, the (geodesic) length of the 
 !    sides of the triangle.
 !
-!    Output, real ( kind = 8 ) A, B, C, the spherical angles of the triangle.
+!    Output, real ( kind = fp ) A, B, C, the spherical angles of the triangle.
 !    Angle A is opposite the side of length AS, and so on.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) as
-  real ( kind = 8 ) asu
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) bsu
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) csu
-  real ( kind = 8 ) r
-  real ( kind = 8 ) ssu
-  real ( kind = 8 ) tan_a2
-  real ( kind = 8 ) tan_b2
-  real ( kind = 8 ) tan_c2
+  real ( kind = fp ) a
+  real ( kind = fp ) as
+  real ( kind = fp ) asu
+  real ( kind = fp ) b
+  real ( kind = fp ) bs
+  real ( kind = fp ) bsu
+  real ( kind = fp ) c
+  real ( kind = fp ) cs
+  real ( kind = fp ) csu
+  real ( kind = fp ) r
+  real ( kind = fp ) ssu
+  real ( kind = fp ) tan_a2
+  real ( kind = fp ) tan_b2
+  real ( kind = fp ) tan_c2
 
   asu = as / r
   bsu = bs / r
   csu = cs / r
-  ssu = ( asu + bsu + csu ) / 2.0D+00
+  ssu = ( asu + bsu + csu ) / 2.0_fp
 
   tan_a2 = sqrt ( ( sin ( ssu - bsu ) * sin ( ssu - csu ) ) / & 
                   ( sin ( ssu ) * sin ( ssu - asu )     ) )
 
-  a = 2.0D+00 * atan ( tan_a2 )
+  a = 2.0_fp * atan ( tan_a2 )
 
   tan_b2 = sqrt ( ( sin ( ssu - asu ) * sin ( ssu - csu ) ) / & 
                   ( sin ( ssu ) * sin ( ssu - bsu )     ) )
 
-  b = 2.0D+00 * atan ( tan_b2 )
+  b = 2.0_fp * atan ( tan_b2 )
 
   tan_c2 = sqrt ( ( sin ( ssu - asu ) * sin ( ssu - bsu ) ) / & 
                   ( sin ( ssu ) * sin ( ssu - csu )     ) )
 
-  c = 2.0D+00 * atan ( tan_c2 )
+  c = 2.0_fp * atan ( tan_c2 )
 
   return
 end
 subroutine sphere_triangle_vertices_to_angles ( r, v1, v2, v3, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31519,24 +31932,24 @@ subroutine sphere_triangle_vertices_to_angles ( r, v1, v2, v3, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) A, B, C, the angles of the spherical triangle.
+!    Output, real ( kind = fp ) A, B, C, the angles of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) as
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) r
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) a
+  real ( kind = fp ) as
+  real ( kind = fp ) b
+  real ( kind = fp ) bs
+  real ( kind = fp ) c
+  real ( kind = fp ) cs
+  real ( kind = fp ) r
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 !
 !  Compute the lengths of the sides of the spherical triangle.
 !
@@ -31549,6 +31962,7 @@ subroutine sphere_triangle_vertices_to_angles ( r, v1, v2, v3, a, b, c )
   return
 end
 subroutine sphere_triangle_vertices_to_area ( r, v1, v2, v3, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31585,25 +31999,25 @@ subroutine sphere_triangle_vertices_to_area ( r, v1, v2, v3, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the spherical triangle.
+!    Output, real ( kind = fp ) AREA, the area of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) area
-  real ( kind = 8 ) as
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) r
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) a
+  real ( kind = fp ) area
+  real ( kind = fp ) as
+  real ( kind = fp ) b
+  real ( kind = fp ) bs
+  real ( kind = fp ) c
+  real ( kind = fp ) cs
+  real ( kind = fp ) r
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 !
 !  Compute the lengths of the sides of the spherical triangle.
 !
@@ -31620,6 +32034,7 @@ subroutine sphere_triangle_vertices_to_area ( r, v1, v2, v3, area )
   return
 end
 subroutine sphere_triangle_vertices_to_centroid ( r, v1, v2, v3, vs )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31667,24 +32082,24 @@ subroutine sphere_triangle_vertices_to_centroid ( r, v1, v2, v3, vs )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) VS(3), the coordinates of the "spherical
+!    Output, real ( kind = fp ) VS(3), the coordinates of the "spherical
 !    centroid" of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
-  real ( kind = 8 ) vs(3)
+  real ( kind = fp ) norm
+  real ( kind = fp ) r
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
+  real ( kind = fp ) vs(3)
 
-  vs(1:3) = ( v1(1:3) + v2(1:3) + v3(1:3) ) / 3.0D+00
+  vs(1:3) = ( v1(1:3) + v2(1:3) + v3(1:3) ) / 3.0_fp
 
   norm = r8vec_norm ( 3, vs )
 
@@ -31693,6 +32108,7 @@ subroutine sphere_triangle_vertices_to_centroid ( r, v1, v2, v3, vs )
   return
 end
 subroutine sphere_triangle_vertices_to_orientation ( a, b, c, o )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31728,25 +32144,25 @@ subroutine sphere_triangle_vertices_to_orientation ( a, b, c, o )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(3), B(3), C(3), three points on a sphere.
+!    Input, real ( kind = fp ) A(3), B(3), C(3), three points on a sphere.
 !
 !    Output, integer ( kind = 4 ) O, is +1 if the spherical triangle is 
 !    judged to have positive orientation, and -1 otherwise.
 !
   implicit none
 
-  real ( kind = 8 ) a(3)
-  real ( kind = 8 ) b(3)
-  real ( kind = 8 ) c(3)
-  real ( kind = 8 ) cd(3)
-  real ( kind = 8 ) cp(3)
+  real ( kind = fp ) a(3)
+  real ( kind = fp ) b(3)
+  real ( kind = fp ) c(3)
+  real ( kind = fp ) cd(3)
+  real ( kind = fp ) cp(3)
   integer ( kind = 4 ) o
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
 !
 !  Centroid.
 !
-  cd(1:3) = ( a(1:3) + b(1:3) + c(1:3) ) / 3.0D+00
+  cd(1:3) = ( a(1:3) + b(1:3) + c(1:3) ) / 3.0_fp
 !
 !  Cross product ( C - B ) x ( A - B );
 !
@@ -31759,7 +32175,7 @@ subroutine sphere_triangle_vertices_to_orientation ( a, b, c, o )
 !
 !  Compare the directions.
 !
-  if ( dot_product ( cp, cd ) < 0.0D+00 ) then
+  if ( dot_product ( cp, cd ) < 0.0_fp ) then
     o = - 1
   else
     o = + 1
@@ -31768,6 +32184,7 @@ subroutine sphere_triangle_vertices_to_orientation ( a, b, c, o )
   return
 end
 subroutine sphere_triangle_vertices_to_sides ( r, v1, v2, v3, as, bs, cs )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31793,24 +32210,24 @@ subroutine sphere_triangle_vertices_to_sides ( r, v1, v2, v3, as, bs, cs )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R, the radius of the sphere.
+!    Input, real ( kind = fp ) R, the radius of the sphere.
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the spherical
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the spherical
 !    triangle.
 !
-!    Output, real ( kind = 8 ) AS, BS, CS, the (geodesic) length of the sides
+!    Output, real ( kind = fp ) AS, BS, CS, the (geodesic) length of the sides
 !    of the triangle.
 !
   implicit none
 
-  real ( kind = 8 ) as
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) as
+  real ( kind = fp ) bs
+  real ( kind = fp ) cs
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 
   as = r * r8_acos ( dot_product ( v2(1:3), v3(1:3) ) / r**2 )
   bs = r * r8_acos ( dot_product ( v3(1:3), v1(1:3) ) / r**2 )
@@ -31819,6 +32236,7 @@ subroutine sphere_triangle_vertices_to_sides ( r, v1, v2, v3, as, bs, cs )
   return
 end
 function sphere01_area_nd ( dim_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31864,26 +32282,26 @@ function sphere01_area_nd ( dim_num )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the dimension of the space.
 !
-!    Output, real ( kind = 8 ) SPHERE01_AREA_ND, the area of the sphere.
+!    Output, real ( kind = fp ) SPHERE01_AREA_ND, the area of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) area
+  real ( kind = fp ) area
   integer ( kind = 4 ) dim_num
   integer ( kind = 4 ) i
   integer ( kind = 4 ) m
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) sphere01_area_nd
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) sphere01_area_nd
 
   if ( mod ( dim_num, 2 ) == 0 ) then
     m = dim_num / 2
-    area = 2.0D+00 * ( r8_pi ) ** m
+    area = 2.0_fp * ( r8_pi ) ** m
     do i = 1, m - 1
       area = area / real ( i, kind = 8 )
     end do
   else
     m = ( dim_num - 1 ) / 2
-    area = ( r8_pi ) ** m * 2.0D+00 ** dim_num
+    area = ( r8_pi ) ** m * 2.0_fp ** dim_num
     do i = m + 1, 2 * m
       area = area / real ( i,  kind = 8 )
     end do
@@ -31894,6 +32312,7 @@ function sphere01_area_nd ( dim_num )
   return
 end
 subroutine sphere01_area_values ( n_data, n, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -31955,15 +32374,15 @@ subroutine sphere01_area_values ( n_data, n, area )
 !
 !    Output, integer ( kind = 4 ) N, the spatial dimension.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the unit sphere
+!    Output, real ( kind = fp ) AREA, the area of the unit sphere
 !    in that dimension.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: n_max = 20
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ), save, dimension ( n_max ) :: area_vec = (/ &
+  real ( kind = fp ) area
+  real ( kind = fp ), save, dimension ( n_max ) :: area_vec = (/ &
     0.2000000000000000D+01, &
     0.6283185307179586D+01, &
     0.1256637061435917D+02, &
@@ -31982,8 +32401,8 @@ subroutine sphere01_area_values ( n_data, n, area )
     0.3765290085742291D+01, &
     0.2396678817591364D+01, &
     0.1478625959000308D+01, &
-    0.8858104195716824D+00, &
-    0.5161378278002812D+00 /)
+    0.8858104195716824_fp, &
+    0.5161378278002812_fp /)
   integer ( kind = 4 ) n_data
   integer ( kind = 4 ) n
   integer ( kind = 4 ), save, dimension ( n_max ) :: n_vec = (/ &
@@ -32017,7 +32436,7 @@ subroutine sphere01_area_values ( n_data, n, area )
   if ( n_max < n_data ) then
     n_data = 0
     n = 0
-    area = 0.0D+00
+    area = 0.0_fp
   else
     n = n_vec(n_data)
     area = area_vec(n_data)
@@ -32026,6 +32445,7 @@ subroutine sphere01_area_values ( n_data, n, area )
   return
 end
 subroutine sphere01_sample_2d ( seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32054,26 +32474,27 @@ subroutine sphere01_sample_2d ( seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(2), a random point on the unit circle.
+!    Output, real ( kind = fp ) X(2), a random point on the unit circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) u
-  real ( kind = 8 ) x(dim_num)
+  real ( kind = fp ) u
+  real ( kind = fp ) x(dim_num)
 
   u = r8_uniform_01 ( seed )
 
-  x(1) = cos ( 2.0D+00 * r8_pi * u )
-  x(2) = sin ( 2.0D+00 * r8_pi * u )
+  x(1) = cos ( 2.0_fp * r8_pi * u )
+  x(2) = sin ( 2.0_fp * r8_pi * u )
 
   return
 end
 subroutine sphere01_sample_3d ( seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32102,20 +32523,20 @@ subroutine sphere01_sample_3d ( seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(3), the sample point.
+!    Output, real ( kind = fp ) X(3), the sample point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ) phi
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ) phi
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) vdot
-  real ( kind = 8 ) x(dim_num)
+  real ( kind = fp ) theta
+  real ( kind = fp ) vdot
+  real ( kind = fp ) x(dim_num)
 !
 !  Pick a uniformly random VDOT, which must be between -1 and 1.
 !  This represents the dot product of the random vector with the Z unit vector.
@@ -32125,7 +32546,7 @@ subroutine sphere01_sample_3d ( seed, x )
 !  a patch of area uniformly.
 !
   vdot = r8_uniform_01 ( seed )
-  vdot = 2.0D+00 * vdot - 1.0D+00
+  vdot = 2.0_fp * vdot - 1.0_fp
 
   phi = r8_acos ( vdot )
 !
@@ -32133,7 +32554,7 @@ subroutine sphere01_sample_3d ( seed, x )
 !  axis of the Z vector.
 !
   theta = r8_uniform_01 ( seed )
-  theta = 2.0D+00 * r8_pi * theta
+  theta = 2.0_fp * r8_pi * theta
 
   x(1) = cos ( theta ) * sin ( phi )
   x(2) = sin ( theta ) * sin ( phi )
@@ -32142,6 +32563,7 @@ subroutine sphere01_sample_3d ( seed, x )
   return
 end
 subroutine sphere01_sample_3d_2 ( seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32183,24 +32605,24 @@ subroutine sphere01_sample_3d_2 ( seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(3), the sample point.
+!    Output, real ( kind = fp ) X(3), the sample point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ) phi
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ) phi
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) x(dim_num)
+  real ( kind = fp ) theta
+  real ( kind = fp ) x(dim_num)
 
   phi = r8_uniform_01 ( seed )
   phi = r8_pi * phi
 
   theta = r8_uniform_01 ( seed )
-  theta = 2.0D+00 * r8_pi * theta
+  theta = 2.0_fp * r8_pi * theta
 
   x(1) = cos ( theta ) * sin ( phi )
   x(2) = sin ( theta ) * sin ( phi )
@@ -32209,6 +32631,7 @@ subroutine sphere01_sample_3d_2 ( seed, x )
   return
 end
 subroutine sphere01_sample_nd ( dim_num, seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32248,30 +32671,30 @@ subroutine sphere01_sample_nd ( dim_num, seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(DIM_NUM), the random point.
+!    Output, real ( kind = fp ) X(DIM_NUM), the random point.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
   integer ( kind = 4 ) i
-  real ( kind = 8 ) r8_uniform_01
-  real ( kind = 8 ) random_cosine
-  real ( kind = 8 ) random_sign
-  real ( kind = 8 ) random_sine
+  real ( kind = fp ) r8_uniform_01
+  real ( kind = fp ) random_cosine
+  real ( kind = fp ) random_sign
+  real ( kind = fp ) random_sine
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) x(dim_num)
-  real ( kind = 8 ) xi
+  real ( kind = fp ) x(dim_num)
+  real ( kind = fp ) xi
 
-  x(1) = 1.0D+00
-  x(2:dim_num) = 0.0D+00
+  x(1) = 1.0_fp
+  x(2:dim_num) = 0.0_fp
 
   do i = 1, dim_num-1
     random_cosine = r8_uniform_01 ( seed )
-    random_cosine = 2.0D+00 * random_cosine - 1.0D+00
+    random_cosine = 2.0_fp * random_cosine - 1.0_fp
     random_sign = r8_uniform_01 ( seed )
-    random_sign = real ( 2 * int ( 2.0D+00 * random_sign ) - 1,  kind = 8 )
-    random_sine = random_sign * sqrt ( 1.0D+00 - random_cosine**2 )
+    random_sign = real ( 2 * int ( 2.0_fp * random_sign ) - 1,  kind = 8 )
+    random_sine = random_sign * sqrt ( 1.0_fp - random_cosine**2 )
     xi = x(i)
     x(i  ) = random_cosine * xi
     x(i+1) = random_sine   * xi
@@ -32280,6 +32703,7 @@ subroutine sphere01_sample_nd ( dim_num, seed, x )
   return
 end
 subroutine sphere01_sample_nd_2 ( dim_num, seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32313,15 +32737,15 @@ subroutine sphere01_sample_nd_2 ( dim_num, seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(DIM_NUM), the random point.
+!    Output, real ( kind = fp ) X(DIM_NUM), the random point.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) norm
+  real ( kind = fp ) norm
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) x(dim_num)
+  real ( kind = fp ) x(dim_num)
 
   call r8vec_normal_01 ( dim_num, seed, x )
 
@@ -32332,6 +32756,7 @@ subroutine sphere01_sample_nd_2 ( dim_num, seed, x )
   return
 end
 subroutine sphere01_sample_nd_3 ( dim_num, seed, x )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32371,21 +32796,21 @@ subroutine sphere01_sample_nd_3 ( dim_num, seed, x )
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
 !    generator.
 !
-!    Output, real ( kind = 8 ) X(DIM_NUM), the random point.
+!    Output, real ( kind = fp ) X(DIM_NUM), the random point.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) norm
+  real ( kind = fp ) norm
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) x(dim_num)
+  real ( kind = fp ) x(dim_num)
 
   do
 
     call r8vec_uniform_01 ( dim_num, seed, x )
 
-    x(1:dim_num) = 2.0D+00 * x(1:dim_num) - 1.0D+00
+    x(1:dim_num) = 2.0_fp * x(1:dim_num) - 1.0_fp
 
     norm = sqrt ( sum ( x(1:dim_num)**2 ) )
 
@@ -32399,6 +32824,7 @@ subroutine sphere01_sample_nd_3 ( dim_num, seed, x )
   return
 end
 function sphere01_volume_nd ( dim_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32443,16 +32869,16 @@ function sphere01_volume_nd ( dim_num )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Output, real ( kind = 8 ) SPHERE_UNIT_VOLUME_ND, the volume of the sphere.
+!    Output, real ( kind = fp ) SPHERE_UNIT_VOLUME_ND, the volume of the sphere.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
   integer ( kind = 4 ) i
   integer ( kind = 4 ) m
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) sphere01_volume_nd
-  real ( kind = 8 ) volume
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) sphere01_volume_nd
+  real ( kind = fp ) volume
 
   if ( mod ( dim_num, 2 ) == 0 ) then
     m = dim_num / 2
@@ -32462,7 +32888,7 @@ function sphere01_volume_nd ( dim_num )
     end do
   else
     m = ( dim_num - 1 ) / 2
-    volume = r8_pi ** m * 2.0D+00**dim_num
+    volume = r8_pi ** m * 2.0_fp**dim_num
     do i = m + 1, 2 * m + 1
       volume = volume / real ( i, kind = 8 )
     end do
@@ -32473,6 +32899,7 @@ function sphere01_volume_nd ( dim_num )
   return
 end
 subroutine sphere01_volume_values ( n_data, n, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32538,7 +32965,7 @@ subroutine sphere01_volume_values ( n_data, n, volume )
 !
 !    Output, integer ( kind = 4 ) N, the spatial dimension.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the unit
+!    Output, real ( kind = fp ) VOLUME, the volume of the unit
 !    sphere in that dimension.
 !
   implicit none
@@ -32558,8 +32985,8 @@ subroutine sphere01_volume_values ( n_data, n, volume )
     15, 16, &
     17, 18, &
     19, 20 /)
-  real ( kind = 8 ) volume
-  real ( kind = 8 ), save, dimension ( n_max ) :: volume_vec = (/ &
+  real ( kind = fp ) volume
+  real ( kind = fp ), save, dimension ( n_max ) :: volume_vec = (/ &
     0.2000000000000000D+01, &
     0.3141592653589793D+01, &
     0.4188790204786391D+01, &
@@ -32572,11 +32999,11 @@ subroutine sphere01_volume_values ( n_data, n, volume )
     0.2550164039877345D+01, &
     0.1884103879389900D+01, &
     0.1335262768854589D+01, &
-    0.9106287547832831D+00, &
-    0.5992645293207921D+00, &
-    0.3814432808233045D+00, &
-    0.2353306303588932D+00, &
-    0.1409811069171390D+00, &
+    0.9106287547832831_fp, &
+    0.5992645293207921_fp, &
+    0.3814432808233045_fp, &
+    0.2353306303588932_fp, &
+    0.1409811069171390_fp, &
     0.8214588661112823D-01, &
     0.4662160103008855D-01, &
     0.2580689139001406D-01 /)
@@ -32590,7 +33017,7 @@ subroutine sphere01_volume_values ( n_data, n, volume )
   if ( n_max < n_data ) then
     n_data = 0
     n = 0
-    volume = 0.0D+00
+    volume = 0.0_fp
   else
     n = n_vec(n_data)
     volume = volume_vec(n_data)
@@ -32599,6 +33026,7 @@ subroutine sphere01_volume_values ( n_data, n, volume )
   return
 end
 subroutine sphere01_distance_xyz ( xyz1, xyz2, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32633,26 +33061,26 @@ subroutine sphere01_distance_xyz ( xyz1, xyz2, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XYZ1(3), the coordinates of the first point.
+!    Input, real ( kind = fp ) XYZ1(3), the coordinates of the first point.
 !
-!    Input, real ( kind = 8 ) XYZ2(3), the coordinates of the second point.
+!    Input, real ( kind = fp ) XYZ2(3), the coordinates of the second point.
 !
-!    Output, real ( kind = 8 ) DIST, the great circle distance between
+!    Output, real ( kind = fp ) DIST, the great circle distance between
 !    the points.
 !
   implicit none
 
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) lat1
-  real ( kind = 8 ) lat2
-  real ( kind = 8 ) lon1
-  real ( kind = 8 ) lon2
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) top
-  real ( kind = 8 ) xyz1(3)
-  real ( kind = 8 ) xyz2(3)
+  real ( kind = fp ) bot
+  real ( kind = fp ) dist
+  real ( kind = fp ) lat1
+  real ( kind = fp ) lat2
+  real ( kind = fp ) lon1
+  real ( kind = fp ) lon2
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) top
+  real ( kind = fp ) xyz1(3)
+  real ( kind = fp ) xyz2(3)
 
   lat1 = r8_asin ( xyz1(3) )
   lon1 = r8_atan ( xyz1(2), xyz1(1) )
@@ -32674,6 +33102,7 @@ subroutine sphere01_distance_xyz ( xyz1, xyz2, dist )
   return
 end
 function sphere01_polygon_area ( n, lat, lon )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32730,40 +33159,40 @@ function sphere01_polygon_area ( n, lat, lon )
 !
 !    Input, integer ( kind = 4 ) N, the number of vertices.
 !
-!    Input, real ( kind = 8 ) LAT[N], LON[N], the latitudes and longitudes 
+!    Input, real ( kind = fp ) LAT[N], LON[N], the latitudes and longitudes 
 !    of the vertices of the spherical polygon.
 !
-!    Output, real ( kind = 8 ) SPHERE01_POLYGON_AREA, the area of the 
+!    Output, real ( kind = fp ) SPHERE01_POLYGON_AREA, the area of the 
 !    spherical polygon, measured in spherical radians.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) area
-  real ( kind = 8 ) b
-  real ( kind = 8 ) beta1
-  real ( kind = 8 ) beta2
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cos_b1
-  real ( kind = 8 ) cos_b2
-  real ( kind = 8 ) excess
-  real ( kind = 8 ) hav_a
-  real ( kind = 8 ) haversine
+  real ( kind = fp ) a
+  real ( kind = fp ) area
+  real ( kind = fp ) b
+  real ( kind = fp ) beta1
+  real ( kind = fp ) beta2
+  real ( kind = fp ) c
+  real ( kind = fp ) cos_b1
+  real ( kind = fp ) cos_b2
+  real ( kind = fp ) excess
+  real ( kind = fp ) hav_a
+  real ( kind = fp ) haversine
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
-  real ( kind = 8 ) lam
-  real ( kind = 8 ) lam1
-  real ( kind = 8 ) lam2
-  real ( kind = 8 ) lat(n)
-  real ( kind = 8 ) lon(n)
-  real ( kind = 8 ), parameter :: r8_pi_half = 1.5707963267948966192313D+00
-  real ( kind = 8 ) s
-  real ( kind = 8 ) sphere01_polygon_area
-  real ( kind = 8 ) t
+  real ( kind = fp ) lam
+  real ( kind = fp ) lam1
+  real ( kind = fp ) lam2
+  real ( kind = fp ) lat(n)
+  real ( kind = fp ) lon(n)
+  real ( kind = fp ), parameter :: r8_pi_half = 1.5707963267948966192313_fp
+  real ( kind = fp ) s
+  real ( kind = fp ) sphere01_polygon_area
+  real ( kind = fp ) t
 
-  area = 0.0D+00
+  area = 0.0_fp
 
   do j = 1, n + 1
 
@@ -32788,27 +33217,27 @@ function sphere01_polygon_area ( n, lat, lon )
 
       hav_a = haversine ( beta2 - beta1 ) &
         + cos_b1 * cos_b2 * haversine ( lam2 - lam1 )
-      a = 2.0D+00 * asin ( sqrt ( hav_a ) )
+      a = 2.0_fp * asin ( sqrt ( hav_a ) )
 
       b = r8_pi_half - beta2
       c = r8_pi_half - beta1
-      s = 0.5D+00 * ( a + b + c )
+      s = 0.5_fp * ( a + b + c )
 !
 !  Given the three sides of a spherical triangle, we can use a formula
 !  to find the spherical excess.
 !
-      t = tan ( s / 2.0D+00 ) * tan ( ( s - a ) / 2.0D+00 ) &
-        * tan ( ( s - b ) / 2.0D+00 ) * tan ( ( s - c ) / 2.0D+00 )
+      t = tan ( s / 2.0_fp ) * tan ( ( s - a ) / 2.0_fp ) &
+        * tan ( ( s - b ) / 2.0_fp ) * tan ( ( s - c ) / 2.0_fp )
 
-      excess = abs ( 4.0D+00 * atan ( sqrt ( abs ( t ) ) ) )
+      excess = abs ( 4.0_fp * atan ( sqrt ( abs ( t ) ) ) )
 
       if ( lam1 < lam2 ) then
         lam = lam2 - lam1
       else
-        lam = lam2 - lam1 + 4.0D+00 * r8_pi_half
+        lam = lam2 - lam1 + 4.0_fp * r8_pi_half
       end if
 
-      if ( 2.0D+00 * r8_pi_half < lam ) then
+      if ( 2.0_fp * r8_pi_half < lam ) then
         excess = -excess 
       end if
 
@@ -32823,6 +33252,7 @@ function sphere01_polygon_area ( n, lat, lon )
   return
 end
 subroutine sphere01_triangle_angles_to_area ( a, b, c, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32859,17 +33289,17 @@ subroutine sphere01_triangle_angles_to_area ( a, b, c, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, B, C, the angles of the triangle.
+!    Input, real ( kind = fp ) A, B, C, the angles of the triangle.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the sphere.
+!    Output, real ( kind = fp ) AREA, the area of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
+  real ( kind = fp ) area
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
 !
 !  Apply Girard's formula.
 !
@@ -32878,6 +33308,7 @@ subroutine sphere01_triangle_angles_to_area ( a, b, c, area )
   return
 end
 subroutine sphere01_triangle_sides_to_angles ( as, bs, cs, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32897,51 +33328,52 @@ subroutine sphere01_triangle_sides_to_angles ( as, bs, cs, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) AS, BS, CS, the (geodesic) length of the 
+!    Input, real ( kind = fp ) AS, BS, CS, the (geodesic) length of the 
 !    sides of the triangle.
 !
-!    Output, real ( kind = 8 ) A, B, C, the spherical angles of the triangle.
+!    Output, real ( kind = fp ) A, B, C, the spherical angles of the triangle.
 !    Angle A is opposite the side of length AS, and so on.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) as
-  real ( kind = 8 ) asu
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) bsu
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) csu
-  real ( kind = 8 ) ssu
-  real ( kind = 8 ) tan_a2
-  real ( kind = 8 ) tan_b2
-  real ( kind = 8 ) tan_c2
+  real ( kind = fp ) a
+  real ( kind = fp ) as
+  real ( kind = fp ) asu
+  real ( kind = fp ) b
+  real ( kind = fp ) bs
+  real ( kind = fp ) bsu
+  real ( kind = fp ) c
+  real ( kind = fp ) cs
+  real ( kind = fp ) csu
+  real ( kind = fp ) ssu
+  real ( kind = fp ) tan_a2
+  real ( kind = fp ) tan_b2
+  real ( kind = fp ) tan_c2
 
   asu = as
   bsu = bs
   csu = cs
-  ssu = ( asu + bsu + csu ) / 2.0D+00
+  ssu = ( asu + bsu + csu ) / 2.0_fp
 
   tan_a2 = sqrt ( ( sin ( ssu - bsu ) * sin ( ssu - csu ) ) / &
                   ( sin ( ssu ) * sin ( ssu - asu )     ) )
 
-  a = 2.0D+00 * atan ( tan_a2 )
+  a = 2.0_fp * atan ( tan_a2 )
 
   tan_b2 = sqrt ( ( sin ( ssu - asu ) * sin ( ssu - csu ) ) / &
                   ( sin ( ssu ) * sin ( ssu - bsu )     ) )
 
-  b = 2.0D+00 * atan ( tan_b2 )
+  b = 2.0_fp * atan ( tan_b2 )
 
   tan_c2 = sqrt ( ( sin ( ssu - asu ) * sin ( ssu - bsu ) ) / &
                   ( sin ( ssu ) * sin ( ssu - csu )     ) )
 
-  c = 2.0D+00 * atan ( tan_c2 )
+  c = 2.0_fp * atan ( tan_c2 )
 
   return
 end
 subroutine sphere01_triangle_vertices_to_angles ( v1, v2, v3, a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -32970,21 +33402,21 @@ subroutine sphere01_triangle_vertices_to_angles ( v1, v2, v3, a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) A, B, C, the angles of the spherical triangle.
+!    Output, real ( kind = fp ) A, B, C, the angles of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) as
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) a
+  real ( kind = fp ) as
+  real ( kind = fp ) b
+  real ( kind = fp ) bs
+  real ( kind = fp ) c
+  real ( kind = fp ) cs
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 !
 !  Compute the lengths of the sides of the spherical triangle.
 !
@@ -32997,6 +33429,7 @@ subroutine sphere01_triangle_vertices_to_angles ( v1, v2, v3, a, b, c )
   return
 end
 subroutine sphere01_triangle_vertices_to_area ( v1, v2, v3, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33033,22 +33466,22 @@ subroutine sphere01_triangle_vertices_to_area ( v1, v2, v3, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the sphere.
+!    Output, real ( kind = fp ) AREA, the area of the sphere.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) a
-  real ( kind = 8 ) as
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) c
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) area
+  real ( kind = fp ) a
+  real ( kind = fp ) as
+  real ( kind = fp ) b
+  real ( kind = fp ) bs
+  real ( kind = fp ) c
+  real ( kind = fp ) cs
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 !
 !  Compute the lengths of the sides of the spherical triangle.
 !
@@ -33065,6 +33498,7 @@ subroutine sphere01_triangle_vertices_to_area ( v1, v2, v3, area )
   return
 end
 subroutine sphere01_triangle_vertices_to_centroid ( v1, v2, v3, vs )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33112,20 +33546,20 @@ subroutine sphere01_triangle_vertices_to_centroid ( v1, v2, v3, vs )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) VS(3), the coordinates of the "spherical
+!    Output, real ( kind = fp ) VS(3), the coordinates of the "spherical
 !    centroid" of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
-  real ( kind = 8 ) vs(3)
+  real ( kind = fp ) norm
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
+  real ( kind = fp ) vs(3)
 
-  vs(1:3) = ( v1(1:3) + v2(1:3) + v3(1:3) ) / 3.0D+00
+  vs(1:3) = ( v1(1:3) + v2(1:3) + v3(1:3) ) / 3.0_fp
 
   norm = sqrt ( sum ( vs(1:3)**2 ) )
 
@@ -33134,6 +33568,7 @@ subroutine sphere01_triangle_vertices_to_centroid ( v1, v2, v3, vs )
   return
 end
 subroutine sphere01_triangle_vertices_to_midpoints ( v1, v2, v3, m1, m2, m3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33157,36 +33592,37 @@ subroutine sphere01_triangle_vertices_to_midpoints ( v1, v2, v3, m1, m2, m3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the triangle.
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the triangle.
 !
-!    Output, real ( kind = 8 ) M1(3), M2(3), M3(3), the coordinates of 
+!    Output, real ( kind = fp ) M1(3), M2(3), M3(3), the coordinates of 
 !    the midpoints of the sides of the spherical triangle.
 !
   implicit none
 
-  real ( kind = 8 ) m1(3)
-  real ( kind = 8 ) m2(3)
-  real ( kind = 8 ) m3(3)
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) m1(3)
+  real ( kind = fp ) m2(3)
+  real ( kind = fp ) m3(3)
+  real ( kind = fp ) norm
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 
-  m1(1:3) = ( v1(1:3) + v2(1:3) ) / 2.0D+00
+  m1(1:3) = ( v1(1:3) + v2(1:3) ) / 2.0_fp
   norm = sqrt ( sum ( m1(1:3)**2 ) )
   m1(1:3) = m1(1:3) / norm
 
-  m2(1:3) = ( v2(1:3) + v3(1:3) ) / 2.0D+00
+  m2(1:3) = ( v2(1:3) + v3(1:3) ) / 2.0_fp
   norm = sqrt ( sum ( m2(1:3)**2 ) )
   m2(1:3) = m2(1:3) / norm
 
-  m3(1:3) = ( v3(1:3) + v1(1:3) ) / 2.0D+00
+  m3(1:3) = ( v3(1:3) + v1(1:3) ) / 2.0_fp
   norm = sqrt ( sum ( m3(1:3)**2 ) )
   m3(1:3) = m3(1:3) / norm
 
   return
 end
 subroutine sphere01_triangle_vertices_to_sides ( v1, v2, v3, as, bs, cs )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33206,20 +33642,20 @@ subroutine sphere01_triangle_vertices_to_sides ( v1, v2, v3, as, bs, cs )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), V2(3), V3(3), the vertices of the spherical
+!    Input, real ( kind = fp ) V1(3), V2(3), V3(3), the vertices of the spherical
 !    triangle.
 !
-!    Output, real ( kind = 8 ) AS, BS, CS, the (geodesic) length of the 
+!    Output, real ( kind = fp ) AS, BS, CS, the (geodesic) length of the 
 !    sides of the triangle.
 !
   implicit none
 
-  real ( kind = 8 ) as
-  real ( kind = 8 ) bs
-  real ( kind = 8 ) cs
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) v3(3)
+  real ( kind = fp ) as
+  real ( kind = fp ) bs
+  real ( kind = fp ) cs
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) v3(3)
 
   as = acos ( dot_product ( v2(1:3), v3(1:3) ) )
   bs = acos ( dot_product ( v3(1:3), v1(1:3) ) )
@@ -33228,6 +33664,7 @@ subroutine sphere01_triangle_vertices_to_sides ( v1, v2, v3, as, bs, cs )
   return
 end
 subroutine string_2d ( nvec, p1, p2, string_num, order, string )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33282,7 +33719,7 @@ subroutine string_2d ( nvec, p1, p2, string_num, order, string )
 !    Input, integer ( kind = 4 ) NVEC, the number of line segments to be 
 !    analyzed.
 !
-!    Input/output, real ( kind = 8 ) P1(2,NVEC), P2VEC(2,NVEC), the 
+!    Input/output, real ( kind = fp ) P1(2,NVEC), P2VEC(2,NVEC), the 
 !    line segments.
 !
 !    Output, integer ( kind = 4 ) ORDER(NVEC), the order vector.
@@ -33305,15 +33742,15 @@ subroutine string_2d ( nvec, p1, p2, string_num, order, string )
   integer ( kind = 4 ) kval
   integer ( kind = 4 ) match
   integer ( kind = 4 ) order(nvec)
-  real ( kind = 8 ) p1(dim_num,nvec)
-  real ( kind = 8 ) p2(dim_num,nvec)
+  real ( kind = fp ) p1(dim_num,nvec)
+  real ( kind = fp ) p2(dim_num,nvec)
   integer ( kind = 4 ) seed
   integer ( kind = 4 ) string(nvec)
   integer ( kind = 4 ) string_num
-  real ( kind = 8 ) x1val
-  real ( kind = 8 ) x2val
-  real ( kind = 8 ) y1val
-  real ( kind = 8 ) y2val
+  real ( kind = fp ) x1val
+  real ( kind = fp ) x2val
+  real ( kind = fp ) y1val
+  real ( kind = fp ) y2val
 !
 !  Mark STRING so that each segment is alone.
 !
@@ -33486,6 +33923,7 @@ subroutine string_2d ( nvec, p1, p2, string_num, order, string )
   return
 end
 subroutine super_ellipse_points_2d ( pc, r1, r2, expo, psi, n, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33525,19 +33963,19 @@ subroutine super_ellipse_points_2d ( pc, r1, r2, expo, psi, n, p )
 ! 
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) PC(2), the center of the superellipse.
+!    Input, real ( kind = fp ) PC(2), the center of the superellipse.
 !
-!    Input, real ( kind = 8 ) R1, R2, the "radius" of the superellipse
+!    Input, real ( kind = fp ) R1, R2, the "radius" of the superellipse
 !    in the major and minor axis directions.  A circle has these values equal.
 !
-!    Input, real ( kind = 8 ) EXPO, the exponent of the superellipse. 
+!    Input, real ( kind = fp ) EXPO, the exponent of the superellipse. 
 !    0 = a rectangle;
 !    between 0 and 1, a "rounded" rectangle;
 !    1.0 = an ellipse;
 !    2.0 = a diamond;
 !    > 2.0 a pinched shape.
 !
-!    Input, real ( kind = 8 ) PSI, the angle that the major axis of the
+!    Input, real ( kind = fp ) PSI, the angle that the major axis of the
 !    superellipse makes with the X axis.  A value of 0.0 means that the
 !    major and minor axes of the superellipse will be the X and Y 
 !    coordinate axes.
@@ -33545,7 +33983,7 @@ subroutine super_ellipse_points_2d ( pc, r1, r2, expo, psi, n, p )
 !    Input, integer ( kind = 4 ) N, the number of points desired.  N must
 !    be at least 1.
 !
-!    Output, real ( kind = 8 ) P(2,N), the coordinates of points 
+!    Output, real ( kind = fp ) P(2,N), the coordinates of points 
 !    on the superellipse.
 !
   implicit none
@@ -33553,29 +33991,29 @@ subroutine super_ellipse_points_2d ( pc, r1, r2, expo, psi, n, p )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) act
-  real ( kind = 8 ) ast
+  real ( kind = fp ) act
+  real ( kind = fp ) ast
   integer ( kind = 4 ) i
-  real ( kind = 8 ) expo
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) psi
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) sct
-  real ( kind = 8 ) sst
-  real ( kind = 8 ) theta
+  real ( kind = fp ) expo
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) psi
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) sct
+  real ( kind = fp ) sst
+  real ( kind = fp ) theta
 
   do i = 1, n
 
-    theta = ( 2.0D+00 * r8_pi * real ( i - 1, kind = 8 ) ) &
+    theta = ( 2.0_fp * r8_pi * real ( i - 1, kind = 8 ) ) &
       / real ( n, kind = 8 )
 
     act = abs ( cos ( theta ) )
-    sct = sign ( 1.0D+00, cos ( theta ) )
+    sct = sign ( 1.0_fp, cos ( theta ) )
     ast = abs ( sin ( theta ) )
-    sst = sign ( 1.0D+00, sin ( theta ) )
+    sst = sign ( 1.0_fp, sin ( theta ) )
 
     p(1,i) = pc(1) + r1 * cos ( psi ) * sct * ( act ) ** expo &
                    - r2 * sin ( psi ) * sst * ( ast ) ** expo
@@ -33588,6 +34026,7 @@ subroutine super_ellipse_points_2d ( pc, r1, r2, expo, psi, n, p )
   return
 end
 subroutine tetrahedron_barycentric_3d ( tetra, p, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33620,11 +34059,11 @@ subroutine tetrahedron_barycentric_3d ( tetra, p, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4) the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4) the tetrahedron vertices.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be checked.
+!    Input, real ( kind = fp ) P(3), the point to be checked.
 !
-!    Output, real ( kind = 8 ) C(4), the barycentric coordinates of P with
+!    Output, real ( kind = fp ) C(4), the barycentric coordinates of P with
 !    respect to the tetrahedron.
 !
   implicit none
@@ -33632,12 +34071,12 @@ subroutine tetrahedron_barycentric_3d ( tetra, p, c )
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ), parameter :: rhs_num = 1
 
-  real ( kind = 8 ) a(dim_num,dim_num+rhs_num)
-  real ( kind = 8 ) c(dim_num+1)
+  real ( kind = fp ) a(dim_num,dim_num+rhs_num)
+  real ( kind = fp ) c(dim_num+1)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) info
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) tetra(dim_num,4)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) tetra(dim_num,4)
 !
 !  Set up the linear system
 !
@@ -33668,11 +34107,12 @@ subroutine tetrahedron_barycentric_3d ( tetra, p, c )
 
   c(2:4) = a(1:dim_num,4)
 
-  c(1) = 1.0D+00 - sum ( c(2:4) )
+  c(1) = 1.0_fp - sum ( c(2:4) )
 
   return
 end
 subroutine tetrahedron_centroid_3d ( tetra, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33692,25 +34132,26 @@ subroutine tetrahedron_centroid_3d ( tetra, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4) the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4) the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) CENTROID(3), the coordinates of the centroid.
+!    Output, real ( kind = fp ) CENTROID(3), the coordinates of the centroid.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) centroid(dim_num)
+  real ( kind = fp ) centroid(dim_num)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) tetra(dim_num,4)
+  real ( kind = fp ) tetra(dim_num,4)
 
   do i = 1, dim_num
-    centroid(i) = sum ( tetra(i,1:4) ) / 4.0D+00
+    centroid(i) = sum ( tetra(i,1:4) ) / 4.0_fp
   end do
 
   return
 end
 subroutine tetrahedron_circumsphere_3d ( tetra, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33752,9 +34193,9 @@ subroutine tetrahedron_circumsphere_3d ( tetra, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4) the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4) the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) R, PC(3), the center of the
+!    Output, real ( kind = fp ) R, PC(3), the center of the
 !    circumscribed sphere, and its radius.  If the linear system is
 !    singular, then R = -1, PC(1:3) = 0.
 !
@@ -33763,13 +34204,13 @@ subroutine tetrahedron_circumsphere_3d ( tetra, r, pc )
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ), parameter :: rhs_num = 1
 
-  real ( kind = 8 ) a(dim_num,dim_num+rhs_num)
+  real ( kind = fp ) a(dim_num,dim_num+rhs_num)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) info
   integer ( kind = 4 ) j
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) tetra(dim_num,4)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) tetra(dim_num,4)
 !
 !  Set up the linear system.
 !
@@ -33790,20 +34231,21 @@ subroutine tetrahedron_circumsphere_3d ( tetra, r, pc )
 !  If the system was singular, return a consolation prize.
 !
   if ( info /= 0 ) then
-    r = -1.0D+00
-    pc(1:dim_num) = 0.0D+00
+    r = -1.0_fp
+    pc(1:dim_num) = 0.0_fp
     return
   end if
 !
 !  Compute the radius and center.
 !
-  r = 0.5D+00 * sqrt ( sum ( a(1:dim_num,4)**2 ) )
+  r = 0.5_fp * sqrt ( sum ( a(1:dim_num,4)**2 ) )
 
-  pc(1:dim_num) = tetra(1:dim_num,1) + 0.5D+00 * a(1:dim_num,4)
+  pc(1:dim_num) = tetra(1:dim_num,1) + 0.5_fp * a(1:dim_num,4)
 
   return
 end
 subroutine tetrahedron_contains_point_3d ( tetra, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33829,9 +34271,9 @@ subroutine tetrahedron_contains_point_3d ( tetra, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4), the tetrahedron vertices.
 !
-!    Input, real ( kind = 8 ) P(3), the point to be checked.
+!    Input, real ( kind = fp ) P(3), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if P is inside the 
 !    tetrahedron.
@@ -33840,17 +34282,17 @@ subroutine tetrahedron_contains_point_3d ( tetra, p, inside )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) c(dim_num+1)
+  real ( kind = fp ) c(dim_num+1)
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) tetra(dim_num,4)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) tetra(dim_num,4)
 
   call tetrahedron_barycentric_3d ( tetra, p, c )
 !
 !  If the point is in the tetrahedron, its barycentric coordinates
 !  must be nonnegative.
 !
-  if ( any ( c(1:dim_num+1) < 0.0D+00 ) ) then
+  if ( any ( c(1:dim_num+1) < 0.0_fp ) ) then
     inside = .false.
   else
     inside = .true.
@@ -33859,6 +34301,7 @@ subroutine tetrahedron_contains_point_3d ( tetra, p, inside )
   return
 end
 subroutine tetrahedron_dihedral_angles_3d ( tetra, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33878,26 +34321,26 @@ subroutine tetrahedron_dihedral_angles_3d ( tetra, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the vertices of the tetrahedron,
+!    Input, real ( kind = fp ) TETRA(3,4), the vertices of the tetrahedron,
 !    which can be labeled as A, B, C and D.
 !
-!    Output, real ( kind = 8 ) ANGLE(6), the dihedral angles along the
+!    Output, real ( kind = fp ) ANGLE(6), the dihedral angles along the
 !    axes AB, AC, AD, BC, BD and CD, respectively.
 !
   implicit none
 
-  real ( kind = 8 ) ab(3)
-  real ( kind = 8 ) abc_normal(3)
-  real ( kind = 8 ) abd_normal(3)
-  real ( kind = 8 ) ac(3)
-  real ( kind = 8 ) acd_normal(3)
-  real ( kind = 8 ) ad(3)
-  real ( kind = 8 ) angle(6)
-  real ( kind = 8 ) bc(3)
-  real ( kind = 8 ) bcd_normal(3)
-  real ( kind = 8 ) bd(3)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) tetra(3,4)
+  real ( kind = fp ) ab(3)
+  real ( kind = fp ) abc_normal(3)
+  real ( kind = fp ) abd_normal(3)
+  real ( kind = fp ) ac(3)
+  real ( kind = fp ) acd_normal(3)
+  real ( kind = fp ) ad(3)
+  real ( kind = fp ) angle(6)
+  real ( kind = fp ) bc(3)
+  real ( kind = fp ) bcd_normal(3)
+  real ( kind = fp ) bd(3)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) tetra(3,4)
 
   ab(1:3) = tetra(1:3,2) - tetra(1:3,1)
   ac(1:3) = tetra(1:3,3) - tetra(1:3,1)
@@ -33922,6 +34365,7 @@ subroutine tetrahedron_dihedral_angles_3d ( tetra, angle )
   return
 end
 subroutine tetrahedron_edge_length_3d ( tetra, edge_length )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33941,20 +34385,20 @@ subroutine tetrahedron_edge_length_3d ( tetra, edge_length )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4), the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) EDGE_LENGTH(6), the length of the edges.
+!    Output, real ( kind = fp ) EDGE_LENGTH(6), the length of the edges.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) edge_length(6)
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) edge_length(6)
   integer ( kind = 4 ) j1
   integer ( kind = 4 ) j2
   integer ( kind = 4 ) k
-  real ( kind = 8 ) tetra(dim_num,4)
+  real ( kind = fp ) tetra(dim_num,4)
 
   k = 0
   do j1 = 1, 3
@@ -33968,6 +34412,7 @@ subroutine tetrahedron_edge_length_3d ( tetra, edge_length )
   return
 end
 subroutine tetrahedron_face_angles_3d ( tetra, angles )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -33992,15 +34437,15 @@ subroutine tetrahedron_face_angles_3d ( tetra, angles )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4) the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4) the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) ANGLES(3,4), the face angles.
+!    Output, real ( kind = fp ) ANGLES(3,4), the face angles.
 !
   implicit none
 
-  real ( kind = 8 ) angles(3,4)
-  real ( kind = 8 ) tri(3,3)
-  real ( kind = 8 ) tetra(3,4)
+  real ( kind = fp ) angles(3,4)
+  real ( kind = fp ) tri(3,3)
+  real ( kind = fp ) tetra(3,4)
 !
 !  Face 123
 !
@@ -34027,6 +34472,7 @@ subroutine tetrahedron_face_angles_3d ( tetra, angles )
   return
 end
 subroutine tetrahedron_face_areas_3d ( tetra, areas )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34051,15 +34497,15 @@ subroutine tetrahedron_face_areas_3d ( tetra, areas )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4) the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4) the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) AREAS(4), the face areas.
+!    Output, real ( kind = fp ) AREAS(4), the face areas.
 !
   implicit none
 
-  real ( kind = 8 ) areas(4)
-  real ( kind = 8 ) tri(3,3)
-  real ( kind = 8 ) tetra(3,4)
+  real ( kind = fp ) areas(4)
+  real ( kind = fp ) tri(3,3)
+  real ( kind = fp ) tetra(3,4)
 !
 !  Face 123
 !
@@ -34086,6 +34532,7 @@ subroutine tetrahedron_face_areas_3d ( tetra, areas )
   return
 end
 subroutine tetrahedron_insphere_3d ( tetra, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34125,36 +34572,36 @@ subroutine tetrahedron_insphere_3d ( tetra, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the vertices of the tetrahedron.
+!    Input, real ( kind = fp ) TETRA(3,4), the vertices of the tetrahedron.
 !
-!    Output, real ( kind = 8 ) R, PC(3), the radius and the center
+!    Output, real ( kind = fp ) R, PC(3), the radius and the center
 !    of the sphere.  
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) r8mat_det_4d
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) gamma
-  real ( kind = 8 ) l123
-  real ( kind = 8 ) l124
-  real ( kind = 8 ) l134
-  real ( kind = 8 ) l234
-  real ( kind = 8 ) n123(1:dim_num)
-  real ( kind = 8 ) n124(1:dim_num)
-  real ( kind = 8 ) n134(1:dim_num)
-  real ( kind = 8 ) n234(1:dim_num)
-  real ( kind = 8 ) pc(1:dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) tetra(1:dim_num,4)
-  real ( kind = 8 ) v21(1:dim_num)
-  real ( kind = 8 ) v31(1:dim_num)
-  real ( kind = 8 ) v41(1:dim_num)
-  real ( kind = 8 ) v32(1:dim_num)
-  real ( kind = 8 ) v42(1:dim_num) 
-  real ( kind = 8 ) v43(1:dim_num) 
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) r8mat_det_4d
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) gamma
+  real ( kind = fp ) l123
+  real ( kind = fp ) l124
+  real ( kind = fp ) l134
+  real ( kind = fp ) l234
+  real ( kind = fp ) n123(1:dim_num)
+  real ( kind = fp ) n124(1:dim_num)
+  real ( kind = fp ) n134(1:dim_num)
+  real ( kind = fp ) n234(1:dim_num)
+  real ( kind = fp ) pc(1:dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) tetra(1:dim_num,4)
+  real ( kind = fp ) v21(1:dim_num)
+  real ( kind = fp ) v31(1:dim_num)
+  real ( kind = fp ) v41(1:dim_num)
+  real ( kind = fp ) v32(1:dim_num)
+  real ( kind = fp ) v42(1:dim_num) 
+  real ( kind = fp ) v43(1:dim_num) 
   
   v21(1:dim_num) = tetra(1:dim_num,2) - tetra(1:dim_num,1)
   v31(1:dim_num) = tetra(1:dim_num,3) - tetra(1:dim_num,1)
@@ -34180,7 +34627,7 @@ subroutine tetrahedron_insphere_3d ( tetra, r, pc )
                 / ( l234 + l134 + l124 + l123 )
 
   b(1:dim_num,1:4) = tetra(1:dim_num,1:4)
-  b(4,1:4) = 1.0D+00
+  b(4,1:4) = 1.0_fp
 
   gamma = abs ( r8mat_det_4d ( b ) )
 
@@ -34203,6 +34650,7 @@ subroutine tetrahedron_insphere_3d ( tetra, r, pc )
   return
 end
 subroutine tetrahedron_lattice_layer_point_next ( c, v, more )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34357,6 +34805,7 @@ subroutine tetrahedron_lattice_layer_point_next ( c, v, more )
   return
 end
 subroutine tetrahedron_lattice_point_next ( c, v, more )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34473,6 +34922,7 @@ subroutine tetrahedron_lattice_point_next ( c, v, more )
   return
 end
 subroutine tetrahedron_quality1_3d ( tetra, quality )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34499,27 +34949,28 @@ subroutine tetrahedron_quality1_3d ( tetra, quality )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4), the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) QUALITY, the quality of the tetrahedron.
+!    Output, real ( kind = fp ) QUALITY, the quality of the tetrahedron.
 !
   implicit none
 
-  real ( kind = 8 ) pc(3)
-  real ( kind = 8 ) quality
-  real ( kind = 8 ) r_in
-  real ( kind = 8 ) r_out
-  real ( kind = 8 ) tetra(3,4)
+  real ( kind = fp ) pc(3)
+  real ( kind = fp ) quality
+  real ( kind = fp ) r_in
+  real ( kind = fp ) r_out
+  real ( kind = fp ) tetra(3,4)
 
   call tetrahedron_circumsphere_3d ( tetra, r_out, pc )
 
   call tetrahedron_insphere_3d ( tetra, r_in, pc )
 
-  quality = 3.0D+00 * r_in / r_out
+  quality = 3.0_fp * r_in / r_out
 
   return
 end
 subroutine tetrahedron_quality2_3d ( tetra, quality2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34560,18 +35011,18 @@ subroutine tetrahedron_quality2_3d ( tetra, quality2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the tetrahedron vertices.
+!    Input, real ( kind = fp ) TETRA(3,4), the tetrahedron vertices.
 !
-!    Output, real ( kind = 8 ) QUALITY2, the quality of the tetrahedron.
+!    Output, real ( kind = fp ) QUALITY2, the quality of the tetrahedron.
 !
   implicit none
 
-  real ( kind = 8 ) edge_length(6)
-  real ( kind = 8 ) l_max
-  real ( kind = 8 ) pc(3)
-  real ( kind = 8 ) quality2
-  real ( kind = 8 ) r_in
-  real ( kind = 8 ) tetra(3,4)
+  real ( kind = fp ) edge_length(6)
+  real ( kind = fp ) l_max
+  real ( kind = fp ) pc(3)
+  real ( kind = fp ) quality2
+  real ( kind = fp ) r_in
+  real ( kind = fp ) tetra(3,4)
 
   call tetrahedron_edge_length_3d ( tetra, edge_length )
 
@@ -34579,11 +35030,12 @@ subroutine tetrahedron_quality2_3d ( tetra, quality2 )
 
   call tetrahedron_insphere_3d ( tetra, r_in, pc )
 
-  quality2 = 2.0D+00 * sqrt ( 6.0D+00 ) * r_in / l_max
+  quality2 = 2.0_fp * sqrt ( 6.0_fp ) * r_in / l_max
 
   return
 end
 subroutine tetrahedron_quality3_3d ( tetra, quality3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34625,30 +35077,30 @@ subroutine tetrahedron_quality3_3d ( tetra, quality3 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the vertices of the tetrahedron.
+!    Input, real ( kind = fp ) TETRA(3,4), the vertices of the tetrahedron.
 !
-!    Output, real ( kind = 8 ) QUALITY3, the mean ratio of the tetrahedron.
+!    Output, real ( kind = fp ) QUALITY3, the mean ratio of the tetrahedron.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) ab(dim_num)
-  real ( kind = 8 ) ac(dim_num)
-  real ( kind = 8 ) ad(dim_num)
-  real ( kind = 8 ) bc(dim_num)
-  real ( kind = 8 ) bd(dim_num)
-  real ( kind = 8 ) cd(dim_num)
-  real ( kind = 8 ) denom
-  real ( kind = 8 ) lab
-  real ( kind = 8 ) lac
-  real ( kind = 8 ) lad
-  real ( kind = 8 ) lbc
-  real ( kind = 8 ) lbd
-  real ( kind = 8 ) lcd
-  real ( kind = 8 ) quality3
-  real ( kind = 8 ) tetra(dim_num,4)
-  real ( kind = 8 ) volume
+  real ( kind = fp ) ab(dim_num)
+  real ( kind = fp ) ac(dim_num)
+  real ( kind = fp ) ad(dim_num)
+  real ( kind = fp ) bc(dim_num)
+  real ( kind = fp ) bd(dim_num)
+  real ( kind = fp ) cd(dim_num)
+  real ( kind = fp ) denom
+  real ( kind = fp ) lab
+  real ( kind = fp ) lac
+  real ( kind = fp ) lad
+  real ( kind = fp ) lbc
+  real ( kind = fp ) lbd
+  real ( kind = fp ) lcd
+  real ( kind = fp ) quality3
+  real ( kind = fp ) tetra(dim_num,4)
+  real ( kind = fp ) volume
 !
 !  Compute the vectors representing the sides of the tetrahedron.
 !
@@ -34673,19 +35125,20 @@ subroutine tetrahedron_quality3_3d ( tetra, quality3 )
   volume = abs ( &
       ab(1) * ( ac(2) * ad(3) - ac(3) * ad(2) ) &
     + ab(2) * ( ac(3) * ad(1) - ac(1) * ad(3) ) &
-    + ab(3) * ( ac(1) * ad(2) - ac(2) * ad(1) ) ) / 6.0D+00
+    + ab(3) * ( ac(1) * ad(2) - ac(2) * ad(1) ) ) / 6.0_fp
 
   denom = lab + lac + lad + lbc + lbd + lcd
 
-  if ( denom == 0.0D+00 ) then
-    quality3 = 0.0D+00
+  if ( denom == 0.0_fp ) then
+    quality3 = 0.0_fp
   else
-    quality3 = 12.0D+00 * ( 3.0D+00 * volume )**( 2.0D+00 / 3.0D+00 ) / denom
+    quality3 = 12.0_fp * ( 3.0_fp * volume )**( 2.0_fp / 3.0_fp ) / denom
   end if
 
   return
 end
 subroutine tetrahedron_quality4_3d ( tetra, quality4 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34722,33 +35175,33 @@ subroutine tetrahedron_quality4_3d ( tetra, quality4 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the vertices of the tetrahedron.
+!    Input, real ( kind = fp ) TETRA(3,4), the vertices of the tetrahedron.
 !
-!    Output, real ( kind = 8 ) QUALITY4, the value of the quality measure.
+!    Output, real ( kind = fp ) QUALITY4, the value of the quality measure.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) ab(dim_num)
-  real ( kind = 8 ) ac(dim_num)
-  real ( kind = 8 ) ad(dim_num)
-  real ( kind = 8 ) bc(dim_num)
-  real ( kind = 8 ) bd(dim_num)
-  real ( kind = 8 ) cd(dim_num)
-  real ( kind = 8 ) denom
-  real ( kind = 8 ) l1
-  real ( kind = 8 ) l2
-  real ( kind = 8 ) l3
-  real ( kind = 8 ) lab
-  real ( kind = 8 ) lac
-  real ( kind = 8 ) lad
-  real ( kind = 8 ) lbc
-  real ( kind = 8 ) lbd
-  real ( kind = 8 ) lcd
-  real ( kind = 8 ) quality4
-  real ( kind = 8 ) tetra(dim_num,4)
-  real ( kind = 8 ) volume
+  real ( kind = fp ) ab(dim_num)
+  real ( kind = fp ) ac(dim_num)
+  real ( kind = fp ) ad(dim_num)
+  real ( kind = fp ) bc(dim_num)
+  real ( kind = fp ) bd(dim_num)
+  real ( kind = fp ) cd(dim_num)
+  real ( kind = fp ) denom
+  real ( kind = fp ) l1
+  real ( kind = fp ) l2
+  real ( kind = fp ) l3
+  real ( kind = fp ) lab
+  real ( kind = fp ) lac
+  real ( kind = fp ) lad
+  real ( kind = fp ) lbc
+  real ( kind = fp ) lbd
+  real ( kind = fp ) lcd
+  real ( kind = fp ) quality4
+  real ( kind = fp ) tetra(dim_num,4)
+  real ( kind = fp ) volume
 !
 !  Compute the vectors that represent the sides.
 !
@@ -34773,9 +35226,9 @@ subroutine tetrahedron_quality4_3d ( tetra, quality4 )
   volume = abs ( &
       ab(1) * ( ac(2) * ad(3) - ac(3) * ad(2) ) &
     + ab(2) * ( ac(3) * ad(1) - ac(1) * ad(3) ) &
-    + ab(3) * ( ac(1) * ad(2) - ac(2) * ad(1) ) ) / 6.0D+00
+    + ab(3) * ( ac(1) * ad(2) - ac(2) * ad(1) ) ) / 6.0_fp
 
-  quality4 = 1.0D+00
+  quality4 = 1.0_fp
 
   l1 = lab + lac
   l2 = lab + lad
@@ -34785,10 +35238,10 @@ subroutine tetrahedron_quality4_3d ( tetra, quality4 )
         * ( l2 + lbd ) * ( l2 - lbd ) &
         * ( l3 + lcd ) * ( l3 - lcd )
 
-  if ( denom <= 0.0D+00 ) then
-    quality4 = 0.0D+00
+  if ( denom <= 0.0_fp ) then
+    quality4 = 0.0_fp
   else
-    quality4 = min ( quality4, 12.0D+00 * volume / sqrt ( denom ) )
+    quality4 = min ( quality4, 12.0_fp * volume / sqrt ( denom ) )
   end if
 
   l1 = lab + lbc
@@ -34799,10 +35252,10 @@ subroutine tetrahedron_quality4_3d ( tetra, quality4 )
         * ( l2 + lad ) * ( l2 - lad ) &
         * ( l3 + lcd ) * ( l3 - lcd )
 
-  if ( denom <= 0.0D+00 ) then
-    quality4 = 0.0D+00
+  if ( denom <= 0.0_fp ) then
+    quality4 = 0.0_fp
   else
-    quality4 = min ( quality4, 12.0D+00 * volume / sqrt ( denom ) )
+    quality4 = min ( quality4, 12.0_fp * volume / sqrt ( denom ) )
   end if
 
   l1 = lac + lbc
@@ -34813,10 +35266,10 @@ subroutine tetrahedron_quality4_3d ( tetra, quality4 )
         * ( l2 + lad ) * ( l2 - lad ) &
         * ( l3 + lbd ) * ( l3 - lbd )
 
-  if ( denom <= 0.0D+00 ) then
-    quality4 = 0.0D+00
+  if ( denom <= 0.0_fp ) then
+    quality4 = 0.0_fp
   else
-    quality4 = min ( quality4, 12.0D+00 * volume / sqrt ( denom ) )
+    quality4 = min ( quality4, 12.0_fp * volume / sqrt ( denom ) )
   end if
 
   l1 = lad + lbd
@@ -34827,18 +35280,19 @@ subroutine tetrahedron_quality4_3d ( tetra, quality4 )
         * ( l2 + lac ) * ( l2 - lac ) &
         * ( l3 + lbc ) * ( l3 - lbc )
 
-  if ( denom <= 0.0D+00 ) then
-    quality4 = 0.0D+00
+  if ( denom <= 0.0_fp ) then
+    quality4 = 0.0_fp
   else
-    quality4 = min ( quality4, 12.0D+00 * volume / sqrt ( denom ) )
+    quality4 = min ( quality4, 12.0_fp * volume / sqrt ( denom ) )
   end if
 
-  quality4 = quality4 * 1.5D+00 * sqrt ( 6.0D+00 )
+  quality4 = quality4 * 1.5_fp * sqrt ( 6.0_fp )
 
   return
 end
 subroutine tetrahedron_rhombic_shape_3d ( point_num, face_num, &
   face_order_max, point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34881,7 +35335,7 @@ subroutine tetrahedron_rhombic_shape_3d ( point_num, face_num, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of 
 !    vertices per face.
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the vertices.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the vertices.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of vertices
 !    for each face.
@@ -34899,19 +35353,19 @@ subroutine tetrahedron_rhombic_shape_3d ( point_num, face_num, &
   integer ( kind = 4 ) face_order_max
   integer ( kind = 4 ) point_num
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
-  real ( kind = 8 ), parameter :: z = 0.0D+00
+  real ( kind = fp ) point_coord(dim_num,point_num)
+  real ( kind = fp ), parameter :: z = 0.0_fp
 
-  a =        1.0D+00   / sqrt ( 3.0D+00 )
-  b = sqrt ( 2.0D+00 ) / sqrt ( 3.0D+00 )
-  c = sqrt ( 3.0D+00 ) /        6.0D+00
-  d =        1.0D+00   / sqrt ( 6.0D+00 )
+  a =        1.0_fp   / sqrt ( 3.0_fp )
+  b = sqrt ( 2.0_fp ) / sqrt ( 3.0_fp )
+  c = sqrt ( 3.0_fp ) /        6.0_fp
+  d =        1.0_fp   / sqrt ( 6.0_fp )
 !
 !  Set the point coordinates.
 !
@@ -34943,6 +35397,7 @@ subroutine tetrahedron_rhombic_shape_3d ( point_num, face_num, &
 end
 subroutine tetrahedron_rhombic_size_3d ( point_num, edge_num, face_num, &
   face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -34990,6 +35445,7 @@ subroutine tetrahedron_rhombic_size_3d ( point_num, edge_num, face_num, &
   return
 end
 subroutine tetrahedron_sample_3d ( t, n, seed, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35009,32 +35465,32 @@ subroutine tetrahedron_sample_3d ( t, n, seed, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,4), the tetrahedron vertices.
+!    Input, real ( kind = fp ) T(3,4), the tetrahedron vertices.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to sample.
 !
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) P(3,N), random points in the tetrahedron.
+!    Output, real ( kind = fp ) P(3,N), random points in the tetrahedron.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) beta
-  real ( kind = 8 ) gamma
+  real ( kind = fp ) alpha
+  real ( kind = fp ) beta
+  real ( kind = fp ) gamma
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p12(dim_num)
-  real ( kind = 8 ) p13(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_uniform_01
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p12(dim_num)
+  real ( kind = fp ) p13(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_uniform_01
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) t(dim_num,dim_num+1)
-  real ( kind = 8 ) tr(dim_num,3)
+  real ( kind = fp ) t(dim_num,dim_num+1)
+  real ( kind = fp ) tr(dim_num,3)
 
   do j = 1, n
 
@@ -35048,16 +35504,16 @@ subroutine tetrahedron_sample_3d ( t, n, seed, p )
 !  The plane will intersect sides 12, 13, and 14 at a fraction
 !  ALPHA = R^1/3 of the distance from vertex 1 to vertices 2, 3, and 4.
 !  
-    alpha = r**( 1.0D+00 / 3.0D+00 )
+    alpha = r**( 1.0_fp / 3.0_fp )
 !
 !  Determine the coordinates of the points on sides 12, 13 and 14 intersected
 !  by the plane, which form a triangle TR.
 !
-    tr(1:dim_num,1) = ( 1.0D+00 - alpha ) * t(1:dim_num,1) &
+    tr(1:dim_num,1) = ( 1.0_fp - alpha ) * t(1:dim_num,1) &
                                 + alpha   * t(1:dim_num,2)
-    tr(1:dim_num,2) = ( 1.0D+00 - alpha ) * t(1:dim_num,1) &
+    tr(1:dim_num,2) = ( 1.0_fp - alpha ) * t(1:dim_num,1) &
                                 + alpha   * t(1:dim_num,3)
-    tr(1:dim_num,3) = ( 1.0D+00 - alpha ) * t(1:dim_num,1) &
+    tr(1:dim_num,3) = ( 1.0_fp - alpha ) * t(1:dim_num,1) &
                                 + alpha   * t(1:dim_num,4)
 !
 !  Now choose, uniformly at random, a point in this triangle.
@@ -35077,16 +35533,16 @@ subroutine tetrahedron_sample_3d ( t, n, seed, p )
 !  Determine the coordinates of the points on sides 2 and 3 intersected
 !  by line L.
 !
-    p12(1:dim_num) = ( 1.0D+00 - beta ) * tr(1:dim_num,1) &
+    p12(1:dim_num) = ( 1.0_fp - beta ) * tr(1:dim_num,1) &
                                + beta   * tr(1:dim_num,2)
-    p13(1:dim_num) = ( 1.0D+00 - beta ) * tr(1:dim_num,1) &
+    p13(1:dim_num) = ( 1.0_fp - beta ) * tr(1:dim_num,1) &
                                + beta   * tr(1:dim_num,3)
 !
 !  Now choose, uniformly at random, a point on the line L.
 !
     gamma = r8_uniform_01 ( seed )
 
-    p(1:dim_num,j) = ( 1.0D+00 - gamma ) * p12(1:dim_num) &
+    p(1:dim_num,j) = ( 1.0_fp - gamma ) * p12(1:dim_num) &
                    +             gamma   * p13(1:dim_num)
 
   end do
@@ -35095,6 +35551,7 @@ subroutine tetrahedron_sample_3d ( t, n, seed, p )
 end
 subroutine tetrahedron_shape_3d ( point_num, face_num, face_order_max, &
   point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35129,7 +35586,7 @@ subroutine tetrahedron_shape_3d ( point_num, face_num, face_order_max, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum number of 
 !    vertices per face.
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the vertices.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the vertices.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of vertices
 !    for each face.
@@ -35149,15 +35606,15 @@ subroutine tetrahedron_shape_3d ( point_num, face_num, face_order_max, &
 
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 !
 !  Set the point coordinates.
 !
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
-        0.942809D+00,    0.000000D+00,   -0.333333D+00, &
-       -0.471405D+00,    0.816497D+00,   -0.333333D+00, &
-       -0.471405D+00,   -0.816497D+00,   -0.333333D+00, &
-        0.000000D+00,    0.000000D+00,    1.000000D+00 /), &
+        0.942809_fp,    0.000000_fp,   -0.333333_fp, &
+       -0.471405_fp,    0.816497_fp,   -0.333333_fp, &
+       -0.471405_fp,   -0.816497_fp,   -0.333333_fp, &
+        0.000000_fp,    0.000000_fp,    1.000000_fp /), &
     (/ dim_num, point_num /) )
 !
 !  Set the face orders.
@@ -35177,6 +35634,7 @@ subroutine tetrahedron_shape_3d ( point_num, face_num, face_order_max, &
 end
 subroutine tetrahedron_size_3d ( point_num, edge_num, face_num, &
   face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35224,6 +35682,7 @@ subroutine tetrahedron_size_3d ( point_num, edge_num, face_num, &
   return
 end
 subroutine tetrahedron_solid_angles_3d ( tetra, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35243,16 +35702,16 @@ subroutine tetrahedron_solid_angles_3d ( tetra, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the vertices of the tetrahedron.
+!    Input, real ( kind = fp ) TETRA(3,4), the vertices of the tetrahedron.
 !
-!    Output, real ( kind = 8 ) ANGLE(4), the solid angles.
+!    Output, real ( kind = fp ) ANGLE(4), the solid angles.
 !
   implicit none
 
-  real ( kind = 8 ) angle(6)
-  real ( kind = 8 ) dihedral_angle(6)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) tetra(3,4)
+  real ( kind = fp ) angle(6)
+  real ( kind = fp ) dihedral_angle(6)
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) tetra(3,4)
 
   call tetrahedron_dihedral_angles_3d ( tetra, dihedral_angle )
 
@@ -35264,6 +35723,7 @@ subroutine tetrahedron_solid_angles_3d ( tetra, angle )
   return
 end
 subroutine tetrahedron_volume_3d ( tetra, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35283,27 +35743,28 @@ subroutine tetrahedron_volume_3d ( tetra, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) TETRA(3,4), the vertices of the tetrahedron.
+!    Input, real ( kind = fp ) TETRA(3,4), the vertices of the tetrahedron.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the tetrahedron.
+!    Output, real ( kind = fp ) VOLUME, the volume of the tetrahedron.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) r8mat_det_4d
-  real ( kind = 8 ) tetra(dim_num,4)
-  real ( kind = 8 ) volume
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) r8mat_det_4d
+  real ( kind = fp ) tetra(dim_num,4)
+  real ( kind = fp ) volume
 
   a(1:dim_num,1:4) = tetra(1:dim_num,1:4)
-  a(4,1:4) = 1.0D+00
+  a(4,1:4) = 1.0_fp
 
-  volume = abs ( r8mat_det_4d ( a ) ) / 6.0D+00
+  volume = abs ( r8mat_det_4d ( a ) ) / 6.0_fp
 
   return
 end
 subroutine tetrahedron01_lattice_point_num_3d ( s, n )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35358,6 +35819,7 @@ subroutine tetrahedron01_lattice_point_num_3d ( s, n )
   return
 end
 function tetrahedron01_volume ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35377,17 +35839,18 @@ function tetrahedron01_volume ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) TETRAHEDRON01_VOLUME, the volume.
+!    Output, real ( kind = fp ) TETRAHEDRON01_VOLUME, the volume.
 !
   implicit none
 
-  real ( kind = 8 ) tetrahedron01_volume
+  real ( kind = fp ) tetrahedron01_volume
 
-  tetrahedron01_volume = 1.0D+00 / 6.0D+00
+  tetrahedron01_volume = 1.0_fp / 6.0_fp
 
   return
 end
 subroutine timestamp ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35466,6 +35929,7 @@ subroutine timestamp ( )
   return
 end
 subroutine tmat_init ( a )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35517,20 +35981,20 @@ subroutine tmat_init ( a )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the geometric transformation matrix.
+!    Input, real ( kind = fp ) A(4,4), the geometric transformation matrix.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
+  real ( kind = fp ) a(4,4)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
 
   do i = 1, 4
     do j = 1, 4
       if ( i == j ) then
-        a(i,j) = 1.0D+00
+        a(i,j) = 1.0_fp
       else
-        a(i,j) = 0.0D+00
+        a(i,j) = 0.0_fp
       end if
     end do
   end do
@@ -35538,6 +36002,7 @@ subroutine tmat_init ( a )
   return
 end
 subroutine tmat_mxm ( a, b, c )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35570,24 +36035,25 @@ subroutine tmat_mxm ( a, b, c )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the first geometric transformation matrix.
+!    Input, real ( kind = fp ) A(4,4), the first geometric transformation matrix.
 !
-!    Input, real ( kind = 8 ) B(4,4), the second geometric transformation
+!    Input, real ( kind = fp ) B(4,4), the second geometric transformation
 !    matrix.
 !
-!    Output, real ( kind = 8 ) C(4,4), the product A * B.
+!    Output, real ( kind = fp ) C(4,4), the product A * B.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) c(4,4)
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) c(4,4)
 
   c(1:4,1:4) = matmul ( a(1:4,1:4), b(1:4,1:4) )
 
   return
 end
 subroutine tmat_mxp ( a, x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35626,26 +36092,27 @@ subroutine tmat_mxp ( a, x, y )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the geometric transformation matrix.
+!    Input, real ( kind = fp ) A(4,4), the geometric transformation matrix.
 !
-!    Input, real ( kind = 8 ) X(3), the point to be multiplied.  The fourth
+!    Input, real ( kind = fp ) X(3), the point to be multiplied.  The fourth
 !    component of X is implicitly assigned the value of 1.
 !
-!    Output, real ( kind = 8 ) Y(3), the result of A*X.  The product is
+!    Output, real ( kind = fp ) Y(3), the result of A*X.  The product is
 !    accumulated in a temporary vector, and then assigned to the result.
 !    Therefore, it is legal for X and Y to share memory.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) x(3)
-  real ( kind = 8 ) y(3)
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) x(3)
+  real ( kind = fp ) y(3)
 
   y(1:3) = a(1:3,4) + matmul ( a(1:3,1:3), x(1:3) )
 
   return
 end
 subroutine tmat_mxp2 ( a, n, x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35672,13 +36139,13 @@ subroutine tmat_mxp2 ( a, n, x, y )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the geometric transformation matrix.
+!    Input, real ( kind = fp ) A(4,4), the geometric transformation matrix.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to be multiplied.
 !
-!    Input, real ( kind = 8 ) X(3,N), the points to be multiplied.
+!    Input, real ( kind = fp ) X(3,N), the points to be multiplied.
 !
-!    Output, real ( kind = 8 ) Y(3,N), the transformed points.  Each product is
+!    Output, real ( kind = fp ) Y(3,N), the transformed points.  Each product is
 !    accumulated in a temporary vector, and then assigned to the
 !    result.  Therefore, it is legal for X and Y to share memory.
 !
@@ -35686,10 +36153,10 @@ subroutine tmat_mxp2 ( a, n, x, y )
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a(4,4)
+  real ( kind = fp ) a(4,4)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) x(3,n)
-  real ( kind = 8 ) y(3,n)
+  real ( kind = fp ) x(3,n)
+  real ( kind = fp ) y(3,n)
 
   do i = 1, 3
     y(i,1:n) = a(i,4)
@@ -35700,6 +36167,7 @@ subroutine tmat_mxp2 ( a, n, x, y )
   return
 end
 subroutine tmat_mxv ( a, x, y )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35726,26 +36194,27 @@ subroutine tmat_mxv ( a, x, y )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the geometric transformation matrix.
+!    Input, real ( kind = fp ) A(4,4), the geometric transformation matrix.
 !
-!    Input, real ( kind = 8 ) X(3), the vector to be multiplied.  The fourth
+!    Input, real ( kind = fp ) X(3), the vector to be multiplied.  The fourth
 !    component of X is implicitly assigned the value of 1.
 !
-!    Output, real ( kind = 8 ) Y(3), the result of A*X.  The product is
+!    Output, real ( kind = fp ) Y(3), the result of A*X.  The product is
 !    accumulated in a temporary vector, and then assigned to the result. 
 !    Therefore, it is legal for X and Y to share memory.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) x(3)
-  real ( kind = 8 ) y(3)
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) x(3)
+  real ( kind = fp ) y(3)
 
   y(1:3) = a(1:3,4) + matmul ( a(1:3,1:3), x(1:3) )
 
   return
 end
 subroutine tmat_rot_axis ( a, angle, axis, b )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35772,15 +36241,15 @@ subroutine tmat_rot_axis ( a, angle, axis, b )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the current geometric transformation
+!    Input, real ( kind = fp ) A(4,4), the current geometric transformation
 !    matrix.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle, in degrees, of the rotation.
+!    Input, real ( kind = fp ) ANGLE, the angle, in degrees, of the rotation.
 !
 !    Input, character AXIS, is 'X', 'Y' or 'Z', specifying the coordinate
 !    axis about which the rotation occurs.
 !
-!    Output, real ( kind = 8 ) B(4,4), the modified geometric 
+!    Output, real ( kind = fp ) B(4,4), the modified geometric 
 !    transformation matrix.
 !    A and B may share the same memory.
 !
@@ -35826,6 +36295,7 @@ subroutine tmat_rot_axis ( a, angle, axis, b )
   return
 end
 subroutine tmat_rot_vector ( a, angle, axis, b )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35852,33 +36322,33 @@ subroutine tmat_rot_vector ( a, angle, axis, b )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the current geometric transformation
+!    Input, real ( kind = fp ) A(4,4), the current geometric transformation
 !    matrix.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle, in degrees, of the rotation.
+!    Input, real ( kind = fp ) ANGLE, the angle, in degrees, of the rotation.
 !
-!    Input, real ( kind = 8 ) AXIS(3), the axis vector about which 
+!    Input, real ( kind = fp ) AXIS(3), the axis vector about which 
 !    rotation occurs.  AXIS may not be the zero vector.
 !
-!    Output, real ( kind = 8 ) B(4,4), the modified geometric 
+!    Output, real ( kind = fp ) B(4,4), the modified geometric 
 !    transformation matrix.
 !    A and B may share the same memory.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) angle_rad
-  real ( kind = 8 ) axis(3)
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) c(4,4)
-  real ( kind = 8 ) ca
-  real ( kind = 8 ) degrees_to_radians
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) sa
-  real ( kind = 8 ) v1
-  real ( kind = 8 ) v2
-  real ( kind = 8 ) v3
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) angle
+  real ( kind = fp ) angle_rad
+  real ( kind = fp ) axis(3)
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) c(4,4)
+  real ( kind = fp ) ca
+  real ( kind = fp ) degrees_to_radians
+  real ( kind = fp ) norm
+  real ( kind = fp ) sa
+  real ( kind = fp ) v1
+  real ( kind = fp ) v2
+  real ( kind = fp ) v3
 
   v1 = axis(1)
   v2 = axis(2)
@@ -35886,7 +36356,7 @@ subroutine tmat_rot_vector ( a, angle, axis, b )
 
   norm = sqrt ( v1 * v1 + v2 * v2 + v3 * v3 )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     return
   end if
 
@@ -35900,23 +36370,24 @@ subroutine tmat_rot_vector ( a, angle, axis, b )
 
   call tmat_init ( c )
 
-  c(1,1) =                    v1 * v1 + ca * ( 1.0D+00 - v1 * v1 )
-  c(1,2) = ( 1.0D+00 - ca ) * v1 * v2 - sa * v3
-  c(1,3) = ( 1.0D+00 - ca ) * v1 * v3 + sa * v2
+  c(1,1) =                    v1 * v1 + ca * ( 1.0_fp - v1 * v1 )
+  c(1,2) = ( 1.0_fp - ca ) * v1 * v2 - sa * v3
+  c(1,3) = ( 1.0_fp - ca ) * v1 * v3 + sa * v2
 
-  c(2,1) = ( 1.0D+00 - ca ) * v2 * v1 + sa * v3
-  c(2,2) =                    v2 * v2 + ca * ( 1.0D+00 - v2 * v2 )
-  c(2,3) = ( 1.0D+00 - ca ) * v2 * v3 - sa * v1
+  c(2,1) = ( 1.0_fp - ca ) * v2 * v1 + sa * v3
+  c(2,2) =                    v2 * v2 + ca * ( 1.0_fp - v2 * v2 )
+  c(2,3) = ( 1.0_fp - ca ) * v2 * v3 - sa * v1
 
-  c(3,1) = ( 1.0D+00 - ca ) * v3 * v1 - sa * v2
-  c(3,2) = ( 1.0D+00 - ca ) * v3 * v2 + sa * v1
-  c(3,3) =                    v3 * v3 + ca * ( 1.0D+00 - v3 * v3 )
+  c(3,1) = ( 1.0_fp - ca ) * v3 * v1 - sa * v2
+  c(3,2) = ( 1.0_fp - ca ) * v3 * v2 + sa * v1
+  c(3,3) =                    v3 * v3 + ca * ( 1.0_fp - v3 * v3 )
 
   b(1:4,1:4) = matmul ( c(1:4,1:4), a(1:4,1:4) )
 
   return
 end
 subroutine tmat_scale ( a, s, b )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35943,21 +36414,21 @@ subroutine tmat_scale ( a, s, b )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the current geometric transformation
+!    Input, real ( kind = fp ) A(4,4), the current geometric transformation
 !    matrix.
 !
-!    Input, real ( kind = 8 ) S(3), the scalings to be applied to the 
+!    Input, real ( kind = fp ) S(3), the scalings to be applied to the 
 !    X, Y and Z coordinates.
 !
-!    Output, real ( kind = 8 ) B(4,4), the modified geometric transformation
+!    Output, real ( kind = fp ) B(4,4), the modified geometric transformation
 !    matrix.  A and B may share the same memory.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) c(4,4)
-  real ( kind = 8 ) s(3)
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) c(4,4)
+  real ( kind = fp ) s(3)
 
   call tmat_init ( c )
 
@@ -35970,6 +36441,7 @@ subroutine tmat_scale ( a, s, b )
   return
 end
 subroutine tmat_shear ( a, axis, s, b )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -35996,7 +36468,7 @@ subroutine tmat_shear ( a, axis, s, b )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the current geometric transformation
+!    Input, real ( kind = fp ) A(4,4), the current geometric transformation
 !    matrix.
 !
 !    Input, character ( len = 2 ) AXIS, is 'XY', 'XZ', 'YX', 'YZ', 'ZX' or 'ZY',
@@ -36009,18 +36481,18 @@ subroutine tmat_shear ( a, axis, s, b )
 !      ZX:  z' = z + s * x;
 !      ZY:  z' = z + s * y.
 !
-!    Input, real ( kind = 8 ) S, the shear coefficient.
+!    Input, real ( kind = fp ) S, the shear coefficient.
 !
-!    Output, real ( kind = 8 ) B(4,4), the modified geometric transformation
+!    Output, real ( kind = fp ) B(4,4), the modified geometric transformation
 !    matrix.  A and B may share the same memory.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
+  real ( kind = fp ) a(4,4)
   character ( len = 2 ) axis
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) c(4,4)
-  real ( kind = 8 ) s
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) c(4,4)
+  real ( kind = fp ) s
 
   call tmat_init ( c )
 
@@ -36049,6 +36521,7 @@ subroutine tmat_shear ( a, axis, s, b )
   return
 end
 subroutine tmat_trans ( a, t, b )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36075,20 +36548,20 @@ subroutine tmat_trans ( a, t, b )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A(4,4), the current geometric transformation
+!    Input, real ( kind = fp ) A(4,4), the current geometric transformation
 !    matrix.
 !
-!    Input, real ( kind = 8 ) T(3), the translation.  This may be thought
+!    Input, real ( kind = fp ) T(3), the translation.  This may be thought
 !    of as the point that the origin moves to under the translation.
 !
-!    Output, real ( kind = 8 ) B(4,4), the modified transformation matrix.
+!    Output, real ( kind = fp ) B(4,4), the modified transformation matrix.
 !    A and B may share the same memory.
 !
   implicit none
 
-  real ( kind = 8 ) a(4,4)
-  real ( kind = 8 ) b(4,4)
-  real ( kind = 8 ) t(3)
+  real ( kind = fp ) a(4,4)
+  real ( kind = fp ) b(4,4)
+  real ( kind = fp ) t(3)
 
   b(1:4,1:4) = a(1:4,1:4)
 
@@ -36097,6 +36570,7 @@ subroutine tmat_trans ( a, t, b )
   return
 end
 function torus_area_3d ( r1, r2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36122,22 +36596,23 @@ function torus_area_3d ( r1, r2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the two radii that define the torus.
+!    Input, real ( kind = fp ) R1, R2, the two radii that define the torus.
 !
-!    Output, real ( kind = 8 ) TORUS_AREA_3D, the area of the torus.
+!    Output, real ( kind = fp ) TORUS_AREA_3D, the area of the torus.
 !
   implicit none
 
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) torus_area_3d
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) torus_area_3d
 
-  torus_area_3d = 4.0D+00 * r8_pi * r8_pi * r1 * r2
+  torus_area_3d = 4.0_fp * r8_pi * r8_pi * r1 * r2
 
   return
 end
 subroutine torus_volume_3d ( r1, r2, volume )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36163,23 +36638,24 @@ subroutine torus_volume_3d ( r1, r2, volume )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) R1, R2, the "inner" and "outer" radii of the
+!    Input, real ( kind = fp ) R1, R2, the "inner" and "outer" radii of the
 !    torus.
 !
-!    Output, real ( kind = 8 ) VOLUME, the volume of the torus.
+!    Output, real ( kind = fp ) VOLUME, the volume of the torus.
 !
   implicit none
 
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) volume
+  real ( kind = fp ) r1
+  real ( kind = fp ) r2
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) volume
 
-  volume = 2.0D+00 * r8_pi * r8_pi * r1 * r2 * r2
+  volume = 2.0_fp * r8_pi * r8_pi * r1 * r2 * r2
 
   return
 end
 subroutine tp_to_xyz ( theta, phi, v )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36203,16 +36679,16 @@ subroutine tp_to_xyz ( theta, phi, v )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) THETA, PHI, the angular coordinates of a point
+!    Input, real ( kind = fp ) THETA, PHI, the angular coordinates of a point
 !    on the unit sphere.
 !
-!    Output, real ( kind = 8 ) V(3), the XYZ coordinates.
+!    Output, real ( kind = fp ) V(3), the XYZ coordinates.
 !
   implicit none
 
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) v(3)
+  real ( kind = fp ) phi
+  real ( kind = fp ) theta
+  real ( kind = fp ) v(3)
 
   v(1) = cos ( theta ) * sin ( phi )
   v(2) = sin ( theta ) * sin ( phi )
@@ -36221,6 +36697,7 @@ subroutine tp_to_xyz ( theta, phi, v )
   return
 end
 subroutine triangle_angles_2d ( t, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36248,22 +36725,22 @@ subroutine triangle_angles_2d ( t, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) ANGLE(3), the angles opposite
+!    Output, real ( kind = fp ) ANGLE(3), the angles opposite
 !    sides P1-P2, P2-P3 and P3-P1, in radians.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) angle(3)
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) angle(3)
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -36273,32 +36750,33 @@ subroutine triangle_angles_2d ( t, angle )
 !
 !  Take care of ridiculous special cases.
 !
-  if ( a == 0.0D+00 .and. b == 0.0D+00 .and. c == 0.0D+00 ) then
-    angle(1:3) = 2.0D+00 * r8_pi / 3.0D+00
+  if ( a == 0.0_fp .and. b == 0.0_fp .and. c == 0.0_fp ) then
+    angle(1:3) = 2.0_fp * r8_pi / 3.0_fp
     return
   end if
 
-  if ( c == 0.0D+00 .or. a == 0.0D+00 ) then
+  if ( c == 0.0_fp .or. a == 0.0_fp ) then
     angle(1) = r8_pi
   else
-    angle(1) = r8_acos ( ( c * c + a * a - b * b ) / ( 2.0D+00 * c * a ) )
+    angle(1) = r8_acos ( ( c * c + a * a - b * b ) / ( 2.0_fp * c * a ) )
   end if
 
-  if ( a == 0.0D+00 .or. b == 0.0D+00 ) then
+  if ( a == 0.0_fp .or. b == 0.0_fp ) then
     angle(2) = r8_pi
   else
-    angle(2) = r8_acos ( ( a * a + b * b - c * c ) / ( 2.0D+00 * a * b ) )
+    angle(2) = r8_acos ( ( a * a + b * b - c * c ) / ( 2.0_fp * a * b ) )
   end if
 
-  if ( b == 0.0D+00 .or. c == 0.0D+00 ) then
+  if ( b == 0.0_fp .or. c == 0.0_fp ) then
     angle(3) = r8_pi
   else
-    angle(3) = r8_acos ( ( b * b + c * c - a * a ) / ( 2.0D+00 * b * c ) )
+    angle(3) = r8_acos ( ( b * b + c * c - a * a ) / ( 2.0_fp * b * c ) )
   end if
 
   return
 end
 subroutine triangle_angles_3d ( t, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36326,22 +36804,22 @@ subroutine triangle_angles_3d ( t, angle )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) ANGLE(3), the angles opposite
+!    Output, real ( kind = fp ) ANGLE(3), the angles opposite
 !    sides P1-P2, P2-P3 and P3-P1, in radians.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) angle(3)
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) angle(3)
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -36351,32 +36829,33 @@ subroutine triangle_angles_3d ( t, angle )
 !
 !  Take care of a ridiculous special case.
 !
-  if ( a == 0.0D+00 .and. b == 0.0D+00 .and. c == 0.0D+00 ) then
-    angle(1:3) = 2.0D+00 * r8_pi / 3.0D+00
+  if ( a == 0.0_fp .and. b == 0.0_fp .and. c == 0.0_fp ) then
+    angle(1:3) = 2.0_fp * r8_pi / 3.0_fp
     return
   end if
 
-  if ( c == 0.0D+00 .or. a == 0.0D+00 ) then
+  if ( c == 0.0_fp .or. a == 0.0_fp ) then
     angle(1) = r8_pi
   else
-    angle(1) = r8_acos ( ( c * c + a * a - b * b ) / ( 2.0D+00 * c * a ) )
+    angle(1) = r8_acos ( ( c * c + a * a - b * b ) / ( 2.0_fp * c * a ) )
   end if
 
-  if ( a == 0.0D+00 .or. b == 0.0D+00 ) then
+  if ( a == 0.0_fp .or. b == 0.0_fp ) then
     angle(2) = r8_pi
   else
-    angle(2) = r8_acos ( ( a * a + b * b - c * c ) / ( 2.0D+00 * a * b ) )
+    angle(2) = r8_acos ( ( a * a + b * b - c * c ) / ( 2.0_fp * a * b ) )
   end if
 
-  if ( b == 0.0D+00 .or. c == 0.0D+00 ) then
+  if ( b == 0.0_fp .or. c == 0.0_fp ) then
     angle(3) = r8_pi
   else
-    angle(3) = r8_acos ( ( b * b + c * c - a * a ) / ( 2.0D+00 * b * c ) )
+    angle(3) = r8_acos ( ( b * b + c * c - a * a ) / ( 2.0_fp * b * c ) )
   end if
 
   return
 end
 subroutine triangle_area_2d ( t, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36409,18 +36888,18 @@ subroutine triangle_area_2d ( t, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the triangle.
+!    Output, real ( kind = fp ) AREA, the area of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) area
+  real ( kind = fp ) t(dim_num,3)
 
-  area = 0.5D+00 * ( &
+  area = 0.5_fp * ( &
       t(1,1) * ( t(2,2) - t(2,3) ) &
     + t(1,2) * ( t(2,3) - t(2,1) ) &
     + t(1,3) * ( t(2,1) - t(2,2) ) )
@@ -36428,6 +36907,7 @@ subroutine triangle_area_2d ( t, area )
   return
 end
 subroutine triangle_area_3d ( t, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36461,17 +36941,17 @@ subroutine triangle_area_3d ( t, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the triangle.
+!    Output, real ( kind = fp ) AREA, the area of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) cross(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) area
+  real ( kind = fp ) cross(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the cross product vector.
 !
@@ -36484,11 +36964,12 @@ subroutine triangle_area_3d ( t, area )
   cross(3) = ( t(1,2) - t(1,1) ) * ( t(2,3) - t(2,1) ) &
            - ( t(2,2) - t(2,1) ) * ( t(1,3) - t(1,1) )
 
-  area = 0.5D+00 * sqrt ( sum ( cross(1:3)**2 ) )
+  area = 0.5_fp * sqrt ( sum ( cross(1:3)**2 ) )
 
   return
 end
 subroutine triangle_area_3d_2 ( t, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36512,20 +36993,20 @@ subroutine triangle_area_3d_2 ( t, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the triangle.
+!    Output, real ( kind = fp ) AREA, the area of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) area
-  real ( kind = 8 ) base
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) height
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) alpha
+  real ( kind = fp ) area
+  real ( kind = fp ) base
+  real ( kind = fp ) dot
+  real ( kind = fp ) height
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Find the projection of (P3-P1) onto (P2-P1).
 !
@@ -36542,9 +37023,9 @@ subroutine triangle_area_3d_2 ( t, area )
 !  The height of the triangle is the length of (P3-P1) after its
 !  projection onto (P2-P1) has been subtracted.
 !
-  if ( base == 0.0D+00 ) then
+  if ( base == 0.0_fp ) then
 
-    height = 0.0D+00
+    height = 0.0_fp
 
   else
 
@@ -36557,11 +37038,12 @@ subroutine triangle_area_3d_2 ( t, area )
 
   end if
 
-  area = 0.5D+00 * base * height
+  area = 0.5_fp * base * height
 
   return
 end
 subroutine triangle_area_3d_3 ( t, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36592,24 +37074,24 @@ subroutine triangle_area_3d_3 ( t, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the triangle.
+!    Output, real ( kind = fp ) AREA, the area of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area
+  real ( kind = fp ) area
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) s(3)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) s(3)
+  real ( kind = fp ) t(dim_num,3)
 
   do j = 1, 3
     jp1 = mod ( j, 3 ) + 1
-    s(j) = 0.0D+00
+    s(j) = 0.0_fp
     do i = 1, dim_num
       s(j) = s(j) + ( t(i,j) - t(i,jp1) )**2
     end do
@@ -36621,16 +37103,17 @@ subroutine triangle_area_3d_3 ( t, area )
        * (   s(1) - s(2) + s(3) ) &
        * (   s(1) + s(2) - s(3) )
 
-  if ( area < 0.0D+00 ) then
-    area = -1.0D+00
+  if ( area < 0.0_fp ) then
+    area = -1.0_fp
     return
   end if
 
-  area = 0.25D+00 * sqrt ( area )
+  area = 0.25_fp * sqrt ( area )
 
   return
 end
 subroutine triangle_area_heron ( s, area )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36655,31 +37138,32 @@ subroutine triangle_area_heron ( s, area )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) S(3), the lengths of the three sides.
+!    Input, real ( kind = fp ) S(3), the lengths of the three sides.
 !
-!    Output, real ( kind = 8 ) AREA, the area of the triangle, or -1.0 if the
+!    Output, real ( kind = fp ) AREA, the area of the triangle, or -1.0 if the
 !    sides cannot constitute a triangle.
 !
   implicit none
 
-  real ( kind = 8 ) area
-  real ( kind = 8 ) s(3)
+  real ( kind = fp ) area
+  real ( kind = fp ) s(3)
 
   area = (   s(1) + s(2) + s(3) ) &
        * ( - s(1) + s(2) + s(3) ) &
        * (   s(1) - s(2) + s(3) ) &
        * (   s(1) + s(2) - s(3) )
 
-  if ( area < 0.0D+00 ) then
-    area = -1.0D+00
+  if ( area < 0.0_fp ) then
+    area = -1.0_fp
     return
   end if
 
-  area = 0.25D+00 * sqrt ( area )
+  area = 0.25_fp * sqrt ( area )
 
   return
 end
 subroutine triangle_area_vector_3d ( t, area_vector )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36727,16 +37211,16 @@ subroutine triangle_area_vector_3d ( t, area_vector )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) AREA_VECTOR(3), the area vector of the triangle.
+!    Output, real ( kind = fp ) AREA_VECTOR(3), the area vector of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) area_vector(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) area_vector(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 
   area_vector(1) = ( t(2,2) - t(2,1) ) * ( t(3,3) - t(3,1) ) &
                  - ( t(3,2) - t(3,1) ) * ( t(2,3) - t(2,1) )
@@ -36750,6 +37234,7 @@ subroutine triangle_area_vector_3d ( t, area_vector )
   return
 end
 subroutine triangle_barycentric_2d ( t, p, xsi )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36779,12 +37264,12 @@ subroutine triangle_barycentric_2d ( t, p, xsi )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !    The vertices should be given in counter clockwise order.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) XSI(3), the barycentric coordinates of P
+!    Output, real ( kind = fp ) XSI(3), the barycentric coordinates of P
 !    with respect to the triangle.
 !
   implicit none
@@ -36792,11 +37277,11 @@ subroutine triangle_barycentric_2d ( t, p, xsi )
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: rhs_num = 1
 
-  real ( kind = 8 ) a(dim_num,dim_num+rhs_num)
+  real ( kind = fp ) a(dim_num,dim_num+rhs_num)
   integer ( kind = 4 ) info
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) xsi(dim_num+1)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) xsi(dim_num+1)
 !
 !  Set up the linear system
 !
@@ -36827,11 +37312,12 @@ subroutine triangle_barycentric_2d ( t, p, xsi )
 
   xsi(1) = a(1,3)
   xsi(2) = a(2,3)
-  xsi(3) = 1.0D+00 - xsi(1) - xsi(2)
+  xsi(3) = 1.0_fp - xsi(1) - xsi(2)
 
   return
 end
 subroutine triangle_centroid_2d ( t, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36875,25 +37361,26 @@ subroutine triangle_centroid_2d ( t, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) CENTROID(2), the coordinates of the centroid.
+!    Output, real ( kind = fp ) CENTROID(2), the coordinates of the centroid.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) centroid(dim_num)
+  real ( kind = fp ) centroid(dim_num)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
 
   do i = 1, dim_num
-    centroid(i) = sum ( t(i,1:3) ) / 3.0D+00
+    centroid(i) = sum ( t(i,1:3) ) / 3.0_fp
   end do
 
   return
 end
 subroutine triangle_centroid_3d ( t, centroid )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36923,25 +37410,26 @@ subroutine triangle_centroid_3d ( t, centroid )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) CENTROID(3), the coordinates of the centroid.
+!    Output, real ( kind = fp ) CENTROID(3), the coordinates of the centroid.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) centroid(dim_num)
+  real ( kind = fp ) centroid(dim_num)
   integer ( kind = 4 ) i
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
 
   do i = 1, dim_num
-    centroid(i) = sum ( t(i,1:3) ) / 3.0D+00
+    centroid(i) = sum ( t(i,1:3) ) / 3.0_fp
   end do
 
   return
 end
 subroutine triangle_circumcenter_2d ( t, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -36978,19 +37466,19 @@ subroutine triangle_circumcenter_2d ( t, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) PC(2), the circumcenter of the triangle.
+!    Output, real ( kind = fp ) PC(2), the circumcenter of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) det
-  real ( kind = 8 ) f(2)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) top(dim_num)
+  real ( kind = fp ) det
+  real ( kind = fp ) f(2)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) top(dim_num)
 
   f(1) = ( t(1,2) - t(1,1) )**2 + ( t(2,2) - t(2,1) )**2
   f(2) = ( t(1,3) - t(1,1) )**2 + ( t(2,3) - t(2,1) )**2
@@ -37001,11 +37489,12 @@ subroutine triangle_circumcenter_2d ( t, pc )
   det  =    ( t(2,3) - t(2,1) ) * ( t(1,2) - t(1,1) ) &
           - ( t(2,2) - t(2,1) ) * ( t(1,3) - t(1,1) ) 
 
-  pc(1:2) = t(1:2,1) + 0.5D+00 * top(1:2) / det
+  pc(1:2) = t(1:2,1) + 0.5_fp * top(1:2) / det
 
   return
 end
 subroutine triangle_circumcenter_2d_2 ( t, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37059,19 +37548,19 @@ subroutine triangle_circumcenter_2d_2 ( t, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) PC(2), the circumcenter of the triangle.
+!    Output, real ( kind = fp ) PC(2), the circumcenter of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: rhs_num = 1
 
-  real ( kind = 8 ) a(dim_num,dim_num+rhs_num)
+  real ( kind = fp ) a(dim_num,dim_num+rhs_num)
   integer ( kind = 4 ) info
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Set up the linear system.
 !
@@ -37090,14 +37579,15 @@ subroutine triangle_circumcenter_2d_2 ( t, pc )
 !  Compute the center
 !
   if ( info /= 0 ) then
-    pc(1:dim_num) = 0.0D+00
+    pc(1:dim_num) = 0.0_fp
   else
-    pc(1:dim_num) = t(1:dim_num,1) + 0.5D+00 * a(1:dim_num,dim_num+1)
+    pc(1:dim_num) = t(1:dim_num,1) + 0.5_fp * a(1:dim_num,dim_num+1)
   end if
 
   return
 end
 subroutine triangle_circumcenter ( n, t, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37131,23 +37621,23 @@ subroutine triangle_circumcenter ( n, t, p )
 !
 !    Input, integer ( kind = 4 ) N, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) T(N,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(N,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) P(N), the circumcenter of the triangle.
+!    Output, real ( kind = fp ) P(N), the circumcenter of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) abp
-  real ( kind = 8 ) apc
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) p(n)
-  real ( kind = 8 ) pbc
-  real ( kind = 8 ) r8vec_normsq_affine
-  real ( kind = 8 ) t(n,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) abp
+  real ( kind = fp ) apc
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) p(n)
+  real ( kind = fp ) pbc
+  real ( kind = fp ) r8vec_normsq_affine
+  real ( kind = fp ) t(n,3)
 
   a = r8vec_normsq_affine ( n, t(1:n,2), t(1:n,3) )
   b = r8vec_normsq_affine ( n, t(1:n,3), t(1:n,1) )
@@ -37163,6 +37653,7 @@ subroutine triangle_circumcenter ( n, t, p )
   return
 end
 subroutine triangle_circumcircle_2d ( t, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37199,25 +37690,25 @@ subroutine triangle_circumcircle_2d ( t, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) R, PC(2), the circumradius and circumcenter
+!    Output, real ( kind = fp ) R, PC(2), the circumradius and circumcenter
 !    of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) c
-  real ( kind = 8 ) det
-  real ( kind = 8 ) f(2)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) top(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) bot
+  real ( kind = fp ) c
+  real ( kind = fp ) det
+  real ( kind = fp ) f(2)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) top(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Circumradius.
 !
@@ -37227,9 +37718,9 @@ subroutine triangle_circumcircle_2d ( t, r, pc )
 
   bot = ( a + b + c ) * ( - a + b + c ) * (   a - b + c ) * (   a + b - c )
 
-  if ( bot <= 0.0D+00 ) then
-    r = -1.0D+00
-    pc(1:2) = 0.0D+00
+  if ( bot <= 0.0_fp ) then
+    r = -1.0_fp
+    pc(1:2) = 0.0_fp
     return
   end if
 
@@ -37246,11 +37737,12 @@ subroutine triangle_circumcircle_2d ( t, r, pc )
   det  =    ( t(2,3) - t(2,1) ) * ( t(1,2) - t(1,1) ) &
           - ( t(2,2) - t(2,1) ) * ( t(1,3) - t(1,1) ) 
 
-  pc(1:2) = t(1:2,1) + 0.5D+00 * top(1:2) / det
+  pc(1:2) = t(1:2,1) + 0.5_fp * top(1:2) / det
 
   return
 end
 subroutine triangle_circumcircle_2d_2 ( t, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37295,20 +37787,20 @@ subroutine triangle_circumcircle_2d_2 ( t, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) R, PC(2), the circumradius and circumcenter.
+!    Output, real ( kind = fp ) R, PC(2), the circumradius and circumcenter.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: rhs_num = 1
 
-  real ( kind = 8 ) a(dim_num,dim_num+rhs_num)
+  real ( kind = fp ) a(dim_num,dim_num+rhs_num)
   integer ( kind = 4 ) info
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Set up the linear system.
 !
@@ -37325,17 +37817,18 @@ subroutine triangle_circumcircle_2d_2 ( t, r, pc )
   call r8mat_solve ( dim_num, rhs_num, a, info )
 
   if ( info /= 0 ) then
-    r = -1.0D+00
-    pc(1:dim_num) = 0.0D+00
+    r = -1.0_fp
+    pc(1:dim_num) = 0.0_fp
   end if
 
-  r = 0.5D+00 * sqrt ( a(1,dim_num+1) * a(1,dim_num+1) &
+  r = 0.5_fp * sqrt ( a(1,dim_num+1) * a(1,dim_num+1) &
                      + a(2,dim_num+1) * a(2,dim_num+1) )
-  pc(1:dim_num) = t(1:dim_num,1) + 0.5D+00 * a(1:dim_num,dim_num+1)
+  pc(1:dim_num) = t(1:dim_num,1) + 0.5_fp * a(1:dim_num,dim_num+1)
 
   return
 end
 subroutine triangle_circumradius_2d ( t, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37364,20 +37857,20 @@ subroutine triangle_circumradius_2d ( t, r )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) R, the circumradius of the circumscribed circle.
+!    Output, real ( kind = fp ) R, the circumradius of the circumscribed circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bot
-  real ( kind = 8 ) c
-  real ( kind = 8 ) r
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) bot
+  real ( kind = fp ) c
+  real ( kind = fp ) r
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -37387,8 +37880,8 @@ subroutine triangle_circumradius_2d ( t, r )
 
   bot = ( a + b + c ) * ( - a + b + c ) * (   a - b + c ) * (   a + b - c )
 
-  if ( bot <= 0.0D+00 ) then
-    r = -1.0D+00
+  if ( bot <= 0.0_fp ) then
+    r = -1.0_fp
     return
   end if
 
@@ -37397,6 +37890,7 @@ subroutine triangle_circumradius_2d ( t, r )
   return
 end
 subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37442,14 +37936,14 @@ subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P1(3), P2(3), two points on the line.
+!    Input, real ( kind = fp ) P1(3), P2(3), two points on the line.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if (the intersection point of)
 !    the line is inside the triangle.
 !
-!    Output, real ( kind = 8 ) PINT(3), the point where the line
+!    Output, real ( kind = fp ) PINT(3), the point where the line
 !    intersects the plane of the triangle.
 !
   implicit none
@@ -37459,16 +37953,16 @@ subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) ival
   logical ( kind = 4 ) line_exp_is_degenerate_nd
-  real ( kind = 8 ) normal(dim_num)
-  real ( kind = 8 ) normal2(dim_num)
-  real ( kind = 8 ) p1(dim_num)
-  real ( kind = 8 ) p2(dim_num)
-  real ( kind = 8 ) pint(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) temp
+  real ( kind = fp ) normal(dim_num)
+  real ( kind = fp ) normal2(dim_num)
+  real ( kind = fp ) p1(dim_num)
+  real ( kind = fp ) p2(dim_num)
+  real ( kind = fp ) pint(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) temp
   logical ( kind = 4 ) triangle_is_degenerate_nd
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
 !
 !  Make sure the line is not degenerate.
 !
@@ -37527,7 +38021,7 @@ subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
   normal2(2) = v1(3) * v2(1) - v1(1) * v2(3)
   normal2(3) = v1(1) * v2(2) - v1(2) * v2(1)
 
-  if ( dot_product ( normal(1:dim_num), normal2(1:dim_num) ) < 0.0D+00 ) then
+  if ( dot_product ( normal(1:dim_num), normal2(1:dim_num) ) < 0.0_fp ) then
     inside = .false.
     return
   end if
@@ -37539,7 +38033,7 @@ subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
   normal2(2) = v1(3) * v2(1) - v1(1) * v2(3)
   normal2(3) = v1(1) * v2(2) - v1(2) * v2(1)
 
-  if ( dot_product ( normal(1:dim_num), normal2(1:dim_num) ) < 0.0D+00 ) then
+  if ( dot_product ( normal(1:dim_num), normal2(1:dim_num) ) < 0.0_fp ) then
     inside = .false.
     return
   end if
@@ -37551,7 +38045,7 @@ subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
   normal2(2) = v1(3) * v2(1) - v1(1) * v2(3)
   normal2(3) = v1(1) * v2(2) - v1(2) * v2(1)
 
-  if ( dot_product ( normal(1:dim_num), normal2(1:dim_num) ) < 0.0D+00 ) then
+  if ( dot_product ( normal(1:dim_num), normal2(1:dim_num) ) < 0.0_fp ) then
     inside = .false.
     return
   end if
@@ -37561,6 +38055,7 @@ subroutine triangle_contains_line_exp_3d ( t, p1, p2, inside, pint )
   return
 end
 subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37612,44 +38107,44 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the three points that define
+!    Input, real ( kind = fp ) T(3,3), the three points that define
 !    the triangle.
 !
-!    Input, real ( kind = 8 ) P0(3), PD(3), parameters that define the
+!    Input, real ( kind = fp ) P0(3), PD(3), parameters that define the
 !    parametric line.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if (the intersection point of)
 !    the line is inside the triangle.
 !
-!    Output, real ( kind = 8 ) P(3), is the point of intersection of the line
+!    Output, real ( kind = fp ) P(3), is the point of intersection of the line
 !    and the plane of the triangle, unless they are parallel.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) angle_sum
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) d
-  real ( kind = 8 ) denom
+  real ( kind = fp ) a
+  real ( kind = fp ) angle_sum
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) d
+  real ( kind = fp ) denom
   logical ( kind = 4 ) inside
   logical ( kind = 4 ) intersect
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) norm1
-  real ( kind = 8 ) norm2
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p0(dim_num)
-  real ( kind = 8 ) pd(dim_num)
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) t_int
-  real ( kind = 8 ), parameter :: tol = 0.00001D+00
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v2(dim_num)
-  real ( kind = 8 ) v3(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) norm1
+  real ( kind = fp ) norm2
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p0(dim_num)
+  real ( kind = fp ) pd(dim_num)
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ), parameter :: r8_pi = 3.141592653589793_fp
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) t_int
+  real ( kind = fp ), parameter :: tol = 0.00001_fp
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v2(dim_num)
+  real ( kind = fp ) v3(dim_num)
 !
 !  Determine the implicit form (A,B,C,D) of the plane containing the
 !  triangle.
@@ -37669,12 +38164,12 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 !
   norm1 = sqrt ( a * a + b * b + c * c )
 
-  if ( norm1 == 0.0D+00 ) then
+  if ( norm1 == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'TRIANGLE_LINE_PAR_INT_3D - Fatal error!'
     write ( *, '(a)' ) '  The plane normal vector is null.'
     inside = .false.
-    p(1:dim_num) = 0.0D+00
+    p(1:dim_num) = 0.0_fp
     stop 1
   end if
 !
@@ -37682,12 +38177,12 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 !
   norm2 = sqrt ( sum ( pd(1:dim_num)**2 ) )
 
-  if ( norm2 == 0.0D+00 ) then
+  if ( norm2 == 0.0_fp ) then
     write ( *, '(a)' ) ' '
     write ( *, '(a)' ) 'TRIANGLE_LINE_PAR_INT_3D - Fatal error!'
     write ( *, '(a)' ) '  The line direction vector is null.'
     inside = .false.
-    p(1:dim_num) = 0.0D+00
+    p(1:dim_num) = 0.0_fp
     stop 1
   end if
 !
@@ -37705,7 +38200,7 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 !  The line may actually lie in the plane.  We're not going
 !  to try to address this possibility.
 !
-    if ( a * p0(1) + b * p0(2) + c * p0(3) + d == 0.0D+00 ) then
+    if ( a * p0(1) + b * p0(2) + c * p0(3) + d == 0.0_fp ) then
 
       intersect = .true.
       inside = .false.
@@ -37717,7 +38212,7 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 
       intersect = .false.
       inside = .false.
-      p(1:dim_num) = 0.0D+00
+      p(1:dim_num) = 0.0_fp
 
     end if
 !
@@ -37740,7 +38235,7 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 
     norm = sqrt ( sum ( v1(1:dim_num)**2 ) )
 
-    if ( norm == 0.0D+00 ) then
+    if ( norm == 0.0_fp ) then
       inside = .true.
       return
     end if
@@ -37749,7 +38244,7 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 
     norm = sqrt ( sum ( v2(1:dim_num)**2 ) )
 
-    if ( norm == 0.0D+00 ) then
+    if ( norm == 0.0_fp ) then
       inside = .true.
       return
     end if
@@ -37758,7 +38253,7 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
 
     norm = sqrt ( sum ( v3(1:dim_num)**2 ) )
 
-    if ( norm == 0.0D+00 ) then
+    if ( norm == 0.0_fp ) then
       inside = .true.
       return
     end if
@@ -37780,6 +38275,7 @@ subroutine triangle_contains_line_par_3d ( t, p0, pd, inside, p )
   return
 end
 subroutine triangle_contains_point_2d_1 ( t, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37805,9 +38301,9 @@ subroutine triangle_contains_point_2d_1 ( t, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is inside 
 !    the triangle.
@@ -37817,13 +38313,13 @@ subroutine triangle_contains_point_2d_1 ( t, p, inside )
   integer ( kind = 4 ), parameter :: dim_num = 2
 
   logical ( kind = 4 ) inside
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) xsi(dim_num+1)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) xsi(dim_num+1)
 
   call triangle_barycentric_2d ( t, p, xsi )
 
-  if ( any ( xsi(1:3) < 0.0D+00 ) ) then
+  if ( any ( xsi(1:3) < 0.0_fp ) ) then
     inside = .false.
   else
     inside = .true.
@@ -37832,6 +38328,7 @@ subroutine triangle_contains_point_2d_1 ( t, p, inside )
   return
 end
 subroutine triangle_contains_point_2d_2 ( t, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37862,10 +38359,10 @@ subroutine triangle_contains_point_2d_2 ( t, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !    The vertices should be given in counter clockwise order.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is 
 !    inside the triangle.
@@ -37877,14 +38374,14 @@ subroutine triangle_contains_point_2d_2 ( t, p, inside )
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 
   do j = 1, 3
 
     k = mod ( j, 3 ) + 1
 
-    if ( 0.0D+00 < ( p(1) - t(1,j) ) * ( t(2,k) - t(2,j) ) &
+    if ( 0.0_fp < ( p(1) - t(1,j) ) * ( t(2,k) - t(2,j) ) &
                  - ( p(2) - t(2,j) ) * ( t(1,k) - t(1,j) ) ) then
       inside = .false.
       return
@@ -37897,6 +38394,7 @@ subroutine triangle_contains_point_2d_2 ( t, p, inside )
   return
 end
 subroutine triangle_contains_point_2d_3 ( t, p, inside )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -37932,9 +38430,9 @@ subroutine triangle_contains_point_2d_3 ( t, p, inside )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
 !    Output, logical ( kind = 4 ) INSIDE, is TRUE if the point is 
 !    inside the triangle.
@@ -37943,15 +38441,15 @@ subroutine triangle_contains_point_2d_3 ( t, p, inside )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dir_new
-  real ( kind = 8 ) dir_old
+  real ( kind = fp ) dir_new
+  real ( kind = fp ) dir_old
   logical ( kind = 4 ) inside
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 
-  dir_old = 0.0D+00
+  dir_old = 0.0_fp
 
   do j = 1, 3
 
@@ -37960,12 +38458,12 @@ subroutine triangle_contains_point_2d_3 ( t, p, inside )
     dir_new = ( p(1) - t(1,j) ) * ( t(2,k) - t(2,j) ) &
             - ( p(2) - t(2,j) ) * ( t(1,k) - t(1,j) )
     
-    if ( dir_new * dir_old < 0.0D+00 ) then
+    if ( dir_new * dir_old < 0.0_fp ) then
       inside = .false.
       return
     end if
 
-    if ( dir_new /= 0.0D+00 ) then
+    if ( dir_new /= 0.0_fp ) then
       dir_old = dir_new
     end if
 
@@ -37976,6 +38474,7 @@ subroutine triangle_contains_point_2d_3 ( t, p, inside )
   return
 end
 subroutine triangle_diameter_2d ( t, diameter )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38002,22 +38501,22 @@ subroutine triangle_diameter_2d ( t, diameter )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) DIAMETER, the diameter of the triangle.
+!    Output, real ( kind = fp ) DIAMETER, the diameter of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) asq
-  real ( kind = 8 ) b
-  real ( kind = 8 ) bsq
-  real ( kind = 8 ) c
-  real ( kind = 8 ) csq
-  real ( kind = 8 ) diameter
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) asq
+  real ( kind = fp ) b
+  real ( kind = fp ) bsq
+  real ( kind = fp ) c
+  real ( kind = fp ) csq
+  real ( kind = fp ) diameter
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the squared length of each side.
 !
@@ -38027,13 +38526,13 @@ subroutine triangle_diameter_2d ( t, diameter )
 !
 !  Take care of a zero side.
 !
-  if ( asq == 0.0D+00 ) then
+  if ( asq == 0.0_fp ) then
     diameter = sqrt ( bsq )
     return
-  else if ( bsq == 0.0D+00 ) then
+  else if ( bsq == 0.0_fp ) then
     diameter = sqrt ( csq )
     return
-  else if ( csq == 0.0D+00 ) then
+  else if ( csq == 0.0_fp ) then
     diameter = sqrt ( asq )
     return
   end if
@@ -38060,7 +38559,7 @@ subroutine triangle_diameter_2d ( t, diameter )
     b = sqrt ( bsq )
     c = sqrt ( csq )
 
-    diameter = 2.0D+00 * a * b * c / sqrt ( ( a + b + c ) * ( - a + b + c ) &
+    diameter = 2.0_fp * a * b * c / sqrt ( ( a + b + c ) * ( - a + b + c ) &
       * ( a - b + c ) * ( a + b - c ) )
 
   end if
@@ -38068,6 +38567,7 @@ subroutine triangle_diameter_2d ( t, diameter )
   return
 end
 subroutine triangle_edge_length_2d ( t, edge_length )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38087,20 +38587,20 @@ subroutine triangle_edge_length_2d ( t, edge_length )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) EDGE_LENGTH(3), the length of the edges.
+!    Output, real ( kind = fp ) EDGE_LENGTH(3), the length of the edges.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) edge_length(3)
+  real ( kind = fp ) edge_length(3)
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j1
   integer ( kind = 4 ) j2
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) t(dim_num,3)
 
   do j1 = 1, 3
     j2 = i4_wrap ( j1 + 1, 1, 3 )
@@ -38111,6 +38611,7 @@ subroutine triangle_edge_length_2d ( t, edge_length )
   return
 end
 subroutine triangle_gridpoints_2d ( t, sub_num, grid_max, grid_num, g )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38151,7 +38652,7 @@ subroutine triangle_gridpoints_2d ( t, sub_num, grid_max, grid_num, g )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
 !    Input, integer ( kind = 4 ) SUB_NUM, the number of subdivisions.
 !
@@ -38159,19 +38660,19 @@ subroutine triangle_gridpoints_2d ( t, sub_num, grid_max, grid_num, g )
 !
 !    Output, integer ( kind = 4 ) GRID_NUM, the number of grid points returned.
 !
-!    Output, real ( kind = 8 ) G(2,GRID_MAX), the grid points.
+!    Output, real ( kind = fp ) G(2,GRID_MAX), the grid points.
 !
   implicit none
 
   integer ( kind = 4 ) grid_max
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) g(dim_num,grid_max)
+  real ( kind = fp ) g(dim_num,grid_max)
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
   integer ( kind = 4 ) grid_num
   integer ( kind = 4 ) sub_num
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
 
   grid_num = 0
 !
@@ -38180,8 +38681,8 @@ subroutine triangle_gridpoints_2d ( t, sub_num, grid_max, grid_num, g )
   if ( sub_num == 0 ) then
     if ( 1 <= grid_max ) then
       grid_num = 1
-      g(1,1) = ( t(1,1) + t(1,2) + t(1,3) ) / 3.0D+00
-      g(2,1) = ( t(2,1) + t(2,2) + t(2,3) ) / 3.0D+00
+      g(1,1) = ( t(1,1) + t(1,2) + t(1,3) ) / 3.0_fp
+      g(2,1) = ( t(2,1) + t(2,2) + t(2,3) ) / 3.0_fp
     end if
     return
   end if
@@ -38211,6 +38712,7 @@ subroutine triangle_gridpoints_2d ( t, sub_num, grid_max, grid_num, g )
   return
 end
 subroutine triangle_incenter_2d ( t, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38251,20 +38753,20 @@ subroutine triangle_incenter_2d ( t, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) PC(2), the incenter.
+!    Output, real ( kind = fp ) PC(2), the incenter.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) perimeter
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) perimeter
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -38274,7 +38776,7 @@ subroutine triangle_incenter_2d ( t, pc )
 
   perimeter = a + b + c
 
-  if ( perimeter == 0.0D+00 ) then
+  if ( perimeter == 0.0_fp ) then
     pc(1:dim_num) = t(1:dim_num,1)
   else
     pc(1:dim_num) = ( b * t(1:dim_num,1) &
@@ -38285,6 +38787,7 @@ subroutine triangle_incenter_2d ( t, pc )
   return
 end
 subroutine triangle_incircle_2d ( t, r, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38318,22 +38821,22 @@ subroutine triangle_incircle_2d ( t, r, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) R, PC(2), the radius and center of the
+!    Output, real ( kind = fp ) R, PC(2), the radius and center of the
 !    inscribed circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) perimeter
-  real ( kind = 8 ) r
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) perimeter
+  real ( kind = fp ) r
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -38343,9 +38846,9 @@ subroutine triangle_incircle_2d ( t, r, pc )
 
   perimeter = a + b + c
 
-  if ( perimeter == 0.0D+00 ) then
+  if ( perimeter == 0.0_fp ) then
     pc(1:dim_num) = t(1:dim_num,1)
-    r = 0.0D+00
+    r = 0.0_fp
     return
   end if
 
@@ -38354,7 +38857,7 @@ subroutine triangle_incircle_2d ( t, r, pc )
     + c * t(1:dim_num,2) &
     + a * t(1:dim_num,3) ) / perimeter
 
-  r = 0.5D+00 * sqrt ( &
+  r = 0.5_fp * sqrt ( &
       ( - a + b + c )  &
     * ( + a - b + c )  &
     * ( + a + b - c ) / perimeter )
@@ -38362,6 +38865,7 @@ subroutine triangle_incircle_2d ( t, r, pc )
   return
 end
 subroutine triangle_inradius_2d ( t, r )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38395,20 +38899,20 @@ subroutine triangle_inradius_2d ( t, r )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) R, the radius of the inscribed circle.
+!    Output, real ( kind = fp ) R, the radius of the inscribed circle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) perimeter
-  real ( kind = 8 ) r
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) perimeter
+  real ( kind = fp ) r
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -38418,12 +38922,12 @@ subroutine triangle_inradius_2d ( t, r )
 
   perimeter = a + b + c
 
-  if ( perimeter == 0.0D+00 ) then
-    r = 0.0D+00
+  if ( perimeter == 0.0_fp ) then
+    r = 0.0_fp
     return
   end if
 
-  r = 0.5D+00 * sqrt ( &
+  r = 0.5_fp * sqrt ( &
       ( - a + b + c )  &
     * ( + a - b + c )  &
     * ( + a + b - c ) / perimeter )
@@ -38431,6 +38935,7 @@ subroutine triangle_inradius_2d ( t, r )
   return
 end
 function triangle_is_degenerate_nd ( dim_num, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38458,7 +38963,7 @@ function triangle_is_degenerate_nd ( dim_num, t )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) T(DIM_NUM,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(DIM_NUM,3), the triangle vertices.
 !
 !    Output, logical ( kind = 4 ) TRIANGLE_IS_DEGENERATE_ND, is TRUE if the
 !    triangle is degenerate.
@@ -38467,7 +38972,7 @@ function triangle_is_degenerate_nd ( dim_num, t )
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
   logical ( kind = 4 ) triangle_is_degenerate_nd
 
   triangle_is_degenerate_nd = &
@@ -38478,6 +38983,7 @@ function triangle_is_degenerate_nd ( dim_num, t )
   return
 end
 subroutine triangle_lattice_layer_point_next ( c, v, more )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38592,6 +39098,7 @@ subroutine triangle_lattice_layer_point_next ( c, v, more )
   return
 end
 subroutine triangle_lattice_point_next ( c, v, more )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38679,6 +39186,7 @@ subroutine triangle_lattice_point_next ( c, v, more )
   return
 end
 subroutine triangle_line_imp_int_2d ( t, a, b, c, int_num, pint )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38706,36 +39214,36 @@ subroutine triangle_line_imp_int_2d ( t, a, b, c, int_num, pint )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) A, B, C, determine the equation of the line:
+!    Input, real ( kind = fp ) A, B, C, determine the equation of the line:
 !    A*X + B*Y + C = 0.
 !
 !    Output, integer ( kind = 4 ) INT_NUM, the number of points of intersection
 !    of the line with the triangle.  INT_NUM may be 0, 1, 2 or 3.
 !
-!    Output, real ( kind = 8 ) PINT(2,3), contains the intersection points.
+!    Output, real ( kind = fp ) PINT(2,3), contains the intersection points.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) a1
-  real ( kind = 8 ) b
-  real ( kind = 8 ) b1
-  real ( kind = 8 ) c
-  real ( kind = 8 ) c1
+  real ( kind = fp ) a
+  real ( kind = fp ) a1
+  real ( kind = fp ) b
+  real ( kind = fp ) b1
+  real ( kind = fp ) c
+  real ( kind = fp ) c1
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) int_num
   integer ( kind = 4 ) ival
   integer ( kind = 4 ) j
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pint(dim_num,3)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) test1
-  real ( kind = 8 ) test2
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pint(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) test1
+  real ( kind = fp ) test2
 
   int_num = 0
 
@@ -38772,6 +39280,7 @@ subroutine triangle_line_imp_int_2d ( t, a, b, c, int_num, pint )
   return
 end
 function triangle_orientation_2d ( t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38798,7 +39307,7 @@ function triangle_orientation_2d ( t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
 !    Output, integer ( kind = 4 ) TRIANGLE_ORIENTATION_2D, reports if the 
 !    three points lie clockwise on the circle that passes through them.  
@@ -38814,9 +39323,9 @@ function triangle_orientation_2d ( t )
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) det
+  real ( kind = fp ) det
   integer ( kind = 4 ) triangle_orientation_2d
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
 
   if ( all ( t(1:dim_num,1) == t(1:dim_num,2) ) .or. &
        all ( t(1:dim_num,2) == t(1:dim_num,3) ) .or. &
@@ -38828,17 +39337,18 @@ function triangle_orientation_2d ( t )
   det = ( t(1,1) - t(1,3) ) * ( t(2,2) - t(2,3) ) &
       - ( t(1,2) - t(1,3) ) * ( t(2,1) - t(2,3) )
 
-  if ( det == 0.0D+00 ) then
+  if ( det == 0.0_fp ) then
     triangle_orientation_2d = 2
-  else if ( det < 0.0D+00 ) then
+  else if ( det < 0.0_fp ) then
     triangle_orientation_2d = 1
-  else if ( 0.0D+00 < det ) then
+  else if ( 0.0_fp < det ) then
     triangle_orientation_2d = 0
   end if
 
   return
 end
 subroutine triangle_orthocenter_2d ( t, pc )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38875,9 +39385,9 @@ subroutine triangle_orthocenter_2d ( t, pc )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) PC(2), the orthocenter of the triangle.
+!    Output, real ( kind = fp ) PC(2), the orthocenter of the triangle.
 !
 !    Output, logical ( kind = 4 ) FLAG, is TRUE if the value could not 
 !    be computed.
@@ -38888,11 +39398,11 @@ subroutine triangle_orthocenter_2d ( t, pc )
 
   logical ( kind = 4 ) flag
   integer ( kind = 4 ) ival
-  real ( kind = 8 ) p23(dim_num)
-  real ( kind = 8 ) p31(dim_num)
-  real ( kind = 8 ) pc(dim_num)
-  real ( kind = 8 ) r8_huge
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) p23(dim_num)
+  real ( kind = fp ) p31(dim_num)
+  real ( kind = fp ) pc(dim_num)
+  real ( kind = fp ) r8_huge
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Determine a point P23 common to the line (P2,P3) and
 !  its perpendicular through P1.
@@ -38927,6 +39437,7 @@ subroutine triangle_orthocenter_2d ( t, pc )
   return
 end
 subroutine triangle_point_dist_2d ( t, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -38946,11 +39457,11 @@ subroutine triangle_point_dist_2d ( t, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point to be checked.
+!    Input, real ( kind = fp ) P(2), the point to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    triangle.
 !
   implicit none
@@ -38958,13 +39469,13 @@ subroutine triangle_point_dist_2d ( t, p, dist )
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: side_num = 3
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,side_num)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,side_num)
 !
 !  Find the distance to each of the line segments.
 !
@@ -38985,6 +39496,7 @@ subroutine triangle_point_dist_2d ( t, p, dist )
   return
 end
 subroutine triangle_point_dist_3d ( t, p, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39004,21 +39516,21 @@ subroutine triangle_point_dist_3d ( t, p, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(3,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(3,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(3), the point which is to be checked.
+!    Input, real ( kind = fp ) P(3), the point which is to be checked.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    triangle.  DIST is zero if the point lies exactly on the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the distances from the point to each of the sides.
 !
@@ -39037,6 +39549,7 @@ subroutine triangle_point_dist_3d ( t, p, dist )
   return
 end
 subroutine triangle_point_dist_signed_2d ( t, p, dist_signed )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39063,24 +39576,24 @@ subroutine triangle_point_dist_signed_2d ( t, p, dist_signed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !    These should be given in counter clockwise order.
 !
-!    Input, real ( kind = 8 ) P(2), the point which is to be checked.
+!    Input, real ( kind = fp ) P(2), the point which is to be checked.
 !
-!    Output, real ( kind = 8 ) DIST_SIGNED, the signed distance from the
+!    Output, real ( kind = fp ) DIST_SIGNED, the signed distance from the
 !    point to the triangle.  
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) dis12
-  real ( kind = 8 ) dis23
-  real ( kind = 8 ) dis31
-  real ( kind = 8 ) dist_signed
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) dis12
+  real ( kind = fp ) dis23
+  real ( kind = fp ) dis31
+  real ( kind = fp ) dist_signed
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the signed line distances to the point.
 !
@@ -39094,7 +39607,7 @@ subroutine triangle_point_dist_signed_2d ( t, p, dist_signed )
 !  The largest (negative) line distance has the smallest magnitude,
 !  and is the signed triangle distance.
 !
-  if ( dis12 <= 0.0D+00 .and. dis23 <= 0.0D+00 .and. dis31 <= 0.0D+00 ) then
+  if ( dis12 <= 0.0_fp .and. dis23 <= 0.0_fp .and. dis31 <= 0.0_fp ) then
     dist_signed = max ( dis12, dis23, dis31 )
 !
 !  If the point is outside the triangle, then we have to compute
@@ -39113,6 +39626,7 @@ subroutine triangle_point_dist_signed_2d ( t, p, dist_signed )
   return
 end
 subroutine triangle_point_near_2d ( t, p, pn, dist )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39132,14 +39646,14 @@ subroutine triangle_point_near_2d ( t, p, pn, dist )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the point whose nearest triangle point
+!    Input, real ( kind = fp ) P(2), the point whose nearest triangle point
 !    is to be determined.
 !
-!    Output, real ( kind = 8 ) PN(2), the nearest point to P.
+!    Output, real ( kind = fp ) PN(2), the nearest point to P.
 !
-!    Output, real ( kind = 8 ) DIST, the distance from the point to the
+!    Output, real ( kind = fp ) DIST, the distance from the point to the
 !    triangle.
 !
   implicit none
@@ -39147,22 +39661,22 @@ subroutine triangle_point_near_2d ( t, p, pn, dist )
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ), parameter :: side_num = 3
 
-  real ( kind = 8 ) dist
-  real ( kind = 8 ) dist2
+  real ( kind = fp ) dist
+  real ( kind = fp ) dist2
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) j
   integer ( kind = 4 ) jp1
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) pn(dim_num)
-  real ( kind = 8 ) pn2(dim_num)
-  real ( kind = 8 ) t(dim_num,side_num)
-  real ( kind = 8 ) tval
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) pn(dim_num)
+  real ( kind = fp ) pn2(dim_num)
+  real ( kind = fp ) t(dim_num,side_num)
+  real ( kind = fp ) tval
 !
 !  Find the distance to each of the line segments that make up the edges
 !  of the triangle.
 !
   dist = huge ( dist )
-  pn(1:dim_num) = 0.0D+00
+  pn(1:dim_num) = 0.0_fp
 
   do j = 1, side_num
 
@@ -39181,6 +39695,7 @@ subroutine triangle_point_near_2d ( t, p, pn, dist )
   return
 end
 subroutine triangle_quality_2d ( t, quality )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39213,19 +39728,19 @@ subroutine triangle_quality_2d ( t, quality )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Output, real ( kind = 8 ) QUALITY, the quality of the triangle.
+!    Output, real ( kind = fp ) QUALITY, the quality of the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) quality
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) quality
+  real ( kind = fp ) t(dim_num,3)
 !
 !  Compute the length of each side.
 !
@@ -39233,8 +39748,8 @@ subroutine triangle_quality_2d ( t, quality )
   b = sqrt ( sum ( ( t(1:dim_num,2) - t(1:dim_num,3) )**2 ) )
   c = sqrt ( sum ( ( t(1:dim_num,3) - t(1:dim_num,1) )**2 ) )
 
-  if ( a * b * c == 0.0D+00 ) then
-    quality = 0.0D+00
+  if ( a * b * c == 0.0_fp ) then
+    quality = 0.0_fp
   else
     quality = ( - a + b + c ) * ( a - b + c ) * ( a + b - c ) &
       / ( a * b * c )
@@ -39243,6 +39758,7 @@ subroutine triangle_quality_2d ( t, quality )
   return
 end
 subroutine triangle_right_lattice_point_num_2d ( a, b, n )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39291,6 +39807,7 @@ subroutine triangle_right_lattice_point_num_2d ( a, b, n )
   return
 end
 subroutine triangle_sample ( t, n, seed, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39310,27 +39827,27 @@ subroutine triangle_sample ( t, n, seed, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
 !    Input, integer ( kind = 4 ) N, the number of points to generate.
 !
 !    Input/output, integer ( kind = 4 ) SEED, a seed for the random 
 !    number generator.
 !
-!    Output, real ( kind = 8 ) P(2,N), random points in the triangle.
+!    Output, real ( kind = fp ) P(2,N), random points in the triangle.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
   integer ( kind = 4 ) n
 
-  real ( kind = 8 ) alpha(n)
+  real ( kind = fp ) alpha(n)
   integer ( kind = 4 ) dim
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p12(dim_num,n)
-  real ( kind = 8 ) p13(dim_num,n)
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p12(dim_num,n)
+  real ( kind = fp ) p13(dim_num,n)
   integer ( kind = 4 ) seed
-  real ( kind = 8 ) t(dim_num,3)
+  real ( kind = fp ) t(dim_num,3)
 !
 !  For comparison between F90, C++ and MATLAB codes, call R8VEC_UNIFORM_01.
 !  For faster execution, call RANDOM_NUMBER.
@@ -39360,10 +39877,10 @@ subroutine triangle_sample ( t, n, seed, p )
 !
   do dim = 1, dim_num
 
-    p12(dim,1:n) = ( 1.0D+00 - alpha(1:n) ) * t(dim,1) &
+    p12(dim,1:n) = ( 1.0_fp - alpha(1:n) ) * t(dim,1) &
                              + alpha(1:n)   * t(dim,2)
 
-    p13(dim,1:n) = ( 1.0D+00 - alpha(1:n) ) * t(dim,1) &
+    p13(dim,1:n) = ( 1.0_fp - alpha(1:n) ) * t(dim,1) &
                              + alpha(1:n)   * t(dim,3)
 
   end do
@@ -39385,7 +39902,7 @@ subroutine triangle_sample ( t, n, seed, p )
 
   do dim = 1, dim_num
 
-    p(dim,1:n) = ( 1.0D+00 - alpha(1:n) ) * p12(dim,1:n) &
+    p(dim,1:n) = ( 1.0_fp - alpha(1:n) ) * p12(dim,1:n) &
                            + alpha(1:n)   * p13(dim,1:n)
 
   end do
@@ -39393,6 +39910,7 @@ subroutine triangle_sample ( t, n, seed, p )
   return
 end
 subroutine triangle01_lattice_point_num_2d ( s, n )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39447,6 +39965,7 @@ subroutine triangle01_lattice_point_num_2d ( s, n )
   return
 end
 subroutine triangle_xsi_to_xy_2d ( t, xsi, p )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39466,26 +39985,27 @@ subroutine triangle_xsi_to_xy_2d ( t, xsi, p )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) XSI(3), the barycentric coordinates of a point.
+!    Input, real ( kind = fp ) XSI(3), the barycentric coordinates of a point.
 !    XSI(1) + XSI(2) + XSI(3) should equal 1, but this is not checked.
 !
-!    Output, real ( kind = 8 ) P(2), the XY coordinates of the point.
+!    Output, real ( kind = fp ) P(2), the XY coordinates of the point.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) xsi(dim_num+1)
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) xsi(dim_num+1)
 
   p(1:dim_num) = matmul ( t(1:dim_num,1:3), xsi(1:dim_num+1) )
 
   return
 end
 subroutine triangle_xy_to_xsi_2d ( t, p, xsi )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39505,21 +40025,21 @@ subroutine triangle_xy_to_xsi_2d ( t, p, xsi )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) T(2,3), the triangle vertices.
+!    Input, real ( kind = fp ) T(2,3), the triangle vertices.
 !
-!    Input, real ( kind = 8 ) P(2), the XY coordinates of a point.
+!    Input, real ( kind = fp ) P(2), the XY coordinates of a point.
 !
-!    Output, real ( kind = 8 ) XSI(3), the barycentric coordinates of the point.
+!    Output, real ( kind = fp ) XSI(3), the barycentric coordinates of the point.
 !    XSI1 + XSI2 + XSI3 should equal 1.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) det
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) t(dim_num,3)
-  real ( kind = 8 ) xsi(3)
+  real ( kind = fp ) det
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) t(dim_num,3)
+  real ( kind = fp ) xsi(3)
 
   det = ( t(1,1) - t(1,3) ) * ( t(2,2) - t(2,3) ) &
       - ( t(1,2) - t(1,3) ) * ( t(2,1) - t(2,3) )
@@ -39530,12 +40050,13 @@ subroutine triangle_xy_to_xsi_2d ( t, p, xsi )
   xsi(2) = ( - ( t(2,1) - t(2,3) ) * ( p(1) - t(1,3) ) &
              + ( t(1,1) - t(1,3) ) * ( p(2) - t(2,3) ) ) / det
 
-  xsi(3) = 1.0D+00 - xsi(1) - xsi(2)
+  xsi(3) = 1.0_fp - xsi(1) - xsi(2)
 
   return
 end
 subroutine truncated_octahedron_shape_3d ( point_num, face_num, &
   face_order_max, point_coord, face_order, face_point )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39578,7 +40099,7 @@ subroutine truncated_octahedron_shape_3d ( point_num, face_num, &
 !    Input, integer ( kind = 4 ) FACE_ORDER_MAX, the maximum order of any 
 !    face (6).
 !
-!    Output, real ( kind = 8 ) POINT_COORD(3,POINT_NUM), the vertices.
+!    Output, real ( kind = fp ) POINT_COORD(3,POINT_NUM), the vertices.
 !
 !    Output, integer ( kind = 4 ) FACE_ORDER(FACE_NUM), the number of 
 !    vertices per face.
@@ -39597,35 +40118,35 @@ subroutine truncated_octahedron_shape_3d ( point_num, face_num, &
 
   integer ( kind = 4 ) face_order(face_num)
   integer ( kind = 4 ) face_point(face_order_max,face_num)
-  real ( kind = 8 ) point_coord(dim_num,point_num)
+  real ( kind = fp ) point_coord(dim_num,point_num)
 !
 !  Set the point coordinates.
 !
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
-    -1.5D+00, -0.5D+00,  0.0D+00,        &
-    -1.5D+00,  0.5D+00,  0.0D+00,        &
-    -1.0D+00, -1.0D+00, -0.70710677D+00, &
-    -1.0D+00, -1.0D+00,  0.70710677D+00, &
-    -1.0D+00,  1.0D+00, -0.70710677D+00, &
-    -1.0D+00,  1.0D+00,  0.70710677D+00, &
-    -0.5D+00, -1.5D+00,  0.0D+00,        &
-    -0.5D+00, -0.5D+00, -1.4142135D+00,  &
-    -0.5D+00, -0.5D+00,  1.4142135D+00,  &
-    -0.5D+00,  0.5D+00, -1.4142135D+00,  &
-    -0.5D+00,  0.5D+00,  1.4142135D+00,  &
-    -0.5D+00,  1.5D+00,  0.0D+00,        &
-     0.5D+00, -1.5D+00,  0.0D+00,        &
-     0.5D+00, -0.5D+00, -1.4142135D+00,  &
-     0.5D+00, -0.5D+00,  1.4142135D+00,  &
-     0.5D+00,  0.5D+00, -1.4142135D+00,  &
-     0.5D+00,  0.5D+00,  1.4142135D+00,  &
-     0.5D+00,  1.5D+00,  0.0D+00,        &
-     1.0D+00, -1.0D+00, -0.70710677D+00, &
-     1.0D+00, -1.0D+00,  0.70710677D+00, &
-     1.0D+00,  1.0D+00, -0.70710677D+00, &
-     1.0D+00,  1.0D+00,  0.70710677D+00, &
-     1.5D+00, -0.5D+00,  0.0D+00,        &
-     1.5D+00,  0.5D+00,  0.0D+00 /), (/ dim_num, point_num /) )
+    -1.5_fp, -0.5_fp,  0.0_fp,        &
+    -1.5_fp,  0.5_fp,  0.0_fp,        &
+    -1.0_fp, -1.0_fp, -0.70710677_fp, &
+    -1.0_fp, -1.0_fp,  0.70710677_fp, &
+    -1.0_fp,  1.0_fp, -0.70710677_fp, &
+    -1.0_fp,  1.0_fp,  0.70710677_fp, &
+    -0.5_fp, -1.5_fp,  0.0_fp,        &
+    -0.5_fp, -0.5_fp, -1.4142135_fp,  &
+    -0.5_fp, -0.5_fp,  1.4142135_fp,  &
+    -0.5_fp,  0.5_fp, -1.4142135_fp,  &
+    -0.5_fp,  0.5_fp,  1.4142135_fp,  &
+    -0.5_fp,  1.5_fp,  0.0_fp,        &
+     0.5_fp, -1.5_fp,  0.0_fp,        &
+     0.5_fp, -0.5_fp, -1.4142135_fp,  &
+     0.5_fp, -0.5_fp,  1.4142135_fp,  &
+     0.5_fp,  0.5_fp, -1.4142135_fp,  &
+     0.5_fp,  0.5_fp,  1.4142135_fp,  &
+     0.5_fp,  1.5_fp,  0.0_fp,        &
+     1.0_fp, -1.0_fp, -0.70710677_fp, &
+     1.0_fp, -1.0_fp,  0.70710677_fp, &
+     1.0_fp,  1.0_fp, -0.70710677_fp, &
+     1.0_fp,  1.0_fp,  0.70710677_fp, &
+     1.5_fp, -0.5_fp,  0.0_fp,        &
+     1.5_fp,  0.5_fp,  0.0_fp /), (/ dim_num, point_num /) )
 !
 !  Set the face orders.
 !
@@ -39655,6 +40176,7 @@ subroutine truncated_octahedron_shape_3d ( point_num, face_num, &
 end
 subroutine truncated_octahedron_size_3d ( point_num, edge_num, face_num, &
   face_order_max )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39701,6 +40223,7 @@ subroutine truncated_octahedron_size_3d ( point_num, edge_num, face_num, &
   return
 end
 subroutine tube_2d ( dist, n, p, p1, p2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39728,18 +40251,18 @@ subroutine tube_2d ( dist, n, p, p1, p2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) DIST, the radius of the tube.
+!    Input, real ( kind = fp ) DIST, the radius of the tube.
 !
 !    Input, integer ( kind = 4 ) N, the number of points defining the line.
 !    N must be at least 2.
 !
-!    Input, real ( kind = 8 ) P(2,N), the points which comprise the broken
+!    Input, real ( kind = fp ) P(2,N), the points which comprise the broken
 !    line which is to be surrounded by the tube.  Points should
 !    not be immediately repeated, that is, it should never be
 !    the case that
 !      P(1,I) = P(1,I+1) and P(2,I) = P(2,I+1).
 !
-!    Output, real ( kind = 8 ) P1(2,N), P2(2,N), the points P1 form
+!    Output, real ( kind = fp ) P1(2,N), P2(2,N), the points P1 form
 !    one side of the tube, and P2 the other.
 !
   implicit none
@@ -39747,20 +40270,20 @@ subroutine tube_2d ( dist, n, p, p1, p2 )
   integer ( kind = 4 ) n
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) c
-  real ( kind = 8 ) dis1
-  real ( kind = 8 ) dis2
-  real ( kind = 8 ) dist
+  real ( kind = fp ) a
+  real ( kind = fp ) b
+  real ( kind = fp ) c
+  real ( kind = fp ) dis1
+  real ( kind = fp ) dis2
+  real ( kind = fp ) dist
   integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_wrap
   integer ( kind = 4 ) im1
   integer ( kind = 4 ) ip1
-  real ( kind = 8 ) p(dim_num,n)
-  real ( kind = 8 ) p1(dim_num,n)
-  real ( kind = 8 ) p2(dim_num,n)
-  real ( kind = 8 ) temp
+  real ( kind = fp ) p(dim_num,n)
+  real ( kind = fp ) p1(dim_num,n)
+  real ( kind = fp ) p2(dim_num,n)
+  real ( kind = fp ) temp
 !
 !  Check that N is at least 3.
 !
@@ -39823,7 +40346,7 @@ subroutine tube_2d ( dist, n, p, p1, p2 )
 
       dis2 = ( a * p1(1,i) + b * p1(2,i) + c ) / sqrt ( a * a + b * b )
 
-      if ( sign ( 1.0D+00, dis1 ) /= sign ( 1.0D+00, dis2 ) ) then
+      if ( sign ( 1.0_fp, dis1 ) /= sign ( 1.0_fp, dis2 ) ) then
 
         call r8_swap ( p1(1,i), p2(1,i) )
         call r8_swap ( p1(2,i), p2(2,i) )
@@ -39837,6 +40360,7 @@ subroutine tube_2d ( dist, n, p, p1, p2 )
   return
 end
 subroutine vector_directions_nd ( dim_num, v, angle )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39870,25 +40394,25 @@ subroutine vector_directions_nd ( dim_num, v, angle )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V(DIM_NUM), the vector.
+!    Input, real ( kind = fp ) V(DIM_NUM), the vector.
 !
-!    Output, real ( kind = 8 ) ANGLE(DIM_NUM), the direction angles, in radians,
+!    Output, real ( kind = fp ) ANGLE(DIM_NUM), the direction angles, in radians,
 !    that the vector V makes with the coordinate axes.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) angle(dim_num)
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) vnorm
+  real ( kind = fp ) angle(dim_num)
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) vnorm
 !
 !  Get the norm of the vector.
 !
   vnorm = sqrt ( sum ( v(1:dim_num)**2 ) )
 
-  if ( vnorm == 0.0D+00 ) then
-    angle(1:dim_num) = 0.0D+00
+  if ( vnorm == 0.0_fp ) then
+    angle(1:dim_num) = 0.0_fp
     return
   end if
 
@@ -39897,6 +40421,7 @@ subroutine vector_directions_nd ( dim_num, v, angle )
   return
 end
 subroutine vector_rotate_2d ( v, angle, w )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39927,22 +40452,22 @@ subroutine vector_rotate_2d ( v, angle, w )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V(2), the components of the vector to be
+!    Input, real ( kind = fp ) V(2), the components of the vector to be
 !    rotated.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle, in radians, of the rotation
+!    Input, real ( kind = fp ) ANGLE, the angle, in radians, of the rotation
 !    to be carried out.  A positive angle rotates the vector in the
 !    counter clockwise direction.
 !
-!    Output, real ( kind = 8 ) W(2), the rotated vector.
+!    Output, real ( kind = fp ) W(2), the rotated vector.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) v(dim_num)
-  real ( kind = 8 ) w(dim_num)
+  real ( kind = fp ) angle
+  real ( kind = fp ) v(dim_num)
+  real ( kind = fp ) w(dim_num)
 
   w(1) = cos ( angle ) * v(1) - sin ( angle ) * v(2)
   w(2) = sin ( angle ) * v(1) + cos ( angle ) * v(2)
@@ -39950,6 +40475,7 @@ subroutine vector_rotate_2d ( v, angle, w )
   return
 end
 subroutine vector_rotate_3d ( v1, axis, angle, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -39974,36 +40500,36 @@ subroutine vector_rotate_3d ( v1, axis, angle, v2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) V1(3), the vector to be rotated.
+!    Input, real ( kind = fp ) V1(3), the vector to be rotated.
 !
-!    Input, real ( kind = 8 ) AXIS(3), the vector about which the
+!    Input, real ( kind = fp ) AXIS(3), the vector about which the
 !    rotation is to be carried out.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle, in radians, of the rotation
+!    Input, real ( kind = fp ) ANGLE, the angle, in radians, of the rotation
 !    to be carried out.
 !
-!    Output, real ( kind = 8 ) V2(3), the rotated vector.
+!    Output, real ( kind = fp ) V2(3), the rotated vector.
 !
   implicit none
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) axis(3)
-  real ( kind = 8 ) dot
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) norm_vn
-  real ( kind = 8 ) normal2(3)
-  real ( kind = 8 ) r8vec_norm
-  real ( kind = 8 ) v1(3)
-  real ( kind = 8 ) v2(3)
-  real ( kind = 8 ) vn(3)
-  real ( kind = 8 ) vp(3)
-  real ( kind = 8 ) vr(3)
+  real ( kind = fp ) angle
+  real ( kind = fp ) axis(3)
+  real ( kind = fp ) dot
+  real ( kind = fp ) norm
+  real ( kind = fp ) norm_vn
+  real ( kind = fp ) normal2(3)
+  real ( kind = fp ) r8vec_norm
+  real ( kind = fp ) v1(3)
+  real ( kind = fp ) v2(3)
+  real ( kind = fp ) vn(3)
+  real ( kind = fp ) vp(3)
+  real ( kind = fp ) vr(3)
 !
 !  Compute the length of the rotation axis.
 !
   norm = r8vec_norm ( 3, axis )
 
-  if ( norm == 0.0D+00 ) then
+  if ( norm == 0.0_fp ) then
     v2(1:3) = v1(1:3)
     return
   end if
@@ -40022,7 +40548,7 @@ subroutine vector_rotate_3d ( v1, axis, angle, v2 )
 
   norm_vn = r8vec_norm ( 3, vn )
 
-  if ( norm_vn == 0.0D+00 ) then
+  if ( norm_vn == 0.0_fp ) then
     v2(1:3) = vp(1:3)
     return
   end if
@@ -40037,7 +40563,7 @@ subroutine vector_rotate_3d ( v1, axis, angle, v2 )
   normal2(3) = axis(1) * vn(2) - axis(2) * vn(1)
 
   norm = r8vec_norm ( 3, normal2 )
-  if ( norm /= 0.0D+00 ) then
+  if ( norm /= 0.0_fp ) then
     normal2(1:3) = normal2(1:3) / norm
   end if
 !
@@ -40052,6 +40578,7 @@ subroutine vector_rotate_3d ( v1, axis, angle, v2 )
   return
 end
 subroutine vector_rotate_base_2d ( p1, pb, angle, p2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40076,24 +40603,24 @@ subroutine vector_rotate_base_2d ( p1, pb, angle, p2 )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P1(2), the endpoint of the original vector.
+!    Input, real ( kind = fp ) P1(2), the endpoint of the original vector.
 !
-!    Input, real ( kind = 8 ) PB(2), the location of the base point.
+!    Input, real ( kind = fp ) PB(2), the location of the base point.
 !
-!    Input, real ( kind = 8 ) ANGLE, the angle, in radians, of the rotation
+!    Input, real ( kind = fp ) ANGLE, the angle, in radians, of the rotation
 !    to be carried out.  A positive angle rotates the vector in the
 !    counter clockwise direction.
 !
-!    Output, real ( kind = 8 ) P2(2), the endpoint of the rotated vector.
+!    Output, real ( kind = fp ) P2(2), the endpoint of the rotated vector.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 2
 
-  real ( kind = 8 ) angle
-  real ( kind = 8 ) p1(2)
-  real ( kind = 8 ) p2(2)
-  real ( kind = 8 ) pb(2)
+  real ( kind = fp ) angle
+  real ( kind = fp ) p1(2)
+  real ( kind = fp ) p2(2)
+  real ( kind = fp ) pb(2)
 
   p2(1) = pb(1) + cos ( angle ) * ( p1(1) - pb(1) ) &
                 - sin ( angle ) * ( p1(2) - pb(2) )
@@ -40104,6 +40631,7 @@ subroutine vector_rotate_base_2d ( p1, pb, angle, p2 )
   return
 end
 subroutine vector_separation_nd ( dim_num, v1, v2, theta )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40129,21 +40657,21 @@ subroutine vector_separation_nd ( dim_num, v1, v2, theta )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input, real ( kind = 8 ) V1(DIM_NUM), V2(DIM_NUM), the two vectors.
+!    Input, real ( kind = fp ) V1(DIM_NUM), V2(DIM_NUM), the two vectors.
 !
-!    Output, real ( kind = 8 ) THETA, the angle between the two vectors.
+!    Output, real ( kind = fp ) THETA, the angle between the two vectors.
 !
   implicit none
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) cos_theta
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) v1(dim_num)
-  real ( kind = 8 ) v1_norm
-  real ( kind = 8 ) v2(dim_num)
-  real ( kind = 8 ) v2_norm
+  real ( kind = fp ) cos_theta
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) theta
+  real ( kind = fp ) v1(dim_num)
+  real ( kind = fp ) v1_norm
+  real ( kind = fp ) v2(dim_num)
+  real ( kind = fp ) v2_norm
 
   v1_norm = sqrt ( sum ( v1(1:dim_num)**2 ) )
 
@@ -40157,6 +40685,7 @@ subroutine vector_separation_nd ( dim_num, v1, v2, theta )
   return
 end
 subroutine vector_unit_nd ( dim_num, v )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40178,7 +40707,7 @@ subroutine vector_unit_nd ( dim_num, v )
 !
 !    Input, integer ( kind = 4 ) DIM_NUM, the spatial dimension.
 !
-!    Input/output, real ( kind = 8 ) V(DIM_NUM), the vector to be normalized.
+!    Input/output, real ( kind = fp ) V(DIM_NUM), the vector to be normalized.
 !    On output, V should have unit Euclidean norm.  However, if the input vector
 !    has zero Euclidean norm, it is not altered.
 !
@@ -40186,18 +40715,19 @@ subroutine vector_unit_nd ( dim_num, v )
 
   integer ( kind = 4 ) dim_num
 
-  real ( kind = 8 ) norm
-  real ( kind = 8 ) v(dim_num)
+  real ( kind = fp ) norm
+  real ( kind = fp ) v(dim_num)
 
   norm = sqrt ( sum ( v(1:dim_num)**2 ) )
 
-  if ( norm /= 0.0D+00 ) then
+  if ( norm /= 0.0_fp ) then
     v(1:dim_num) = v(1:dim_num) / norm
   end if
 
   return
 end
 function voxels_dist_l1_nd ( dim_num, v1, v2 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40253,6 +40783,7 @@ function voxels_dist_l1_nd ( dim_num, v1, v2 )
   return
 end
 subroutine voxels_line_3d ( v1, v2, n, v )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40368,6 +40899,7 @@ subroutine voxels_line_3d ( v1, v2, n, v )
 end
 subroutine voxels_region_3d ( list_max, nx, ny, nz, ishow, list_num, list, &
   region_num )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40695,6 +41227,7 @@ subroutine voxels_region_3d ( list_max, nx, ny, nz, ishow, list_num, list, &
   return
 end
 subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40733,10 +41266,10 @@ subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) alpha
-  real ( kind = 8 ) alphai
-  real ( kind = 8 ) alphaj
-  real ( kind = 8 ) alphak
+  real ( kind = fp ) alpha
+  real ( kind = fp ) alphai
+  real ( kind = fp ) alphaj
+  real ( kind = fp ) alphak
   integer ( kind = 4 ) inc
   integer ( kind = 4 ) jnc
   integer ( kind = 4 ) knc
@@ -40757,35 +41290,35 @@ subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
     return
   end if
 
-  alpha = 0.0D+00
+  alpha = 0.0_fp
 !
 !  Compute the smallest ALPHA that will change one of V2(1:3) by +-0.5.
 !
   if ( 0 < inc ) then
-    alphai = ( real ( v2(1) - v1(1), kind = 8 ) + 0.5D+00 ) &
+    alphai = ( real ( v2(1) - v1(1), kind = 8 ) + 0.5_fp ) &
              / real ( inc, kind = 8 )
   else if ( inc < 0 ) then
-    alphai = ( real ( v2(1) - v1(1), kind = 8 ) - 0.5D+00 ) &
+    alphai = ( real ( v2(1) - v1(1), kind = 8 ) - 0.5_fp ) &
              / real ( inc, kind = 8 )
   else
     alphai = huge ( alphai )
   end if
 
   if ( 0 < jnc ) then
-    alphaj = ( real ( v2(2) - v1(2), kind = 8 ) + 0.5D+00 ) &
+    alphaj = ( real ( v2(2) - v1(2), kind = 8 ) + 0.5_fp ) &
              / real ( jnc, kind = 8 )
   else if ( jnc < 0 ) then
-    alphaj = ( real ( v2(2) - v1(2), kind = 8 ) - 0.5D+00 ) &
+    alphaj = ( real ( v2(2) - v1(2), kind = 8 ) - 0.5_fp ) &
              / real ( jnc, kind = 8 )
   else
     alphaj = huge ( alphaj )
   end if
 
   if ( 0 < knc ) then
-    alphak = ( real ( v2(3) - v1(3), kind = 8 ) + 0.5D+00 ) &
+    alphak = ( real ( v2(3) - v1(3), kind = 8 ) + 0.5_fp ) &
              / real ( knc, kind = 8 )
   else if ( knc < 0 ) then
-    alphak = ( real ( v2(3) - v1(3), kind = 8 ) - 0.5D+00 ) &
+    alphak = ( real ( v2(3) - v1(3), kind = 8 ) - 0.5_fp ) &
              / real ( knc, kind = 8 )
   else
     alphaj = huge ( alphaj )
@@ -40795,15 +41328,15 @@ subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
 !
   alpha = huge ( alpha )
 
-  if ( 0.0D+00 < alphai ) then
+  if ( 0.0_fp < alphai ) then
     alpha = min ( alpha, alphai )
   end if
 
-  if ( 0.0D+00 < alphaj ) then
+  if ( 0.0_fp < alphaj ) then
     alpha = min ( alpha, alphaj )
   end if
 
-  if ( 0.0D+00 < alphak ) then
+  if ( 0.0_fp < alphak ) then
     alpha = min ( alpha, alphak )
   end if
 !
@@ -40827,6 +41360,7 @@ subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
   return
 end
 function wedge01_volume ( )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40855,17 +41389,18 @@ function wedge01_volume ( )
 !
 !  Parameters:
 !
-!    Output, real ( kind = 8 ) WEDGE01_VOLUME, the volume.
+!    Output, real ( kind = fp ) WEDGE01_VOLUME, the volume.
 !
   implicit none
 
-  real ( kind = 8 ) wedge01_volume
+  real ( kind = fp ) wedge01_volume
 
-  wedge01_volume = 1.0D+00
+  wedge01_volume = 1.0_fp
 
   return
 end
 subroutine xy_to_polar ( xy, r, t )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40885,21 +41420,21 @@ subroutine xy_to_polar ( xy, r, t )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XY(2), the Cartesian coordinates.
+!    Input, real ( kind = fp ) XY(2), the Cartesian coordinates.
 !
-!    Output, real ( kind = 8 ) R, T, the radius and angle (in radians).
+!    Output, real ( kind = fp ) R, T, the radius and angle (in radians).
 !
   implicit none
 
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) t
-  real ( kind = 8 ) xy(2)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) t
+  real ( kind = fp ) xy(2)
 
   r = sqrt ( xy(1) * xy(1) + xy(2) * xy(2) )
 
-  if ( r == 0.0D+00 ) then
-    t = 0.0D+00
+  if ( r == 0.0_fp ) then
+    t = 0.0_fp
   else
     t = r8_atan ( xy(2), xy(1) )
   end if
@@ -40907,6 +41442,7 @@ subroutine xy_to_polar ( xy, r, t )
   return
 end
 subroutine xyz_to_radec ( p, ra, dec )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -40939,47 +41475,48 @@ subroutine xyz_to_radec ( p, ra, dec )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) P(3), the coordinates of a point in 3D.
+!    Input, real ( kind = fp ) P(3), the coordinates of a point in 3D.
 !
-!    Output, real ( kind = 8 ) RA, DEC, the corresponding right ascension
+!    Output, real ( kind = fp ) RA, DEC, the corresponding right ascension
 !    and declination.
 !
   implicit none
 
   integer ( kind = 4 ), parameter :: dim_num = 3
 
-  real ( kind = 8 ) dec
-  real ( kind = 8 ) p(dim_num)
-  real ( kind = 8 ) p_norm
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) r8_asin
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) ra
-  real ( kind = 8 ) radians_to_degrees
-  real ( kind = 8 ) theta
+  real ( kind = fp ) dec
+  real ( kind = fp ) p(dim_num)
+  real ( kind = fp ) p_norm
+  real ( kind = fp ) phi
+  real ( kind = fp ) r8_asin
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) ra
+  real ( kind = fp ) radians_to_degrees
+  real ( kind = fp ) theta
 
   p_norm = sqrt ( sum ( p(1:dim_num)**2 )  )
 
-  if ( p_norm == 0.0D+00 ) then
-    dec = 0.0D+00
-    ra = 0.0D+00
+  if ( p_norm == 0.0_fp ) then
+    dec = 0.0_fp
+    ra = 0.0_fp
     return
   end if
 
   phi = r8_asin ( p(3) / p_norm )
 
-  if ( cos ( phi ) == 0.0D+00 ) then
-    theta = 0.0D+00
+  if ( cos ( phi ) == 0.0_fp ) then
+    theta = 0.0_fp
   else
     theta = r8_atan ( p(2), p(1) )
   end if
 
   dec = radians_to_degrees ( phi )
-  ra = radians_to_degrees ( theta ) / 15.0D+00
+  ra = radians_to_degrees ( theta ) / 15.0_fp
 
   return
 end
 subroutine xyz_to_rtp ( xyz, r, theta, phi )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -41009,25 +41546,25 @@ subroutine xyz_to_rtp ( xyz, r, theta, phi )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XYZ(3), the coordinates of a point in 3D.
+!    Input, real ( kind = fp ) XYZ(3), the coordinates of a point in 3D.
 !
-!    Output, real ( kind = 8 ) R, THETA, PHI, the radius, longitude and
+!    Output, real ( kind = fp ) R, THETA, PHI, the radius, longitude and
 !    declination of the point.
 !
   implicit none
 
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) xyz(3)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) phi
+  real ( kind = fp ) theta
+  real ( kind = fp ) xyz(3)
 
   r = sqrt ( sum ( xyz(1:3)**2 )  )
 
-  if ( r == 0.0D+00 ) then
-    theta = 0.0D+00
-    phi = 0.0D+00
+  if ( r == 0.0_fp ) then
+    theta = 0.0_fp
+    phi = 0.0_fp
     return
   end if
 
@@ -41038,6 +41575,7 @@ subroutine xyz_to_rtp ( xyz, r, theta, phi )
   return
 end
 subroutine xyz_to_tp ( xyz, theta, phi )
+  use nrtype, only : fp
 
 !*****************************************************************************80
 !
@@ -41070,25 +41608,25 @@ subroutine xyz_to_tp ( xyz, theta, phi )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) XYZ(3), the coordinates of a point in 3D.
+!    Input, real ( kind = fp ) XYZ(3), the coordinates of a point in 3D.
 !
-!    Output, real ( kind = 8 ) THETA, PHI, the longitude and declination 
+!    Output, real ( kind = fp ) THETA, PHI, the longitude and declination 
 !    of the point.
 !
   implicit none
 
-  real ( kind = 8 ) r
-  real ( kind = 8 ) r8_acos
-  real ( kind = 8 ) r8_atan
-  real ( kind = 8 ) phi
-  real ( kind = 8 ) theta
-  real ( kind = 8 ) xyz(3)
+  real ( kind = fp ) r
+  real ( kind = fp ) r8_acos
+  real ( kind = fp ) r8_atan
+  real ( kind = fp ) phi
+  real ( kind = fp ) theta
+  real ( kind = fp ) xyz(3)
 
   r = sqrt ( sum ( xyz(1:3)**2 )  )
 
-  if ( r == 0.0D+00 ) then
-    theta = 0.0D+00
-    phi = 0.0D+00
+  if ( r == 0.0_fp ) then
+    theta = 0.0_fp
+    phi = 0.0_fp
     return
   end if
 

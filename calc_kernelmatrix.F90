@@ -13,6 +13,7 @@ subroutine calc_kernelmatrix_circle(location_grid, location_sta, &
   use gradiometry_parameters
   use greatcircle, only : greatcircle_dist
   use sort, only : bubblesort
+
 #ifdef MKL
   use lapack95
 #else
@@ -72,9 +73,7 @@ subroutine calc_kernelmatrix_circle(location_grid, location_sta, &
       enddo
       if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
       if(nsta_count(jj, kk) .gt. nsta_grid_max) nsta_count(jj, kk) = nsta_grid_max
- 
 #else
-
       !!count usable stations for each grid
       dist_grid_sta(1 : nsta_grid_max) = 1.0e+15
       do ii = 1, nsta
@@ -100,7 +99,6 @@ subroutine calc_kernelmatrix_circle(location_grid, location_sta, &
       enddo
       if(nsta_count(jj, kk) .ge. nsta_grid_min) grid_enough_sta(jj, kk) = .true.
       if(nsta_count(jj, kk) .gt. nsta_grid_max) nsta_count(jj, kk) = nsta_grid_max
-
 #endif
 
       call bubblesort(azimuth_grid_sta)
@@ -120,6 +118,7 @@ subroutine calc_kernelmatrix_circle(location_grid, location_sta, &
         g(i, 1) = 1.0_fp
         g(i, 2) = location_sta(grid_stationindex(i, jj, kk))%x_east - location_grid(jj, kk)%x_east
         g(i, 3) = location_sta(grid_stationindex(i, jj, kk))%y_north - location_grid(jj, kk)%y_north
+
 #ifdef ELLIPSE
         dist_x_tmp =   (location_sta(grid_stationindex(i, jj, kk))%y_north &
         &            -  location_grid(jj, kk)%y_north) * cos(propagation_direction) &
@@ -134,8 +133,10 @@ subroutine calc_kernelmatrix_circle(location_grid, location_sta, &
 #else
         weight(i, i) = exp(-(g(i, 2) ** 2 + g(i, 3) ** 2) / (cutoff_dist ** 2))
 #endif
+
       enddo
       g_tmp = matmul(transpose(g), matmul(weight, g))
+
 #ifdef MKL
       call getrf(g_tmp, ipiv = ipiv, info = info)
       !write(0, '(a, i0)') "GETRF info = ", info
@@ -147,6 +148,7 @@ subroutine calc_kernelmatrix_circle(location_grid, location_sta, &
       call LA_GETRI(g_tmp, ipiv, info = info)
       !write(0, '(a, i0)') "LA_GETRI info = ", info
 #endif
+
       if(info .ne. 0) then
         grid_enough_sta(jj, kk) = .false.
         cycle
@@ -224,6 +226,10 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
           nsta_count(jj, kk) = 3
           do i = 1, nsta_count(jj, kk)
             grid_stationindex(i, jj, kk) = triangle_indices(i, j)
+            call greatcircle_dist(location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
+            &                     location_sta(grid_stationindex(ii, jj, kk))%lat, &
+            &                     location_sta(grid_stationindex(ii, jj, kk))%lon, &
+            &                     azimuth = azimuth_grid_sta(ii))
           enddo
           exit
         endif
@@ -231,16 +237,11 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
       if(grid_enough_sta(jj, kk) .eqv. .false.) cycle 
 
 #ifdef ELLIPSE
+      !!Check whether all stations (vertices) are within the ellipse
       call greatcircle_dist(evlat, evlon, location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
       &                     backazimuth=propagation_direction)
       propagation_direction = propagation_direction - pi
-      !print *, location_grid(jj, kk)%lon, location_grid(jj, kk)%lat, propagation_direction * rad2deg
-      !!Check whether all points are within the ellipse
       do ii = 1, nsta_count(jj, kk)
-        call greatcircle_dist(location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
-        &                     location_sta(grid_stationindex(ii, jj, kk))%lat, &
-        &                     location_sta(grid_stationindex(ii, jj, kk))%lon, &
-        &                     azimuth = azimuth_grid_sta(ii))
         dist_x_tmp =   (location_sta(grid_stationindex(ii, jj, kk))%y_north &
         &            -  location_grid(jj, kk)%y_north) * cos(propagation_direction) &
         &            + (location_sta(grid_stationindex(ii, jj, kk))%x_east &
@@ -255,15 +256,9 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
           exit
         endif
       enddo
-        
 #else
-
-      !!count usable stations for each grid
+      !!check distance between grid and stations (vertices)
       do ii = 1, nsta_count(jj, kk)
-        call greatcircle_dist(location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
-        &                     location_sta(grid_stationindex(ii, jj, kk))%lat, &
-        &                     location_sta(grid_stationindex(ii, jj, kk))%lon, &
-        &                     azimuth = azimuth_grid_sta(ii))
         dist_tmp = sqrt((location_sta(grid_stationindex(ii, jj, kk))%x_east  - location_grid(jj, kk)%x_east)  ** 2 &
         &             + (location_sta(grid_stationindex(ii, jj, kk))%y_north - location_grid(jj, kk)%y_north) ** 2)
         if(dist_tmp .gt. cutoff_dist) then
@@ -271,16 +266,7 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
           exit
         endif
       enddo
-
 #endif
-      !!Check azimuthal gap
-      call bubblesort(azimuth_grid_sta(1 : nsta_count(jj, kk)))
-      az_diff_tmp = 2.0_fp * pi - (azimuth_grid_sta(1) - azimuth_grid_sta(nsta_count(jj, kk)))
-      do i = 2, nsta_count(jj, kk)
-        if(azimuth_grid_sta(i - 1) - azimuth_grid_sta(i) .gt. az_diff_tmp) &
-        &  az_diff_tmp = azimuth_grid_sta(i - 1) - azimuth_grid_sta(i)
-      enddo
-      if(az_diff_tmp .gt. az_diff_max) grid_enough_sta(jj, kk) = .false.
 
       if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
 
@@ -290,6 +276,7 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
         g(i, 1) = 1.0_fp
         g(i, 2) = location_sta(grid_stationindex(i, jj, kk))%x_east - location_grid(jj, kk)%x_east
         g(i, 3) = location_sta(grid_stationindex(i, jj, kk))%y_north - location_grid(jj, kk)%y_north
+
 #ifdef ELLIPSE
         dist_x_tmp =   (location_sta(grid_stationindex(i, jj, kk))%y_north &
         &            -  location_grid(jj, kk)%y_north) * cos(propagation_direction) &
@@ -299,24 +286,24 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
         &            -  location_grid(jj, kk)%y_north) * sin(propagation_direction) &
         &            + (location_sta(grid_stationindex(i, jj, kk))%x_east  &
         &            -  location_grid(jj, kk)%x_east)  * cos(propagation_direction)
-
         weight(i, i) = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
 #else
         weight(i, i) = exp(-(g(i, 2) ** 2 + g(i, 3) ** 2) / (cutoff_dist ** 2))
 #endif
+
       enddo
       g_tmp = matmul(transpose(g), matmul(weight, g))
+
 #ifdef MKL
       call getrf(g_tmp, ipiv = ipiv, info = info)
-      !write(0, '(a, i0)') "GETRF info = ", info
       call getri(g_tmp, ipiv, info = info)
-      !write(0, '(a, i0)') "GETRI info = ", info
+
 #else
+
       call LA_GETRF(g_tmp, ipiv, info = info)
-      !write(0, '(a, i0)') "LA_GETRF info = ", info
       call LA_GETRI(g_tmp, ipiv, info = info)
-      !write(0, '(a, i0)') "LA_GETRI info = ", info
 #endif
+
       if(info .ne. 0) then
         grid_enough_sta(jj, kk) = .false.
         cycle
@@ -324,7 +311,6 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
 
       kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
 
-      !if(grid_enough_sta(jj, kk) .eqv. .true.) print *, jj, kk, nsta_count(jj, kk)
     enddo
   enddo
 

@@ -5,7 +5,7 @@
 
 FC = ifort
 FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl
-DEFS = -DDOUBLE -DMKL
+DEFS = -DDOUBLE -DMKL -DELLIPSE
 LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64 -lhdf5
 LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
 INCDIR = -I. -I${NETCDF_FORTRAN_INC}
@@ -108,7 +108,7 @@ $(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants)
 $(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort)
 $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix)
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
 
 .F90.o:
 	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)

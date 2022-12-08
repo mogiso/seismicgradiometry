@@ -1,4 +1,8 @@
 #!/usr/bin/env perl
+# Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+# Released under the MIT license.
+# see https://opensource.org/licenses/MIT
+
 use Math::Trig qw(pi rad2deg);
 use Parallel::ForkManager;
 $MAX_PROCESS = 16;

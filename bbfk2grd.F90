@@ -1,3 +1,8 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
+!! convert SAC bbfk file to netcdf grd format
 program bbfk2grd
   use nrtype, only : fp, sp
   use grdfile_io, only : write_grdfile_fp_2d

@@ -1,3 +1,8 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
+!!convert cartesian-coordinate (x, y) to geographical-coordinate (longitude, latitude) using Gauss-Kruger transformation
 program conv_xy2lonlat
   use nrtype, only : fp
   use lonlat_xy_conv, only : xy2bl

@@ -1,3 +1,7 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
 subroutine line_fit(x, y, data, a0, a1)
   implicit none
 

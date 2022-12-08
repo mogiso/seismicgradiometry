@@ -1,4 +1,8 @@
-#Makefile for seismicgradiometry
+# Makefile for seismicgradiometry
+# Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+# Released under the MIT license.
+# see https://opensource.org/licenses/MIT
+
 
 .SUFFIXES:
 .SUFFIXES: .F90 .f90 .o

@@ -1,3 +1,7 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
 program seismicgradiometry
   use nrtype, only : fp, sp
   use constants, only : pi, deg2rad, rad2deg

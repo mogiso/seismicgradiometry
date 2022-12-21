@@ -1,3 +1,7 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
 subroutine deconvolution(velocity, npts, sampling, gain, h, freq, acc)
   use nrtype, only : fp
   use constants, only : pi

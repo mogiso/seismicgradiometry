@@ -1,3 +1,8 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
+!!convert geographical-coordinate coastline data to cartesian-coordinate using Gauss-Kruger transformation 
 program conv_coastline
   use nrtype, only : fp
   use lonlat_xy_conv, only : bl2xy

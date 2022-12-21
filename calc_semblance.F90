@@ -1,3 +1,8 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
+!!Calculate semblance (Neidell and Taner, 1971) from SAC-formatted waveforms
 program calc_semblance
   use nrtype, only : fp, sp
   use constants, only : pi, deg2rad, rad2deg

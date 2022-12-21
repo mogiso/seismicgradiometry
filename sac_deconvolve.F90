@@ -1,3 +1,8 @@
+! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+! Released under the MIT license.
+! see https://opensource.org/licenses/MIT
+
+!!deconvolve seismometer response
 program sac_deconvolv
   use nrtype, only : fp, dp, sp
   use constants, only : pi

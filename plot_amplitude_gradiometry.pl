@@ -1,4 +1,9 @@
 #!/usr/bin/env perl
+# Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+# Released under the MIT license.
+# see https://opensource.org/licenses/MIT
+
+# Sample script to write figures from outputs of seismicgradiometry.F90
 use Math::Trig qw(pi rad2deg);
 use Parallel::ForkManager;
 $MAX_PROCESS = 16;

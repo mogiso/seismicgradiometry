@@ -22,26 +22,26 @@ program seismicgradiometry
   real(kind = fp), allocatable :: begin(:)
   real(kind = fp), allocatable :: waveform_obs(:, :)         !!(1 : ntime, 1 : nsta)
   real(kind = fp), allocatable :: waveform_est(:, :, :, :)   !!(1 : 3 (u, dudx, dudy), 1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
-  real(kind = fp), allocatable :: waveform_est_diff(:, :, :) !!(1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
+  real(kind = fp), allocatable :: waveform_est_dt(:, :, :) !!(1 : ngrid_x, 1 : ngrid_y, 1 : ntime)
   real(kind = fp), allocatable :: h(:)
   real(kind = fp) :: weight(1 : nsta_grid_max, 1 : nsta_grid_max), &
   &                  kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), obs_vector(1 : nsta_grid_max), &
   &                  slowness_x(1 : ngrid_x, 1 : ngrid_y), slowness_y(1 : ngrid_x, 1 : ngrid_y), &
   &                  sigma_slowness_x(1 : ngrid_x, 1 : ngrid_y), sigma_slowness_y(1 : ngrid_x, 1 : ngrid_y), &
   &                  waveform_est_tmp(-ntime_slowness2 : ntime_slowness2), &
-  &                  waveform_est_diff_tmp(-ntime_slowness2 : ntime_slowness2), &
+  &                  waveform_est_dt_tmp(-ntime_slowness2 : ntime_slowness2), &
   &                  waveform_est_dx(-ntime_slowness2 : ntime_slowness2), &
   &                  waveform_est_dy(-ntime_slowness2 : ntime_slowness2), &
   &                  waveform_errest_tmp(1 : ntime_slowness - 1), &
-  &                  waveform_errest_diff_tmp(1 : ntime_slowness - 1), &
+  &                  waveform_errest_dt_tmp(1 : ntime_slowness - 1), &
   &                  waveform_errest_dx(1 : ntime_slowness - 1), &
   &                  waveform_errest_dy(1 : ntime_slowness - 1), &
   &                  param_x_err_tmp(1 : 2, -ntime_slowness2 : ntime_slowness2), &
   &                  param_y_err_tmp(1 : 2, -ntime_slowness2 : ntime_slowness2), &
   &                  param_x_err(1 : 2), param_y_err(1 : 2), &
-  &                  amp_term_x(1 : ngrid_x, 1 : ngrid_y), amp_term_y(1 : ngrid_x, 1 : ngrid_y), &
-  &                  sigma_amp_term_x(1 : ngrid_x, 1 : ngrid_y), sigma_amp_term_y(1 : ngrid_x, 1 : ngrid_y), &
-  &                  waveform_est_max(1 : ngrid_x, 1 : ngrid_y), waveform_est_diff_max(1 : ngrid_x, 1 : ngrid_y), &
+  &                  ampterm_x(1 : ngrid_x, 1 : ngrid_y), ampterm_y(1 : ngrid_x, 1 : ngrid_y), &
+  &                  sigma_ampterm_x(1 : ngrid_x, 1 : ngrid_y), sigma_ampterm_y(1 : ngrid_x, 1 : ngrid_y), &
+  &                  waveform_est_max(1 : ngrid_x, 1 : ngrid_y), waveform_est_dt_max(1 : ngrid_x, 1 : ngrid_y), &
   &                  dt, c, gn
   integer :: grid_stationindex(1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), nsta_count(1 : ngrid_x, 1 : ngrid_y)
   logical :: grid_enough_sta(1 : ngrid_x, 1 : ngrid_y)
@@ -52,7 +52,8 @@ program seismicgradiometry
 
   nsta = command_argument_count()
 
-  allocate(waveform_obs(1 : ntime, 1 : nsta), waveform_est_diff(1 : ngrid_x, 1 : ngrid_y, 1 : ntime), &
+  allocate(waveform_obs(1 : ntime, 1 : nsta), &
+  &        waveform_est_dt(1 : ngrid_x, 1 : ngrid_y, 1 : ntime), &
   &        waveform_est(1 : 3, 1 : ngrid_x, 1 : ngrid_y, 1 : ntime))
   allocate(location_sta(1 : nsta), sacfile(1 : nsta), begin(1 : nsta))
 
@@ -77,8 +78,8 @@ program seismicgradiometry
   do i = 1, nsta
     call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1)
     waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
-    call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
-    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
+    !call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
+    !waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
   enddo
 
   !!set grid location
@@ -126,27 +127,27 @@ program seismicgradiometry
     enddo
     outfile = "amplitude_gradiometry_" // trim(time_index) // ".grd"
     call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est(1, :, :, j), outfile)
-    outfile = "amp_dx_gradiometry_" // trim(time_index) // ".grd"
-    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est(2, :, :, j), outfile)
-    outfile = "amp_dy_gradiometry_" // trim(time_index) // ".grd"
-    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est(3, :, :, j), outfile)
+    !outfile = "amp_dx_gradiometry_" // trim(time_index) // ".grd"
+    !call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est(2, :, :, j), outfile)
+    !outfile = "amp_dy_gradiometry_" // trim(time_index) // ".grd"
+    !call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est(3, :, :, j), outfile)
   enddo
 
   !!calculate time derivatives of estimated wavefield
   waveform_est_max(1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
-  waveform_est_diff_max(1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
+  waveform_est_dt_max(1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
   do i = 1, ntime
     do jj = 1, ngrid_y
       do ii = 1, ngrid_x
         if(i .eq. 1) then
-          waveform_est_diff(ii, jj, i) = (waveform_est(1, ii, jj, i + 1) - waveform_est(1, ii, jj, i)) / dt
+          waveform_est_dt(ii, jj, i) = (waveform_est(1, ii, jj, i + 1) - waveform_est(1, ii, jj, i)) / dt
         elseif(i .eq. ntime) then
-          waveform_est_diff(ii, jj, i) = (waveform_est(1, ii, jj, i) - waveform_est(1, ii, jj, i - 1)) / dt
+          waveform_est_dt(ii, jj, i) = (waveform_est(1, ii, jj, i) - waveform_est(1, ii, jj, i - 1)) / dt
         else
-          waveform_est_diff(ii, jj, i) = (waveform_est(1, ii, jj, i + 1) - waveform_est(1, ii, jj, i - 1)) / dt * 0.5_fp
+          waveform_est_dt(ii, jj, i) = (waveform_est(1, ii, jj, i + 1) - waveform_est(1, ii, jj, i - 1)) / dt * 0.5_fp
         endif
-        if(abs(waveform_est_diff(ii, jj, i)) .ge. waveform_est_diff_max(ii, jj)) then
-          waveform_est_diff_max(ii, jj) = abs(waveform_est_diff(ii, jj, i))
+        if(abs(waveform_est_dt(ii, jj, i)) .ge. waveform_est_dt_max(ii, jj)) then
+          waveform_est_dt_max(ii, jj) = abs(waveform_est_dt(ii, jj, i))
         endif
         if(abs(waveform_est(1, ii, jj, i)) .ge. waveform_est_max(ii, jj)) then
           waveform_est_max(ii, jj) = abs(waveform_est(1, ii, jj, i))
@@ -173,47 +174,43 @@ program seismicgradiometry
       do ii = 1, ngrid_x
         sigma_slowness_x(ii, jj) = 0.0_fp
         sigma_slowness_y(ii, jj) = 0.0_fp
-        sigma_amp_term_x(ii, jj) = 0.0_fp
-        sigma_amp_term_y(ii, jj) = 0.0_fp
+        sigma_ampterm_x(ii, jj) = 0.0_fp
+        sigma_ampterm_y(ii, jj) = 0.0_fp
         if(grid_enough_sta(ii, jj) .eqv. .false.) cycle
-        do i = - ntime_slowness2, ntime_slowness2
+        do i = -ntime_slowness2, ntime_slowness2
           waveform_est_tmp(i) = waveform_est(1, ii, jj, i + j)
-          waveform_est_diff_tmp(i) = waveform_est_diff(ii, jj, i + j)
+          waveform_est_dt_tmp(i) = waveform_est_dt(ii, jj, i + j)
           waveform_est_dx(i) = waveform_est(2, ii, jj, i + j)
           waveform_est_dy(i) = waveform_est(3, ii, jj, i + j)
         enddo
-        if(((dot_product(waveform_est_tmp, waveform_est_tmp) * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
-        &  - (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp))) &
-        &  / (waveform_est_max(ii, jj) ** 2 * waveform_est_diff_max(ii, jj) ** 2) &
-        &  .gt. eps .and. &
-        &  ((dot_product(waveform_est_tmp, waveform_est_tmp) * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
-        &  - (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp))) &
-        &  / (waveform_est_max(ii, jj) ** 2 * waveform_est_diff_max(ii, jj) ** 2) &
+        if(( (dot_product(waveform_est_tmp, waveform_est_tmp)    * dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp)) &
+        &  - (dot_product(waveform_est_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_tmp, waveform_est_dt_tmp))) &
+        &  / (waveform_est_max(ii, jj) ** 2 * waveform_est_dt_max(ii, jj) ** 2) &
         &  .gt. eps) then
 
           !!estimate slowness term
           slowness_x(ii, jj) &
-          &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)      * dot_product(waveform_est_dx, waveform_est_diff_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dx, waveform_est_tmp))) &
-          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp) * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp)))
+          &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)    * dot_product(waveform_est_dx,     waveform_est_dt_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_dx,     waveform_est_tmp))) &
+          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)    * dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_tmp,    waveform_est_dt_tmp)))
           slowness_y(ii, jj) &
-          &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)      * dot_product(waveform_est_dy, waveform_est_diff_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dy, waveform_est_tmp))) &
-          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp) * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp)))
+          &  = ((dot_product(waveform_est_tmp, waveform_est_tmp)    * dot_product(waveform_est_dy,     waveform_est_dt_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_dy,     waveform_est_tmp))) &
+          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)    * dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_tmp,    waveform_est_dt_tmp)))
 
           !!estimate amplitude term
-          amp_term_x(ii, jj) &
-          &  = ((dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dx, waveform_est_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dx, waveform_est_diff_tmp))) &
-          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp) * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp)))
-          amp_term_y(ii, jj) &
-          &  = ((dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dy, waveform_est_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_dy, waveform_est_diff_tmp))) &
-          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp) * dot_product(waveform_est_diff_tmp, waveform_est_diff_tmp)) &
-          &  -  (dot_product(waveform_est_tmp, waveform_est_diff_tmp) * dot_product(waveform_est_tmp, waveform_est_diff_tmp)))
+          ampterm_x(ii, jj) &
+          &  = ((dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_dx,     waveform_est_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp)    * dot_product(waveform_est_dx,     waveform_est_dt_tmp))) &
+          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)       * dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp)    * dot_product(waveform_est_tmp,    waveform_est_dt_tmp)))
+          ampterm_y(ii, jj) &
+          &  = ((dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp) * dot_product(waveform_est_dy,     waveform_est_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp)    * dot_product(waveform_est_dy,     waveform_est_dt_tmp))) &
+          &  / ((dot_product(waveform_est_tmp, waveform_est_tmp)       * dot_product(waveform_est_dt_tmp, waveform_est_dt_tmp)) &
+          &  -  (dot_product(waveform_est_tmp, waveform_est_dt_tmp)    * dot_product(waveform_est_tmp,    waveform_est_dt_tmp)))
 
           !!error estimation using jackknife method
           param_x_err(1 : 2) = 0.0_fp
@@ -224,7 +221,7 @@ program seismicgradiometry
               !print *, i3, j3, jcount
               if(i3 .ne. j3) then
                 waveform_errest_tmp(jcount) = waveform_est_tmp(i3)
-                waveform_errest_diff_tmp(jcount) = waveform_est_diff_tmp(i3)
+                waveform_errest_dt_tmp(jcount) = waveform_est_dt_tmp(i3)
                 waveform_errest_dx(jcount) = waveform_est_dx(i3)
                 waveform_errest_dy(jcount) = waveform_est_dy(i3)
                 jcount = jcount + 1
@@ -232,42 +229,42 @@ program seismicgradiometry
             enddo
             !!slowness
             param_x_err_tmp(1, j3) &
-            &  = ((dot_product(waveform_errest_tmp,      waveform_errest_tmp) &
-            &  *   dot_product(waveform_errest_dx,       waveform_errest_diff_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp)  &
-            &  *   dot_product(waveform_errest_dx,       waveform_errest_tmp))) &
-            &  / ((dot_product(waveform_errest_tmp,      waveform_errest_tmp) &
-            &  *   dot_product(waveform_errest_diff_tmp, waveform_errest_diff_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp)))
+            &  = ((dot_product(waveform_errest_tmp,    waveform_errest_tmp) &
+            &  *   dot_product(waveform_errest_dx,     waveform_errest_dt_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp)  &
+            &  *   dot_product(waveform_errest_dx,     waveform_errest_tmp))) &
+            &  / ((dot_product(waveform_errest_tmp,    waveform_errest_tmp) &
+            &  *   dot_product(waveform_errest_dt_tmp, waveform_errest_dt_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp)))
             param_y_err_tmp(1, j3) &
-            &  = ((dot_product(waveform_errest_tmp,      waveform_errest_tmp) &
-            &  *   dot_product(waveform_errest_dy,       waveform_errest_diff_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_dy,       waveform_errest_tmp))) &
-            &  / ((dot_product(waveform_errest_tmp,      waveform_errest_tmp) &
-            &  *   dot_product(waveform_errest_diff_tmp, waveform_errest_diff_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp)))
+            &  = ((dot_product(waveform_errest_tmp,    waveform_errest_tmp) &
+            &  *   dot_product(waveform_errest_dy,     waveform_errest_dt_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_dy,     waveform_errest_tmp))) &
+            &  / ((dot_product(waveform_errest_tmp,    waveform_errest_tmp) &
+            &  *   dot_product(waveform_errest_dt_tmp, waveform_errest_dt_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp)))
             !!amplitude
             param_x_err_tmp(2, j3) &
-            &  = ((dot_product(waveform_errest_diff_tmp, waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_dx,       waveform_errest_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp)  &
-            &  *   dot_product(waveform_errest_dx,       waveform_errest_diff_tmp))) &
-            &  / ((dot_product(waveform_errest_tmp,      waveform_errest_tmp) &
-            &  *   dot_product(waveform_errest_diff_tmp, waveform_errest_diff_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp)))
+            &  = ((dot_product(waveform_errest_dt_tmp, waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_dx,     waveform_errest_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp)  &
+            &  *   dot_product(waveform_errest_dx,     waveform_errest_dt_tmp))) &
+            &  / ((dot_product(waveform_errest_tmp,    waveform_errest_tmp) &
+            &  *   dot_product(waveform_errest_dt_tmp, waveform_errest_dt_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp)))
             param_y_err_tmp(2, j3) &
-            &  = ((dot_product(waveform_errest_diff_tmp, waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_dy,       waveform_errest_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_dy,       waveform_errest_diff_tmp))) &
-            &  / ((dot_product(waveform_errest_tmp,      waveform_errest_tmp) &
-            &  *   dot_product(waveform_errest_diff_tmp, waveform_errest_diff_tmp)) &
-            &  -  (dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp) &
-            &  *   dot_product(waveform_errest_tmp,      waveform_errest_diff_tmp)))
+            &  = ((dot_product(waveform_errest_dt_tmp, waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_dy,     waveform_errest_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_dy,     waveform_errest_dt_tmp))) &
+            &  / ((dot_product(waveform_errest_tmp,    waveform_errest_tmp) &
+            &  *   dot_product(waveform_errest_dt_tmp, waveform_errest_dt_tmp)) &
+            &  -  (dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp) &
+            &  *   dot_product(waveform_errest_tmp,    waveform_errest_dt_tmp)))
             param_x_err(1 : 2) = param_x_err(1 : 2) + param_x_err_tmp(1 : 2, j3) 
             param_y_err(1 : 2) = param_y_err(1 : 2) + param_y_err_tmp(1 : 2, j3) 
           enddo
@@ -278,29 +275,29 @@ program seismicgradiometry
           do j3 = -ntime_slowness2, ntime_slowness2
             sigma_slowness_x(ii, jj) = sigma_slowness_x(ii, jj) + (param_x_err(1) - param_x_err_tmp(1, j3)) ** 2
             sigma_slowness_y(ii, jj) = sigma_slowness_y(ii, jj) + (param_y_err(1) - param_y_err_tmp(1, j3)) ** 2
-            sigma_amp_term_x(ii, jj) = sigma_amp_term_x(ii, jj) + (param_x_err(2) - param_x_err_tmp(2, j3)) ** 2
-            sigma_amp_term_y(ii, jj) = sigma_amp_term_y(ii, jj) + (param_y_err(2) - param_y_err_tmp(2, j3)) ** 2
+            sigma_ampterm_x(ii, jj) = sigma_ampterm_x(ii, jj) + (param_x_err(2) - param_x_err_tmp(2, j3)) ** 2
+            sigma_ampterm_y(ii, jj) = sigma_ampterm_y(ii, jj) + (param_y_err(2) - param_y_err_tmp(2, j3)) ** 2
           enddo
           sigma_slowness_x(ii, jj) = sqrt(sigma_slowness_x(ii, jj) &
           &                             * real(ntime_slowness - 1, kind = fp) / real(ntime_slowness, kind = fp))
           sigma_slowness_y(ii, jj) = sqrt(sigma_slowness_y(ii, jj) &
           &                             * real(ntime_slowness - 1, kind = fp) / real(ntime_slowness, kind = fp))
-          sigma_amp_term_x(ii, jj) = sqrt(sigma_amp_term_x(ii, jj) &
+          sigma_ampterm_x(ii, jj) = sqrt(sigma_ampterm_x(ii, jj) &
           &                             * real(ntime_slowness - 1, kind = fp) / real(ntime_slowness, kind = fp))
-          sigma_amp_term_y(ii, jj) = sqrt(sigma_amp_term_y(ii, jj) &
+          sigma_ampterm_y(ii, jj) = sqrt(sigma_ampterm_y(ii, jj) &
           &                             * real(ntime_slowness - 1, kind = fp) / real(ntime_slowness, kind = fp))
         else
           slowness_x(ii, jj) = 0.0_fp
           slowness_y(ii, jj) = 0.0_fp
-          amp_term_x(ii, jj) = 0.0_fp
-          amp_term_y(ii, jj) = 0.0_fp
+          ampterm_x(ii, jj) = 0.0_fp
+          ampterm_y(ii, jj) = 0.0_fp
         endif
         write(10, rec = icount) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
         &                       real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
         &                       real(-slowness_x(ii, jj), kind = sp), real(-slowness_y(ii, jj), kind = sp), &
         &                       real(sigma_slowness_x(ii, jj), kind = sp), real(sigma_slowness_y(ii, jj), kind = sp), & 
-        &                       real(amp_term_x(ii, jj), kind = sp), real(amp_term_y(ii, jj), kind = sp), &
-        &                       real(sigma_amp_term_x(ii, jj), kind = sp), real(sigma_amp_term_y(ii, jj), kind = sp)
+        &                       real(ampterm_x(ii, jj), kind = sp), real(ampterm_y(ii, jj), kind = sp), &
+        &                       real(sigma_ampterm_x(ii, jj), kind = sp), real(sigma_ampterm_y(ii, jj), kind = sp)
         icount = icount + 1
       enddo
     enddo

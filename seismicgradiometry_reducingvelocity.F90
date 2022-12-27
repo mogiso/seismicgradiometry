@@ -1,6 +1,6 @@
-! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
-! Released under the MIT license.
-! see https://opensource.org/licenses/MIT
+!! Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+!! Released under the MIT license.
+!! see https://opensource.org/licenses/MIT
 
 program seismicgradiometry_reducingvelocity
   use nrtype, only : fp, sp
@@ -75,7 +75,6 @@ program seismicgradiometry_reducingvelocity
   call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
 
-
   !!set grid location
   do j = 1, ngrid_y
     do i = 1, ngrid_x
@@ -102,17 +101,31 @@ program seismicgradiometry_reducingvelocity
   call calc_kernelmatrix_delaunay(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
 
 
-
   !!calculate amplitude and its spatial derivatives at each grid
   do kk = 1, int(ntime / ntimestep)
     time_index = ntimestep * (kk - 1) + 1
+    if(time_index - ntimestep + 1 .lt. 1) cycle
 
     !!initial step: estimate slowness vector without reducing velocity
-    if(time_index - ntime_slowness2 .lt. 1) cycle
+    !!First, estimate spatial gradients
     do jj = 1, ngrid_y
       do ii = 1, ngrid_x
         if(grid_enough_sta(ii, jj) .eqv. .false.) cycle
-        
+        do j = 1, ntimestep
+          obs_vector(1 : nsta_grid_max) = 0.0_fp
+          do i = 1, nsta_count(ii, jj)
+            obs_vector(j) = waveform_obs(time_index - ntimestep + j, grid_stationindex(i, ii, jj))
+          enddo
+          waveform_est_tmp(1 : 3, j, ii, jj, kk) &
+          & = matmul(kernel_matrix(1 : 3, 1 : nsta_grid_max, ii, jj), obs_vector(1 : nsta_grid_max))
+        enddo
+        do j = 1, ntimestep
+          waveform_est(1 : 3, ii, jj, kk) = waveform_est(1 : 3, ii, jj, kk) + waveform_est_tmp(1 : 3, j, ii, jj, kk)
+        enddo
+        waveform_est(1 : 3, ii, jj, kk) = waveform_est(1 : 3, ii, jj, kk) / real(ntimestep, kind = fp)
+      enddo
+    enddo
+    !!Then, 
       
 
 

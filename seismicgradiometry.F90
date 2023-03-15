@@ -105,7 +105,8 @@ program seismicgradiometry
 
   !!make kernel matrix for each grid
   !call calc_kernelmatrix_circle(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
-  call calc_kernelmatrix_delaunay(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
+  !call calc_kernelmatrix_delaunay(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
+  call calc_kernelmatrix_delaunay2(location_grid, location_sta, 1, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
 
   !!calculate amplitude and its spatial derivatives at each grid
   do j = 1, ntime

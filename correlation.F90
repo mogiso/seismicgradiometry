@@ -21,8 +21,8 @@ subroutine correlation_fft(waveform, ndata, corr)
   real(kind = dp), intent(in) :: waveform(1 : ndata, 1 : 2)
   real(kind = dp), intent(out) :: corr(-ndata / 2 + 1 : ndata / 2)
 
-  real(kind = dp) :: avg1, avg2
-  real(kind = dp) :: w(0 : ndata / 2 - 1), cross_spectrum(0 : 2 * ndata - 1), waveform_cmplx(0 : 2 * ndata - 1, 1 : 2)
+  real(kind = dp) :: avg(1 : 2), w(0 : ndata / 2 - 1), &
+  &                  cross_spectrum(0 : 2 * ndata - 1), waveform_cmplx(0 : 2 * ndata - 1, 1 : 2)
   integer         :: ip(0 : 2 + int(sqrt(real(ndata, kind = dp)) + 0.5_dp))
   integer :: i
 
@@ -38,14 +38,19 @@ subroutine correlation_fft(waveform, ndata, corr)
     call cdft(2 * ndata, -1, waveform_cmplx(:, i), ip(:), w)
   enddo
 
+  avg(1 : 2) = 0.0_dp
   do i = 0, ndata - 1
     cross_spectrum(2 * i) = waveform_cmplx(2 * i, 1)     * waveform_cmplx(2 * i, 2) &
     &                     + waveform_cmplx(2 * i + 1, 1) * waveform_cmplx(2 * i + 1, 2)
     cross_spectrum(2 * i + 1) = -waveform_cmplx(2 * i + 1, 1) * waveform_cmplx(2 * i, 2) &
     &                         +  waveform_cmplx(2 * i, 1)     * waveform_cmplx(2 * i + 1, 2)
+    avg(1) = avg(1) + (waveform_cmplx(2 * i, 1) ** 2 + waveform_cmplx(2 * i + 1, 1) ** 2)
+    avg(2) = avg(2) + (waveform_cmplx(2 * i, 2) ** 2 + waveform_cmplx(2 * i + 1, 2) ** 2)
   enddo
 
+  !!omit multiplying real(ndata, kind = dp) after ifft of cross spectrum, for it is implicitly included in normalization
   call cdft(2 * ndata, 1, cross_spectrum, ip(:), w)
+  cross_spectrum(0 : 2 * ndata - 1) = cross_spectrum(0 : 2 * ndata - 1) / sqrt(avg(1) * avg(2))
 
   corr(0) = cross_spectrum(0)
   corr(ndata / 2) = cross_spectrum(ndata)

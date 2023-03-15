@@ -110,12 +110,49 @@ program seismicgradiometry_reducingvelocity
     !!First, estimate spatial gradients
     do jj = 1, ngrid_y
       do ii = 1, ngrid_x
+        !!calculate slowness vector using conventional array analysis
         if(grid_enough_sta(ii, jj) .eqv. .false.) cycle
-        do j = 1, ntimestep
-          obs_vector(1 : nsta_grid_max) = 0.0_fp
-          do i = 1, nsta_count(ii, jj)
-            obs_vector(j) = waveform_obs(time_index - ntimestep + j, grid_stationindex(i, ii, jj))
+        !correlation
+        nsta_correlation = 0
+        do j = 1, nsta_count(ii, jj) - 1
+          do i = j + 1, nsta_count(ii, jj)
+            nsta_correlation = nsta_correlation + 1
           enddo
+        enddo
+        allocate(lagtime(1 : nsta_correlation))
+        nlagtime = 1
+        do j = 1, nsta_count(ii, jj) - 1
+          waveform_fft(1 : ntime_fft, 1) &
+          &  = waveform_obs(time_index - ntime_fft + 1 : time_index, grid_stationindex(j, ii, jj))
+          do i = j + 1, nsta_count(ii, jj)
+            waveform_fft(1 : ntime_fft, 2) &
+            &  = waveform_obs(time_index - ntime_fft + 1 : time_index, grid_stationindex(i, ii, jj))
+
+            call correlation_fft(waveform_fft, ntime_fft, xcorr)
+            max_xcorr = maxloc(xcorr) - int(ntime_fft / 2)
+            lagtime(nlagtime) = real(max_xcorr(1), kind = fp) * dt
+            nlagtime = nlagtime + 1
+          enddo
+        enddo
+        slowness_xcorr(1 : 2, ii, jj) &
+        &  = matmul(slowness_est_matrix(1 : 2, 1 : nsta_correlation, ii, jj), lagtime(1 : nsta_correlation)
+        deallocate(lagtime)
+
+        !!calculate spatial gradients of wavefield
+        !set up observation vector
+        obs_vector(1 : nsta_grid_max) = 0.0_fp
+        do j = 1, nsta_count(ii, jj)
+          dx_east = location_grid(ii, jj)%x_east - location_sta(grid_stationindex(j, ii, jj))%x_east
+          dy_north = location_grid(ii, jj)%y_north - location_sta(grid_stationindex(j, ii, jj))%y_north
+          time_diff = int((dx_east * slowness_xcorr(1, ii, jj) + dy_north * slowness_xcorr(2, ii, jj)) * dt + 0.5_fp)
+
+          obs_vector(j) = waveform_obs(time_index - ntimestep + j, grid_stationindex(i, ii, jj))
+        enddo
+
+
+
+
+
           waveform_est_tmp(1 : 3, j, ii, jj, kk) &
           & = matmul(kernel_matrix(1 : 3, 1 : nsta_grid_max, ii, jj), obs_vector(1 : nsta_grid_max))
         enddo

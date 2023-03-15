@@ -91,28 +91,34 @@ $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
 
 ##Object dependency
-$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants)
-$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants)
-$(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants)
-$(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants)
-$(o_tandem): $(tandem) $(mod_nrtype)
-$(o_constants): $(constants) $(mod_nrtype)
-$(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants)
-$(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants)
-$(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants)
-$(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants)
+$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_tandem): $(tandem) $(mod_nrtype) $(o_nrtype)
+$(o_constants): $(constants) $(mod_nrtype) $(o_nrtype)
+$(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_nrtype): $(nrtype)
-$(o_read_sacfile): $(read_sacfile) $(mod_nrtype)
-$(o_sac_decimation): $(sac_decimation) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile)
-$(o_sac_deconvolve): $(sac_deconvolve) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_deconvolution)
-$(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile)
-$(o_grdfile_io): $(grdfile_io) $(mod_nrtype)
-$(o_typedef): $(typedef) $(mod_nrtype)
-$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants)
-$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants)
-$(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort)
+$(o_read_sacfile): $(read_sacfile) $(mod_nrtype) $(o_nrtype)
+$(o_sac_decimation): $(sac_decimation) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(o_nrtype) $(o_constants) \
+	$(o_read_sacfile)
+$(o_sac_deconvolve): $(sac_deconvolve) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_deconvolution) \
+	$(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_deconvolution)
+$(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(o_nrtype) $(o_constants) \
+	$(o_read_sacfile)
+$(o_grdfile_io): $(grdfile_io) $(mod_nrtype) $(o_nrtype)
+$(o_typedef): $(typedef) $(mod_nrtype) $(o_nrtype)
+$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
+	$(o_gradiometry_parameters) $(o_nrtype) $(o_constants) $(o_typedef) $(o_gradiometry) $(o_sort)
 $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
+	$(o_gradiometry_parameters) $(o_calc_kernelmatrix) $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) \
+	$(o_lonlat_xy_conv) $(o_typedef)
 
 .F90.o:
 	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)

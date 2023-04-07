@@ -181,9 +181,11 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
   integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use
   integer         :: ipiv(1 : 3)
   logical         :: is_inside
-  real(kind = fp) :: propagation_direction, dist_x_tmp, dist_y_tmp, dist_tmp, az_diff_tmp
+#ifdef ELLIPSE
+  real(kind = fp) :: propagation_direction, dist_x_tmp, dist_y_tmp, az_diff_tmp
+#endif
   real(kind = fp) :: g(1 : nsta_grid_max, 1 : 3), g_tmp(1 : 3, 1 : 3), weight(1 : nsta_grid_max, 1 : nsta_grid_max), &
-  &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3)
+  &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3), dist_tmp
   integer, allocatable :: vertix_index(:), triangle_indices(:, :), tnbr(:, :), index_org(:)
   real(kind = fp), allocatable :: vertices(:, :)
   logical, allocatable :: is_usestation(:)
@@ -334,7 +336,8 @@ end subroutine calc_kernelmatrix_delaunay
     
 
 subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station, &
-&                                   grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix, slowness_est_matrix)
+&                                      grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix, &
+&                                      nsta_correlation, slowness_est_matrix)
   use nrtype, only : fp
   use constants, only : pi
   use typedef
@@ -351,14 +354,17 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   logical,         intent(out) :: grid_enough_sta(:, :)
   integer,         intent(out) :: nsta_count(:, :), grid_stationindex(:, :, :)
   real(kind = fp), intent(out) :: kernel_matrix(:, :, :, :)
-  real(kind = fp), intent(out), optional :: slowness_est_matrix(:, :, :, :)
+  integer,         intent(out), optional :: nsta_correlation(:, :)
+  real(kind = fp), intent(out), allocatable, optional :: slowness_est_matrix(:, :, :, :)
 
   integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use, ndata_slowness_max
   integer         :: ipiv(1 : 3)
   logical         :: is_inside
-  real(kind = fp) :: propagation_direction, dist_x_tmp, dist_y_tmp, dist_tmp, az_diff_tmp
+#ifdef ELLIPSE
+  real(kind = fp) :: propagation_direction, dist_x_tmp, dist_y_tmp, az_diff_tmp
+#endif
   real(kind = fp) :: g(1 : nsta_grid_max, 1 : 3), g_tmp(1 : 3, 1 : 3), weight(1 : nsta_grid_max, 1 : nsta_grid_max), &
-  &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3)
+  &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3), dist_tmp
   integer, allocatable :: vertix_index(:), triangle_indices(:, :), tnbr(:, :), index_org(:), add_station_index(:)
   real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
   logical, allocatable :: is_usestation(:), used_station(:)
@@ -367,9 +373,9 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   nsta_use = nsta
   allocate(is_usestation(1 : nsta), index_org(1 : nsta))
   is_usestation(1 : nsta) = .true.
-  if(present(slowness_est_matrix)) ndata_slowness_max = size(slowness_est_matrix) / (2 * ngrid_x * ngrid_y)
 
-  allocate(add_station_index(1 : nadd_station), add_station_distance(1 : nadd_station), used_station(1 : nsta))
+  !allocate(add_station_index(1 : nadd_station), add_station_distance(1 : nadd_station), used_station(1 : nsta))
+  allocate(used_station(1 : nsta))
 
   !!check interstation distance
   do j = 1, nsta - 1
@@ -440,30 +446,34 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
       if(grid_enough_sta(jj, kk) .eqv. .false.) cycle 
 
       !!find nadd_station additional stations based on the distance between grid and station
-      add_station_distance(1 : nadd_station) = 1.0e+38
-      add_station_index(1 : nadd_station) = 0
-      do ii = 1, nsta
-        if(is_usestation(ii) .eqv. .false.) cycle
-        if(used_station(ii) .eqv. .false.) cycle
-        call cartesian_dist(location_sta(ii)%x_east,  location_grid(jj, kk)%x_east, &
-        &                   location_sta(ii)%y_north, location_grid(jj, kk)%y_north, &
-        &                   distance = dist_tmp)
-        do j = 1, nadd_station
-          if(dist_tmp .le. add_station_distance(j)) then
-            do i = nadd_station, j + 1, -1
-              add_station_distance(i) = add_station_distance(i - 1)
-              add_station_index(i) = add_station_index(i - 1)
-            enddo
-            add_station_distance(j) = dist_tmp
-            add_station_index(j) = ii
-            exit
-          endif
+      if(nadd_station .ge. 1) then
+        allocate(add_station_distance(1 : nadd_station), add_station_index(1 : nadd_station))
+        add_station_distance(1 : nadd_station) = 1.0e+38
+        add_station_index(1 : nadd_station) = 0
+        do ii = 1, nsta
+          if(is_usestation(ii) .eqv. .false.) cycle
+          if(used_station(ii) .eqv. .false.) cycle
+          call cartesian_dist(location_sta(ii)%x_east,  location_grid(jj, kk)%x_east, &
+          &                   location_sta(ii)%y_north, location_grid(jj, kk)%y_north, &
+          &                   distance = dist_tmp)
+          do j = 1, nadd_station
+            if(dist_tmp .le. add_station_distance(j)) then
+              do i = nadd_station, j + 1, -1
+                add_station_distance(i) = add_station_distance(i - 1)
+                add_station_index(i) = add_station_index(i - 1)
+              enddo
+              add_station_distance(j) = dist_tmp
+              add_station_index(j) = ii
+              exit
+            endif
+          enddo
         enddo
-      enddo
-      do i = 1, nadd_station
-        nsta_count(jj, kk) = nsta_count(jj, kk) + 1
-        grid_stationindex(nsta_count(jj, kk), jj, kk) = add_station_index(i)
-      enddo
+        do i = 1, nadd_station
+          nsta_count(jj, kk) = nsta_count(jj, kk) + 1
+          grid_stationindex(nsta_count(jj, kk), jj, kk) = add_station_index(i)
+        enddo
+        deallocate(add_station_distance, add_station_index)
+      endif
 
 #ifdef ELLIPSE
       !!Check whether all stations (vertices) are within the ellipse
@@ -530,9 +540,26 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
 
       kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
 
-      if(present(slowness_est_matrix)) then
-        allocate(g2(1 : ndata_slowness_max, 1 : 2), g_tmp2(1 : 2, 1 : 2))
-        slowness_est_matrix(1 : 2, 1 : ndata_slowness_max, jj, kk) = 0.0_fp
+      if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
+        ndata_slowness_max = size(slowness_est_matrix) / (2 * ngrid_x * ngrid_y)
+        ii = 1
+        do i = 1, nsta_count(jj, kk) - 1
+          do j = i + 1, nsta_count(jj, kk)
+            ii = ii + 1
+          enddo
+        enddo
+        nsta_correlation(jj, kk) = ii - 1
+      endif
+
+    enddo
+  enddo
+
+  if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
+    allocate(slowness_est_matrix(1 : 2, 1 : maxval(nsta_correlation), 1 : ngrid_x, 1 : ngrid_y))
+    do kk = 1, ngrid_y
+      do jj = 1, ngrid_x
+        if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
+        allocate(g2(1 : nsta_correlation(jj, kk), 1 : 2), g_tmp2(1 : 2, 1 : 2))
         ii = 1
         do i = 1, nsta_count(jj, kk) - 1
           do j = i + 1, nsta_count(jj, kk)
@@ -544,6 +571,8 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
             ii = ii + 1
           enddo
         enddo
+
+        slowness_est_matrix(1 : 2, 1 : nsta_correlation(jj, kk), jj, kk) = 0.0_fp
         g_tmp2 = matmul(transpose(g2), g2)
 #ifdef MKL
         call getrf(g_tmp2, ipiv = ipiv(1 : 2), info = info)
@@ -552,16 +581,12 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
         call LA_GETRF(g_tmp2, ipiv(1 : 2), info = info)
         call LA_GETRI(g_tmp2, ipiv(1 : 2), info = info)
 #endif
-        slowness_est_matrix(1 : 2, 1 : ndata_slowness_max, jj, kk) = matmul(g_tmp2, transpose(g2))
+        slowness_est_matrix(1 : 2, 1 : nsta_correlation(jj, kk), jj, kk) = matmul(g_tmp2, transpose(g2))
         deallocate(g_tmp2, g2)
-      endif
-
-
+      enddo
     enddo
-  enddo
+  endif
 
-  deallocate(vertix_index, vertices, triangle_indices, tnbr, is_usestation)
-  deallocate(add_station_distance, add_station_index, used_station)
 
   return
 end subroutine calc_kernelmatrix_delaunay2

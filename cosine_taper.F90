@@ -1,3 +1,7 @@
+!! Copyright 2023 Masashi Ogiso (masashi.ogiso@gmail.com)
+!! Released under the MIT license.
+!! see https://opensource.org/licenses/MIT
+
 module taper
   private
   public :: cosine_taper

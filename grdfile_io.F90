@@ -200,10 +200,10 @@ module grdfile_io
     
     implicit none
 
-    real(kind = fp),    intent(in)    :: xmin, ymin, dx, dy
-    integer,            intent(in)    :: nx, ny
-    real(kind = fp),    intent(in)    :: zval(1 : nx, 1 : ny)
-    character(len = *), intent(inout) :: netcdf_file
+    real(kind = fp),    intent(in)           :: xmin, ymin, dx, dy
+    integer,            intent(in)           :: nx, ny
+    real(kind = fp),    intent(in)           :: zval(1 : nx, 1 : ny)
+    character(len = *), intent(in)           :: netcdf_file
     real(kind = fp),    intent(in), optional :: nanval
 
     integer :: i, j, ncstatus, ncid, dimid_x, dimid_y, varid_x, varid_y, varid_z
@@ -245,7 +245,8 @@ module grdfile_io
     do j = 1, ny
       do i = 1, nx
         tmp_array2d(i, j) = zval(i, j)
-        if(present(nanval) .and. zval(i, j) .eq. nanval) tmp_array2d(i, j) = transfer(-1_intfp, 0.0_fp)
+        if(.not. present(nanval)) cycle 
+        if(zval(i, j) .eq. nanval) tmp_array2d(i, j) = transfer(-1_intfp, 0.0_fp)
       enddo
     enddo
     ncstatus = nf90_put_var(ncid, varid_z, tmp_array2d)

@@ -47,6 +47,10 @@ subroutine correlation_fft(waveform, ndata, corr)
     avg(1) = avg(1) + (waveform_cmplx(2 * i, 1) ** 2 + waveform_cmplx(2 * i + 1, 1) ** 2)
     avg(2) = avg(2) + (waveform_cmplx(2 * i, 2) ** 2 + waveform_cmplx(2 * i + 1, 2) ** 2)
   enddo
+  if(avg(1) .eq. 0.0_dp .or. avg(2) .eq. 0.0_dp) then
+    corr(-ndata / 2 + 1 : ndata / 2) = 0.0_dp
+    return
+  endif
 
   !!omit multiplying real(ndata, kind = dp) after ifft of cross spectrum, for it is implicitly included in normalization
   call cdft(2 * ndata, 1, cross_spectrum, ip(:), w)

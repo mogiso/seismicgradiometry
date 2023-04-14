@@ -113,20 +113,20 @@ module read_sacfile
   end subroutine read_sachdr
   
   subroutine read_sacdata(infile, npts, wavedata)
-    use nrtype, only : sp, dp
+    use nrtype, only : sp, fp
     implicit none
     character(len = *), intent(in)  :: infile
-    integer,              intent(in)  :: npts
-    real(kind = dp),      intent(out) :: wavedata(npts)
-    integer         :: i, ios
-    real(kind = sp) :: buf
+    integer,            intent(in)  :: npts
+    real(kind = fp),    intent(out) :: wavedata(npts)
+    integer                         :: i, ios
+    real(kind = sp)                 :: buf
 
-    wavedata(1 : npts) = 0.0_dp
+    wavedata(1 : npts) = 0.0_fp
     open(unit = 10, file = infile, form = "unformatted", access = "direct", recl = 4)
     do i = 1, npts
       read(10, rec = 158 + i, iostat = ios) buf
       if(ios .ne. 0) exit
-      wavedata(i) = real(buf, kind = dp)
+      wavedata(i) = real(buf, kind = fp)
     enddo
     close(10)
     return

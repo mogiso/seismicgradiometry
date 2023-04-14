@@ -82,12 +82,12 @@ subroutine recfil1(x, y, n, h, nml)
   return
 end subroutine recfil1
 
-subroutine tandem2(x, y, n, h, m, nml, uv)
+subroutine tandem2(x, y, n, h, m, nml, gn, uv)
   use nrtype, only : fp
   implicit none
 
   integer, intent(IN) :: n, m, nml
-  real(kind = fp), intent(IN) :: x(n), h(4 * m)
+  real(kind = fp), intent(IN) :: x(n), h(4 * m), gn
   real(kind = fp), intent(OUT) :: y(n)
   real(kind = fp), intent(INOUT) :: uv(4 * m)
   
@@ -108,6 +108,7 @@ subroutine tandem2(x, y, n, h, m, nml, uv)
         tmp_uv(j) = uv(4 * (i - 1) + j)
       enddo
       call recfil2(y, y, n, tmp_h, nml, tmp_uv)
+      y(1 : n) = y(1 : n) * gn
       do j = 1, 4
         uv(4 * (i - 1) + j) = tmp_uv(j)
       enddo

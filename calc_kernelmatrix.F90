@@ -357,7 +357,7 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   integer,         intent(out), optional :: nsta_correlation(:, :)
   real(kind = fp), intent(out), allocatable, optional :: slowness_est_matrix(:, :, :, :)
 
-  integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use, ndata_slowness_max
+  integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use
   integer         :: ipiv(1 : 3)
   logical         :: is_inside
 #ifdef ELLIPSE
@@ -371,11 +371,8 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
  
   nsta = size(location_sta)
   nsta_use = nsta
-  allocate(is_usestation(1 : nsta), index_org(1 : nsta))
+  allocate(is_usestation(1 : nsta), index_org(1 : nsta), used_station(1 : nsta))
   is_usestation(1 : nsta) = .true.
-
-  !allocate(add_station_index(1 : nadd_station), add_station_distance(1 : nadd_station), used_station(1 : nsta))
-  allocate(used_station(1 : nsta))
 
   !!check interstation distance
   do j = 1, nsta - 1
@@ -425,12 +422,11 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
 
       used_station(1 : nsta) = .false.
       !!find triangle that contains the grid
-      point_tmp(1) = location_grid(jj, kk)%x_east
-      point_tmp(2) = location_grid(jj, kk)%y_north
+      point_tmp(1 : 2) = (/location_grid(jj, kk)%x_east, location_grid(jj, kk)%y_north/)
       do j = 1, ntriangle
         do i = 1, 3
-          triangle_vertix_tmp(1, i) = location_sta(index_org(triangle_indices(i, j)))%x_east
-          triangle_vertix_tmp(2, i) = location_sta(index_org(triangle_indices(i, j)))%y_north
+          triangle_vertix_tmp(1 : 2, i) = [location_sta(index_org(triangle_indices(i, j)))%x_east, &
+          &                                location_sta(index_org(triangle_indices(i, j)))%y_north]
         enddo
         call triangle_contains_point_2d_3(triangle_vertix_tmp, point_tmp, is_inside)
         if(is_inside .eqv. .true.) then
@@ -438,7 +434,7 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
           nsta_count(jj, kk) = 3
           do i = 1, 3
             grid_stationindex(i, jj, kk) = index_org(triangle_indices(i, j))
-            used_station(index_org(triangle_indices(i, j))) = .true.
+            used_station(grid_stationindex(i, jj, kk)) = .true.
           enddo
           exit
         endif
@@ -452,7 +448,7 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
         add_station_index(1 : nadd_station) = 0
         do ii = 1, nsta
           if(is_usestation(ii) .eqv. .false.) cycle
-          if(used_station(ii) .eqv. .false.) cycle
+          if(used_station(ii) .eqv. .true.) cycle
           call cartesian_dist(location_sta(ii)%x_east,  location_grid(jj, kk)%x_east, &
           &                   location_sta(ii)%y_north, location_grid(jj, kk)%y_north, &
           &                   distance = dist_tmp)
@@ -541,14 +537,12 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
       kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
 
       if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
-        ndata_slowness_max = size(slowness_est_matrix) / (2 * ngrid_x * ngrid_y)
-        ii = 1
+        nsta_correlation(jj, kk) = 0
         do i = 1, nsta_count(jj, kk) - 1
           do j = i + 1, nsta_count(jj, kk)
-            ii = ii + 1
+            nsta_correlation(jj, kk) = nsta_correlation(jj, kk) + 1
           enddo
         enddo
-        nsta_correlation(jj, kk) = ii - 1
       endif
 
     enddo

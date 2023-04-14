@@ -11,28 +11,29 @@ ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all
   DEFS = -DDOUBLE -DMKL
-  LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64 -lhdf5
+  LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
-  INCDIR = -I. -I${NETCDF_FORTRAN_INC}
+  INCDIR = -I. -I${HDF5_INC} -I${NETCDF_FORTRAN_INC}
 endif
 
 ifeq ($(arch),ifx-debug)
   FC = ifx
-  FFLAGS = -assume byterecl -mcmodel=medium -qmkl -warn all -check all -fpe0 -CB -traceback
+  FFLAGS = -assume byterecl -mcmodel=medium -O0 -qmkl -warn all -check all -fpe0 -CB -traceback
   DEFS = -DDOUBLE -DMKL
-  LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64 -lhdf5
+  LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
-  INCDIR = -I. -I${NETCDF_FORTRAN_INC}
+  INCDIR = -I. -I${HDF5_INC} -I${NETCDF_FORTRAN_INC}
 endif
 
 
-calc_bpf_coef = calc_bpf_coef.f90
-calc_bpf_order = calc_bpf_order.f90
+calc_bpf_coef = calc_bpf_coef.F90
+calc_bpf_order = calc_bpf_order.F90
 calc_kernelmatrix = calc_kernelmatrix.F90
-calc_lpf_coef = calc_lpf_coef.f90
-calc_lpf_order = calc_lpf_order.f90
+calc_lpf_coef = calc_lpf_coef.F90
+calc_lpf_order = calc_lpf_order.F90
 correlation = correlation.F90
 constants = constants.F90
+cosine_taper = cosine_taper.F90
 deconvolution = deconvolution.F90
 fftsg = fftsg.f
 geometry = geometry.f90
@@ -58,6 +59,7 @@ typedef = typedef.F90
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
 mod_constants = $(constants:.F90=.mod)
 mod_correlation = $(correlation:.F90=.mod)
+mod_cosine_taper = $(cosine_taper:.F90=.mod)
 mod_deconvolution = $(deconvolution:.F90=.mod)
 mod_gradiometry_parameters = $(gradiometry_parameters:.F90=.mod)
 mod_greatcircle = $(greatcircle:.f90=.mod)
@@ -69,12 +71,13 @@ mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
 
 ##Object
-o_calc_bpf_coef = $(calc_bpf_coef:.f90=.o)
-o_calc_bpf_order = $(calc_bpf_order:.f90=.o)
-o_calc_lpf_coef = $(calc_lpf_coef:.f90=.o)
-o_calc_lpf_order = $(calc_lpf_order:.f90=.o)
+o_calc_bpf_coef = $(calc_bpf_coef:.F90=.o)
+o_calc_bpf_order = $(calc_bpf_order:.F90=.o)
+o_calc_lpf_coef = $(calc_lpf_coef:.F90=.o)
+o_calc_lpf_order = $(calc_lpf_order:.F90=.o)
 o_constants = $(constants:.F90=.o)
 o_correlation = $(correlation:.F90=.o)
+o_cosine_taper = $(cosine_taper:.F90=.o)
 o_deconvolution = $(deconvolution:.F90=.o)
 o_fftsg = $(fftsg:.f=.o)
 o_gradiometry_parameters = $(gradiometry_parameters:.F90=.o)
@@ -110,12 +113,14 @@ $(mod_grdfile_io): $(grdfile_io) $(o_grdfile_io)
 $(mod_deconvolution): $(deconvolution) $(o_deconvolution)
 $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
+$(mod_cosine_taper): $(cosine_taper) $(o_cosine_taper)
 
 ##Object dependency
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
-	$(o_gradiometry_parameters) $(o_nrtype) $(o_constants) $(o_typedef) $(o_gradiometry) $(o_sort)
+	$(o_gradiometry_parameters) $(o_nrtype) $(o_constants) $(o_typedef) $(o_gradiometry) $(o_sort) $(o_correlation) \
+	$(o_fftsg)
 $(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_constants): $(constants) $(mod_nrtype) $(o_nrtype)
@@ -137,21 +142,16 @@ $(o_sac_deconvolve): $(sac_deconvolve) $(mod_nrtype) $(mod_constants) $(mod_read
 $(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(o_nrtype) $(o_constants) \
 	$(o_read_sacfile)
 $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix)
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
+        $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) $(o_lonlat_xy_conv) $(o_typedef) \
+	$(o_gradiometry_parameters) $(o_calc_kernelmatrix) $(o_calc_bpf_coef) $(o_calc_bpf_order) $(o_tandem)
 $(o_seismicgradiometry_reducingvelocity): $(seismicgradiometry_reducingvelocity) \
-	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix)
+	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
+        $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) $(o_lonlat_xy_conv) $(o_typedef) $(o_cosine_taper) \
+	$(o_gradiometry_parameters) $(o_calc_kernelmatrix) $(o_calc_bpf_coef) $(o_calc_bpf_order) $(o_tandem)
 $(o_tandem): $(tandem) $(mod_nrtype) $(o_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype) $(o_nrtype)
-
-.F90.o:
-	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
-.f90.o:
-	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
-.F90.mod:
-	@:
-.f90.mod:
-	@:
 
 seismicgradiometry: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) $(o_lonlat_xy_conv) \
 	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry) $(o_gradiometry_parameters) \
@@ -161,7 +161,8 @@ seismicgradiometry: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_
 seismicgradiometry_reducingvelocity: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) \
 	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity) \
-	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg)
+	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
+	$(o_cosine_taper)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 sac_decimation: $(o_nrtype) $(o_constants) $(o_calc_lpf_order) $(o_calc_lpf_coef) $(o_tandem) $(o_read_sacfile) \
@@ -176,7 +177,18 @@ sac_integrate: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef)
 	$(o_line_fit) $(o_sac_integrate)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
+.F90.mod:
+	@:
+.f90.mod:
+	@:
+
+.F90.o:
+	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+.f90.o:
+	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+.f.o:
+	$(FC) $< -c -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 clean:
-	rm -f *.o *.mod
+	rm -f *.o *.mod *__genmod.f90
 

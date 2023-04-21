@@ -11,6 +11,10 @@ ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all
   DEFS = -DDOUBLE -DMKL
+  NETCDF_FORTRAN_LIB = /usr/local/netcdff-intel/lib
+  NETCDF_FORTRAN_INC = /usr/local/netcdff-intel/include
+  NETCDF_LIB = /usr/local/netcdf-intel/lib
+  NETCDF_INC = /usr/local/netcdf-intel/include
   LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
   INCDIR = -I. -I${HDF5_INC} -I${NETCDF_FORTRAN_INC}
@@ -20,6 +24,10 @@ ifeq ($(arch),ifx-debug)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O0 -qmkl -warn all -check all -fpe0 -CB -traceback
   DEFS = -DDOUBLE -DMKL
+  NETCDF_FORTRAN_LIB = /usr/local/netcdff-intel/lib
+  NETCDF_FORTRAN_INC = /usr/local/netcdff-intel/include
+  NETCDF_LIB = /usr/local/netcdf-intel/lib
+  NETCDF_INC = /usr/local/netcdf-intel/include
   LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
   INCDIR = -I. -I${HDF5_INC} -I${NETCDF_FORTRAN_INC}
@@ -51,6 +59,7 @@ sac_deconvolve = sac_deconvolve.F90
 sac_integrate = sac_integrate.F90
 seismicgradiometry = seismicgradiometry.F90
 seismicgradiometry_reducingvelocity = seismicgradiometry_reducingvelocity.F90
+seismicgradiometry_reducingvelocity2 = seismicgradiometry_reducingvelocity2.F90
 sort = sort.F90
 tandem = tandem.F90
 typedef = typedef.F90
@@ -92,6 +101,7 @@ o_sac_deconvolve = $(sac_deconvolve:.F90=.o)
 o_sac_integrate = $(sac_integrate:.F90=.o)
 o_seismicgradiometry = $(seismicgradiometry:.F90=.o)
 o_seismicgradiometry_reducingvelocity = $(seismicgradiometry_reducingvelocity:.F90=.o)
+o_seismicgradiometry_reducingvelocity2 = $(seismicgradiometry_reducingvelocity2:.F90=.o)
 o_sort = $(sort:.F90=.o)
 o_tandem = $(tandem:.F90=.o)
 o_deconvolution = $(deconvolution:.F90=.o)
@@ -149,6 +159,11 @@ $(o_seismicgradiometry_reducingvelocity): $(seismicgradiometry_reducingvelocity)
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
         $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) $(o_lonlat_xy_conv) $(o_typedef) $(o_cosine_taper) \
+	$(o_gradiometry_parameters) $(o_calc_kernelmatrix) $(o_calc_bpf_coef) $(o_calc_bpf_order) $(o_tandem) $(o_correlation)
+$(o_seismicgradiometry_reducingvelocity2): $(seismicgradiometry_reducingvelocity2) \
+	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
+        $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) $(o_lonlat_xy_conv) $(o_typedef) \
 	$(o_gradiometry_parameters) $(o_calc_kernelmatrix) $(o_calc_bpf_coef) $(o_calc_bpf_order) $(o_tandem)
 $(o_tandem): $(tandem) $(mod_nrtype) $(o_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype) $(o_nrtype)
@@ -163,6 +178,12 @@ seismicgradiometry_reducingvelocity: $(o_nrtype) $(o_constants) $(o_calc_bpf_ord
 	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity) \
 	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
 	$(o_cosine_taper)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+seismicgradiometry_reducingvelocity2: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
+	$(o_lonlat_xy_conv) $(o_itoa) \
+	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2) \
+	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 sac_decimation: $(o_nrtype) $(o_constants) $(o_calc_lpf_order) $(o_calc_lpf_coef) $(o_tandem) $(o_read_sacfile) \

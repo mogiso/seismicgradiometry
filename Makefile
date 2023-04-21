@@ -10,7 +10,7 @@
 ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all
-  DEFS = -DDOUBLE -DMKL
+  DEFS = -DDOUBLE -DMKL -DELLIPSE
   NETCDF_FORTRAN_LIB = /usr/local/netcdff-intel/lib
   NETCDF_FORTRAN_INC = /usr/local/netcdff-intel/include
   NETCDF_LIB = /usr/local/netcdf-intel/lib
@@ -34,6 +34,7 @@ ifeq ($(arch),ifx-debug)
 endif
 
 
+aeluma = AutomatedEventLocationUsingaMeshofArrays.F90
 calc_bpf_coef = calc_bpf_coef.F90
 calc_bpf_order = calc_bpf_order.F90
 calc_kernelmatrix = calc_kernelmatrix.F90
@@ -58,7 +59,6 @@ sac_decimation = sac_decimation.F90
 sac_deconvolve = sac_deconvolve.F90
 sac_integrate = sac_integrate.F90
 seismicgradiometry = seismicgradiometry.F90
-seismicgradiometry_reducingvelocity = seismicgradiometry_reducingvelocity.F90
 seismicgradiometry_reducingvelocity2 = seismicgradiometry_reducingvelocity2.F90
 sort = sort.F90
 tandem = tandem.F90
@@ -80,6 +80,7 @@ mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
 
 ##Object
+o_aeluma = $(aeluma:.F90=.o)
 o_calc_bpf_coef = $(calc_bpf_coef:.F90=.o)
 o_calc_bpf_order = $(calc_bpf_order:.F90=.o)
 o_calc_lpf_coef = $(calc_lpf_coef:.F90=.o)
@@ -100,7 +101,6 @@ o_sac_decimation = $(sac_decimation:.F90=.o)
 o_sac_deconvolve = $(sac_deconvolve:.F90=.o)
 o_sac_integrate = $(sac_integrate:.F90=.o)
 o_seismicgradiometry = $(seismicgradiometry:.F90=.o)
-o_seismicgradiometry_reducingvelocity = $(seismicgradiometry_reducingvelocity:.F90=.o)
 o_seismicgradiometry_reducingvelocity2 = $(seismicgradiometry_reducingvelocity2:.F90=.o)
 o_sort = $(sort:.F90=.o)
 o_tandem = $(tandem:.F90=.o)
@@ -129,8 +129,7 @@ $(mod_cosine_taper): $(cosine_taper) $(o_cosine_taper)
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
-	$(o_gradiometry_parameters) $(o_nrtype) $(o_constants) $(o_typedef) $(o_gradiometry) $(o_sort) $(o_correlation) \
-	$(o_fftsg)
+	$(o_gradiometry_parameters) $(o_nrtype) $(o_constants) $(o_typedef) $(o_sort) $(o_lonlat_xy_conv)
 $(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_constants): $(constants) $(mod_nrtype) $(o_nrtype)
@@ -155,7 +154,7 @@ $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
         $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) $(o_lonlat_xy_conv) $(o_typedef) \
 	$(o_gradiometry_parameters) $(o_calc_kernelmatrix) $(o_calc_bpf_coef) $(o_calc_bpf_order) $(o_tandem)
-$(o_seismicgradiometry_reducingvelocity): $(seismicgradiometry_reducingvelocity) \
+$(o_aeluma): $(aeluma) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
         $(o_nrtype) $(o_constants) $(o_read_sacfile) $(o_grdfile_io) $(o_lonlat_xy_conv) $(o_typedef) $(o_cosine_taper) \
@@ -173,11 +172,11 @@ seismicgradiometry: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_
         $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
-seismicgradiometry_reducingvelocity: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
+aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) \
-	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity) \
-	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
-	$(o_cosine_taper)
+	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_gradiometry_parameters) \
+	$(o_cosine_taper) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
+	$(o_aeluma)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 seismicgradiometry_reducingvelocity2: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \

@@ -29,7 +29,8 @@ program seismicgradiometry_reducingvelocity
   &                               lagtime(:), &
   &                               maxval_xcorr(:)
   real(kind = fp), allocatable :: h(:), uv(:, :)             !!For time-domain recursive filter 
-  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, app_velocity, backazimuth, &
+  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, app_velocity, backazimuth, denominator, &
+  &                               val(4), &
   &                               obs_vector(1 : nsta_grid_max), &
   &                               xcorr(1 : ntime_fft), &
   &                               minval_xcorr(1 : ngrid_x, 1 : ngrid_y), &
@@ -79,9 +80,9 @@ program seismicgradiometry_reducingvelocity
   allocate(h(1 : 4 * m), uv(1 : 4 * m, 1 : nsta))
   call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
-  !do i = 1, nsta
-  !  call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
-  !enddo
+  do i = 1, nsta
+    !call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
+  enddo
   deallocate(h, uv)
 
   !!set grid location
@@ -113,8 +114,9 @@ program seismicgradiometry_reducingvelocity
   &                                nsta_correlation = nsta_correlation, slowness_est_matrix = slowness_est_matrix)
 
   !!calculate amplitude and its spatial derivatives at each grid
-  !do kk = 1, int(ntime / ntimestep)
-  do kk = 800, 1000
+  !open(unit = 30, file = "log")
+  do kk = 1, int(ntime / ntimestep)
+  !do kk = 80, 95
     timeindex = ntimestep * (kk - 1) + 1
     if(timeindex - ntime_fft + 1 .lt. 1) cycle
     if(kk - ntime_slowness + 1 .lt. 1) cycle
@@ -167,26 +169,38 @@ program seismicgradiometry_reducingvelocity
         &  = matmul(slowness_est_matrix(1 : 2, 1 : nsta_correlation(ii, jj), ii, jj), lagtime(1 : nsta_correlation(ii, jj)))
         app_velocity = 1.0_fp / sqrt(slowness_xcorr(1, ii, jj) ** 2 + slowness_xcorr(2, ii, jj) ** 2)
         backazimuth = atan2(slowness_xcorr(2, ii, jj), slowness_xcorr(1, ii, jj)) * rad2deg
-        print *, ii, jj, app_velocity, backazimuth
+        !print *, ii, jj, app_velocity, backazimuth
         deallocate(lagtime, maxval_xcorr)
 
         !!calculate spatial gradients of wavefield
         !set up observation vector
         calc_grad_mean = .true.
         ngrad_mean = 0
+
+        !open(unit = 30, file = "log")
+        !do j = -ntime_fft2, ntime_fft2, 1
+        !  do i = 1, 4
+        !    dx_east  = location_grid(ii, jj)%x_east  - location_sta(grid_stationindex(i, ii, jj))%x_east
+        !    dy_north = location_grid(ii, jj)%y_north - location_sta(grid_stationindex(i, ii, jj))%y_north
+        !    timeindex_diff = int((dx_east * slowness_xcorr(1, ii, jj) + dy_north * slowness_xcorr(2, ii, jj)) / dt + 0.5_fp)
+        !    val(i) = waveform_obs(timeindex - ntime_fft2 + j - timeindex_diff, grid_stationindex(i, ii, jj))
+        !  enddo
+        !  write(30, '(4(e15.7, 1x))') (val(i), i = 1, 4)
+        !enddo
+        !close(30)
+
         do j = -ntime_fft4, ntime_fft4, 1
           obs_vector(1 : nsta_grid_max) = 0.0_fp
           do i = 1, nsta_count(ii, jj)
             dx_east  = location_grid(ii, jj)%x_east  - location_sta(grid_stationindex(i, ii, jj))%x_east
             dy_north = location_grid(ii, jj)%y_north - location_sta(grid_stationindex(i, ii, jj))%y_north
-            timeindex_diff = int((dx_east * slowness_xcorr(1, ii, jj) + dy_north * slowness_xcorr(2, ii, jj)) * dt + 0.5_fp)
-            if(timeindex - ntime_fft2 + j + timeindex_diff .lt. 1 .or. &
-            &  timeindex - ntime_fft2 + j + timeindex_diff .gt. timeindex) then
+            timeindex_diff = int((dx_east * slowness_xcorr(1, ii, jj) + dy_north * slowness_xcorr(2, ii, jj)) / dt)
+            if(timeindex - ntime_fft2 + j - timeindex_diff .lt. 1 .or. &
+            &  timeindex - ntime_fft2 + j - timeindex_diff .gt. timeindex) then
               calc_grad_mean = .false.
               exit
             endif
-            obs_vector(i) = waveform_obs(timeindex - ntime_fft2 + j + timeindex_diff, grid_stationindex(i, ii, jj))
-            !print *, kk, timeindex - ntime_fft2 + j + timeindex_diff, grid_stationindex(i, ii, jj), obs_vector(i)
+            obs_vector(i) = waveform_obs(timeindex - ntime_fft2 + j - timeindex_diff, grid_stationindex(i, ii, jj))
           enddo
 
           if(calc_grad_mean .eqv. .false.) exit
@@ -196,18 +210,15 @@ program seismicgradiometry_reducingvelocity
           ngrad_mean = ngrad_mean + 1
         enddo
 
-        waveform_est(1, ii, jj, kk) = waveform_est_tmp(1, 0)
+        waveform_est(1 : 3, ii, jj, kk) = waveform_est_tmp(1 : 3, 0)
         waveform_est_plot(ii, jj) = waveform_est_tmp(1, 0)
 
-        do i = 1, ngrad_mean
-          waveform_est(2 : 3, ii, jj, kk) = waveform_est(2 : 3, ii, jj, kk) + waveform_est_tmp(2 : 3, -ntime_fft4 + (i - 1))
-        enddo
-        waveform_est(2 : 3, ii, jj, kk) = waveform_est(2 : 3, ii, jj, kk) / real(ngrad_mean, kind = fp)
         !!Time derivative: backward differentiation
         if(kk - 1 .gt. 1) then
           waveform_est(4, ii, jj, kk) &
           &  = (waveform_est(1, ii, jj, kk) - waveform_est(1, ii, jj, kk - 1)) / (dt * real(ntimestep, kind = fp))
         endif
+        !write(30, *) dt * real(timeindex - 1, kind = fp), waveform_est(1, ii, jj, kk), waveform_est(4, ii, jj, kk)
 
         !!calculate slowness and app. geom. spreading terms at each grid
         do j = 1, 4
@@ -218,42 +229,37 @@ program seismicgradiometry_reducingvelocity
 
         !!estimate slowness term
         do i = 1, 2
-          if( (dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 1))   &
-          & *  dot_product(waveform_est_tmp2(:, 4),     waveform_est_tmp2(:, 4)))  &
-          & - (dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))   &
-          & *  dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))) .lt. eps) exit
+          denominator = dot_product(waveform_est_tmp2(:, 1), waveform_est_tmp2(:, 1)) &
+          &           * dot_product(waveform_est_tmp2(:, 4), waveform_est_tmp2(:, 4)) &
+          &           - dot_product(waveform_est_tmp2(:, 1), waveform_est_tmp2(:, 4)) &
+          &           * dot_product(waveform_est_tmp2(:, 1), waveform_est_tmp2(:, 4))
+          if(denominator .lt. eps) exit
           slowness(i, ii, jj) = &
           &  + ((dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 1))   &
           &  *   dot_product(waveform_est_tmp2(:, i + 1), waveform_est_tmp2(:, 4)))  &
           &  -  (dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))   &
-          &  *   dot_product(waveform_est_tmp2(:, 2),     waveform_est_tmp2(:, 1)))) &
-          &  / ((dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 1))   &
-          &  *   dot_product(waveform_est_tmp2(:, 4),     waveform_est_tmp2(:, 4)))  &
-          &  -  (dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))   &
-          &  *   dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))))
+          &  *   dot_product(waveform_est_tmp2(:, i + 1), waveform_est_tmp2(:, 1)))) &
+          &  /   denominator
           ampterm(i, ii, jj) &
           &  = ((dot_product(waveform_est_tmp2(:, 4),     waveform_est_tmp2(:, 4))   &
           &  *   dot_product(waveform_est_tmp2(:, i + 1), waveform_est_tmp2(:, 1)))  &
           &  -  (dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))   &
           &  *   dot_product(waveform_est_tmp2(:, i + 1), waveform_est_tmp2(:, 4)))) &
-          &  / ((dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 1))   &
-          &  *   dot_product(waveform_est_tmp2(:, 4),     waveform_est_tmp2(:, 4)))  &
-          &  -  (dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))   &
-          &  *   dot_product(waveform_est_tmp2(:, 1),     waveform_est_tmp2(:, 4))))
+          &  /   denominator
         enddo
-        print *, "gradiometry slowness nocor", slowness(1, ii, jj), slowness(2, ii, jj)
+        !print *, "gradiometry slowness nocor", slowness(1, ii, jj), slowness(2, ii, jj)
         slowness(1 : 2, ii, jj) = -slowness(1 : 2, ii, jj) + slowness_xcorr(1 : 2, ii, jj)
-        app_velocity = 1.0_fp / sqrt(slowness(1, ii, jj) ** 2 + slowness(2, ii, jj) ** 2)
-        backazimuth = atan2(slowness(2, ii, jj), slowness(1, ii, jj)) * rad2deg
-        print *, "gradiometry slowness cor", app_velocity, backazimuth
-        app_velocity = ampterm(1, ii, jj) * sin(backazimuth * deg2rad) + ampterm(2, ii, jj) * cos(backazimuth * deg2rad)
-        print *, "gradiometry ampterm", ampterm(1, ii, jj), ampterm(2, ii, jj), app_velocity
+        !app_velocity = 1.0_fp / sqrt(slowness(1, ii, jj) ** 2 + slowness(2, ii, jj) ** 2)
+        !backazimuth = atan2(slowness(2, ii, jj), slowness(1, ii, jj)) * rad2deg
+        !print *, "gradiometry slowness cor", app_velocity, backazimuth
+        !app_velocity = ampterm(1, ii, jj) * sin(backazimuth * deg2rad) + ampterm(2, ii, jj) * cos(backazimuth * deg2rad)
+        !print *, "gradiometry ampterm", ampterm(1, ii, jj), ampterm(2, ii, jj), app_velocity
         
 
         write(10, rec = icount) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
         &                       real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
-        &                       real(-slowness(1, ii, jj), kind = sp),      real(-slowness(2, ii, jj), kind = sp), &
-        &                       real(sigma_slowness(1, ii, jj), kind = sp), real(sigma_slowness(2, ii, jj), kind = sp), & 
+        &                       real(slowness(1, ii, jj), kind = sp), real(slowness(2, ii, jj), kind = sp), & 
+        &                       real(slowness_xcorr(1, ii, jj), kind = sp),      real(slowness_xcorr(2, ii, jj), kind = sp), &
         &                       real(ampterm(1, ii, jj), kind = sp),        real(ampterm(2, ii, jj), kind = sp), &
         &                       real(sigma_ampterm(1, ii, jj), kind = sp),  real(sigma_ampterm(2, ii, jj), kind = sp)
         icount = icount + 1
@@ -267,6 +273,7 @@ program seismicgradiometry_reducingvelocity
     call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est_plot, outfile)
 
   enddo
+  !close(30)
 
 
   stop

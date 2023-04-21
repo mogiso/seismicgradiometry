@@ -61,10 +61,10 @@ module gradiometry_parameters
   &                                     x_end = 205.0_fp, y_end = 225.0_fp
   real(kind = fp), public, parameter :: center_lon = 139.0_fp, center_lat = 36.0_fp
   real(kind = fp), public, parameter :: dgrid_x = 2.5_fp, dgrid_y = 2.5_fp
-  real(kind = fp), public, parameter :: cutoff_dist = 6.0_fp
+  real(kind = fp), public, parameter :: cutoff_dist = 20.0_fp
   integer,         public, parameter :: nsta_grid_max = 10, nsta_grid_min = 3
-  integer,         public, parameter :: ntime_slowness = 50, ntime_slowness2 = (ntime_slowness - 1) / 2
-  real(kind = fp), public, parameter :: fl = 1.0_fp / 10.0_fp, fh = 1.0_fp / 5.0_fp, fs = fh * 2.0_fp, &
+  integer,         public, parameter :: ntime_slowness = 60, ntime_slowness2 = (ntime_slowness - 1) / 2
+  real(kind = fp), public, parameter :: fl = 1.0_fp / 20.0_fp, fh = 1.0_fp / 10.0_fp, fs = fh * 2.0_fp, &
   &                                     ap = 0.5_fp, as = 10.0_fp
   integer,         public, parameter :: ntime = 27000
 #ifdef ELLIPSE
@@ -80,11 +80,12 @@ module gradiometry_parameters
   !!threshold of interstation distance (vertix distance) for delaunay triangulation
   real(kind = fp), public, parameter :: interstationdistance_min = 0.05_fp
   real(kind = fp), public, parameter :: cos_taper_ratio = 0.1_fp
-  real(kind = fp), public, parameter :: xcorr_min = 0.3_fp
+  real(kind = fp), public, parameter :: xcorr_min = 0.7_fp
 
-  integer,         public, parameter :: ntimestep = 10
-  integer,         public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2, ntime_fft4 = ntime_fft / 4
-  integer,         public, parameter :: naddstation_array = 1
+  integer,         public, parameter :: ntimestep = 100
+  integer,         public, parameter :: ntime_fft = 512, ntime_fft2 = ntime_fft / 2, ntime_fft4 = ntime_fft / 4
+  integer,         public, parameter :: naddstation_array = 3
+  integer,         public, parameter :: niteration_max = 5
  
 end module gradiometry_parameters
   

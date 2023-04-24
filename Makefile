@@ -16,8 +16,8 @@ ifeq ($(arch), ifx)
   NETCDF_LIB = /usr/local/netcdf-intel/lib
   NETCDF_INC = /usr/local/netcdf-intel/include
   LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64
-  LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
-  INCDIR = -I. -I${HDF5_INC} -I${NETCDF_FORTRAN_INC}
+  LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB}
+  INCDIR = -I. -I${NETCDF_FORTRAN_INC}
 endif
 
 ifeq ($(arch),ifx-debug)
@@ -29,8 +29,8 @@ ifeq ($(arch),ifx-debug)
   NETCDF_LIB = /usr/local/netcdf-intel/lib
   NETCDF_INC = /usr/local/netcdf-intel/include
   LIBS = -lnetcdff -lnetcdf -lmkl_lapack95_lp64
-  LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB} -L${HDF5_LIB}
-  INCDIR = -I. -I${HDF5_INC} -I${NETCDF_FORTRAN_INC}
+  LIBDIR = -L${NETCDF_FORTRAN_LIB} -L${NETCDF_LIB}
+  INCDIR = -I. -I${NETCDF_FORTRAN_INC} -I${NETCDF_INC}
 endif
 
 
@@ -116,6 +116,7 @@ $(mod_constants): $(constants) $(o_constants)
 $(mod_correlation): $(correlation) $(o_correlation)
 $(mod_gradiometry_parameters): $(gradiometry_parameters) $(o_gradiometry_parameters)
 $(mod_greatcircle): $(greatcircle) $(o_greatcircle)
+$(mod_itoa): $(itoa) $(o_itoa)
 $(mod_nrtype): $(nrtype) $(o_nrtype)
 $(mod_lonlat_xy_conv): $(lonlat_xy_conv) $(o_lonlat_xy_conv)
 $(mod_read_sacfile): $(read_sacfile) $(o_read_sacfile)
@@ -141,6 +142,7 @@ $(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_cons
 $(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_grdfile_io): $(grdfile_io) $(mod_nrtype) $(o_nrtype)
 $(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
+$(o_itoa): $(itoa)
 $(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants) $(o_nrtype) $(o_constants)
 $(o_nrtype): $(nrtype)
 $(o_read_sacfile): $(read_sacfile) $(mod_nrtype) $(o_nrtype)

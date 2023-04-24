@@ -17,7 +17,7 @@ program seismicgradiometry_reducingvelocity2
 
   real(kind = fp), parameter :: eps = 1.0e-5_fp
 
-  integer :: nsta, npts_tmp, timeindex, timeindex_diff, i, j, ii, jj, kk, ncount, m, n, ngradient
+  integer :: nsta, npts_tmp, timeindex, timeindex_diff, i, j, ii, jj, kk, ncount, m, n, ngrad
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
   type(location),  allocatable :: location_sta(:)
   real(kind = fp), allocatable :: begin(:)
@@ -28,8 +28,8 @@ program seismicgradiometry_reducingvelocity2
   &                               obs_vector(1 : nsta_grid_max), &
   &                               sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), & 
-  &                               waveform_est_tmp(1 : 4, -ntime_fft4 : ntime_fft4), &
-  &                               waveform_est_tmp2(1 : ntime_fft2, 1 : 4), &
+  &                               waveform_est_tmp(1 : 4, -ngradient4 : ngradient4), &
+  &                               waveform_est_tmp2(1 : ngradient, 1 : 4), &
   &                               waveform_est_plot(1 : ngrid_x, 1 : ngrid_y), &
   &                               slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
@@ -58,7 +58,7 @@ program seismicgradiometry_reducingvelocity2
     call read_sachdr(sacfile(i), begin = begin(i), delta = dt, npts = npts_tmp, &
     &                stlon = location_sta(i)%lon, stlat = location_sta(i)%lat, stdp = location_sta(i)%depth)
     call read_sacdata(sacfile(i), ntime, waveform_obs(:, i))
-    !waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * order
+    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * order
   enddo
 
   !!calculate filter parameter
@@ -67,7 +67,7 @@ program seismicgradiometry_reducingvelocity2
   call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
   do i = 1, nsta
-    !call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
+    call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
   enddo
   deallocate(h, uv)
 
@@ -131,42 +131,42 @@ program seismicgradiometry_reducingvelocity2
           n = n + 1
           if(n .gt. niteration_max) exit
           !print *, "iterative reducing, count = ", n
-          waveform_est_tmp(1 : 4, -ntime_fft4 : ntime_fft4) = 0.0_fp
-          waveform_est_tmp2(1 : ntime_fft2, 1 : 4) = 0.0_fp
+          waveform_est_tmp(1 : 4, -ngradient4 : ngradient4) = 0.0_fp
+          waveform_est_tmp2(1 : ngradient2, 1 : 4) = 0.0_fp
 
-          ngradient = 1
-          do j = -ntime_fft4, ntime_fft4, 1
+          ngrad = 1
+          do j = -ngradient4, ngradient4, 1
             obs_vector(1 : nsta_grid_max) = 0.0_fp
             do i = 1, nsta_count(ii, jj)
               dx_east  = location_grid(ii, jj)%x_east  - location_sta(grid_stationindex(i, ii, jj))%x_east
               dy_north = location_grid(ii, jj)%y_north - location_sta(grid_stationindex(i, ii, jj))%y_north
               timeindex_diff = int((dx_east * slowness(1, ii, jj) + dy_north * slowness(2, ii, jj)) / dt)
-              if(timeindex - ntime_fft2 + j - timeindex_diff .lt. 1 .or. &
-              &  timeindex - ntime_fft2 + j - timeindex_diff .gt. timeindex) then
+              if(timeindex - ngradient2 + j - timeindex_diff .lt. 1 .or. &
+              &  timeindex - ngradient2 + j - timeindex_diff .gt. timeindex) then
                 calc_grad = .false.
                 exit
               endif
-              obs_vector(i) = waveform_obs(timeindex - ntime_fft2 + j - timeindex_diff, grid_stationindex(i, ii, jj))
+              obs_vector(i) = waveform_obs(timeindex - ngradient2 + j - timeindex_diff, grid_stationindex(i, ii, jj))
             enddo
             if(calc_grad .eqv. .false.) exit
 
             waveform_est_tmp(1 : 3, j) &
             &  = matmul(kernel_matrix(1 : 3, 1 : nsta_count(ii, jj), ii, jj), obs_vector(1 : nsta_count(ii, jj)))
             !!Time derivative: backward differentiation
-            if(j .gt. -ntime_fft4) then
+            if(j .gt. -ngradient4) then
               waveform_est_tmp(4, j) = (waveform_est_tmp(1, j) - waveform_est_tmp(1, j - 1)) / dt
             endif
             do i = 1, 4
-              waveform_est_tmp2(ngradient, i) = waveform_est_tmp(i, j)
+              waveform_est_tmp2(ngrad, i) = waveform_est_tmp(i, j)
             enddo
-            ngradient = ngradient + 1
+            ngrad = ngrad + 1
           enddo
           if(calc_grad .eqv. .false.) exit
           if(j .gt. 0) waveform_est_plot(ii, jj) = waveform_est_tmp(1, 0)
 
           !!calculate slowness and app. geom. spreading terms at each grid
-          ngradient = ngradient - 1
-          if(ngradient .le. 2) cycle  !!if the number of data is small, do not calculate gradiometry coefficients
+          ngrad = ngrad - 1
+          if(ngrad .le. 2) cycle  !!if the number of data is small, do not calculate gradiometry coefficients
 
           !!estimate slowness term
           do i = 1, 2

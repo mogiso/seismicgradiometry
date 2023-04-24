@@ -29,7 +29,7 @@ program seismicgradiometry_reducingvelocity2
   &                               sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), & 
   &                               waveform_est_tmp(1 : 4, -ngradient4 : ngradient4), &
-  &                               waveform_est_tmp2(1 : ngradient, 1 : 4), &
+  &                               waveform_est_tmp2(1 : ngradient2, 1 : 4), &
   &                               waveform_est_plot(1 : ngrid_x, 1 : ngrid_y), &
   &                               slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
@@ -71,6 +71,7 @@ program seismicgradiometry_reducingvelocity2
   enddo
   deallocate(h, uv)
 
+
   !!set grid location
   do j = 1, ngrid_y
     do i = 1, ngrid_x
@@ -98,8 +99,9 @@ program seismicgradiometry_reducingvelocity2
   &                                nsta_count, grid_stationindex, kernel_matrix)
 
   !!calculate amplitude and its spatial derivatives at each grid
+  !open(unit = 30, file = "log")
   do kk = 1, int(ntime / ntimestep)
-  !do kk = 80, 95
+  !do kk = 1, 20
     timeindex = ntimestep * (kk - 1) + 1
     write(0, '(a, i0, a)') "Time index = ", kk, " Calculate amplitudes and their gradients at each grid"
     sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_sp
@@ -123,6 +125,7 @@ program seismicgradiometry_reducingvelocity2
         !!calculate slowness vector using conventional array analysis
         if(grid_enough_sta(ii, jj) .eqv. .false.) cycle
 
+        !print *, "grid index = ", ii, jj
 
         !!calculate spatial gradients of wavefield iteratively
         n = 0
@@ -155,11 +158,11 @@ program seismicgradiometry_reducingvelocity2
             !!Time derivative: backward differentiation
             if(j .gt. -ngradient4) then
               waveform_est_tmp(4, j) = (waveform_est_tmp(1, j) - waveform_est_tmp(1, j - 1)) / dt
+              do i = 1, 4
+                waveform_est_tmp2(ngrad, i) = waveform_est_tmp(i, j)
+              enddo
+              ngrad = ngrad + 1
             endif
-            do i = 1, 4
-              waveform_est_tmp2(ngrad, i) = waveform_est_tmp(i, j)
-            enddo
-            ngrad = ngrad + 1
           enddo
           if(calc_grad .eqv. .false.) exit
           if(j .gt. 0) waveform_est_plot(ii, jj) = waveform_est_tmp(1, 0)
@@ -168,24 +171,33 @@ program seismicgradiometry_reducingvelocity2
           ngrad = ngrad - 1
           if(ngrad .le. 2) cycle  !!if the number of data is small, do not calculate gradiometry coefficients
 
+          !if(kk .eq. 20 .and. ii .eq. 105 .and. jj .eq. 178 .and. n .eq. 5) then
+          !  print *, timeindex - ngradient2 + (-ngradient4)
+          !  do i = 1, ntime
+          !    write(30, '(2(e15.7, 1x))') waveform_obs(i, grid_stationindex(1, ii, jj)), &
+          !    &                           waveform_obs(i, grid_stationindex(2, ii, jj))
+          !    !write(30, '(4(e15.7, 1x))') (waveform_est_tmp2(i, j), j = 1, 4)
+          !  enddo
+          !endif
+
           !!estimate slowness term
           do i = 1, 2
-            denominator = dot_product(waveform_est_tmp2(1 : ngradient, 1), waveform_est_tmp2(1 : ngradient, 1)) &
-            &           * dot_product(waveform_est_tmp2(1 : ngradient, 4), waveform_est_tmp2(1 : ngradient, 4)) &
-            &           - dot_product(waveform_est_tmp2(1 : ngradient, 1), waveform_est_tmp2(1 : ngradient, 4)) &
-            &           * dot_product(waveform_est_tmp2(1 : ngradient, 1), waveform_est_tmp2(1 : ngradient, 4))
+            denominator = dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 1)) &
+            &           * dot_product(waveform_est_tmp2(1 : ngrad, 4), waveform_est_tmp2(1 : ngrad, 4)) &
+            &           - dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 4)) &
+            &           * dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 4))
             if(denominator .lt. eps) exit
             slowness_correction(i, ii, jj) = &
-            &  + ((dot_product(waveform_est_tmp2(1 : ngradient, 1),     waveform_est_tmp2(1 : ngradient, 1))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngradient, i + 1), waveform_est_tmp2(1 : ngradient, 4)))  &
-            &  -  (dot_product(waveform_est_tmp2(1 : ngradient, 1),     waveform_est_tmp2(1 : ngradient, 4))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngradient, i + 1), waveform_est_tmp2(1 : ngradient, 1)))) &
+            &  + ((dot_product(waveform_est_tmp2(1 : ngrad, 1),     waveform_est_tmp2(1 : ngrad, 1))   &
+            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 4)))  &
+            &  -  (dot_product(waveform_est_tmp2(1 : ngrad, 1),     waveform_est_tmp2(1 : ngrad, 4))   &
+            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 1)))) &
             &  /   denominator
             ampterm(i, ii, jj) &
-            &  = ((dot_product(waveform_est_tmp2(1 : ngradient, 4),     waveform_est_tmp2(1 : ngradient, 4))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngradient, i + 1), waveform_est_tmp2(1 : ngradient, 1)))  &
-            &  -  (dot_product(waveform_est_tmp2(1 : ngradient, 1),     waveform_est_tmp2(1 : ngradient, 4))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngradient, i + 1), waveform_est_tmp2(1 : ngradient, 4)))) &
+            &  = ((dot_product(waveform_est_tmp2(1 : ngrad, 4),     waveform_est_tmp2(1 : ngrad, 4))   &
+            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 1)))  &
+            &  -  (dot_product(waveform_est_tmp2(1 : ngrad, 1),     waveform_est_tmp2(1 : ngrad, 4))   &
+            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 4)))) &
             &  /   denominator
           enddo
           slowness(1 : 2, ii, jj) = slowness(1 : 2, ii, jj) - slowness_correction(1 : 2, ii, jj)
@@ -193,9 +205,12 @@ program seismicgradiometry_reducingvelocity2
           if(sqrt(slowness_correction(1, ii, jj) * slowness_correction(1, ii, jj) &
           &     + slowness_correction(2, ii, jj) * slowness_correction(2, ii, jj)) .lt. eps) exit
         enddo
+        if(calc_grad .eqv. .false.) cycle
 
         !if(sqrt(slowness(1, ii, jj) * slowness(1, ii, jj) &
         !&     + slowness(2, ii, jj) * slowness(2, ii, jj)) .gt. eps) then
+        !  print *, "gradiometry slowness nocor", slowness_correction(1, ii, jj), slowness_correction(2, ii, jj)
+        !  print *, "gradiometry slowness nocor", slowness(1, ii, jj), slowness(2, ii, jj)
         !  app_velocity = 1.0_fp / sqrt(slowness(1, ii, jj) ** 2 + slowness(2, ii, jj) ** 2)
         !  backazimuth = atan2(slowness(2, ii, jj), slowness(1, ii, jj)) * rad2deg
         !  print *, "gradiometry slowness cor", app_velocity, backazimuth
@@ -220,7 +235,7 @@ program seismicgradiometry_reducingvelocity2
     call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est_plot, outfile)
 
   enddo
-  !close(30)
+  close(30)
 
 
   stop

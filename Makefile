@@ -10,7 +10,7 @@
 ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all
-  DEFS = -DDOUBLE -DMKL 
+  DEFS = -DDOUBLE -DMKL -DELLIPSE
   NETCDF_FORTRAN_LIB = /usr/local/netcdff-intel/lib
   NETCDF_FORTRAN_INC = /usr/local/netcdff-intel/include
   NETCDF_LIB = /usr/local/netcdf-intel/lib
@@ -33,6 +33,31 @@ ifeq ($(arch),ifx-debug)
   INCDIR = -I. -I${NETCDF_FORTRAN_INC} -I${NETCDF_INC}
 endif
 
+ifeq ($(arch),gfortran-debug)
+  FC = gfortran
+  FFLAGS = -O0 -Wall -fbounds-check -fbacktrace -Wuninitialized -g
+  DEFS = -DDOUBLE
+  NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
+  NETCDF_FORTRAN_INC = /usr/include
+  NETCDF_LIB = 
+  NETCDF_INC = 
+  LIBS = -lnetcdff -lnetcdf -llapack95 -llapack -lblas
+  LIBDIR = -L${NETCDF_FORTRAN_LIB} -L/usr/lib/x86_64-linux-gnu/atlas -L/usr/local/lapack95-gfortran/lib
+  INCDIR = -I. -I${NETCDF_FORTRAN_INC} -I/usr/local/lapack95-gfortran/include
+endif
+
+ifeq ($(arch),gfortran)
+  FC = gfortran
+  FFLAGS = -O2 -frecursive
+  DEFS = -DDOUBLE
+  NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
+  NETCDF_FORTRAN_INC = /usr/include
+  NETCDF_LIB = /usr/lib/x86_64-linux-gnu
+  NETCDF_INC = 
+  LIBS = -lnetcdff -lnetcdf -llapack95 -llapack -lblas
+  LIBDIR = -L${NETCDF_FORTRAN_LIB} -L/usr/lib/x86_64-linux-gnu/atlas -L/usr/local/lapack95-gfortran/lib
+  INCDIR = -I. -I${NETCDF_FORTRAN_INC} -I/usr/local/lapack95-gfortran/include
+endif
 
 aeluma = AutomatedEventLocationUsingaMeshofArrays.F90
 calc_bpf_coef = calc_bpf_coef.F90

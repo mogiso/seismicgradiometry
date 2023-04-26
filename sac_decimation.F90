@@ -2,10 +2,11 @@ program sac_decimation
   use nrtype, only : fp, dp, sp
   use constants, only : pi
   use read_sacfile, only : read_sachdr, read_sacdata
+  use tandem, only : tandem3
 
   implicit none
 
-  real(kind = fp), parameter :: ap = 0.5_fp, as = 15.0_fp
+  real(kind = fp), parameter :: ap = 0.1_fp, as = 15.0_fp
   !integer, parameter :: nmean = 100 * 15
   
   integer :: i, j, nfile, npts, decimate
@@ -51,18 +52,16 @@ program sac_decimation
     !!new sampling period
     sampling_new = sampling * real(decimate, kind = fp)
     !!fp and fs are determined from new sampling period
-    fpass = 1.0_fp / (sampling_new * 3.0_fp)
-    fstop = 1.0_fp / (sampling_new * 2.5_fp)
+    fpass = 1.0_fp / (sampling_new * 2.5_fp)
+    fstop = 1.0_fp / (sampling_new * 2.0_fp)
     write(0, '(a, 2(f6.3, 1x))') "old and new sampling period = ", sampling, sampling_new
     write(0, '(a, e15.7)') "new nyquist frequency (Hz) = ", 1.0_fp / (sampling_new * 2.0_fp)
     write(0, '(a, 2(e15.7, 1x))') "parameter fpass and fstop (Hz) = ", fpass, fstop
     call calc_lpf_order(fpass, fstop, ap, as, sampling, m, n, c)
     allocate(h(4 * m))
     call calc_lpf_coef(m, n, h, c, gn)
-    call tandem1(waveform_org, waveform_org, npts, h, m, 1)
-    waveform_org(1 : npts) = waveform_org(1 : npts) * gn
-    call tandem1(waveform_org, waveform_org, npts, h, m, -1)
-    waveform_org(1 : npts) = waveform_org(1 : npts) * gn
+    call tandem3(waveform_org, h, gn, 1)
+    call tandem3(waveform_org, h, gn, -1)
 
     allocate(waveform_decimate(npts / decimate))
     do i = 1, npts / decimate

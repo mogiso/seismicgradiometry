@@ -11,6 +11,7 @@ program seismicgradiometry
   use lonlat_xy_conv, only : bl2xy, xy2bl
   use gradiometry_parameters
   use calc_kernelmatrix
+  use tandem, only : tandem3
 
   implicit none
 
@@ -76,10 +77,8 @@ program seismicgradiometry
   call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   !apply filter
   do i = 1, nsta
-    call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1)
-    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
-    !call tandem1(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, -1)
-    !waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * gn
+    call tandem3(waveform_obs(:, i), h, gn, 1)
+    !call tandem3(waveform_obs(:, i), h, gn, -1)
   enddo
 
   !!set grid location

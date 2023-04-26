@@ -10,7 +10,7 @@
 ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all
-  DEFS = -DDOUBLE -DMKL -DELLIPSE
+  DEFS = -DDOUBLE -DMKL
   NETCDF_FORTRAN_LIB = /usr/local/netcdff-intel/lib
   NETCDF_FORTRAN_INC = /usr/local/netcdff-intel/include
   NETCDF_LIB = /usr/local/netcdf-intel/lib
@@ -52,7 +52,7 @@ ifeq ($(arch),gfortran)
   DEFS = -DDOUBLE
   NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
   NETCDF_FORTRAN_INC = /usr/include
-  NETCDF_LIB = /usr/lib/x86_64-linux-gnu
+  NETCDF_LIB = 
   NETCDF_INC = 
   LIBS = -lnetcdff -lnetcdf -llapack95 -llapack -lblas
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L/usr/lib/x86_64-linux-gnu/atlas -L/usr/local/lapack95-gfortran/lib
@@ -102,6 +102,7 @@ mod_itoa = $(itoa:.F90=.mod)
 mod_lonlat_xy_conv = $(lonlat_xy_conv:.F90=.mod)
 mod_nrtype = $(nrtype:.F90=.mod)
 mod_read_sacfile = $(read_sacfile:.F90=.mod)
+mod_tandem = $(tandem:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
 
 ##Object
@@ -148,40 +149,45 @@ $(mod_lonlat_xy_conv): $(lonlat_xy_conv) $(o_lonlat_xy_conv)
 $(mod_read_sacfile): $(read_sacfile) $(o_read_sacfile)
 $(mod_grdfile_io): $(grdfile_io) $(o_grdfile_io)
 $(mod_deconvolution): $(deconvolution) $(o_deconvolution)
+$(mod_tandem): $(tandem) $(o_tandem)
 $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
 
 ##Object dependency
-$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants)
-$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) 
-$(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort)
-$(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants)
-$(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants)
+$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
+	$(o_constants)
+$(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_constants): $(constants) $(mod_nrtype)
 $(o_correlation): $(correlation) $(mod_nrtype)
-$(o_cosine_taper): $(cosine_taper) $(mod_nrtype) $(mod_constants)
-$(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants)
+$(o_cosine_taper): $(cosine_taper) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_fftsg): $(fftsg)
-$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants)
-$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants)
-$(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants)
+$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_grdfile_io): $(grdfile_io) $(mod_nrtype)
-$(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants)
+$(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_itoa): $(itoa)
-$(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants)
+$(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_nrtype): $(nrtype)
 $(o_read_sacfile): $(read_sacfile) $(mod_nrtype)
-$(o_sac_decimation): $(sac_decimation) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile)
+$(o_sac_decimation): $(sac_decimation) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_tandem)
 $(o_sac_deconvolve): $(sac_deconvolve) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_deconvolution)
-$(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile)
+$(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_tandem)
 $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix)
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(mod_tandem) \
+        $(o_gradiometry_parameters) $(o_constants)
 $(o_aeluma): $(aeluma) \
-	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(mod_cosine_taper)
+	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) $(mod_tandem) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(mod_cosine_taper) \
+        $(o_gradiometry_parameters) $(o_constants)
 $(o_seismicgradiometry_reducingvelocity2): $(seismicgradiometry_reducingvelocity2) \
-	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix)
+	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) $(mod_tandem) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
+        $(o_gradiometry_parameters) $(o_constants)
 $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype)
 

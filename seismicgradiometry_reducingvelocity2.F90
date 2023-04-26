@@ -12,6 +12,7 @@ program seismicgradiometry_reducingvelocity2
   use gradiometry_parameters
   use calc_kernelmatrix
   use itoa
+  use tandem
 
   implicit none
 
@@ -23,13 +24,12 @@ program seismicgradiometry_reducingvelocity2
   real(kind = fp), allocatable :: begin(:)
   real(kind = fp), allocatable :: waveform_obs(:, :)
   real(kind = fp), allocatable :: h(:), uv(:, :)             !!For time-domain recursive filter 
-  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, app_velocity, backazimuth, denominator, &
-  &                               val(4), &
+  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, denominator, &
   &                               obs_vector(1 : nsta_grid_max), &
   &                               sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), & 
   &                               waveform_est_tmp(1 : 4, -ngradient4 : ngradient4), &
-  &                               waveform_est_tmp2(1 : ngradient2, 1 : 4), &
+  &                               waveform_est_tmp2(1 : 2 * ngradient4 + 1, 1 : 4), &
   &                               waveform_est_plot(1 : ngrid_x, 1 : ngrid_y), &
   &                               slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
@@ -67,10 +67,9 @@ program seismicgradiometry_reducingvelocity2
   call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
   do i = 1, nsta
-    call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
+    call tandem3(waveform_obs(:, i), h, gn, 1, past_uv = uv(:, i))
   enddo
   deallocate(h, uv)
-
 
   !!set grid location
   do j = 1, ngrid_y
@@ -101,7 +100,6 @@ program seismicgradiometry_reducingvelocity2
   !!calculate amplitude and its spatial derivatives at each grid
   !open(unit = 30, file = "log")
   do kk = 1, int(ntime / ntimestep)
-  !do kk = 1, 20
     timeindex = ntimestep * (kk - 1) + 1
     write(0, '(a, i0, a)') "Time index = ", kk, " Calculate amplitudes and their gradients at each grid"
     sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_sp
@@ -125,7 +123,6 @@ program seismicgradiometry_reducingvelocity2
         !!calculate slowness vector using conventional array analysis
         if(grid_enough_sta(ii, jj) .eqv. .false.) cycle
 
-        !print *, "grid index = ", ii, jj
 
         !!calculate spatial gradients of wavefield iteratively
         n = 0
@@ -135,7 +132,7 @@ program seismicgradiometry_reducingvelocity2
           if(n .gt. niteration_max) exit
           !print *, "iterative reducing, count = ", n
           waveform_est_tmp(1 : 4, -ngradient4 : ngradient4) = 0.0_fp
-          waveform_est_tmp2(1 : ngradient2, 1 : 4) = 0.0_fp
+          waveform_est_tmp2(1 : 2 * ngradient4 + 1, 1 : 4) = 0.0_fp
 
           ngrad = 1
           do j = -ngradient4, ngradient4, 1
@@ -207,24 +204,26 @@ program seismicgradiometry_reducingvelocity2
         enddo
         if(calc_grad .eqv. .false.) cycle
 
-        !if(sqrt(slowness(1, ii, jj) * slowness(1, ii, jj) &
-        !&     + slowness(2, ii, jj) * slowness(2, ii, jj)) .gt. eps) then
-        !  print *, "gradiometry slowness nocor", slowness_correction(1, ii, jj), slowness_correction(2, ii, jj)
-        !  print *, "gradiometry slowness nocor", slowness(1, ii, jj), slowness(2, ii, jj)
-        !  app_velocity = 1.0_fp / sqrt(slowness(1, ii, jj) ** 2 + slowness(2, ii, jj) ** 2)
-        !  backazimuth = atan2(slowness(2, ii, jj), slowness(1, ii, jj)) * rad2deg
-        !  print *, "gradiometry slowness cor", app_velocity, backazimuth
-        !  app_velocity = ampterm(1, ii, jj) * sin(backazimuth * deg2rad) + ampterm(2, ii, jj) * cos(backazimuth * deg2rad)
-        !  print *, "gradiometry ampterm", ampterm(1, ii, jj), ampterm(2, ii, jj), app_velocity
-        !endif
+        if(sqrt(slowness(1, ii, jj) * slowness(1, ii, jj) &
+        &     + slowness(2, ii, jj) * slowness(2, ii, jj)) .gt. eps) then
+          !print *, "grid index = ", ii, jj, (n - 1)
+          !print *, "gradiometry slowness nocor", slowness_correction(1, ii, jj), slowness_correction(2, ii, jj)
+          !print *, "gradiometry slowness nocor", slowness(1, ii, jj), slowness(2, ii, jj)
+          !app_velocity = 1.0_fp / sqrt(slowness(1, ii, jj) ** 2 + slowness(2, ii, jj) ** 2)
+          !backazimuth = atan2(slowness(2, ii, jj), slowness(1, ii, jj)) * rad2deg
+          !print *, "gradiometry slowness cor", app_velocity, backazimuth
+          !app_velocity = ampterm(1, ii, jj) * sin(backazimuth * deg2rad) + ampterm(2, ii, jj) * cos(backazimuth * deg2rad)
+          !print *, "gradiometry ampterm", ampterm(1, ii, jj), ampterm(2, ii, jj), app_velocity
 
-        write(10, rec = ncount) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
-        &                       real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
-        &                       real(slowness(1, ii, jj), kind = sp),       real(slowness(2, ii, jj), kind = sp), & 
-        &                       real(sigma_slowness(1, ii, jj), kind = sp), real(sigma_slowness(2, ii, jj), kind = sp), &
-        &                       real(ampterm(1, ii, jj), kind = sp),        real(ampterm(2, ii, jj), kind = sp), &
-        &                       real(sigma_ampterm(1, ii, jj), kind = sp),  real(sigma_ampterm(2, ii, jj), kind = sp)
-        ncount = ncount + 1
+          write(10, rec = ncount) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
+          &                       real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
+          &                       real(slowness(1, ii, jj), kind = sp),       real(slowness(2, ii, jj), kind = sp), & 
+          &                       real(sigma_slowness(1, ii, jj), kind = sp), real(sigma_slowness(2, ii, jj), kind = sp), &
+          &                       real(ampterm(1, ii, jj), kind = sp),        real(ampterm(2, ii, jj), kind = sp), &
+          &                       real(sigma_ampterm(1, ii, jj), kind = sp),  real(sigma_ampterm(2, ii, jj), kind = sp)
+          ncount = ncount + 1
+
+        endif
 
       enddo
     enddo

@@ -1,168 +1,70 @@
-subroutine tandem1(x, y, n, h, m, nml)
-  use nrtype, only : fp
-  implicit none
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!! nml => 0: Normal filtering
-  !!! nml < 0: Reverse filtering
-  !!! x(n) : input data
-  !!! y(n) : output(filtered) data
-  !!!        work well if same name with input data
-  !!! h(4 * m) : filter coefficient calculated by calc_[bhl]pf_coef.f90
-  !!! m : filter order calclated by calc_[bhl]_pf_order.f90
-  !!!
-  !!! Author   : Masashi Ogiso (masashi.ogiso@gmail.com)
-  !!! Reference: Saito, M. (1978) An automatic design algorithm for band selective recursive
-  !!!                             digital filters, Geophysical Exploration, 31(4), 240-263 (In Japanese)
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Subroutine for applying time domain recursive filter
+!! Copyright 2023 Masashi Ogiso (masashi.ogiso@gmail.com)
+!! Released under the MIT license.
+!! see https://opensource.org/licenses/MIT
+!! Reference: Saito, M. (1978) An automatic design algorithm for band selective recursive
+!!                             digital filters, Geophysical Exploration, 31(4), 240-263 (In Japanese)
 
-  integer, intent(IN) :: n, m, nml
-  real(kind = fp), intent(IN) :: x(n), h(4 * m)
-  real(kind = fp), intent(OUT) :: y(n)
-  
-  integer :: i, j
-  real(kind = fp) :: tmp_h(4)
+module tandem
+  private
+  public :: tandem3
 
+contains
 
-  do j = 1, 4
-    tmp_h(j) = h(j)
-  enddo
+  subroutine tandem3(data_inout, h, gn, nml, past_uv)
+    use nrtype, only : fp
+    implicit none
+    real(kind = fp), intent(inout) :: data_inout(:)
+    real(kind = fp), intent(in)    :: h(:)
+    real(kind = fp), intent(in)    :: gn
+    integer,         intent(in)    :: nml !!>0: normal filtering, <0: reverse filtering
+    real(kind = fp), intent(inout), optional :: past_uv(:)
 
-  call recfil1(x, y, n, tmp_h, nml)
+    integer :: i, j, ii, jj, kk, ndata, filter_order
+    real(kind = fp) :: data_tmp, past(1 : 4)
 
-  if(m .gt. 1) then
-    do i = 2, m
-      do j = 1, 4
-        tmp_h(j) = h(4 * (i - 1) + j)
+    ndata = size(data_inout)
+    filter_order = size(h) / 4
+    if(present(past_uv)) then
+      if(size(past_uv) .ne. 4 * filter_order) then
+        write(0, '(2(a, i0), a)') "order mismatch between h(", (4 * filter_order), " and past_uv(", size(past_uv), ")"
+        error stop
+      endif
+    endif
+
+    do j = 1, filter_order
+      if(present(past_uv)) then
+        past(1 : 4) = past_uv(4 * (j - 1) + 1 : 4 * (j - 1) + 4)
+      else
+        past(1 : 4) = 0.0_fp
+      endif
+      if(nml .gt. 0) then
+        ii = 1
+        jj = ndata
+        kk = 1
+      elseif(nml .lt. 0) then
+        ii = ndata
+        jj = 1
+        kk = -1
+      else
+         write(0, '(a)') "parameter nml should be >0 or <0"
+         error stop
+      endif
+      do i = ii, jj, kk
+        data_tmp = data_inout(i) &
+        &        + h(4 * (j - 1) + 1) * past(1) + h(4 * (j - 1) + 2) * past(2) &
+        &        - h(4 * (j - 1) + 3) * past(3) - h(4 * (j - 1) + 4) * past(4)
+        past(2) = past(1)
+        past(1) = data_inout(i)
+        past(4) = past(3)
+        past(3) = data_tmp
+        data_inout(i) = data_tmp
       enddo
-      call recfil1(y, y, n, tmp_h, nml)
+      if(present(past_uv)) past_uv(4 * (j - 1) + 1 : 4 * (j - 1) + 4) = past(1 : 4)
     enddo
-  endif
-
-  return
-end subroutine tandem1
-
-subroutine recfil1(x, y, n, h, nml)
-  use nrtype, only : fp
-  implicit none
-  integer, intent(IN) :: n, nml
-  real(kind = fp), intent(IN) :: x(n), h(4)
-  real(kind = fp), intent(OUT) :: y(n)
-
-  integer :: j, jd, i
-  real(kind = fp) :: a, aa, b, bb, u1, u2, u3, v1, v2, v3
-
-  if(nml .ge. 0) then
-    j = 1
-    jd = 1
-  else
-    j = n
-    jd = -1
-  endif
-
-  a = h(1)
-  aa = h(2)
-  b = h(3)
-  bb = h(4)
-  u1 = 0.0_fp
-  u2 = 0.0_fp
-  v1 = 0.0_fp
-  v2 = 0.0_fp
-
-  do i = 1, n
-    u3 = u2
-    u2 = u1
-    u1 = x(j)
-    v3 = v2
-    v2 = v1
-    v1 = u1 + a * u2 + aa * u3 - b * v2 - bb * v3
-    y(j) = v1
-    j = j + jd
-  enddo
-
-  return
-end subroutine recfil1
-
-subroutine tandem2(x, y, n, h, m, nml, gn, uv)
-  use nrtype, only : fp
-  implicit none
-
-  integer, intent(IN) :: n, m, nml
-  real(kind = fp), intent(IN) :: x(n), h(4 * m), gn
-  real(kind = fp), intent(OUT) :: y(n)
-  real(kind = fp), intent(INOUT) :: uv(4 * m)
-  
-  integer :: i, j
-  real*8 :: tmp_h(4), tmp_uv(4)
-
-
-  tmp_h(1 : 4) = h(1 : 4)
-  tmp_uv(1 : 4) = uv(1 : 4)
-
-  call recfil2(x, y, n, tmp_h, nml, tmp_uv)
-  uv(1 : 4) = tmp_uv(1 : 4)
-
-  if(m .gt. 1) then
-    do i = 2, m
-      do j = 1, 4
-        tmp_h(j) = h(4 * (i - 1) + j)
-        tmp_uv(j) = uv(4 * (i - 1) + j)
-      enddo
-      call recfil2(y, y, n, tmp_h, nml, tmp_uv)
-      y(1 : n) = y(1 : n) * gn
-      do j = 1, 4
-        uv(4 * (i - 1) + j) = tmp_uv(j)
-      enddo
-    enddo
-  endif
-
-  return
-end subroutine tandem2
-
-subroutine recfil2(x, y, n, h, nml, uv1)
-  use nrtype, only : fp
-  implicit none
-  integer, intent(IN) :: n, nml
-  real(kind = fp), intent(IN) :: x(n), h(4)
-  real(kind = fp), intent(OUT) :: y(n)
-  real(kind = fp), intent(INOUT) :: uv1(4)
-
-  integer :: j, jd, i
-  real(kind = fp) :: a, aa, b, bb, u1, u2, u3, v1, v2, v3
-
-  if(nml .ge. 0) then
-    j = 1
-    jd = 1
-  else
-    j = n
-    jd = -1
-  endif
-
-  a = h(1)
-  aa = h(2)
-  b = h(3)
-  bb = h(4)
-  u1 = uv1(1)
-  u2 = uv1(2)
-  v1 = uv1(3)
-  v2 = uv1(4)
-
-  do i = 1, n
-    u3 = u2
-    u2 = u1
-    u1 = x(j)
-    v3 = v2
-    v2 = v1
-    v1 = u1 + a * u2 + aa * u3 - b * v2 - bb * v3
-    y(j) = v1
-    j = j + jd
-  enddo
-
-  uv1(1) = u1
-  uv1(2) = u2
-  uv1(3) = v1
-  uv1(4) = v2
-
-  return
-end subroutine recfil2
-
+    data_inout(1 : ndata) = data_inout(1 : ndata) * gn
+ 
+    return
+  end subroutine tandem3
+end module tandem
 

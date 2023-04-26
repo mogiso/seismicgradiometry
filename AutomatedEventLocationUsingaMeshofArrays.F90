@@ -13,6 +13,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   use calc_kernelmatrix
   use correlation
   use taper
+  use tandem, only : tandem3
 
   implicit none
 
@@ -63,6 +64,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
   do i = 1, nsta
     !call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
+    !call tandem3(waveform_obs(:, i), h, gn, uv(:, i))
   enddo
   deallocate(h, uv)
 

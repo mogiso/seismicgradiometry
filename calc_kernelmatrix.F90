@@ -189,7 +189,7 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
   &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3), dist_tmp
   integer, allocatable :: vertix_index(:), triangle_indices(:, :), tnbr(:, :), index_org(:)
   real(kind = fp), allocatable :: vertices(:, :)
-  logical, allocatable :: is_usestation(:)
+  logical, allocatable :: is_usestation(:), used_triangle(:)
  
   nsta = size(location_sta)
   nsta_use = nsta
@@ -225,16 +225,18 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
     ii = ii + 1
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
+  allocate(used_triangle(1 : ntriangle))
+  used_triangle(1 : ntriangle) = .false.
 
   open(unit = 10, file = "station_triangle.txt")
-  do j = 1, ntriangle
-    do i = 1, 3
-      write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%lon, &
-      &                           location_sta(index_org(triangle_indices(i, j)))%lat
-    enddo
-    write(10, '(a)') ">"
-  enddo
-  close(10)
+  !do j = 1, ntriangle
+  !  do i = 1, 3
+  !    write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
+  !    &                           location_sta(index_org(triangle_indices(i, j)))%y_north
+  !  enddo
+  !  write(10, '(a)') ">"
+  !enddo
+  !close(10)
 
   do kk = 1, ngrid_y
     do jj = 1, ngrid_x
@@ -291,6 +293,15 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
 
       if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
 
+      if(used_triangle(j) .eqv. .false.) then
+        do i = 1, 3
+          write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
+          &                           location_sta(index_org(triangle_indices(i, j)))%y_north
+        enddo
+        write(10, '(a)') ">"
+        used_triangle(j) = .true.
+      endif
+
       !!calculate kernel matrix for interpolation
       g(1 : nsta_grid_max, 1 : 3) = 0.0_fp
       weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_fp
@@ -329,8 +340,9 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
 
     enddo
   enddo
+  close(10)
 
-  deallocate(vertix_index, vertices, triangle_indices, tnbr, is_usestation)
+  deallocate(vertix_index, vertices, triangle_indices, tnbr, is_usestation, used_triangle)
 
   return
 end subroutine calc_kernelmatrix_delaunay
@@ -359,7 +371,7 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   integer,         intent(out), optional :: nsta_correlation(:, :)
   real(kind = fp), intent(out), allocatable, optional :: slowness_est_matrix(:, :, :, :)
 
-  integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use
+  integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use, nsta_count_tmp
   integer         :: ipiv(1 : 3)
   logical         :: is_inside
 #ifdef ELLIPSE
@@ -367,9 +379,9 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
 #endif
   real(kind = fp) :: g(1 : nsta_grid_max, 1 : 3), g_tmp(1 : 3, 1 : 3), weight(1 : nsta_grid_max, 1 : nsta_grid_max), &
   &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3), dist_tmp
-  integer, allocatable :: vertix_index(:), triangle_indices(:, :), tnbr(:, :), index_org(:), add_station_index(:)
   real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
-  logical, allocatable :: is_usestation(:), used_station(:)
+  integer,         allocatable :: vertix_index(:), triangle_indices(:, :), tnbr(:, :), index_org(:), add_station_index(:)
+  logical,         allocatable :: is_usestation(:), used_station(:)
  
   nsta = size(location_sta)
   nsta_use = nsta
@@ -406,16 +418,9 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
 
-  open(unit = 10, file = "station_triangle.txt")
-  do j = 1, ntriangle
-    do i = 1, 3
-      write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%lon, &
-      &                           location_sta(index_org(triangle_indices(i, j)))%lat
-    enddo
-    write(10, '(a)') ">"
-  enddo
-  close(10)
 
+  !!Select stations at each grid
+  open(unit = 10, file = "stationlist_grid.txt")
   do kk = 1, ngrid_y
     do jj = 1, ngrid_x
       nsta_count(jj, kk) = 0
@@ -473,34 +478,39 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
         deallocate(add_station_distance, add_station_index)
       endif
 
+      nsta_count_tmp = nsta_count(jj, kk)
 #ifdef ELLIPSE
       !!Check whether all stations (vertices) are within the ellipse
       call greatcircle_dist(evlat, evlon, location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
       &                     backazimuth=propagation_direction)
-      do i = 1, nsta_count(jj, kk)
+      do i = 1, nsta_count_tmp
         call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
         &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
         &                   theta = propagation_direction, dist_x = dist_x_tmp, dist_y = dist_y_tmp)
         dist_tmp = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
         if(dist_tmp .lt. exp(-2.0_fp)) then
           grid_enough_sta(jj, kk) = .false.
-          exit
         endif
       enddo
 #else
       !!check distance between grid and stations (vertices)
-      do i = 1, nsta_count(jj, kk)
+      do i = 1, nsta_count_tmp
         call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
         &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
         &                   distance = dist_tmp)
         if(dist_tmp .gt. cutoff_dist) then
           grid_enough_sta(jj, kk) = .false.
-          exit
         endif
       enddo
 #endif
 
       if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
+
+      do i = 1, nsta_count(jj, kk)
+        write(10, '(2(e15.7, 1x))') location_sta(grid_stationindex(i, jj, kk))%x_east, &
+        &                           location_sta(grid_stationindex(i, jj, kk))%y_north
+      enddo
+      write(10, '(a)') ">"
 
       !!calculate kernel matrix for interpolation
       g(1 : nsta_grid_max, 1 : 3) = 0.0_fp
@@ -549,6 +559,9 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
 
     enddo
   enddo
+  close(10)
+
+  deallocate(is_usestation, used_station, index_org, vertix_index, vertices, triangle_indices, tnbr)
 
   if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
     allocate(slowness_est_matrix(1 : 2, 1 : maxval(nsta_correlation), 1 : ngrid_x, 1 : ngrid_y))

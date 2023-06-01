@@ -171,7 +171,7 @@ program seismicgradiometry_reducingvelocity2
             endif
           enddo
           if(calc_grad .eqv. .false.) exit
-          waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2 / 4 * 3)
+          if(n .eq. 1) waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
 
           !!calculate slowness and app. geom. spreading terms at each grid
           ngrad = ngrad - 1

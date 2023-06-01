@@ -16,7 +16,7 @@ module gradiometry_parameters
   real(kind = fp), public, parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
   &                                     x_end = 350.0_fp, y_end = 600.0_fp
   real(kind = fp), public, parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp 
-  real(kind = fp), public, parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp
+  real(kind = fp), public, parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp
   real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
   real(kind = fp), public, parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
   &                                     fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
@@ -26,10 +26,10 @@ module gradiometry_parameters
   integer,         public, parameter ::  nsta_grid_max = 4  !!For S-net/DONET OBPG array
   !integer,         public, parameter :: ntime = 630
   !integer,         public, parameter :: ntime = 1024 !!testdata
-  integer,         public, parameter :: ntime = 6000 !!testdata
-  integer,         public, parameter :: ntimestep = 10
+  integer,         public, parameter :: ntime = 2400 !!testdata
+  integer,         public, parameter :: ntimestep = 4 
   integer,         public, parameter :: naddstation_array = 1
-  integer,         public, parameter :: ngradient2 = 600
+  integer,         public, parameter :: ngradient2 = 240
 
   !!DONET OBP long-period (20-60min.)
   !real(kind = fp), public, parameter :: eps = 1.0e-10_fp

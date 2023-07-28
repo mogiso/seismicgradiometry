@@ -623,7 +623,7 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
   real(kind = fp), intent(out), allocatable :: slowness_matrix(:, :, :)
   integer,         intent(out), allocatable :: triangle_stationindex(:, :), nsta_count(:), tnbr(:, :)
 
-  integer         :: i, j, ii, jj, info, nsta, nsta_use
+  integer         :: i, j, ii, jj, info, nsta, nsta_use, npair, npair_tmp
   integer         :: ipiv(1 : 3)
   real(kind = fp) :: dist_tmp
   real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
@@ -741,12 +741,20 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
       endif
     enddo
   enddo
+  npair = 1
+  do i = 1, maxval(nsta_count) - 1
+    npair = npair * i
+  enddo
 
-  allocate(slowness_matrix(1 : 2, 1 : maxval(nsta_count), 1 : ntriangle))
+  allocate(slowness_matrix(1 : 2, 1 : npair, 1 : ntriangle))
   do jj = 1, ntriangle
-    slowness_matrix(1 : 2, 1 : nsta_count(jj), jj) = 0.0_fp
+    npair_tmp = 1
+    do ii = 1, nsta_count(jj) - 1
+      npair_tmp = npair_tmp * ii
+    enddo
+    slowness_matrix(1 : 2, 1 : npair_tmp, jj) = 0.0_fp
     if(nsta_count(jj) .eq. 0) cycle
-    allocate(g2(1 : nsta_count(jj), 1 : 2), g_tmp2(1 : 2, 1 : 2))
+    allocate(g2(1 : npair_tmp, 1 : 2), g_tmp2(1 : 2, 1 : 2))
     ii = 1
     do j = 1, nsta_count(jj) - 1
       do i = j + 1, nsta_count(jj)
@@ -767,7 +775,7 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
     call LA_GETRF(g_tmp2, ipiv(1 : 2), info = info)
     call LA_GETRI(g_tmp2, ipiv(1 : 2), info = info)
 #endif
-    slowness_matrix(1 : 2, 1 : nsta_count(jj), jj) = matmul(g_tmp2, transpose(g2))
+    slowness_matrix(1 : 2, 1 : npair_tmp, jj) = matmul(g_tmp2, transpose(g2))
     deallocate(g_tmp2, g2)
   enddo
 

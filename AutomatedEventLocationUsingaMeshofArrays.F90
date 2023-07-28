@@ -14,12 +14,11 @@ program AutomatedEventLocationUsingaMeshofArrays
   use correlation
   use taper
   use tandem, only : tandem3
+  use itoa
 
   implicit none
 
-  real(kind = fp), parameter :: eps = 1.0e-5_fp
-
-  integer :: nsta, npts_tmp, timeindex, i, j, k, ii, jj, m, n, ntriangle, nmesh_flag, nmesh_flag_tmp
+  integer :: nsta, npts_tmp, timeindex, i, j, k, ii, jj, m, n, ntriangle, nmesh_flag, nmesh_flag_tmp, ncount, npair_tmp
   type(location),  allocatable :: location_sta(:), triangle_center(:)
   real(kind = fp), allocatable :: begin(:)
   real(kind = fp), allocatable :: waveform_obs(:, :),       & !!(1 : ntime, 1 : nsta)
@@ -37,6 +36,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   integer                      :: max_xcorr(1)
   character(len = 129), allocatable :: sacfile(:)
   character(len = 129) :: outfile
+  character(len = 4)   :: ctimeindex
 
 
   nsta = command_argument_count()
@@ -63,8 +63,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   call calc_bpf_coef(fl, fh, dt, m, n, h, c, gn)
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
   do i = 1, nsta
-    !call tandem2(waveform_obs(:, i), waveform_obs(:, i), ntime, h, m, 1, gn, uv)
-    !call tandem3(waveform_obs(:, i), h, gn, uv(:, i))
+    call tandem3(waveform_obs(:, i), h, gn, 1, uv(:, i))
   enddo
   deallocate(h, uv)
 
@@ -74,9 +73,9 @@ program AutomatedEventLocationUsingaMeshofArrays
     call bl2xy(location_sta(i)%lon, location_sta(i)%lat, center_lon, center_lat, &
     &          location_sta(i)%y_north, location_sta(i)%x_east)
     location_sta(i)%y_north = location_sta(i)%y_north / 1000.0_fp
-    location_sta(i)%x_east  = location_sta(i)%x_east / 1000.0_fp
-    write(12, '(5(e15.7, 1x))') location_sta(i)%x_east, location_sta(i)%y_north, location_sta(i)%lon, location_sta(i)%lat, &
-    &                           location_sta(i)%depth
+    location_sta(i)%x_east  = location_sta(i)%x_east  / 1000.0_fp
+    write(12, '(5(e15.7, 1x))') location_sta(i)%x_east, location_sta(i)%y_north, &
+    &                           location_sta(i)%lon, location_sta(i)%lat, location_sta(i)%depth
   enddo
   close(12)
 
@@ -87,18 +86,19 @@ program AutomatedEventLocationUsingaMeshofArrays
 
   !!calculate amplitude and its spatial derivatives at each grid
   !open(unit = 30, file = "log")
-  outfile = "slowness_aeluma.txt"
-  open(unit = 10, file = trim(outfile), status = "replace")
   allocate(minval_xcorr(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
   do jj = 1, int(ntime / ntimestep)
-  !do jj = 80, 95
     timeindex = ntimestep * (jj - 1) + 1
     if(timeindex - ntime_fft + 1 .lt. 1) cycle
-    write(0, '(a, i0, a)') "Time index = ", jj, " Calculate amplitudes and their gradients at each grid"
+    write(0, '(a, i0, a)') "Time index = ", jj, " Calculate cross-correlation and slowness on each array"
 
     if(timeindex .lt. 1 .or. timeindex - ntimestep .gt. ntime) cycle
 
-
+    call int_to_char(jj, 4, ctimeindex)
+    outfile = "slowness_aeluma_" // trim(ctimeindex) // ".dat"
+    open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 7, status = "replace")
+    ncount = 1
+   
     !!initial step: estimate slowness vector without reducing velocity
     !!First, estimate spatial gradients
     allocate(xcorr_flag(1 : ntriangle))
@@ -108,7 +108,11 @@ program AutomatedEventLocationUsingaMeshofArrays
       !!calculate slowness vector using conventional array analysis
       if(nsta_count(ii) .eq. 0) cycle
       !correlation
-      allocate(lagtime(1 : nsta_count(ii)))
+      npair_tmp = 1
+      do j = 1, nsta_count(ii) - 1
+        npair_tmp = npair_tmp * j
+      enddo 
+      allocate(lagtime(1 : npair_tmp))
       k = 1
       do j = 1, nsta_count(ii) - 1
         waveform_fft(1 : ntime_fft, 1) &
@@ -134,25 +138,32 @@ program AutomatedEventLocationUsingaMeshofArrays
 
       xcorr_flag(ii) = .true.
       slowness(1 : 2, ii) &
-      &  = matmul(slowness_est_matrix(1 : 2, 1 : nsta_count(ii), ii), lagtime(1 : nsta_count(ii)))
-      !print *, ii, jj, app_velocity, backazimuth
+      &  = matmul(slowness_est_matrix(1 : 2, 1 : npair_tmp, ii), lagtime(1 : npair_tmp))
+      write(10, rec = ncount) real(triangle_center(ii)%x_east,  kind = sp), &
+      &                       real(triangle_center(ii)%y_north, kind = sp), &
+      &                       real(triangle_center(ii)%lon,     kind = sp), &
+      &                       real(triangle_center(ii)%lat,     kind = sp), &
+      &                       real(slowness(1, ii),             kind = sp), &
+      &                       real(slowness(2, ii),             kind = sp), &
+      &                       real(minval_xcorr(ii),            kind = sp)
+      ncount = ncount + 1
       deallocate(lagtime)
     enddo
 
-    do j = 1, ntriangle
-      nmesh_flag = 0
-      if(xcorr_flag(j) .eqv. .true.) then
-        nmesh_flag_tmp = 0
-        do i = 1, 3
-          if(xcorr_flag(tnbr(i, j)) .eqv. .true.) nmesh_flag_tmp = nmesh_flag_tmp + 1
-        enddo
-        if(nmesh_flag_tmp .gt. 1) nmesh_flag = nmesh_flag + 1
-      endif
-    enddo
+    !do j = 1, ntriangle
+    !  nmesh_flag = 0
+    !  if(xcorr_flag(j) .eqv. .true.) then
+    !    nmesh_flag_tmp = 0
+    !    do i = 1, 3
+    !      if(xcorr_flag(tnbr(i, j)) .eqv. .true.) nmesh_flag_tmp = nmesh_flag_tmp + 1
+    !    enddo
+    !    if(nmesh_flag_tmp .gt. 1) nmesh_flag = nmesh_flag + 1
+    !  endif
+    !enddo
           
-
+    deallocate(xcorr_flag)
+    close(10)
   enddo
-  close(10)
 
 
   stop

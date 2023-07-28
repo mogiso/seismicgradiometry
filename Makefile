@@ -10,7 +10,7 @@
 ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all -traceback
-  DEFS = -DDOUBLE -DMKL
+  DEFS = -DDOUBLE -DMKL -DGREEN_CORRECTION
   NETCDF_FORTRAN_LIB = /usr/local/netcdff-intel/lib
   NETCDF_FORTRAN_INC = /usr/local/netcdff-intel/include
   NETCDF_LIB = /usr/local/netcdf-intel/lib

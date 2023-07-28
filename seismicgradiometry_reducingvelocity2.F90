@@ -60,6 +60,9 @@ program seismicgradiometry_reducingvelocity2
 #else
     waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * order
 #endif
+#ifdef GREEN_CORRECTION
+    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * (location_sta(i)%depth / depth_ref) ** 0.25_fp
+#endif
   enddo
 
 #ifdef ENVELOPE

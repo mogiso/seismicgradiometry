@@ -105,6 +105,7 @@ module gradiometry_parameters
   integer,         public, parameter :: ntime_fft = 1024, ntime_fft2 = ntime_fft / 2
   real(kind = fp), public, parameter :: xcorr_min = 0.6_fp
   real(kind = fp), public, parameter :: cos_taper_ratio = 0.1_fp
+  real(kind = fp), public, parameter :: lagtime_max = 20.0_fp * 60.0_fp, lagtime_min = -lagtime_max
  
 end module gradiometry_parameters
   

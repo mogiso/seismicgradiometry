@@ -130,6 +130,16 @@ program AutomatedEventLocationUsingaMeshofArrays
           k = k + 1
         enddo
       enddo
+      if(maxval(lagtime) .gt. lagtime_max) then
+        xcorr_flag(ii) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
+      if(minval(lagtime) .lt. lagtime_min) then
+        xcorr_flag(ii) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
       if(minval_xcorr(ii) .le. xcorr_min) then
         xcorr_flag(ii) = .false.
         deallocate(lagtime)

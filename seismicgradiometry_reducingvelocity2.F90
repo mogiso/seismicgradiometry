@@ -232,7 +232,7 @@ program seismicgradiometry_reducingvelocity2
 
     outfile = "amplitude_gradiometry_" // trim(ctimeindex) // ".grd"
     outfile = trim(outfile)
-    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est_plot, outfile)
+    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est_plot, outfile, nanval = 0.0_fp)
 
   enddo
   close(30)

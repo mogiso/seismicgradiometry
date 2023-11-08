@@ -4,10 +4,10 @@ program trace_ampterm
 
   implicit none
 
-  real(kind = fp), parameter :: dtimestep = 30.0_fp
+  real(kind = fp), parameter :: dtimestep = 60.0_fp
   real(kind = fp) :: slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                  sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y)
-  real(kind = fp) :: ray_xini, ray_yini, ray_xtmp, ray_ytmp, ray_az, ray_slowness, ray_length, ray_geom_spread
+  real(kind = fp) :: ray_xini, ray_yini, ray_xtmp, ray_ytmp, ray_az, ray_slowness, ray_length, ray_geomspread, ray_geomspread_tmp
   real(kind = sp) :: xloc, yloc, slowness_x_tmp, slowness_y_tmp, sigma_slowness_x_tmp, sigma_slowness_y_tmp, &
   &                  ampterm_x_tmp, ampterm_y_tmp, sigma_ampterm_x_tmp, sigma_ampterm_y_tmp
   integer         :: xindex, yindex, irec, ios
@@ -42,24 +42,27 @@ program trace_ampterm
   !!do ray trace
   ray_xtmp = ray_xini
   ray_ytmp = ray_yini
-  ray_geom_spread = 0.0_fp
+  ray_geomspread = 0.0_fp
+  ray_geomspread_tmp = 0.0_fp
+  ray_length = 0.0_fp
   do
     xindex = (ray_xtmp - x_start) / dgrid_x + 1
     yindex = (ray_ytmp - y_start) / dgrid_y + 1
 
 
     if(.not. (xindex .ge. 1 .and. xindex .le. ngrid_x .and. yindex .ge. 1 .and. yindex .le. ngrid_y)) exit
-    if(slowness(2, xindex, yindex) .eq. 0.0_fp) exit
-    print '(2(f6.1, 1x), 2(i0, 1x), e15.8)', ray_xtmp, ray_ytmp, xindex, yindex, ray_geom_spread
+    print '(2(f6.1, 1x), 2(i0, 1x), 3(e15.8, 1x))', &
+    &     ray_xtmp, ray_ytmp, xindex, yindex, ray_length, ray_geomspread_tmp, ray_geomspread
 
+    if(slowness(2, xindex, yindex) .eq. 0.0_fp) exit
 
     ray_az = atan2(slowness(1, xindex, yindex), slowness(2, xindex, yindex))
     ray_slowness = sqrt(slowness(1, xindex, yindex) ** 2 + slowness(2, xindex, yindex) ** 2)
     ray_length = dtimestep / ray_slowness
     ray_xtmp = ray_xtmp + ray_length * sin(ray_az)
     ray_ytmp = ray_ytmp + ray_length * cos(ray_az)
-    ray_geom_spread = ray_geom_spread &
-    &               + ray_length * (ampterm(1, xindex, yindex) * sin(ray_az) + ampterm(2, xindex, yindex) * cos(ray_az))
+    ray_geomspread_tmp = ray_length * (ampterm(1, xindex, yindex) * sin(ray_az) + ampterm(2, xindex, yindex) * cos(ray_az))
+    ray_geomspread = ray_geomspread + ray_geomspread_tmp
   enddo
 
   stop

@@ -24,24 +24,24 @@ $dt = 60;
 $ref_sec = $ref_hh * 3600 + $ref_mm * 60 + $ref_ss;
 
 #S-net ref: 142.5E, 38.25N
-#$dgrid_x = 20;
-#$dgrid_y = 20;
-#$min_x = -350;
-#$max_x = 350;
-#$min_y = -600;
-#$max_y = 600;
-#$size_x = 7;
-#$size_y = 12;
+$dgrid_x = 20;
+$dgrid_y = 20;
+$min_x = -350;
+$max_x = 350;
+$min_y = -600;
+$max_y = 600;
+$size_x = 7;
+$size_y = 12;
 
 #DONET ref: 135.75E, 33.2N
-$dgrid_x = 10;
-$dgrid_y = 10;
-$min_x = -150;
-$max_x = 150;
-$min_y = -100;
-$max_y = 100;
-$size_x = 7;
-$size_y = 4.7;
+#$dgrid_x = 10;
+#$dgrid_y = 10;
+#$min_x = -150;
+#$max_x = 150;
+#$min_y = -100;
+#$max_y = 100;
+#$size_x = 7;
+#$size_y = 4.7;
 
 $dx = $size_x + 0.8;
 

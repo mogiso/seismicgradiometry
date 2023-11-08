@@ -61,7 +61,8 @@ program seismicgradiometry_reducingvelocity2
     waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * order
 #endif
 #ifdef GREEN_CORRECTION
-    waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * (location_sta(i)%depth / depth_ref) ** 0.25_fp
+    if(location_sta(i)%depth .ne. -12.345_fp) &
+    &  waveform_obs(1 : ntime, i) = waveform_obs(1 : ntime, i) * (location_sta(i)%depth / depth_ref) ** 0.25_fp
 #endif
   enddo
 
@@ -74,6 +75,11 @@ program seismicgradiometry_reducingvelocity2
   uv(1 : 4 * m, 1 : nsta) = 0.0_fp
   do i = 1, nsta
     call tandem3(waveform_obs(:, i), h, gn, 1, past_uv = uv(:, i))
+  enddo
+  !!inverse filtering
+  uv(1 : 4 * m, 1 : nsta) = 0.0_fp
+  do i = 1, nsta
+    call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
   enddo
   deallocate(h, uv)
 #endif
@@ -174,7 +180,8 @@ program seismicgradiometry_reducingvelocity2
             endif
           enddo
           if(calc_grad .eqv. .false.) exit
-          if(n .eq. 1) waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
+          !if(n .eq. 1) waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
+          waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
 
           !!calculate slowness and app. geom. spreading terms at each grid
           ngrad = ngrad - 1

@@ -77,10 +77,10 @@ program seismicgradiometry_reducingvelocity2
     call tandem3(waveform_obs(:, i), h, gn, 1, past_uv = uv(:, i))
   enddo
   !!inverse filtering
-  uv(1 : 4 * m, 1 : nsta) = 0.0_fp
-  do i = 1, nsta
-    call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
-  enddo
+  !uv(1 : 4 * m, 1 : nsta) = 0.0_fp
+  !do i = 1, nsta
+  !  call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
+  !enddo
   deallocate(h, uv)
 #endif
 
@@ -115,8 +115,8 @@ program seismicgradiometry_reducingvelocity2
   do kk = 1, int(ntime / ntimestep)
     timeindex = ntimestep * (kk - 1) + 1
     write(0, '(a, i0, a)') "Time index = ", kk, " Calculate amplitudes and their gradients at each grid"
-    sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_sp
-    sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_sp
+    sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
+    sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
 
     if(timeindex .lt. 1 .or. timeindex - ntimestep .gt. ntime) cycle
 
@@ -164,7 +164,8 @@ program seismicgradiometry_reducingvelocity2
                 exit
               endif
               obs_vector(i) &
-              &  = waveform_obs(timeindex - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min, grid_stationindex(i, ii, jj))
+              &  = waveform_obs(timeindex - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min, &
+              &                 grid_stationindex(i, ii, jj))
             enddo
             if(calc_grad .eqv. .false.) exit
 
@@ -239,11 +240,11 @@ program seismicgradiometry_reducingvelocity2
 
     outfile = "amplitude_gradiometry_" // trim(ctimeindex) // ".grd"
     outfile = trim(outfile)
-    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est_plot, outfile, nanval = 0.0_fp)
+    call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, waveform_est_plot, outfile, &
+    &                        nanval = 0.0_fp)
 
   enddo
   close(30)
-
 
   stop
 end program seismicgradiometry_reducingvelocity2

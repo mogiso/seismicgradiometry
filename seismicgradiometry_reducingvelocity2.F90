@@ -22,7 +22,8 @@ program seismicgradiometry_reducingvelocity2
   real(kind = fp), allocatable :: begin(:)
   real(kind = fp), allocatable :: waveform_obs(:, :)
   real(kind = fp), allocatable :: h(:), uv(:, :)             !!For time-domain recursive filter 
-  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, denominator, &
+  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, denominator, uu, uut, utut, &
+  &                               uxu(1 : 2), uxut(1 : 2), numerator_slowness(1 : 2), numerator_ampterm(1 : 2), &
   &                               obs_vector(1 : nsta_grid_max), &
   &                               sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), & 
@@ -191,26 +192,60 @@ program seismicgradiometry_reducingvelocity2
           !!estimate slowness term
           slowness_correction(1 : 2, ii, jj) = 0.0_fp
           ampterm(1 : 2, ii, jj) = 0.0_fp
+          uu   = dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 1))
+          uut  = dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 4))
+          utut = dot_product(waveform_est_tmp2(1 : ngrad, 4), waveform_est_tmp2(1 : ngrad, 4))
+          denominator = uu * utut - uut * uut
           do i = 1, 2
-            denominator = dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 1)) &
-            &           * dot_product(waveform_est_tmp2(1 : ngrad, 4), waveform_est_tmp2(1 : ngrad, 4)) &
-            &           - dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 4)) &
-            &           * dot_product(waveform_est_tmp2(1 : ngrad, 1), waveform_est_tmp2(1 : ngrad, 4))
+            uxu(i)  = dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 1))
+            uxut(i) = dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 4))
+            numerator_slowness(i) = uu   * uxut(i) - uut * uxu(i)
+            numerator_ampterm(i)  = utut * uxu(i)  - uut * uxut(i)
             if(denominator .lt. eps) exit
-            slowness_correction(i, ii, jj) = &
-            &  + ((dot_product(waveform_est_tmp2(1 : ngrad, 1),     waveform_est_tmp2(1 : ngrad, 1))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 4)))  &
-            &  -  (dot_product(waveform_est_tmp2(1 : ngrad, 1),     waveform_est_tmp2(1 : ngrad, 4))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 1)))) &
-            &  /   denominator
-            ampterm(i, ii, jj) &
-            &  = ((dot_product(waveform_est_tmp2(1 : ngrad, 4),     waveform_est_tmp2(1 : ngrad, 4))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 1)))  &
-            &  -  (dot_product(waveform_est_tmp2(1 : ngrad, 1),     waveform_est_tmp2(1 : ngrad, 4))   &
-            &  *   dot_product(waveform_est_tmp2(1 : ngrad, i + 1), waveform_est_tmp2(1 : ngrad, 4)))) &
-            &  /   denominator
+
+            slowness_correction(i, ii, jj) = -numerator_slowness(i) / denominator
+            ampterm(i, ii, jj) = numerator_ampterm(i) / denominator
           enddo
-          slowness(1 : 2, ii, jj) = slowness(1 : 2, ii, jj) - slowness_correction(1 : 2, ii, jj)
+          slowness(1 : 2, ii, jj) = slowness(1 : 2, ii, jj) + slowness_correction(1 : 2, ii, jj)
+          !!error estimation
+          do i = 1, ngrad
+            sigma_slowness(1 : 2, ii, jj) = sigma_slowness(1 : 2, ii, jj) &
+                                          !!dB/du
+            &                             + abs((2.0_fp * waveform_est_tmp2(i, 1)     * uxut(1 : 2) &
+            &                                           - waveform_est_tmp2(i, 4)     * uxu (1 : 2) &
+            &                                           - waveform_est_tmp2(i, 2 : 3) * uut       ) / denominator &
+            &                                  - 2.0_fp * (numerator_slowness(1 : 2) / denominator ** 2) &
+            &                                           * (waveform_est_tmp2(i, 1) * utut - waveform_est_tmp2(i, 4) * uut)) &
+            &                             * abs(waveform_est_tmp2(i, 1)) * 0.05_fp &
+                                          !!dB/dut
+            &                             + abs((waveform_est_tmp2(i, 2 : 3) * uu - waveform_est_tmp2(i, 1) * uxu(1 : 2)) &
+            &                                  / denominator &
+            &                                  - 2.0_fp * (numerator_slowness(1 : 2) / denominator ** 2) &
+            &                                           * (waveform_est_tmp2(i, 4) * uu - waveform_est_tmp2(i, 1) * uut)) &
+            &                             * abs(waveform_est_tmp2(i, 4)) * 0.05_fp &
+                                          !!dB/dux
+            &                             + abs((waveform_est_tmp2(i, 4) * uu - waveform_est_tmp2(i, 1) * uut) &
+            &                                  / denominator) &
+            &                             * abs(waveform_est_tmp2(i, 2 : 3)) * 0.05_fp
+            sigma_ampterm(1 : 2, ii, jj) = sigma_ampterm(1 : 2, ii, jj) &
+                                         !!dA/du
+            &                            + abs((waveform_est_tmp2(i, 2 : 3) * utut - waveform_est_tmp2(i, 4) * uxut(1 : 2)) &
+            &                                  / denominator &
+            &                                  - 2.0_fp * (numerator_ampterm(1 : 2) / denominator ** 2) &
+            &                                           * (waveform_est_tmp2(i, 1) * utut - waveform_est_tmp2(i, 4) * uut)) &
+            &                            * abs(waveform_est_tmp2(i, 1)) * 0.05_fp &
+                                         !!dA/dut
+            &                            + abs((2.0_fp * waveform_est_tmp2(i, 4)     * uxu (1 : 2) &
+            &                                          - waveform_est_tmp(i, 1)      * uxut(1 : 2) &
+            &                                          - waveform_est_tmp2(i, 2 : 3) * uut       ) / denominator &
+            &                                 - 2.0_fp * (numerator_ampterm(1 : 2) / denominator ** 2) &
+            &                                          * (waveform_est_tmp2(i, 4) * uu - waveform_est_tmp2(i, 1) * uut)) &
+            &                            * abs(waveform_est_tmp2(i, 4)) * 0.05_fp &
+                                         !!dA/dux
+            &                            + abs((waveform_est_tmp2(i, 1) * utut - waveform_est_tmp2(i, 4) * uut) &
+            &                                 / denominator) &
+            &                            * abs(waveform_est_tmp2(i, 2 : 3)) * 0.05_fp
+          enddo
         
           if(slowness_correction(1, ii, jj) * slowness_correction(1, ii, jj) &
           &  + slowness_correction(2, ii, jj) * slowness_correction(2, ii, jj) .lt. eps) exit

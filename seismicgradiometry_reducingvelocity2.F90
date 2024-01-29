@@ -19,10 +19,9 @@ program seismicgradiometry_reducingvelocity2
   integer :: nsta, npts_tmp, timeindex, timeindex_diff_min, i, j, ii, jj, kk, ncount, m, n, ngrad
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
   type(location),  allocatable :: location_sta(:)
-  real(kind = fp), allocatable :: begin(:)
-  real(kind = fp), allocatable :: waveform_obs(:, :)
+  real(kind = fp), allocatable :: begin(:), waveform_obs(:, :)
   real(kind = fp), allocatable :: h(:), uv(:, :)             !!For time-domain recursive filter 
-  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, denominator, uu, uut, utut, &
+  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, denominator, uu, uut, utut, min_dx, min_dy, relativeerror, &
   &                               uxu(1 : 2), uxut(1 : 2), numerator_slowness(1 : 2), numerator_ampterm(1 : 2), &
   &                               obs_vector(1 : nsta_grid_max), &
   &                               sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
@@ -33,7 +32,8 @@ program seismicgradiometry_reducingvelocity2
   &                               slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               slowness_correction(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
-  &                               kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y)
+  &                               kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), &
+  &                               error_matrix(1 : 3, 1 : ngrid_x, 1 : ngrid_y)
   integer                      :: grid_stationindex(1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), &
   &                               nsta_count(1 : ngrid_x, 1 : ngrid_y), timeindex_diff(1 : nsta_grid_max)
   logical                      :: calc_grad, &
@@ -109,7 +109,7 @@ program seismicgradiometry_reducingvelocity2
   !!make kernel matrix for each grid
   !call calc_kernelmatrix_circle(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
   call calc_kernelmatrix_delaunay2(location_grid, location_sta, naddstation_array, grid_enough_sta, &
-  &                                nsta_count, grid_stationindex, kernel_matrix)
+  &                                nsta_count, grid_stationindex, kernel_matrix, error_matrix = error_matrix)
 
   !!calculate amplitude and its spatial derivatives at each grid
   !open(unit = 30, file = "log")
@@ -152,10 +152,17 @@ program seismicgradiometry_reducingvelocity2
             dx_east  = location_grid(ii, jj)%x_east  - location_sta(grid_stationindex(i, ii, jj))%x_east
             dy_north = location_grid(ii, jj)%y_north - location_sta(grid_stationindex(i, ii, jj))%y_north
             timeindex_diff(i) = int((dx_east * slowness(1, ii, jj) + dy_north * slowness(2, ii, jj)) / dt)
+            if(i .eq. 1) then
+              min_dx = abs(dx_east)
+              min_dy = abs(dy_north)
+            elseif(i .gt. 1) then
+              if(abs(dx_east) .le. min_dx) min_dx = abs(dx_east)
+              if(abs(dy_north) .le. min_dy) min_dy = abs(dy_north)
+            endif
           enddo
           timeindex_diff_min = minval(timeindex_diff)
 
-          ngrad = 1
+          ngrad = 0
           do j = 1, ngradient2
             obs_vector(1 : nsta_grid_max) = 0.0_fp
             do i = 1, nsta_count(ii, jj)
@@ -172,22 +179,28 @@ program seismicgradiometry_reducingvelocity2
 
             waveform_est_tmp(1 : 3, j) &
             &  = matmul(kernel_matrix(1 : 3, 1 : nsta_count(ii, jj), ii, jj), obs_vector(1 : nsta_count(ii, jj)))
-            !!Time derivative: backward differentiation
-            if(j .gt. 1) then
-              waveform_est_tmp(4, j) = (waveform_est_tmp(1, j) - waveform_est_tmp(1, j - 1)) / dt
-              do i = 1, 4
-                waveform_est_tmp2(ngrad, i) = waveform_est_tmp(i, j)
-              enddo
-              ngrad = ngrad + 1
+            ngrad = ngrad + 1
+          enddo
+          !!calculate slowness and app. geom. spreading terms at each grid
+          if(ngrad .le. 2) cycle  !!if the number of data is small, do not calculate gradiometry coefficients
+
+          !!Time derivative
+          do j = 1, ngrad
+            if(j .gt. 1 .and. j .lt. ngrad) then
+              waveform_est_tmp(4, j) = (waveform_est_tmp(1, j + 1) - waveform_est_tmp(1, j - 1)) / dt * 0.5_fp
+            elseif(j .eq. 1) then
+              waveform_est_tmp(4, j) = (waveform_est_tmp(1, j + 1) - waveform_est_tmp(1, j))     / dt
+            elseif(j .eq. ngrad) then
+              waveform_est_tmp(4, j) = (waveform_est_tmp(1, j)     - waveform_est_tmp(1, j - 1)) / dt
             endif
+            do i = 1, 4
+              waveform_est_tmp2(j, i) = waveform_est_tmp(i, j)
+            enddo
           enddo
           if(calc_grad .eqv. .false.) exit
           !if(n .eq. 1) waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
-          waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
+          waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngrad)
 
-          !!calculate slowness and app. geom. spreading terms at each grid
-          ngrad = ngrad - 1
-          if(ngrad .le. 2) cycle  !!if the number of data is small, do not calculate gradiometry coefficients
 
           !!estimate slowness term
           slowness_correction(1 : 2, ii, jj) = 0.0_fp
@@ -208,45 +221,51 @@ program seismicgradiometry_reducingvelocity2
           enddo
           slowness(1 : 2, ii, jj) = slowness(1 : 2, ii, jj) + slowness_correction(1 : 2, ii, jj)
           !!error estimation
-          do i = 1, ngrad
-            sigma_slowness(1 : 2, ii, jj) = sigma_slowness(1 : 2, ii, jj) &
-                                          !!dB/du
-            &                             + abs((2.0_fp * waveform_est_tmp2(i, 1)     * uxut(1 : 2) &
-            &                                           - waveform_est_tmp2(i, 4)     * uxu (1 : 2) &
-            &                                           - waveform_est_tmp2(i, 2 : 3) * uut       ) / denominator &
-            &                                  - 2.0_fp * (numerator_slowness(1 : 2) / denominator ** 2) &
-            &                                           * (waveform_est_tmp2(i, 1) * utut - waveform_est_tmp2(i, 4) * uut)) &
-            &                             * abs(waveform_est_tmp2(i, 1)) * 0.05_fp &
-                                          !!dB/dut
-            &                             + abs((waveform_est_tmp2(i, 2 : 3) * uu - waveform_est_tmp2(i, 1) * uxu(1 : 2)) &
-            &                                  / denominator &
-            &                                  - 2.0_fp * (numerator_slowness(1 : 2) / denominator ** 2) &
-            &                                           * (waveform_est_tmp2(i, 4) * uu - waveform_est_tmp2(i, 1) * uut)) &
-            &                             * abs(waveform_est_tmp2(i, 4)) * 0.05_fp &
-                                          !!dB/dux
-            &                             + abs((waveform_est_tmp2(i, 4) * uu - waveform_est_tmp2(i, 1) * uut) &
-            &                                  / denominator) &
-            &                             * abs(waveform_est_tmp2(i, 2 : 3)) * 0.05_fp
-            sigma_ampterm(1 : 2, ii, jj) = sigma_ampterm(1 : 2, ii, jj) &
-                                         !!dA/du
-            &                            + abs((waveform_est_tmp2(i, 2 : 3) * utut - waveform_est_tmp2(i, 4) * uxut(1 : 2)) &
-            &                                  / denominator &
-            &                                  - 2.0_fp * (numerator_ampterm(1 : 2) / denominator ** 2) &
-            &                                           * (waveform_est_tmp2(i, 1) * utut - waveform_est_tmp2(i, 4) * uut)) &
-            &                            * abs(waveform_est_tmp2(i, 1)) * 0.05_fp &
-                                         !!dA/dut
-            &                            + abs((2.0_fp * waveform_est_tmp2(i, 4)     * uxu (1 : 2) &
-            &                                          - waveform_est_tmp(i, 1)      * uxut(1 : 2) &
-            &                                          - waveform_est_tmp2(i, 2 : 3) * uut       ) / denominator &
-            &                                 - 2.0_fp * (numerator_ampterm(1 : 2) / denominator ** 2) &
-            &                                          * (waveform_est_tmp2(i, 4) * uu - waveform_est_tmp2(i, 1) * uut)) &
-            &                            * abs(waveform_est_tmp2(i, 4)) * 0.05_fp &
-                                         !!dA/dux
-            &                            + abs((waveform_est_tmp2(i, 1) * utut - waveform_est_tmp2(i, 4) * uut) &
-            &                                 / denominator) &
-            &                            * abs(waveform_est_tmp2(i, 2 : 3)) * 0.05_fp
+          relativeerror = (pi * fh) ** 2 &
+          &             * ((slowness(1, ii, jj) * min_dx) ** 2 + (slowness(2, ii, jj) * min_dy) ** 2)
+          do j = 1, ngrad
+            do i = 1, 2
+              sigma_slowness(i, ii, jj) = sigma_slowness(i, ii, jj) &
+                                        !!dB/du
+              &                         + ((2.0_fp * waveform_est_tmp2(j, 1)     * uxut(i) &
+              &                                    - waveform_est_tmp2(j, 4)     * uxu (i) &
+              &                                    - waveform_est_tmp2(j, i + 1) * uut) / denominator &
+              &                           - 2.0_fp * (numerator_slowness(i) / denominator ** 2) &
+              &                                    * (waveform_est_tmp2(j, 1) * utut - waveform_est_tmp2(j, 4) * uut)) ** 2 &
+              &                         * (waveform_est_tmp2(j, 1) * relativeerror * error_matrix(1, ii, jj)) ** 2 &
+                                        !!dB/dut
+              &                         + ((waveform_est_tmp2(j, i + 1) * uu - waveform_est_tmp2(j, 1) * uxu(i)) &
+              &                           / denominator &
+              &                           - 2.0_fp * (numerator_slowness(i) / denominator ** 2) &
+              &                                    * (waveform_est_tmp2(j, 4) * uu - waveform_est_tmp2(j, 1) * uut)) ** 2 &
+              &                         * (waveform_est_tmp2(j, 4) &
+              &                         * (2.0_fp * relativeerror * error_matrix(1, ii, jj) / dt)) ** 2 &
+                                        !!dB/dux
+              &                         + ((waveform_est_tmp2(j, 4) * uu - waveform_est_tmp2(j, 1) * uut) &
+              &                           / denominator) ** 2 &
+              &                         * (waveform_est_tmp2(j, i + 1) * (relativeerror * error_matrix(i + 1, ii, jj))) ** 2
+              sigma_ampterm(i, ii, jj) = sigma_ampterm(i, ii, jj) &
+                                       !!dA/du
+              &                        + ((waveform_est_tmp2(j, i + 1) * utut - waveform_est_tmp2(j, 4) * uxut(i)) &
+              &                           / denominator &
+              &                           - 2.0_fp * (numerator_ampterm(i) / denominator ** 2) &
+              &                                    * (waveform_est_tmp2(j, 1) * utut - waveform_est_tmp2(j, 4) * uut)) ** 2 &
+              &                        * (waveform_est_tmp2(j, 1) * relativeerror * error_matrix(1, ii, jj)) ** 2 &
+                                       !!dA/dut
+              &                        + ((2.0_fp * waveform_est_tmp2(j, 4)     * uxu (i) &
+              &                                   - waveform_est_tmp2(j, 1)     * uxut(i) &
+              &                                   - waveform_est_tmp2(j, i + 1) * uut) / denominator &
+              &                          - 2.0_fp * (numerator_ampterm(i) / denominator ** 2) &
+              &                                   * (waveform_est_tmp2(j, 4) * uu - waveform_est_tmp2(j, 1) * uut)) ** 2 &
+              &                        * (waveform_est_tmp2(j, 4) &
+              &                        * (2.0_fp * relativeerror * error_matrix(1, ii, jj) / dt)) ** 2 &
+                                       !!dA/dux
+              &                        + ((waveform_est_tmp2(j, 1) * utut - waveform_est_tmp2(j, 4) * uut) &
+              &                          / denominator) ** 2 &
+              &                        * (waveform_est_tmp2(j, i + 1) * (relativeerror * error_matrix(i + 1, ii, jj))) ** 2
+            enddo
           enddo
-        
+
           if(slowness_correction(1, ii, jj) * slowness_correction(1, ii, jj) &
           &  + slowness_correction(2, ii, jj) * slowness_correction(2, ii, jj) .lt. eps) exit
         enddo

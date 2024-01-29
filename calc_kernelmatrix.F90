@@ -350,7 +350,7 @@ end subroutine calc_kernelmatrix_delaunay
 
 subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station, &
 &                                      grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix, &
-&                                      nsta_correlation, slowness_est_matrix)
+&                                      nsta_correlation, slowness_est_matrix, error_matrix)
   use nrtype, only : fp
   use constants, only : pi
   use typedef
@@ -370,6 +370,7 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   real(kind = fp), intent(out) :: kernel_matrix(:, :, :, :)
   integer,         intent(out), optional :: nsta_correlation(:, :)
   real(kind = fp), intent(out), allocatable, optional :: slowness_est_matrix(:, :, :, :)
+  real(kind = fp), intent(out), optional :: error_matrix(:, :, :)
 
   integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use, nsta_count_tmp
   integer         :: ipiv(1 : 3)
@@ -387,6 +388,9 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   nsta_use = nsta
   allocate(is_usestation(1 : nsta), index_org(1 : nsta), used_station(1 : nsta))
   is_usestation(1 : nsta) = .true.
+  if(present(error_matrix)) then
+    error_matrix(1 : 3, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
+  endif
 
   !!check interstation distance
   do j = 1, nsta - 1
@@ -546,7 +550,15 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
         cycle
       endif
 
-      kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
+      !kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
+      kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(matmul(g_tmp, transpose(g)), weight)
+      if(present(error_matrix)) then
+        do i = 1, 3
+           error_matrix(i, jj, kk) = g_tmp(i, i)
+        enddo
+      endif
+
+        
 
       if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
         nsta_correlation(jj, kk) = 0

@@ -34,8 +34,8 @@ program calc_ampradterm_diff
       &                                    ampterm_x_tmp, ampterm_y_tmp, sigma_ampterm_x_tmp, sigma_ampterm_y_tmp
       if(ios .ne. 0) exit
       icount = icount + 1
-      x_index = nint((real(x_tmp, kind = fp) - x_start) / dgrid_x) + 1
-      y_index = nint((real(y_tmp, kind = fp) - y_start) / dgrid_y) + 1
+      x_index = int((real(x_tmp, kind = fp) - x_start) / dgrid_x) + 1
+      y_index = int((real(y_tmp, kind = fp) - y_start) / dgrid_y) + 1
       slowness_x(i, x_index, y_index) = real(sx_tmp, kind = fp)
       slowness_y(i, x_index, y_index) = real(sy_tmp, kind = fp)
       ampterm_x(i, x_index, y_index) = real(ampterm_x_tmp, kind = fp)
@@ -56,11 +56,13 @@ program calc_ampradterm_diff
         amp_geospread(1 : 2) = ampterm_x(1 : 2, i, j) * sin(direction(1 : 2)) + ampterm_y(1 : 2, i, j) * cos(direction(1 : 2))
         amp_geospread(1 : 2) = amp_geospread(1 : 2) * 100.0_fp
         amp_radterm(1 : 2) = ampterm_x(1 : 2, i, j) * cos(direction(1 : 2)) - ampterm_y(1 : 2, i, j) * sin(direction(1 : 2))
-        amp_radterm(1 : 2) = amp_radterm(1 : 2) * 10000.0_fp
+        amp_radterm(1 : 2) = amp_radterm(1 : 2) * 100.0_fp
+        !amp_geospread_diff(i, j) = amp_geospread(2) - amp_geospread(1)
+        !amp_radterm_diff(i, j) = amp_radterm(2) - amp_radterm(1)
         amp_geospread_diff(i, j) = ampterm_x_diff(i, j) * sin(direction(2)) + ampterm_y_diff(i, j) * cos(direction(2))
         amp_geospread_diff(i, j) = amp_geospread_diff(i, j) * 100.0_fp
         amp_radterm_diff(i, j) = ampterm_x_diff(i, j) * cos(direction(2)) - ampterm_y_diff(i, j) * sin(direction(2))
-        amp_radterm_diff(i, j) = amp_radterm_diff(i, j) * 10000.0_fp / rad2deg
+        amp_radterm_diff(i, j) = amp_radterm_diff(i, j) * 100.0_fp
       endif
     enddo
   enddo

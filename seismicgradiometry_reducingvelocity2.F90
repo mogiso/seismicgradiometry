@@ -78,10 +78,10 @@ program seismicgradiometry_reducingvelocity2
     call tandem3(waveform_obs(:, i), h, gn, 1, past_uv = uv(:, i))
   enddo
   !!inverse filtering
-  !uv(1 : 4 * m, 1 : nsta) = 0.0_fp
-  !do i = 1, nsta
-  !  call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
-  !enddo
+  uv(1 : 4 * m, 1 : nsta) = 0.0_fp
+  do i = 1, nsta
+    call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
+  enddo
   deallocate(h, uv)
 #endif
 

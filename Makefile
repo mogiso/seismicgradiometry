@@ -10,7 +10,7 @@
 ifeq ($(arch), ifx)
   FC = ifx
   FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all -traceback
-  DEFS = -DDOUBLE -DMKL
+  DEFS = -DDOUBLE -DMKL -DPARTICLEVELOCITY
   NETCDF_FORTRAN_LIB = /usr/local/intel/lib
   NETCDF_FORTRAN_INC = /usr/local/intel/include
   NETCDF_LIB = /usr/local/intel/lib
@@ -36,7 +36,7 @@ endif
 ifeq ($(arch),gfortran-debug)
   FC = gfortran
   FFLAGS = -O0 -Wall -fbounds-check -fbacktrace -Wuninitialized -g
-  DEFS = -DDOUBLE
+  DEFS = -DDOUBLE -DSORATENA
   NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
   NETCDF_FORTRAN_INC = /usr/include
   NETCDF_LIB = ${NETCDF_FORTRAN_LIB}
@@ -49,7 +49,7 @@ endif
 ifeq ($(arch),gfortran)
   FC = gfortran
   FFLAGS = -O2 -frecursive
-  DEFS = -DDOUBLE
+  DEFS = -DDOUBLE -DPARTICLEVELOCITY
   NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
   NETCDF_FORTRAN_INC = /usr/include
   NETCDF_LIB = ${NETCDF_FORTRAN_LIB}
@@ -160,8 +160,8 @@ $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
 
 ##Object dependency
-$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants)
-$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants)
+$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
         $(mod_gradiometry_parameters) \
 	$(o_constants) $(o_gradiometry_parameters) $(o_sort)

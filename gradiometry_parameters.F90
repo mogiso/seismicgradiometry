@@ -32,7 +32,7 @@ module gradiometry_parameters
   !!Soratena 20-60min
   real(kind = fp), public, parameter :: order = 1.0_fp !!already hpa
   real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
-  real(kind = fp), public, parameter :: fl = 1.0_fp / (90.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
+  real(kind = fp), public, parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
   &                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
   integer,         public, parameter :: nsta_grid_min = 15, nsta_grid_max = 23  !!For soratena
   integer,         public, parameter :: naddstation_array = 20
@@ -68,8 +68,8 @@ module gradiometry_parameters
   !!S-net & DONET 4-180min
   !real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hpa
   !real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
-  !real(kind = fp), public, parameter :: fl = 1.0_fp / (180.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
-  !&                                     fs = 1.0_fp / (3.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
+  !real(kind = fp), public, parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
+  !&                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
   !integer,         public, parameter :: nsta_grid_min = 4, nsta_grid_max = 4  !!For S-net/DONET OBPG array
   !integer,         public, parameter :: naddstation_array = 1
 
@@ -85,7 +85,7 @@ module gradiometry_parameters
   real(kind = fp), public, parameter :: cutoff_dist = 60.0_fp
   real(kind = fp), public, parameter :: fl = 1.0_fp / (180.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
   &                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
-  !integer,         public, parameter :: ntime_slowness = 601, ntime_slowness2 = (ntime_slowness - 1) / 2
+  integer,         public, parameter :: ntime_slowness = 601, ntime_slowness2 = (ntime_slowness - 1) / 2
   integer,         public, parameter :: naddstation_array = 3
   integer,         public, parameter :: nsta_grid_max = 6, nsta_grid_min = 5  !!For S-net/DONET OBPG array
   !integer,         public, parameter :: nsta_grid_max = 40, nsta_grid_min = 5  !!For S-net/DONET OBPG array
@@ -143,6 +143,8 @@ module gradiometry_parameters
 #ifdef GREEN_CORRECTION
   real(kind = fp), public, parameter :: depth_ref = 0.1_fp  !!in km
 #endif
+
+  real(kind = fp), public, parameter :: grav_acc = 9.8_fp * 1.0e-3_fp !!in km/s^2
 
   !!for AELUMA method
   integer,         public, parameter :: ntime_fft = 1024, ntime_fft2 = ntime_fft / 2

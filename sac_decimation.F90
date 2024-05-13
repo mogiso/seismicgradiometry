@@ -73,7 +73,7 @@ program sac_decimation
 
     outfile = "decimate_" // trim(sacfile(j))
     write(0, '(2a)') "output ", trim(outfile)
-    open(unit = 20, file = outfile, form = "unformatted", access = "direct", recl = 4)
+    open(unit = 20, file = outfile, form = "unformatted", access = "direct", recl = 4, status = "replace")
     do i = 1, 158
       write(20, rec = i) sachdr_char(i)
     enddo

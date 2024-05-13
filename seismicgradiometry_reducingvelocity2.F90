@@ -42,7 +42,7 @@ program seismicgradiometry_reducingvelocity2
   character(len = 129) :: outfile
   character(len = 4) :: ctimeindex
 #ifdef PARTICLEVELOCITY
-  real(kind = fp)              :: particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y, 0 : 1)
+  real(kind = fp)              :: particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y)
   integer                      :: ncount1
   character(len = 129)         :: outfile_particle
 #endif
@@ -117,7 +117,7 @@ program seismicgradiometry_reducingvelocity2
   &                                nsta_count, grid_stationindex, kernel_matrix, error_matrix = error_matrix)
 
 #ifdef PARTICLEVELOCITY
-  particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y, 0 : 1) = 0.0_fp
+  particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
 #endif
 
   !!calculate amplitude and its spatial derivatives at each grid
@@ -196,6 +196,22 @@ program seismicgradiometry_reducingvelocity2
             &  = matmul(kernel_matrix(1 : 3, 1 : nsta_count(ii, jj), ii, jj), obs_vector(1 : nsta_count(ii, jj)))
             ngrad = ngrad + 1
           enddo
+
+#ifdef PARTICLEVELOCITY
+          if(n .eq. 1) then
+            !!unit: [hPa(cm)/s]
+            do j = ngradient2 - ntimestep + 1, ngradient2
+              particlevelocity(1 : 2, ii, jj) = particlevelocity(1 : 2, ii, jj) &
+              &                               - waveform_est_tmp(2 : 3, j) * 1.0e-5_fp & !!hPa(cm)/km -> hPa(cm)/cm
+              &                               * grav_acc * dt
+            enddo
+            write(11, rec = ncount1) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
+            &                        real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
+            &                        real(particlevelocity(1, ii, jj), kind = sp), &
+            &                        real(particlevelocity(2, ii, jj), kind = sp)
+            ncount1 = ncount1 + 1
+          endif
+#endif
           !!calculate slowness and app. geom. spreading terms at each grid
           if(ngrad .le. 2) cycle  !!if the number of data is small, do not calculate gradiometry coefficients
 
@@ -286,18 +302,6 @@ program seismicgradiometry_reducingvelocity2
         enddo
         if(calc_grad .eqv. .false.) cycle
 
-#ifdef PARTICLEVELOCITY
-        do j = 1, ngrad
-          particlevelocity(1 : 2, ii, jj, 1) = particlevelocity(1 : 2, ii, jj, 0) &
-          &                               + waveform_est_tmp(2 : 3, j) * grav_acc * 60.0_fp / real(ntimestep, kind = fp)
-        enddo
-        write(11, rec = ncount1) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
-        &                        real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
-        &                        real(particlevelocity(1, ii, jj, 1), kind = sp), &
-        &                        real(particlevelocity(2, ii, jj, 1), kind = sp)
-        ncount1 = ncount1 + 1
-        particlevelocity(1 : 2, ii, jj, 0) = particlevelocity(1 : 2, ii, jj, 1)
-#endif
 
         !print *, "grid index = ", ii, jj, (n - 1)
         !print *, "gradiometry slowness nocor", slowness_correction(1, ii, jj), slowness_correction(2, ii, jj)

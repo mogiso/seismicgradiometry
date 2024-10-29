@@ -42,7 +42,7 @@ program seismicgradiometry_reducingvelocity2
   character(len = 129) :: outfile
   character(len = 4) :: ctimeindex
 #ifdef PARTICLEVELOCITY
-  real(kind = fp)              :: particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y, 0 : 1)
+  real(kind = fp)              :: particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y)
   integer                      :: ncount1
   character(len = 129)         :: outfile_particle
 #endif
@@ -117,7 +117,7 @@ program seismicgradiometry_reducingvelocity2
   &                                nsta_count, grid_stationindex, kernel_matrix, error_matrix = error_matrix)
 
 #ifdef PARTICLEVELOCITY
-  particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y, 0 : 1) = 0.0_fp
+  particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
 #endif
 
   !!calculate amplitude and its spatial derivatives at each grid
@@ -288,15 +288,15 @@ program seismicgradiometry_reducingvelocity2
 
 #ifdef PARTICLEVELOCITY
         do j = 1, ngrad
-          particlevelocity(1 : 2, ii, jj, 1) = particlevelocity(1 : 2, ii, jj, 0) &
-          &                               + waveform_est_tmp(2 : 3, j) * grav_acc * 60.0_fp / real(ntimestep, kind = fp)
+          particlevelocity(1 : 2, ii, jj) = particlevelocity(1 : 2, ii, jj) &
+          &                                  + waveform_est_tmp(2 : 3, j) * 1e-2_fp / 1e+3_fp &   !!cm/km
+          &                                  * grav_acc * 60.0_fp / real(ntimestep, kind = fp)
         enddo
         write(11, rec = ncount1) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
         &                        real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
-        &                        real(particlevelocity(1, ii, jj, 1), kind = sp), &
-        &                        real(particlevelocity(2, ii, jj, 1), kind = sp)
+        &                        real(particlevelocity(1, ii, jj), kind = sp), &
+        &                        real(particlevelocity(2, ii, jj), kind = sp)
         ncount1 = ncount1 + 1
-        particlevelocity(1 : 2, ii, jj, 0) = particlevelocity(1 : 2, ii, jj, 1)
 #endif
 
         !print *, "grid index = ", ii, jj, (n - 1)

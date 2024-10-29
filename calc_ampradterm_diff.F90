@@ -57,12 +57,12 @@ program calc_ampradterm_diff
         amp_geospread(1 : 2) = amp_geospread(1 : 2) * 100.0_fp
         amp_radterm(1 : 2) = ampterm_x(1 : 2, i, j) * cos(direction(1 : 2)) - ampterm_y(1 : 2, i, j) * sin(direction(1 : 2))
         amp_radterm(1 : 2) = amp_radterm(1 : 2) * 100.0_fp
-        !amp_geospread_diff(i, j) = amp_geospread(2) - amp_geospread(1)
-        !amp_radterm_diff(i, j) = amp_radterm(2) - amp_radterm(1)
-        amp_geospread_diff(i, j) = ampterm_x_diff(i, j) * sin(direction(2)) + ampterm_y_diff(i, j) * cos(direction(2))
-        amp_geospread_diff(i, j) = amp_geospread_diff(i, j) * 100.0_fp
-        amp_radterm_diff(i, j) = ampterm_x_diff(i, j) * cos(direction(2)) - ampterm_y_diff(i, j) * sin(direction(2))
-        amp_radterm_diff(i, j) = amp_radterm_diff(i, j) * 100.0_fp
+        amp_geospread_diff(i, j) = amp_geospread(2) - amp_geospread(1)
+        amp_radterm_diff(i, j) = amp_radterm(2) - amp_radterm(1)
+        !amp_geospread_diff(i, j) = ampterm_x_diff(i, j) * sin(direction(2)) + ampterm_y_diff(i, j) * cos(direction(2))
+        !amp_geospread_diff(i, j) = amp_geospread_diff(i, j) * 100.0_fp
+        !amp_radterm_diff(i, j) = ampterm_x_diff(i, j) * cos(direction(2)) - ampterm_y_diff(i, j) * sin(direction(2))
+        !amp_radterm_diff(i, j) = amp_radterm_diff(i, j) * 100.0_fp
       endif
     enddo
   enddo

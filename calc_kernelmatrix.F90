@@ -228,7 +228,7 @@ subroutine calc_kernelmatrix_delaunay(location_grid, location_sta, &
   allocate(used_triangle(1 : ntriangle))
   used_triangle(1 : ntriangle) = .false.
 
-  open(unit = 10, file = "station_triangle.txt")
+  !open(unit = 10, file = "station_triangle.txt")
   !do j = 1, ntriangle
   !  do i = 1, 3
   !    write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
@@ -421,7 +421,15 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
     j = j + 1
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
-
+  open(unit = 10, file = "station_triangle.txt")
+  do j = 1, ntriangle
+    do i = 1, 3
+      write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
+      &                           location_sta(index_org(triangle_indices(i, j)))%y_north
+    enddo
+    write(10, '(a)') ">"
+  enddo
+  close(10)
 
   !!Select stations at each grid
   open(unit = 10, file = "stationlist_grid.txt")

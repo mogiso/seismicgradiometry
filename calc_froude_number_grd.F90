@@ -122,7 +122,7 @@ program calc_froude_number_grd
       amp_geospread = ampterm_x(i, j) * sin(direction_tsunami) + ampterm_y(i, j) * cos(direction_tsunami)
       amp_geospread = amp_geospread * 100.0_fp
       amp_radterm = ampterm_x(i, j) * cos(direction_tsunami) - ampterm_y(i, j) * sin(direction_tsunami)
-      amp_radterm = amp_radterm * deg2rad * 10000.0_fp
+      amp_radterm = amp_radterm * 100.0_fp
       print '(2(i0, 1x), 3(f6.1, 1x), 4(e15.7, 1x))', i, j, x_east, y_north, depth_mean, froude_number(i, j), amp_geospread, &
       &                                               delta_direction * rad2deg, amp_radterm
       print *, velocity_tsunami, velocity_atm, velocity_atm_proj

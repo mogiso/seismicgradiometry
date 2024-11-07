@@ -61,7 +61,8 @@ module gradiometry_parameters
 #else
 
   !!data order, array configuration
-  real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hPa
+  !real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hPa
+  real(kind = fp), public, parameter :: order = 1.0_fp 
   integer,         public, parameter :: nsta_grid_min = 4, nsta_grid_max = 4
   integer,         public, parameter :: naddstation_array = 1
   real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp !!S-net

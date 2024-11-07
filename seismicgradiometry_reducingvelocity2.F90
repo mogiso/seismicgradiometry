@@ -317,7 +317,6 @@ program seismicgradiometry_reducingvelocity2
             &                        * (waveform_est_tmp(i + 1, j) * relativeerror) ** 2 * error_matrix(i + 1, ii, jj)
           enddo
         enddo
->>>>>>> 09dcfa9d8efe147800bd68d0eed6e8c5b97fbada
 
         !print *, "grid index = ", ii, jj, (n - 1)
         !print *, "gradiometry slowness nocor", slowness_correction(1, ii, jj), slowness_correction(2, ii, jj)

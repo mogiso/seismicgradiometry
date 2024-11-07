@@ -253,6 +253,18 @@ program seismicgradiometry_reducingvelocity2
 
         if(calc_grad .eqv. .false.) cycle
 
+#ifdef PARTICLEVELOCITY
+        do j = 1, ngrad
+          particlevelocity(1 : 2, ii, jj) = particlevelocity(1 : 2, ii, jj) &
+          &                                  + waveform_est_tmp(2 : 3, j) * 1e-2_fp / 1e+3_fp &   !!cm/km
+          &                                  * grav_acc * 60.0_fp / real(ntimestep, kind = fp)
+        enddo
+        write(11, rec = ncount1) real(x_start + dgrid_x * real(ii - 1, kind = fp), kind = sp), &
+        &                        real(y_start + dgrid_y * real(jj - 1, kind = fp), kind = sp), &
+        &                        real(particlevelocity(1, ii, jj), kind = sp), &
+        &                        real(particlevelocity(2, ii, jj), kind = sp)
+        ncount1 = ncount1 + 1
+#endif
         !!error estimation
         max_innerproduct = 0.0_fp
         do i = 1, nsta_count(ii, jj)
@@ -305,6 +317,7 @@ program seismicgradiometry_reducingvelocity2
             &                        * (waveform_est_tmp(i + 1, j) * relativeerror) ** 2 * error_matrix(i + 1, ii, jj)
           enddo
         enddo
+>>>>>>> 09dcfa9d8efe147800bd68d0eed6e8c5b97fbada
 
         !print *, "grid index = ", ii, jj, (n - 1)
         !print *, "gradiometry slowness nocor", slowness_correction(1, ii, jj), slowness_correction(2, ii, jj)

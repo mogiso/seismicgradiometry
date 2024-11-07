@@ -10,25 +10,6 @@ module gradiometry_parameters
   private
 
   real(kind = fp), public, parameter :: eps = 1.0e-10_fp
-<<<<<<< HEAD
-  real(kind = fp), public, parameter :: az_diff_max = 150.0_fp * deg2rad
-  real(kind = fp), public, parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
-  &                                     x_end = 350.0_fp, y_end = 600.0_fp
-  real(kind = fp), public, parameter :: center_lon = 142.5_fp, center_lat = 38.25_fp 
-  real(kind = fp), public, parameter :: dgrid_x = 20.0_fp, dgrid_y = 20.0_fp
-  integer,         public, parameter :: ntime_slowness = 61, ntime_slowness2 = (ntime_slowness - 1) / 2
-
-  !!For 15s-sampled data (S-net, DONET, Soratena real waveform)
-  integer,         public, parameter :: ntime = 2400
-  integer,         public, parameter :: ntimestep = 4 
-  integer,         public, parameter :: ngradient2 = 240
-
-  !!For 6s-sampled data (S-net, DONET simulated tsunami waveform)
-  !integer,         public, parameter :: ntime = 6000
-  !integer,         public, parameter :: ntime = 4320
-  !integer,         public, parameter :: ntimestep = 10
-  !integer,         public, parameter :: ngradient2 = 600
-=======
   !!S-net region
   real(kind = fp), public, parameter :: x_start = -350.0_fp, y_start = -600.0_fp, &
   &                                     x_end   = 350.0_fp,  y_end   = 600.0_fp
@@ -61,19 +42,11 @@ module gradiometry_parameters
   !integer,         public, parameter :: ntimestep = 100
   !integer,         public, parameter :: ngradient2 = 1500
   !integer,         public, parameter :: ntime_slowness = 60, ntime_slowness2 = (ntime_slowness - 1) / 2
->>>>>>> 09dcfa9d8efe147800bd68d0eed6e8c5b97fbada
   
 #ifdef SORATENA
   !!data order, array configuration
   real(kind = fp), public, parameter :: order = 1.0_fp !!already hpa
-<<<<<<< HEAD
-  real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
-  real(kind = fp), public, parameter :: fl = 1.0_fp / (90.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
-  &                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
-  integer,         public, parameter :: nsta_grid_min = 15, nsta_grid_max = 23  !!For soratena
-=======
   integer,         public, parameter :: nsta_grid_min = 15, nsta_grid_max = 23  !!For S-net/DONET OBPG array
->>>>>>> 09dcfa9d8efe147800bd68d0eed6e8c5b97fbada
   integer,         public, parameter :: naddstation_array = 20
   real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
   real(kind = fp), public, parameter :: az_diff_max = 150.0_fp * deg2rad
@@ -87,42 +60,6 @@ module gradiometry_parameters
 
 #else
 
-<<<<<<< HEAD
-  !!S-net & DONET 20-60min
-  real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hpa
-  real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
-  real(kind = fp), public, parameter :: fl = 1.0_fp / (90.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
-  &                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
-  integer,         public, parameter :: nsta_grid_min = 4, nsta_grid_max = 4  !!For S-net/DONET OBPG array
-  integer,         public, parameter :: naddstation_array = 1
-
-  !!S-net & DONET 4-180min
-  !real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hpa
-  !real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp
-  !real(kind = fp), public, parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
-  !&                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
-  !integer,         public, parameter :: nsta_grid_min = 4, nsta_grid_max = 4  !!For S-net/DONET OBPG array
-  !integer,         public, parameter :: naddstation_array = 1
-
-
-  !!DONET OBP long-period (20-60min.)
-  !real(kind = fp), public, parameter :: eps = 1.0e-10_fp
-  !real(kind = fp), public, parameter :: order = 1.0_fp  !!Pa -> hpa
-  !real(kind = fp), public, parameter :: az_diff_max = 150.0_fp * deg2rad
-  !real(kind = fp), public, parameter :: x_start = -150.0_fp, y_start = -100.0_fp, &
-  !&                                     x_end = 150.0_fp, y_end = 100.0_fp
-  !real(kind = fp), public, parameter :: center_lon = 135.75_fp, center_lat = 33.2_fp 
-  !real(kind = fp), public, parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp
-  !real(kind = fp), public, parameter :: cutoff_dist = 60.0_fp
-  !real(kind = fp), public, parameter :: fl = 1.0_fp / (180.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
-  !&                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
-  !integer,         public, parameter :: ntime_slowness = 601, ntime_slowness2 = (ntime_slowness - 1) / 2
-  !integer,         public, parameter :: naddstation_array = 3
-  !integer,         public, parameter :: nsta_grid_max = 6, nsta_grid_min = 5  !!For S-net/DONET OBPG array
-  !integer,         public, parameter :: nsta_grid_max = 40, nsta_grid_min = 5  !!For S-net/DONET OBPG array
-  !integer,         public, parameter :: ntime = 630
-  !integer,         public, parameter :: ntime = 1024 !!testdata
-=======
   !!data order, array configuration
   !real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hPa
   real(kind = fp), public, parameter :: order = 1.0_fp 
@@ -141,7 +78,6 @@ module gradiometry_parameters
   &                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
   !real(kind = fp), public, parameter :: fl = 1.0_fp / (180.0_fp * 60.0_fp), fh = 1.0_fp / (30.0_fp * 60.0_fp), &
   !&                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
->>>>>>> 09dcfa9d8efe147800bd68d0eed6e8c5b97fbada
 
 #endif
 
@@ -176,11 +112,7 @@ module gradiometry_parameters
   real(kind = fp), public, parameter :: depth_ref = 0.1_fp  !!in km
 #endif
 
-<<<<<<< HEAD
-  real(kind = fp), public, parameter :: grav_acc = 9.8_fp !!in m/s^2
-=======
   real(kind = fp), public, parameter :: grav_acc = 980.655_fp !!in cm/s^2
->>>>>>> 09dcfa9d8efe147800bd68d0eed6e8c5b97fbada
 
   !!for AELUMA method
   integer,         public, parameter :: ntime_fft = 1024, ntime_fft2 = ntime_fft / 2

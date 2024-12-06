@@ -12,7 +12,7 @@ module greatcircle
     use constants, only : pi, r_earth, r2r1, deg2rad, rad2deg
     implicit none
 
-    !!Calculate distance, azimuth, backazimuth using Vincenty (1975, Survey review)
+    !!Calculate distance, azimuth, backazimuth based on spherical trigonometry
     !!Input: (lat0, lon0) (point A) , (lat1, lon1) (point B)
     !!output: delta(rad), dist(km), az(rad, point A -> point B), baz(rad, point B -> point A)
   

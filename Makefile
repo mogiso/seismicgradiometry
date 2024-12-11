@@ -36,7 +36,7 @@ endif
 ifeq ($(arch),gfortran-debug)
   FC = gfortran
   FFLAGS = -O0 -Wall -fbounds-check -fbacktrace -Wuninitialized -g
-  DEFS = -DDOUBLE -DSORATENA
+  DEFS = -DDOUBLE
   NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
   NETCDF_FORTRAN_INC = /usr/include
   NETCDF_LIB = ${NETCDF_FORTRAN_LIB}
@@ -60,6 +60,8 @@ ifeq ($(arch),gfortran)
 endif
 
 aeluma = AutomatedEventLocationUsingaMeshofArrays.F90
+aeluma_shmdump = AELUMA_shmdump.F90
+aeluma_parameters = AELUMA_parameters.F90
 calc_minmax_waveform_grd = calc_minmax_waveform_grd.F90
 calc_bpf_coef = calc_bpf_coef.F90
 calc_bpf_order = calc_bpf_order.F90
@@ -96,9 +98,10 @@ typedef = typedef.F90
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
 mod_constants = $(constants:.F90=.mod)
 mod_correlation = $(correlation:.F90=.mod)
-mod_cosine_taper = taper.mod
+mod_cosine_taper = $(cosine_taper:.F90=.mod)
 mod_deconvolution = $(deconvolution:.F90=.mod)
 mod_gradiometry_parameters = $(gradiometry_parameters:.F90=.mod)
+mod_aeluma_parameters = $(aeluma_parameters:.F90=.mod)
 mod_greatcircle = $(greatcircle:.f90=.mod)
 mod_grdfile_io = $(grdfile_io:.F90=.mod)
 mod_itoa = $(itoa:.F90=.mod)
@@ -110,6 +113,7 @@ mod_typedef = $(typedef:.F90=.mod)
 
 ##Object
 o_aeluma = $(aeluma:.F90=.o)
+o_aeluma_shmdump = $(aeluma_shmdump:.F90=.o)
 o_calc_bpf_coef = $(calc_bpf_coef:.F90=.o)
 o_calc_bpf_order = $(calc_bpf_order:.F90=.o)
 o_calc_lpf_coef = $(calc_lpf_coef:.F90=.o)
@@ -123,6 +127,7 @@ o_cosine_taper = $(cosine_taper:.F90=.o)
 o_deconvolution = $(deconvolution:.F90=.o)
 o_fftsg = $(fftsg:.f=.o)
 o_gradiometry_parameters = $(gradiometry_parameters:.F90=.o)
+o_aeluma_parameters = $(aeluma_parameters:.F90=.o)
 o_grdfile_io = $(grdfile_io:.F90=.o)
 o_greatcircle = $(greatcircle:.f90=.o)
 o_itoa = $(itoa:.F90=.o)
@@ -148,6 +153,7 @@ $(mod_constants): $(constants) $(o_constants)
 $(mod_correlation): $(correlation) $(o_correlation)
 $(mod_cosine_taper): $(cosine_taper) $(o_cosine_taper)
 $(mod_gradiometry_parameters): $(gradiometry_parameters) $(o_gradiometry_parameters)
+$(mod_aeluma_parameters): $(aeluma_parameters) $(o_aeluma_parameters)
 $(mod_greatcircle): $(greatcircle) $(o_greatcircle)
 $(mod_itoa): $(itoa) $(o_itoa)
 $(mod_nrtype): $(nrtype) $(o_nrtype)
@@ -177,6 +183,7 @@ $(o_fftsg): $(fftsg)
 $(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_aeluma_parameters): $(aeluma_parameters) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_grdfile_io): $(grdfile_io) $(mod_nrtype)
 $(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_itoa): $(itoa)
@@ -192,8 +199,12 @@ $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(
         $(o_gradiometry_parameters) $(o_constants)
 $(o_aeluma): $(aeluma) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_cosine_taper) $(mod_tandem) \
-	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(mod_cosine_taper) \
-        $(o_gradiometry_parameters) $(o_constants)
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_aeluma_parameters) $(mod_calc_kernelmatrix) \
+        $(o_aeluma_parameters) $(o_constants)
+$(o_aeluma_shmdump): $(aeluma_shmdump) \
+	$(mod_nrtype) $(mod_constants) $(mod_cosine_taper) $(mod_tandem) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
+        $(o_aeluma_parameters) $(o_constants)
 $(o_seismicgradiometry_reducingvelocity2): $(seismicgradiometry_reducingvelocity2) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) $(mod_itoa) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
@@ -210,9 +221,16 @@ seismicgradiometry: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) \
-	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_gradiometry_parameters) \
+	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_aeluma_parameters) \
 	$(o_cosine_taper) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
 	$(o_aeluma)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
+	$(o_lonlat_xy_conv) $(o_correlation) \
+	$(o_grdfile_io) $(o_sort) $(o_greatcircle) $(o_aeluma_parameters) \
+	$(o_cosine_taper) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
+	$(o_aeluma_shmdump)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 seismicgradiometry_reducingvelocity2: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \

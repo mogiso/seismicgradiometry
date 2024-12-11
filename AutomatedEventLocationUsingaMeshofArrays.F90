@@ -9,7 +9,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   use read_sacfile, only : read_sachdr, read_sacdata
   use grdfile_io, only : write_grdfile_fp_2d
   use lonlat_xy_conv, only : bl2xy, xy2bl
-  use gradiometry_parameters
+  use aeluma_parameters
   use calc_kernelmatrix
   use correlation
   use taper
@@ -70,7 +70,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   !!convert station longitude/latitude to x_east/y_north
   open(unit = 12, file = "station_location.txt")
   do i = 1, nsta
-    call bl2xy(location_sta(i)%lon, location_sta(i)%lat, center_lon, center_lat, &
+    call bl2xy(location_sta(i)%lon, location_sta(i)%lat, center_lon_aeluma, center_lat_aeluma, &
     &          location_sta(i)%y_north, location_sta(i)%x_east)
     location_sta(i)%y_north = location_sta(i)%y_north / 1000.0_fp
     location_sta(i)%x_east  = location_sta(i)%x_east  / 1000.0_fp
@@ -80,7 +80,7 @@ program AutomatedEventLocationUsingaMeshofArrays
   close(12)
 
   !!make kernel matrix for each triangle
-  call calc_slowness_est_matrix_delaunay(location_sta, naddstation_array, ntriangle, &
+  call calc_slowness_est_matrix_delaunay(location_sta, nadd_station_aeluma, ntriangle, &
   &                                      triangle_center, slowness_est_matrix,       &
   &                                      triangle_stationindex, nsta_count, tnbr)
 

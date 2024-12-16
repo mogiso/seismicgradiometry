@@ -6,6 +6,7 @@ program AELUMA_shmdump
   use aeluma_parameters
   use lonlat_xy_conv
   use taper
+  use correlation
 
   implicit none
 

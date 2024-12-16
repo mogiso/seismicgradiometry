@@ -17,16 +17,16 @@ program AELUMA_shmdump
   integer, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
 
   character(len = 4) :: winch_char, comp_tmp
-  integer            :: i, j, ios, nsample, nch, nstation, winch_tmp, ndecimate, recflag, transdelay, mon_order, ad_bit, &
-  &                     sensor_amp, ntriangle
+  integer            :: i, j, k, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
+  &                     recflag, transdelay, mon_order, ad_bit, sensor_amp
   integer            :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                     hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf), &
   &                     waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
   integer, allocatable :: station_winch(:)
   real(kind = fp)    :: waveform_real(1 : maxval(sampling_int)), waveform_buf(1 : waveform_buf_index_max, 1 : nwinch), &
-  &                     wavform_fft(1 : ntime_fft, 1 : 2)
-  real(kind = fp)    :: taper_window(1 : sampling_int_use * nsec_buf), xcorr(1 : sampling_int_use * nsec_buf)
-  real(kind = fp)    :: station_sensitivity(1 : nwinch)
+  &                     waveform_fft(1 : ntime_fft, 1 : 2), &
+  &                     taper_window(1 : sampling_int_use * nsec_buf), xcorr(1 : sampling_int_use * nsec_buf), &
+  &                     station_sensitivity(1 : nwinch)
   logical            :: is_usewinch(1 : nwinch)
   character(len = 6) :: stname(1 : nwinch), stname_tmp
   character(len = 255) :: chtbl, chtbl_line, sensor_unit
@@ -56,7 +56,7 @@ program AELUMA_shmdump
     call calc_bpf_coef(fl, fh, sampling_sec(i), m(i), n(i), h(:, i), c(i), gn(i))
   enddo
   !!cosine taper
-  call cosine_taper(cos_taper_ratio, nsec_buf * samping_int_use, taper_window)
+  call cosine_taper(cos_taper_ratio, nsec_buf * sampling_int_use, taper_window)
 
   !!read win-formatted channel table
   is_usewinch(1 : nwinch) = .false.
@@ -106,7 +106,7 @@ program AELUMA_shmdump
 
   !!read waveforms from standard input, then conduct analysis
   waveform_buf(1 : waveform_buf_index_max, 1 : nwinch) = 0.0_fp
-  do
+  time_loop: do
     !!move previous datum
     waveform_buf(1 : waveform_buf_index_max - sampling_int_use, 1 : nwinch) &
     &  = waveform_buf(sampling_int_use + 1 : waveform_buf_index_max, 1 : nwinch)
@@ -140,39 +140,47 @@ program AELUMA_shmdump
 
     !!calculate correlation between two stations within the array
     do j = 1, ntriangle
-      waveform_fft(1 : ntime_fft, 1 : 2) = 0.0_fp
       npair_tmp = 1
       do jj = 1, nsta_count(j) - 1
         npair_tmp = npair_tmp * jj
+      enddo
+      allocate(lagtime(1 : npair_tmp))
+      lagtime(1 : npair_tmp) = 0.0_fp
+
+      do jj = 1, nsta_count(j) - 1
+        waveform_fft(1 : ntime_fft, 1 : 2) = 0.0_fp
+        waveform_fft(1 : nsec_buf * sampling_int_use, 1) &
+        &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationindex(jj, j)) &
+        &  * taper_window(1 : nsec_buf * sampling_int_use)
         do ii = jj + 1, nsta_count(j)
-          waveform_fft(1 : nsec_buf * sampling_int_use, 1) &
-          &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationindex(jj, j)) &
-          &  * cosine_taper(1 : nsec_buf * sampling_int_use)
           waveform_fft(1 : nsec_buf * sampling_int_use, 2) &
           &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationindex(ii, j)) &
-          &  * cosine_taper(1 : nsec_buf * sampling_int_use)
+          &  * taper_window(1 : nsec_buf * sampling_int_use)
           call correlation_fft(waveform_fft, ntime_fft, xcorr)
           max_xcorr = maxloc(xcorr)
           if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
           lagtime(k) = real(max_xcorr(1) - ntime_fft2, kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
           k = k + 1
-       enddo
-     enddo
-     if(.not. (maxval(lagtime) .le. lagtime_max .and. minval(lagtime) .ge. lagtime_min)) then
-       xcorr_flag(j) = .false.
-       deallocate(lagtime)
-       cycle
-     endif
-     if(minval_xcorr(j) .le. xcorr_min) then
-       xcorr_flag(j) = .false.
-       deallocate(lagtime)
-       cycle
-     endif
-     slowness(1 : 2, j) &
-     &  = matmul(slowness_est_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp)
+        enddo
+      enddo
+      if(.not. (maxval(lagtime) .le. lagtime_max .and. minval(lagtime) .ge. lagtime_min)) then
+        xcorr_flag(j) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
+      if(minval_xcorr(j) .le. xcorr_min) then
+        xcorr_flag(j) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
+      slowness(1 : 2, j) &
+      &  = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
+
+      deallocate(lagtime)
+    enddo
 
 
-  enddo
+  enddo time_loop
 
   stop
 end program AELUMA_shmdump

@@ -41,7 +41,7 @@ ifeq ($(arch),gfortran-debug)
   NETCDF_FORTRAN_INC = /usr/include
   NETCDF_LIB = ${NETCDF_FORTRAN_LIB}
   NETCDF_INC = ${NETCDF_FORTRAN_INC}
-  LIBS = -lnetcdff -lnetcdf -llapack95
+  LIBS = -lnetcdff -llapack95 -llapack -lblas
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L/usr/local/lib -L/usr/lib/lapack
   INCDIR = -I. -I${NETCDF_FORTRAN_INC} -I/usr/local/include -I/usr/include
 endif
@@ -54,7 +54,7 @@ ifeq ($(arch),gfortran)
   NETCDF_FORTRAN_INC = /usr/include
   NETCDF_LIB = ${NETCDF_FORTRAN_LIB}
   NETCDF_INC = ${NETCDF_FORTRAN_INC}
-  LIBS = -lnetcdff -lnetcdf -llapack95 -llapack -lblas
+  LIBS = -lnetcdff -llapack95 -llapack -lblas
   LIBDIR = -L${NETCDF_FORTRAN_LIB} -L/usr/local/lib
   INCDIR = -I. -I${NETCDF_FORTRAN_INC} -I/usr/local/include
 endif

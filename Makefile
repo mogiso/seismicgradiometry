@@ -35,7 +35,7 @@ endif
 
 ifeq ($(arch),gfortran-debug)
   FC = gfortran
-  FFLAGS = -O0 -Wall -fbounds-check -fbacktrace -Wuninitialized -g
+  FFLAGS = -O0 -Wall -fbounds-check -mcmodel=medium -fbacktrace -Wuninitialized -g
   DEFS = -DDOUBLE
   NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
   NETCDF_FORTRAN_INC = /usr/include
@@ -48,7 +48,7 @@ endif
 
 ifeq ($(arch),gfortran)
   FC = gfortran
-  FFLAGS = -O2 -frecursive
+  FFLAGS = -O2 -frecursive -mcmodel=medium 
   DEFS = -DDOUBLE 
   NETCDF_FORTRAN_LIB = /usr/lib/x86_64-linux-gnu
   NETCDF_FORTRAN_INC = /usr/include
@@ -202,7 +202,7 @@ $(o_aeluma): $(aeluma) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_aeluma_parameters) $(mod_calc_kernelmatrix) \
         $(o_aeluma_parameters) $(o_constants)
 $(o_aeluma_shmdump): $(aeluma_shmdump) \
-	$(mod_nrtype) $(mod_constants) $(mod_cosine_taper) $(mod_tandem) \
+	$(mod_nrtype) $(mod_constants) $(mod_cosine_taper) $(mod_tandem) $(mod_itoa) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) \
         $(o_aeluma_parameters) $(o_constants)
 $(o_seismicgradiometry_reducingvelocity2): $(seismicgradiometry_reducingvelocity2) \
@@ -227,7 +227,7 @@ aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_ta
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
-	$(o_lonlat_xy_conv) $(o_correlation) \
+	$(o_lonlat_xy_conv) $(o_correlation) $(o_itoa) \
 	$(o_grdfile_io) $(o_sort) $(o_greatcircle) $(o_aeluma_parameters) \
 	$(o_cosine_taper) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
 	$(o_aeluma_shmdump)

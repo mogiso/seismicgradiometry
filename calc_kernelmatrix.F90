@@ -763,16 +763,16 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
       endif
     enddo
   enddo
-  npair = 1
+  npair = 0
   do i = 1, maxval(nsta_count) - 1
-    npair = npair * i
+    npair = npair + i
   enddo
 
   allocate(slowness_matrix(1 : 2, 1 : npair, 1 : ntriangle))
   do jj = 1, ntriangle
-    npair_tmp = 1
+    npair_tmp = 0
     do ii = 1, nsta_count(jj) - 1
-      npair_tmp = npair_tmp * ii
+      npair_tmp = npair_tmp + ii
     enddo
     slowness_matrix(1 : 2, 1 : npair_tmp, jj) = 0.0_fp
     if(nsta_count(jj) .eq. 0) cycle
@@ -807,7 +807,7 @@ end subroutine calc_slowness_est_matrix_delaunay
 
 subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch, nadd_station, &
 &                                                    ntriangle, triangle_center, slowness_matrix, &
-&                                                    triangle_stationindex, nsta_count, tnbr)
+&                                                    triangle_stationwinch, nsta_count, tnbr)
   use nrtype, only : fp
   use constants, only : pi
   use typedef
@@ -821,17 +821,17 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
 #endif
   implicit none
 
-  type(location),  intent(inout) :: location_sta(:)
-  integer,         intent(in)    :: station_winch(:)
-  integer,         intent(in)    :: nadd_station
-  integer,         intent(out)   :: ntriangle
+  type(location),  intent(inout)            :: location_sta(:)
+  integer,         intent(in)               :: station_winch(:)
+  integer,         intent(in)               :: nadd_station
+  integer,         intent(out)              :: ntriangle
   type(location),  intent(out), allocatable :: triangle_center(:)
   real(kind = fp), intent(out), allocatable :: slowness_matrix(:, :, :)
-  integer,         intent(out), allocatable :: triangle_stationindex(:, :), nsta_count(:), tnbr(:, :)
+  integer,         intent(out), allocatable :: triangle_stationwinch(:, :), nsta_count(:), tnbr(:, :)
 
-  integer         :: i, j, ii, jj, info, nsta, nsta_use, npair, npair_tmp
-  integer         :: ipiv(1 : 3)
-  real(kind = fp) :: dist_tmp
+  integer                      :: i, j, ii, jj, info, nsta, nsta_use, npair, npair_tmp
+  integer                      :: ipiv(1 : 3)
+  real(kind = fp)              :: dist_tmp
   real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
   integer,         allocatable :: vertix_index(:), triangle_indices(:, :), index_org(:), add_station_index(:)
   logical,         allocatable :: is_usestation(:), used_station(:)
@@ -840,15 +840,14 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
   nsta_use = nsta
   allocate(is_usestation(1 : nsta))
   is_usestation(1 : nsta) = .true.
-  print *, nsta_use
 
   !!check interstation distance
   do j = 1, nsta - 1
     do i = j + 1, nsta
       if(is_usestation(i) .eqv. .false.) cycle
-      call cartesian_dist(location_sta(station_winch(j))%x_east,  location_sta(station_winch(i))%x_east, &
-      &                   location_sta(station_winch(j))%y_north, location_sta(station_winch(i))%y_north, &
-      &                   distance = dist_tmp)
+      call greatcircle_dist(location_sta(station_winch(j))%lat, location_sta(station_winch(j))%lon, &
+      &                     location_sta(station_winch(i))%lat, location_sta(station_winch(i))%lat, &
+      &                     distance = dist_tmp)
       if(dist_tmp .le. interstationdistance_min) then
         is_usestation(i) = .false.
         nsta_use = nsta_use - 1
@@ -864,31 +863,28 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
   &        tnbr(1 : 3, 1 : 2 * nsta_use),             &
   &        index_org(1 : nsta),                       &
   &        used_station(1 : nsta))
-
-  j = 1
-  do i = 1, nsta
-    if(is_usestation(i) .eqv. .false.) cycle
-    vertices(1, j) = location_sta(station_winch(i))%x_east
-    vertices(2, j) = location_sta(station_winch(i))%y_north
-    vertix_index(j) = j 
-    index_org(j) = i
-    j = j + 1
+  i = 1
+  do j = 1, nsta
+    if(is_usestation(j) .eqv. .false.) cycle
+    vertices(1 : 2, i) = [location_sta(station_winch(j))%x_east, location_sta(station_winch(j))%y_north]
+    vertix_index(i) = i
+    index_org(i) = j
+    i = i + 1
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
 
-
   allocate(triangle_center(1 : ntriangle), nsta_count(1 : ntriangle), &
-  &        triangle_stationindex(1 : 3 + nadd_station, 1 : ntriangle))
+  &        triangle_stationwinch(1 : 3 + nadd_station, 1 : ntriangle))
   do j = 1, ntriangle
     used_station(1 : nsta) = .false.
     triangle_center(j)%lon = 0.0_fp
     triangle_center(j)%lat = 0.0_fp
     nsta_count(j) = 0
     do i = 1, 3
-      triangle_stationindex(i, j) = index_org(triangle_indices(i, j))
-      used_station(triangle_stationindex(i, j)) = .true.
-      triangle_center(j)%lon = triangle_center(j)%lon + location_sta(station_winch(triangle_stationindex(i, j)))%lon
-      triangle_center(j)%lat = triangle_center(j)%lat + location_sta(station_winch(triangle_stationindex(i, j)))%lat
+      triangle_stationwinch(i, j) = station_winch(index_org(triangle_indices(i, j)))
+      used_station(index_org(triangle_indices(i, j))) = .true.
+      triangle_center(j)%lon = triangle_center(j)%lon + location_sta(triangle_stationwinch(i, j))%lon
+      triangle_center(j)%lat = triangle_center(j)%lat + location_sta(triangle_stationwinch(i, j))%lat
       nsta_count(j) = nsta_count(j) + 1
     enddo
     triangle_center(j)%lon = triangle_center(j)%lon / 3.0_fp
@@ -902,7 +898,7 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
       do jj = 1, nsta
         if(is_usestation(jj) .eqv. .false.) cycle
         if(used_station(jj)  .eqv. .true. ) cycle
-        call greatcircle_dist(triangle_center(j)%lat, triangle_center(j)%lon, &
+        call greatcircle_dist(triangle_center(j)%lat,              triangle_center(j)%lon, &
         &                     location_sta(station_winch(jj))%lat, location_sta(station_winch(jj))%lon, &
         &                     distance = dist_tmp)
         do ii = 1, nadd_station
@@ -919,37 +915,34 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
       enddo
       do i = 1, nadd_station
         nsta_count(j) = nsta_count(j) + 1
-        triangle_stationindex(nsta_count(j), j) = add_station_index(i)
+        triangle_stationwinch(nsta_count(j), j) = station_winch(add_station_index(i))
       enddo
       deallocate(add_station_distance, add_station_index)
+
+      triangle_center(j)%lon = 0.0_fp
+      triangle_center(j)%lat = 0.0_fp
+      do i = 1, nsta_count(j)
+        triangle_center(j)%lon = triangle_center(j)%lon + location_sta(triangle_stationwinch(i, j))%lon
+        triangle_center(j)%lat = triangle_center(j)%lat + location_sta(triangle_stationwinch(i, j))%lat
+      enddo
+      triangle_center(j)%lon = triangle_center(j)%lon / real(nsta_count(j), kind = fp)
+      triangle_center(j)%lat = triangle_center(j)%lat / real(nsta_count(j), kind = fp)
     endif
     
-    triangle_center(j)%lon = 0.0_fp
-    triangle_center(j)%lat = 0.0_fp
-    do i = 1, nsta_count(j)
-      triangle_center(j)%lon = triangle_center(j)%lon + location_sta(station_winch(triangle_stationindex(i, j)))%lon
-      triangle_center(j)%lat = triangle_center(j)%lat + location_sta(station_winch(triangle_stationindex(i, j)))%lat
-    enddo
-    triangle_center(j)%lon = triangle_center(j)%lon / real(nsta_count(j), kind = fp)
-    triangle_center(j)%lat = triangle_center(j)%lat / real(nsta_count(j), kind = fp)
-    triangle_center(j)%x_east = 0.0_fp
+    triangle_center(j)%x_east  = 0.0_fp
     triangle_center(j)%y_north = 0.0_fp
     do i = 1, nsta_count(j)
-      call bl2xy(triangle_center(j)%lon, triangle_center(j)%lat, &
-      &          location_sta(station_winch(triangle_stationindex(i, j)))%lon, &
-      &          location_sta(station_winch(triangle_stationindex(i, j)))%lat, &
-      &          location_sta(station_winch(triangle_stationindex(i, j)))%y_north, &
-      &          location_sta(station_winch(triangle_stationindex(i, j)))%x_east)
-      location_sta(station_winch(triangle_stationindex(i, j)))%x_east = &
-      &  location_sta(station_winch(triangle_stationindex(i, j)))%x_east / 1000.0_fp
-      location_sta(station_winch(triangle_stationindex(i, j)))%y_north = &
-      &  location_sta(station_winch(triangle_stationindex(i, j)))%y_north / 1000.0_fp
+      call bl2xy(location_sta(triangle_stationwinch(i, j))%lon,     location_sta(triangle_stationwinch(i, j))%lat,    &
+      &          triangle_center(j)%lon,                            triangle_center(j)%lat,                           &
+      &          location_sta(triangle_stationwinch(i, j))%y_north, location_sta(triangle_stationwinch(i, j))%x_east)
+      location_sta(triangle_stationwinch(i, j))%x_east  = location_sta(triangle_stationwinch(i, j))%x_east  * 1.0e-3_fp
+      location_sta(triangle_stationwinch(i, j))%y_north = location_sta(triangle_stationwinch(i, j))%y_north * 1.0e-3_fp
     enddo
 
     !!check distance between the center of triangle and stations (vertices)
     do i = 1, nsta_count(j)
-      call cartesian_dist(location_sta(station_winch(triangle_stationindex(i, j)))%x_east,  triangle_center(j)%x_east,  &
-      &                   location_sta(station_winch(triangle_stationindex(i, j)))%y_north, triangle_center(j)%y_north, &
+      call cartesian_dist(location_sta(triangle_stationwinch(i, j))%x_east,  triangle_center(j)%x_east,  &
+      &                   location_sta(triangle_stationwinch(i, j))%y_north, triangle_center(j)%y_north, &
       &                   distance = dist_tmp)
       if(dist_tmp .gt. cutoff_dist) then
         nsta_count(j) = 0
@@ -957,16 +950,16 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
       endif
     enddo
   enddo
-  npair = 1
+  npair = 0
   do i = 1, maxval(nsta_count) - 1
-    npair = npair * i
+    npair = npair + i
   enddo
 
   allocate(slowness_matrix(1 : 2, 1 : npair, 1 : ntriangle))
   do jj = 1, ntriangle
-    npair_tmp = 1
+    npair_tmp = 0
     do ii = 1, nsta_count(jj) - 1
-      npair_tmp = npair_tmp * ii
+      npair_tmp = npair_tmp + ii
     enddo
     slowness_matrix(1 : 2, 1 : npair_tmp, jj) = 0.0_fp
     if(nsta_count(jj) .eq. 0) cycle
@@ -974,15 +967,14 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
     ii = 1
     do j = 1, nsta_count(jj) - 1
       do i = j + 1, nsta_count(jj)
-        call cartesian_dist(location_sta(station_winch(triangle_stationindex(i, jj)))%x_east,  &
-        &                   location_sta(station_winch(triangle_stationindex(j, jj)))%x_east,  &
-        &                   location_sta(station_winch(triangle_stationindex(i, jj)))%y_north, &
-        &                   location_sta(station_winch(triangle_stationindex(j, jj)))%y_north, &
+        call cartesian_dist(location_sta(triangle_stationwinch(i, jj))%x_east,  &
+        &                   location_sta(triangle_stationwinch(j, jj))%x_east,  &
+        &                   location_sta(triangle_stationwinch(i, jj))%y_north, &
+        &                   location_sta(triangle_stationwinch(j, jj))%y_north, &
         &                   dist_x = g2(ii, 1), dist_y = g2(ii, 2))
         ii = ii + 1
       enddo
     enddo
-
     g_tmp2 = matmul(transpose(g2), g2)
 #ifdef MKL
     call getrf(g_tmp2, ipiv = ipiv(1 : 2), info = info)
@@ -999,11 +991,13 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
   do j = 1, ntriangle
     if(nsta_count(j) .lt. 3 + nadd_station) cycle
     do i = 1, nsta_count(j)
-      write(10, '(2(e15.7, 1x))') location_sta(station_winch(triangle_stationindex(i, j)))%lon, &
-      &                           location_sta(station_winch(triangle_stationindex(i, j)))%lat
+      write(10, '(4(e15.7, 1x), z4)') location_sta(triangle_stationwinch(i, j))%lon, &
+      &                               location_sta(triangle_stationwinch(i, j))%lat, &
+      &                               triangle_center(j)%lon, triangle_center(j)%lat, &
+      &                               triangle_stationwinch(i, j)
     enddo
-    write(10, '(2(e15.7, 1x))') location_sta(station_winch(triangle_stationindex(1, j)))%lon, &
-    &                           location_sta(station_winch(triangle_stationindex(1, j)))%lat
+    write(10, '(2(e15.7, 1x))') location_sta(triangle_stationwinch(1, j))%lon, &
+    &                           location_sta(triangle_stationwinch(1, j))%lat
     write(10, '(a)') ">"
   enddo
   close(10)

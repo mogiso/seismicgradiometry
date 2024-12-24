@@ -99,6 +99,21 @@ program AELUMA_shmdump
   &                                              nsta_count, tnbr)
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
 
+  !do j = 1, ntriangle
+  !  if(nsta_count(j) .eq. 0) cycle
+  !  write(0, *) ""
+  !  write(0, '(4(f9.4, 1x))') triangle_center(j)%lon,    triangle_center(j)%lat, &
+  !  &                         triangle_center(j)%x_east, triangle_center(j)%y_north
+  !  do i = 1, nsta_count(j)
+  !    write(0, '(4(f10.4, 1x), z4)') location_sta(triangle_stationwinch(i, j))%lon, &
+  !    &                              location_sta(triangle_stationwinch(i, j))%lat, &
+  !    &                              location_sta(triangle_stationwinch(i, j))%x_east, &
+  !    &                              location_sta(triangle_stationwinch(i, j))%y_north, &
+  !    &                              triangle_stationwinch(i, j)
+  !  enddo
+  !enddo
+  stop
+
   !!read waveforms from standard input, then conduct analysis
   tcount = 0
   time_loop: do
@@ -185,14 +200,10 @@ program AELUMA_shmdump
 
           if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
           lagtime(i) = real(max_xcorr(1), kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
-          write(0, '(a, 4(1x, f9.4))') trim(stname(triangle_stationwinch(jj, j))), &
-          &                            location_sta(triangle_stationwinch(jj, j))%x_east,  &
-          &                            location_sta(triangle_stationwinch(jj, j))%y_north, &
+          write(0, '(a, 2(1x, f9.4))') trim(stname(triangle_stationwinch(jj, j))), &
           &                            location_sta(triangle_stationwinch(jj, j))%lon, &
           &                            location_sta(triangle_stationwinch(jj, j))%lat
-          write(0, '(a, 4(1x, f9.4))') trim(stname(triangle_stationwinch(ii, j))), &
-          &                            location_sta(triangle_stationwinch(ii, j))%x_east, &
-          &                            location_sta(triangle_stationwinch(ii, j))%y_north, &
+          write(0, '(a, 2(1x, f9.4))') trim(stname(triangle_stationwinch(ii, j))), &
           &                            location_sta(triangle_stationwinch(ii, j))%lon, &
           &                            location_sta(triangle_stationwinch(ii, j))%lat
           write(0, '(a, f7.2)') "lagtime = ", lagtime(i)
@@ -216,6 +227,12 @@ program AELUMA_shmdump
       slowness(1 : 2, j) = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
       write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       &                         slowness(1, j), slowness(2, j), minval_xcorr(j)
+      do i = 1, 3
+        call bl2xy(location_sta(triangle_stationwinch(i, j))%lon,     location_sta(triangle_stationwinch(i, j))%lat, &
+        &          triangle_center(j)%lon,                            triangle_center(j)%lat, &
+        &          location_sta(triangle_stationwinch(i, j))%y_north, location_sta(triangle_stationwinch(i, jj))%x_east)
+      enddo
+
       write(0, *) slowness(1, j) &
       &         * (location_sta(triangle_stationwinch(2, j))%x_east - location_sta(triangle_stationwinch(1, j))%x_east) &
       &         + slowness(2, j) &

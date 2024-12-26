@@ -36,5 +36,6 @@ module aeluma_parameters
   real(kind = fp), public, parameter :: order = 1.0e+6_fp
   integer,         public, parameter :: nwinch = 65536
 
+  integer,         public, parameter :: ntime = 6000, ntimestep = 10
 end module aeluma_parameters
   

@@ -52,6 +52,7 @@ program plot_map_vector
   do 
     call pc_clear(iwin)
     call pc_setcolor(iwin, 0, 0, 0)
+    call pc_setline(iwin, 1)
     read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray
     if(ios .ne. 0) stop
     date_txt = "20" // yr // "/" // mo // "/" // dy // " " // hh // ":" // mm // ":" // ss
@@ -61,7 +62,6 @@ program plot_map_vector
     call pc_text(iwin, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
     print *, date_txt, plot_x, plot_y
     !!writing map
-    call pc_setline(iwin, 2)
     mapcount = 0
     do i = 1, ncoastline
       if(mapbuf(i)(1 : 1) .eq. ">") then
@@ -88,6 +88,7 @@ program plot_map_vector
     !call pc_flush(iwin)
 
     if(narray .ge. 1) then
+      call pc_setline(iwin, 4)
       do i = 1, narray
         read(*, *) arrayindex, lon_array, lat_array, slowness_x, slowness_y, min_correlation
         !theta = atan2(slowness_x, slowness_y) * rad2deg

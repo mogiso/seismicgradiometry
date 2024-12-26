@@ -10,11 +10,15 @@ program AELUMA_shmdump
   use itoa
 
   implicit none
+  integer,         parameter :: iwin = 0
+  real(kind = sp), parameter :: window_width = 350.0_sp, window_height = 300.0_sp, scale = 1.0_sp, &
+  &                             width = 320.0_sp, height = 270.0_sp, plotscale = 3.0_sp
+  real(kind = sp)            :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
+  real(kind = fp)            :: maxamp
 
   character(len = 4) :: winch_char, comp_tmp
-  character(len = 8) :: tcount_char
   integer            :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
-  &                     recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, tcount
+  &                     recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success
   integer            :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                     hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf), &
   &                     waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
@@ -99,31 +103,18 @@ program AELUMA_shmdump
   &                                              nsta_count, tnbr)
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
 
-  !do j = 1, ntriangle
-  !  if(nsta_count(j) .eq. 0) cycle
-  !  write(0, *) ""
-  !  write(0, '(4(f9.4, 1x))') triangle_center(j)%lon,    triangle_center(j)%lat, &
-  !  &                         triangle_center(j)%x_east, triangle_center(j)%y_north
-  !  do i = 1, nsta_count(j)
-  !    write(0, '(4(f10.4, 1x), z4)') location_sta(triangle_stationwinch(i, j))%lon, &
-  !    &                              location_sta(triangle_stationwinch(i, j))%lat, &
-  !    &                              location_sta(triangle_stationwinch(i, j))%x_east, &
-  !    &                              location_sta(triangle_stationwinch(i, j))%y_north, &
-  !    &                              triangle_stationwinch(i, j)
-  !  enddo
-  !enddo
-  stop
+  !!open waveform canvas
+  call pc_plotinit(iwin, "Waveform monitor", 0.0, 0.0, window_width, window_height, scale)
+  call pc_setbkcolor(iwin, 255, 255, 255)
+  call pc_setcolor(iwin, 0, 0, 0)
+  dheight = (2.0_sp * height - window_height) / real(nstation + 1, kind = sp)
+  dwidth  = (2.0_sp * width - window_width) / real(waveform_buf_index_max, kind = sp)
 
   !!read waveforms from standard input, then conduct analysis
-  tcount = 0
   time_loop: do
-    tcount = tcount + 1
-    call int_to_char(tcount, 8, tcount_char)
-
     !!read date from stdin
     read(*, *, iostat = ios) yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), nch
     if(ios .ne. 0) error stop
-    write(0, '(a, i0)') "tcount = ", tcount
     write(0, '(a, 6(i2.2, 1x))') "Reading ", &
     &                             yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
     write(0, '(a, i0)') "nch = ", nch
@@ -167,6 +158,28 @@ program AELUMA_shmdump
       enddo
     enddo
 
+    call pc_clear(iwin)
+    call pc_line(iwin, (window_width - width), (window_height - height), (window_width - width), height)
+    call pc_line(iwin, (window_width - width), height, width, height)
+    call pc_line(iwin, width, height, width, (window_height - height))
+    call pc_line(iwin, (window_width - width), height, (window_width - width), (window_height - height))
+    call pc_flush(iwin)
+    do j = 1, nstation
+      maxamp = maxval(waveform_buf(:, station_winch(j)))
+      if(maxamp .eq. 0.0_fp) maxamp = 1.0_fp
+      plot_x0 = window_width - width
+      plot_yref = height - dheight * real(j, kind = sp)
+      plot_y0 = plot_yref + real(waveform_buf(1, station_winch(j)) / maxamp, kind = sp) * plotscale
+      do i = 1, waveform_buf_index_max - 1
+        plot_y1 = plot_yref + real(waveform_buf(i + 1, station_winch(j)) / maxamp, kind = sp) * plotscale
+        plot_x1 = plot_x0 + dwidth
+        call pc_line(iwin, plot_x0, plot_y0, plot_x1, plot_y1)
+        plot_x0 = plot_x1
+        plot_y0 = plot_y1
+      enddo
+    enddo
+    call pc_flush(iwin)
+
     !!calculate correlation between two stations within the array
     narray_success = 0
     do j = 1, ntriangle
@@ -200,13 +213,6 @@ program AELUMA_shmdump
 
           if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
           lagtime(i) = real(max_xcorr(1), kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
-          write(0, '(a, 2(1x, f9.4))') trim(stname(triangle_stationwinch(jj, j))), &
-          &                            location_sta(triangle_stationwinch(jj, j))%lon, &
-          &                            location_sta(triangle_stationwinch(jj, j))%lat
-          write(0, '(a, 2(1x, f9.4))') trim(stname(triangle_stationwinch(ii, j))), &
-          &                            location_sta(triangle_stationwinch(ii, j))%lon, &
-          &                            location_sta(triangle_stationwinch(ii, j))%lat
-          write(0, '(a, f7.2)') "lagtime = ", lagtime(i)
           i = i + 1
         enddo
       enddo
@@ -217,49 +223,54 @@ program AELUMA_shmdump
       !  deallocate(lagtime)
       !  cycle
       !endif
-      !if(minval_xcorr(j) .le. xcorr_min) then
-      !  xcorr_flag(j) = .false.
-      !  deallocate(lagtime)
-      !  cycle
-      !endif
+      if(minval_xcorr(j) .le. xcorr_min) then
+        xcorr_flag(j) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
       narray_success = narray_success + 1
 
       slowness(1 : 2, j) = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
       write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       &                         slowness(1, j), slowness(2, j), minval_xcorr(j)
-      do i = 1, 3
-        call bl2xy(location_sta(triangle_stationwinch(i, j))%lon,     location_sta(triangle_stationwinch(i, j))%lat, &
-        &          triangle_center(j)%lon,                            triangle_center(j)%lat, &
-        &          location_sta(triangle_stationwinch(i, j))%y_north, location_sta(triangle_stationwinch(i, jj))%x_east)
-      enddo
 
-      write(0, *) slowness(1, j) &
-      &         * (location_sta(triangle_stationwinch(2, j))%x_east - location_sta(triangle_stationwinch(1, j))%x_east) &
-      &         + slowness(2, j) &
-      &         * (location_sta(triangle_stationwinch(2, j))%y_north - location_sta(triangle_stationwinch(1, j))%y_north), &
-      &           lagtime(1)
-      write(0, *) slowness(1, j) &
-      &         * (location_sta(triangle_stationwinch(3, j))%x_east - location_sta(triangle_stationwinch(1, j))%x_east) &
-      &         + slowness(2, j) &
-      &         * (location_sta(triangle_stationwinch(3, j))%y_north - location_sta(triangle_stationwinch(1, j))%y_north), &
-      &           lagtime(2)
-      write(0, *) slowness(1, j) &
-      &         * (location_sta(triangle_stationwinch(3, j))%x_east - location_sta(triangle_stationwinch(2, j))%x_east) &
-      &         + slowness(2, j) &
-      &         * (location_sta(triangle_stationwinch(3, j))%y_north - location_sta(triangle_stationwinch(2, j))%y_north), &
-      &           lagtime(3)
+      !do i = 1, 3
+      !  call bl2xy(location_sta(triangle_stationwinch(i, j))%lon,     location_sta(triangle_stationwinch(i, j))%lat, &
+      !  &          triangle_center(j)%lon,                            triangle_center(j)%lat, &
+      !  &          location_sta(triangle_stationwinch(i, j))%y_north, location_sta(triangle_stationwinch(i, jj))%x_east)
+      !  location_sta(triangle_stationwinch(i, j))%x_east = location_sta(triangle_stationwinch(i, j))%x_east * 1.0e-3_fp
+      !  location_sta(triangle_stationwinch(i, j))%y_north = location_sta(triangle_stationwinch(i, j))%y_north * 1.0e-3_fp
+      !enddo
+      !write(0, *) slowness(1, j) &
+      !&         * (location_sta(triangle_stationwinch(2, j))%x_east - location_sta(triangle_stationwinch(1, j))%x_east) &
+      !&         + slowness(2, j) &
+      !&         * (location_sta(triangle_stationwinch(2, j))%y_north - location_sta(triangle_stationwinch(1, j))%y_north), &
+      !&           lagtime(1)
+      !write(0, *) slowness(1, j) &
+      !&         * (location_sta(triangle_stationwinch(3, j))%x_east - location_sta(triangle_stationwinch(1, j))%x_east) &
+      !&         + slowness(2, j) &
+      !&         * (location_sta(triangle_stationwinch(3, j))%y_north - location_sta(triangle_stationwinch(1, j))%y_north), &
+      !&           lagtime(2)
+      !write(0, *) slowness(1, j) &
+      !&         * (location_sta(triangle_stationwinch(3, j))%x_east - location_sta(triangle_stationwinch(2, j))%x_east) &
+      !&         + slowness(2, j) &
+      !&         * (location_sta(triangle_stationwinch(3, j))%y_north - location_sta(triangle_stationwinch(2, j))%y_north), &
+      !&           lagtime(3)
+
       deallocate(lagtime)
-      !print *, j, triangle_center(j)%lon, triangle_center(j)%lat, slowness(1, j), slowness(2, j)
     enddo
     print '(6(i0.2, 1x), i4)', yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), narray_success
     do i = 1, ntriangle
       if(xcorr_flag(i) .eqv. .true.) then
-        print *, i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
+        print '(i0, 5(1x, f8.4))', &
+        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
       endif
     enddo
 
 
   enddo time_loop
+
+  call pc_plotend(iwin, 1)
 
   stop
 end program AELUMA_shmdump

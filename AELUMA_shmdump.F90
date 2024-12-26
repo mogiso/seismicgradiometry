@@ -12,16 +12,17 @@ program AELUMA_shmdump
   implicit none
   integer,         parameter :: iwin = 0
   real(kind = sp), parameter :: window_width = 350.0_sp, window_height = 300.0_sp, scale = 1.0_sp, &
-  &                             width = 320.0_sp, height = 270.0_sp, plotscale = 3.0_sp
+  &                             width = 320.0_sp, height = 280.0_sp, plotscale = 3.0_sp
   real(kind = sp)            :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
   real(kind = fp)            :: maxamp
+  character(len = 8)         :: date_c, time_c
 
   character(len = 4) :: winch_char, comp_tmp
   integer            :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
   &                     recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success
-  integer            :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
-  &                     hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf), &
-  &                     waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
+  character(len = 2) :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
+  &                     hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
+  integer            :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
   integer, allocatable :: station_winch(:), winch_index(:)
   real(kind = fp)    :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
   &                     taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
@@ -111,11 +112,23 @@ program AELUMA_shmdump
   dwidth  = (2.0_sp * width - window_width) / real(waveform_buf_index_max, kind = sp)
 
   !!read waveforms from standard input, then conduct analysis
+  yr(1 : nsec_buf) = "00"
+  mo(1 : nsec_buf) = "00"
+  dy(1 : nsec_buf) = "00"
+  hh(1 : nsec_buf) = "00"
+  mm(1 : nsec_buf) = "00"
+  ss(1 : nsec_buf) = "00"
   time_loop: do
     !!read date from stdin
+    yr(1 : nsec_buf - 1) = yr(2 : nsec_buf)
+    mo(1 : nsec_buf - 1) = mo(2 : nsec_buf)
+    dy(1 : nsec_buf - 1) = dy(2 : nsec_buf)
+    hh(1 : nsec_buf - 1) = hh(2 : nsec_buf)
+    mm(1 : nsec_buf - 1) = mm(2 : nsec_buf)
+    ss(1 : nsec_buf - 1) = ss(2 : nsec_buf)
     read(*, *, iostat = ios) yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), nch
     if(ios .ne. 0) error stop
-    write(0, '(a, 6(i2.2, 1x))') "Reading ", &
+    write(0, '(a, 6(a2, 1x))') "Reading ", &
     &                             yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
     write(0, '(a, i0)') "nch = ", nch
 
@@ -135,12 +148,7 @@ program AELUMA_shmdump
     !!move previous datum
     waveform_buf(1 : waveform_buf_index_max - sampling_int_use, 1 : nwinch) &
     &  = waveform_buf(sampling_int_use + 1 : waveform_buf_index_max, 1 : nwinch)
-    yr(1 : nsec_buf - 1) = yr(2 : nsec_buf)
-    mo(1 : nsec_buf - 1) = mo(2 : nsec_buf)
-    dy(1 : nsec_buf - 1) = dy(2 : nsec_buf)
-    hh(1 : nsec_buf - 1) = hh(2 : nsec_buf)
-    mm(1 : nsec_buf - 1) = mm(2 : nsec_buf)
-    ss(1 : nsec_buf - 1) = ss(2 : nsec_buf)
+    !waveform_buf(sampling_int_use + 1 : waveform_buf_index_max, 1 : nwinch) = 0.0_fp
 
     !!read waveforms from stdin, filtering, decimation
     do j = 1, nch
@@ -159,11 +167,26 @@ program AELUMA_shmdump
     enddo
 
     call pc_clear(iwin)
-    call pc_line(iwin, (window_width - width), (window_height - height), (window_width - width), height)
-    call pc_line(iwin, (window_width - width), height, width, height)
-    call pc_line(iwin, width, height, width, (window_height - height))
-    call pc_line(iwin, (window_width - width), height, (window_width - width), (window_height - height))
-    call pc_flush(iwin)
+    !call pc_line(iwin, window_width - width, window_height - height, window_width - width, height                )
+    call pc_line(iwin, window_width - width, height,                 width,                height                )
+    call pc_line(iwin, width,                height,                 width,                window_height - height)
+    call pc_line(iwin, width,                window_height - height, window_width - width, window_height - height)
+    call pc_setdash(iwin, 3)
+    !!draw time index line
+    do i = 1, int(nsec_buf / 60)
+      plot_x0 = (window_width - width) + 60.0_sp * real(sampling_int_use, kind = sp) * dwidth * real(i - 1, kind = sp)
+      plot_x1 = plot_x0
+      plot_y0 = window_height - height
+      plot_y1 = height
+      call pc_line(iwin, plot_x0, plot_y0, plot_x1, plot_y1)
+      !!draw date and time
+      plot_y0 = plot_y0 - 2.0_sp
+      plot_y1 = plot_y0 - 5.5_sp
+      date_c = yr(60 * (i - 1) + 1) // "/" // mo(60 * (i - 1) + 1) // "/" // dy(60 * (i - 1) + 1)
+      time_c = hh(60 * (i - 1) + 1) // ":" // mm(60 * (i - 1) + 1) // ":" // ss(60 * (i - 1) + 1)
+      call pc_text(iwin, plot_x0, plot_y0, 6.0, date_c, 0.0, len(date_c), 4)
+      call pc_text(iwin, plot_x0, plot_y1, 6.0, time_c, 0.0, len(time_c), 4)
+    enddo
     do j = 1, nstation
       maxamp = maxval(waveform_buf(:, station_winch(j)))
       if(maxamp .eq. 0.0_fp) maxamp = 1.0_fp
@@ -177,6 +200,10 @@ program AELUMA_shmdump
         plot_x0 = plot_x1
         plot_y0 = plot_y1
       enddo
+      !!plot stationname
+      plot_x0 = width + 0.8_sp
+      stname_tmp = trim(stname(station_winch(j)))
+      call pc_text(iwin, plot_x0, plot_yref, 4.5, stname_tmp, 0.0, len(stname_tmp), 4)
     enddo
     call pc_flush(iwin)
 
@@ -231,8 +258,8 @@ program AELUMA_shmdump
       narray_success = narray_success + 1
 
       slowness(1 : 2, j) = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
-      write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
-      &                         slowness(1, j), slowness(2, j), minval_xcorr(j)
+      !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
+      !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)
 
       !do i = 1, 3
       !  call bl2xy(location_sta(triangle_stationwinch(i, j))%lon,     location_sta(triangle_stationwinch(i, j))%lat, &
@@ -259,10 +286,12 @@ program AELUMA_shmdump
 
       deallocate(lagtime)
     enddo
-    print '(6(i0.2, 1x), i4)', yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), narray_success
+    print '(6(a2, 1x), i4)', yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), narray_success
     do i = 1, ntriangle
       if(xcorr_flag(i) .eqv. .true.) then
-        print '(i0, 5(1x, f8.4))', &
+        print '(i0, 5(1x, f9.4))', &
+        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
+        write(0, '(i0, 5(1x, f9.4))') &
         &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
       endif
     enddo

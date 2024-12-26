@@ -26,8 +26,8 @@ module aeluma_parameters
   integer,         public, parameter :: sampling_int(1 : nsampling_int) = [100, 20]
   real(kind = fp), public, parameter :: sampling_sec(1 : nsampling_int) &
   &                                     = 1.0_fp / real(sampling_int(1 : nsampling_int), kind = fp)
-  integer,         public, parameter :: sampling_int_use = 4
-  integer,         public, parameter :: nsec_buf  = 500
+  integer,         public, parameter :: sampling_int_use = 5
+  integer,         public, parameter :: nsec_buf  = 360
   integer,         public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,         public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
   real(kind = fp), public, parameter :: xcorr_min = 0.1_fp

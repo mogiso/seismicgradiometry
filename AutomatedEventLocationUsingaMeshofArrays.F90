@@ -7,7 +7,6 @@ program AutomatedEventLocationUsingaMeshofArrays
   use constants, only : pi, deg2rad, rad2deg
   use typedef
   use read_sacfile, only : read_sachdr, read_sacdata
-  use grdfile_io, only : write_grdfile_fp_2d
   use lonlat_xy_conv, only : bl2xy, xy2bl
   use aeluma_parameters
   use calc_kernelmatrix

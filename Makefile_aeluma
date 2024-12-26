@@ -39,8 +39,8 @@ ifeq ($(arch),gfortran)
   FFLAGS = -O2 -frecursive -mcmodel=medium 
   DEFS = -DDOUBLE 
   LIBS = -llapack95 -llapack -lblas -lixp -lgd -lX11
-  LIBDIR = -L/usr/local/lib
-  INCDIR = -I. -I/usr/local/include
+  LIBDIR = -L/usr/local/lib -L/usr/lib/lapack
+  INCDIR = -I. -I/usr/local/include -I/usr/include
 endif
 
 aeluma = AutomatedEventLocationUsingaMeshofArrays.F90
@@ -68,6 +68,7 @@ sort = sort.F90
 tandem = tandem.F90
 typedef = typedef.F90
 read_sacfile = read_sacfile.F90
+plot_map_vector = plot_map_vector.F90
 
 ##Module
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
@@ -112,6 +113,7 @@ o_typedef = $(typedef:.F90=.o)
 o_geompack2 = $(geompack2:.f90=.o)
 o_geometry = $(geometry:.f90=.o)
 o_read_sacfile = $(read_sacfile:.F90=.o)
+o_plot_map_vector = $(plot_map_vector:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -161,6 +163,7 @@ $(o_aeluma_shmdump): $(aeluma_shmdump) \
         $(o_aeluma_parameters)
 $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype)
+$(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants)
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) $(o_read_sacfile) \
@@ -174,6 +177,9 @@ aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef
 	$(o_grdfile_io) $(o_sort) $(o_greatcircle) $(o_aeluma_parameters) \
 	$(o_cosine_taper) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry) $(o_fftsg) \
 	$(o_aeluma_shmdump)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+plot_map_vector: $(o_nrtype) $(o_constants) $(o_plot_map_vector)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 .F90.mod:

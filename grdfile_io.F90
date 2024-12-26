@@ -136,7 +136,7 @@ module grdfile_io
     return
   end subroutine read_grdfile_3d_varname
 
-  subroutine write_grdfile_2d(xmin, ymin, dx, dy, nx, ny, zval, netcdf_file, nanval)
+  subroutine write_grdfile_2d(xmin, ymin, dx, dy, nx, ny, zval, netcdf_file, nanval, xlabel, ylabel, zlabel)
     use iso_fortran_env
     use netcdf
     use nrtype, only : sp, dp
@@ -147,6 +147,7 @@ module grdfile_io
     real(kind = sp),    intent(in)    :: zval(1 : nx, 1 : ny)
     character(len = *), intent(inout) :: netcdf_file
     real(kind = sp),    intent(in), optional :: nanval
+    character(len = *), intent(in), optional :: xlabel, ylabel, zlabel
 
     integer :: i, j, ncstatus, ncid, dimid_x, dimid_y, varid_x, varid_y, varid_z
     real(kind = dp), allocatable :: tmp_array(:)
@@ -155,14 +156,27 @@ module grdfile_io
     !!open file
     ncstatus = nf90_create(trim(netcdf_file), NF90_NETCDF4, ncid)
 
-    !!dimensions
-    ncstatus = nf90_def_dim(ncid, 'x', nx, dimid_x)
-    ncstatus = nf90_def_dim(ncid, 'y', ny, dimid_y)
+    !!dimensions, variables
+    if(present(xlabel)) then
+      ncstatus = nf90_def_dim(ncid, xlabel, nx, dimid_x)
+    else
+      ncstatus = nf90_def_dim(ncid, 'x', nx, dimid_x)
+      ncstatus = nf90_def_var(ncid, 'x', NF90_DOUBLE, [dimid_x], varid_x)
+    endif
+    if(present(ylabel)) then
+      ncstatus = nf90_def_dim(ncid, ylabel, ny, dimid_y)
+      ncstatus = nf90_def_var(ncid, ylabel, NF90_DOUBLE, [dimid_y], varid_y)
+    else
+      ncstatus = nf90_def_dim(ncid, 'y', ny, dimid_y)
+      ncstatus = nf90_def_var(ncid, 'y', NF90_DOUBLE, [dimid_y], varid_y)
+    endif
 
     !!variables
-    ncstatus = nf90_def_var(ncid, 'x', NF90_DOUBLE, [dimid_x], varid_x)
-    ncstatus = nf90_def_var(ncid, 'y', NF90_DOUBLE, [dimid_y], varid_y)
-    ncstatus = nf90_def_var(ncid, 'z', NF90_FLOAT,  [dimid_x, dimid_y], varid_z)
+    if(present(zlabel)) then
+      ncstatus = nf90_def_var(ncid, zlabel, NF90_FLOAT,  [dimid_x, dimid_y], varid_z)
+    else
+      ncstatus = nf90_def_var(ncid, 'z', NF90_FLOAT,  [dimid_x, dimid_y], varid_z)
+    endif
 
     allocate(tmp_array(1 : nx))
     do i = 1, nx
@@ -193,18 +207,19 @@ module grdfile_io
     return
   end subroutine write_grdfile_2d
 
-  subroutine write_grdfile_fp_2d(xmin, ymin, dx, dy, nx, ny, zval, netcdf_file, nanval)
+  subroutine write_grdfile_fp_2d(xmin, ymin, dx, dy, nx, ny, zval, netcdf_file, nanval, xlabel, ylabel, zlabel)
     use iso_fortran_env
     use netcdf
     use nrtype, only : fp
     
     implicit none
 
-    real(kind = fp),    intent(in)    :: xmin, ymin, dx, dy
-    integer,            intent(in)    :: nx, ny
-    real(kind = fp),    intent(in)    :: zval(1 : nx, 1 : ny)
-    character(len = *), intent(inout) :: netcdf_file
+    real(kind = fp),    intent(in)           :: xmin, ymin, dx, dy
+    integer,            intent(in)           :: nx, ny
+    real(kind = fp),    intent(in)           :: zval(1 : nx, 1 : ny)
+    character(len = *), intent(in)           :: netcdf_file
     real(kind = fp),    intent(in), optional :: nanval
+    character(len = *), intent(in), optional :: xlabel, ylabel, zlabel
 
     integer :: i, j, ncstatus, ncid, dimid_x, dimid_y, varid_x, varid_y, varid_z
     real(kind = fp), allocatable :: tmp_array(:)
@@ -218,14 +233,28 @@ module grdfile_io
     !!open file
     ncstatus = nf90_create(trim(netcdf_file), NF90_NETCDF4, ncid)
 
-    !!dimensions
-    ncstatus = nf90_def_dim(ncid, 'x', nx, dimid_x)
-    ncstatus = nf90_def_dim(ncid, 'y', ny, dimid_y)
+    !!dimensions, variables
+    if(present(xlabel)) then
+      ncstatus = nf90_def_dim(ncid, xlabel, nx, dimid_x)
+      ncstatus = nf90_def_var(ncid, xlabel, NF90_DOUBLE, [dimid_x], varid_x)
+    else
+      ncstatus = nf90_def_dim(ncid, 'x', nx, dimid_x)
+      ncstatus = nf90_def_var(ncid, 'x', NF90_DOUBLE, [dimid_x], varid_x)
+    endif
+    if(present(ylabel)) then
+      ncstatus = nf90_def_dim(ncid, ylabel, ny, dimid_y)
+      ncstatus = nf90_def_var(ncid, ylabel, NF90_DOUBLE, [dimid_y], varid_y)
+    else
+      ncstatus = nf90_def_dim(ncid, 'y', ny, dimid_y)
+      ncstatus = nf90_def_var(ncid, 'y', NF90_DOUBLE, [dimid_y], varid_y)
+    endif
 
     !!variables
-    ncstatus = nf90_def_var(ncid, 'x', NF90_DOUBLE, [dimid_x], varid_x)
-    ncstatus = nf90_def_var(ncid, 'y', NF90_DOUBLE, [dimid_y], varid_y)
-    ncstatus = nf90_def_var(ncid, 'z', NF90_FLOAT,  [dimid_x, dimid_y], varid_z)
+    if(present(zlabel)) then
+      ncstatus = nf90_def_var(ncid, zlabel, NF90_FLOAT,  [dimid_x, dimid_y], varid_z)
+    else
+      ncstatus = nf90_def_var(ncid, 'z', NF90_FLOAT,  [dimid_x, dimid_y], varid_z)
+    endif
 
     allocate(tmp_array(1 : nx))
     do i = 1, nx
@@ -245,7 +274,8 @@ module grdfile_io
     do j = 1, ny
       do i = 1, nx
         tmp_array2d(i, j) = zval(i, j)
-        if(present(nanval) .and. zval(i, j) .eq. nanval) tmp_array2d(i, j) = transfer(-1_intfp, 0.0_fp)
+        if(.not. present(nanval)) cycle 
+        if(zval(i, j) .eq. nanval) tmp_array2d(i, j) = transfer(-1_intfp, 0.0_fp)
       enddo
     enddo
     ncstatus = nf90_put_var(ncid, varid_z, tmp_array2d)

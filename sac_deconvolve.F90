@@ -7,6 +7,7 @@ program sac_deconvolv
   use nrtype, only : fp, dp, sp
   use constants, only : pi
   use read_sacfile, only : read_sachdr, read_sacdata
+  use tandem, only : tandem3
 
   implicit none
 
@@ -64,10 +65,8 @@ program sac_deconvolv
     call calc_bpf_order(fl, fh, fs, ap, as, sampling, m, n, c)
     allocate(h(4 * m))
     call calc_bpf_coef(fl, fh, sampling, m, n, h, c, gn)
-    call tandem1(waveform_acc, waveform_acc, npts, h, m, 1)
-    waveform_acc(1 : npts) = waveform_acc(1 : npts) * gn
-    call tandem1(waveform_acc, waveform_acc, npts, h, m, -1)
-    waveform_acc(1 : npts) = waveform_acc(1 : npts) * gn
+    call tandem3(waveform_acc, h, gn, 1)
+    call tandem3(waveform_acc, h, gn, -1)
 
     waveform_vel(1) = 0.0_dp
     do i = 2, npts

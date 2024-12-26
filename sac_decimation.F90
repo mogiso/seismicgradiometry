@@ -2,11 +2,12 @@ program sac_decimation
   use nrtype, only : fp, dp, sp
   use constants, only : pi
   use read_sacfile, only : read_sachdr, read_sacdata
+  use tandem, only : tandem3
 
   implicit none
 
-  real(kind = fp), parameter :: ap = 0.5_fp, as = 15.0_fp
-  !integer, parameter :: nmean = 100 * 15
+  real(kind = fp), parameter :: ap = 0.1_fp, as = 15.0_fp
+  integer, parameter :: nmean = 100 * 15
   
   integer :: i, j, nfile, npts, decimate
   character(len = 4) :: sachdr_char(1 : 158)
@@ -16,7 +17,7 @@ program sac_decimation
   real(kind = fp) :: mean, sampling, sampling_new
 
   real(kind = fp), allocatable :: h(:)
-  real(kind = fp) :: fpass, fstop, c, gn
+  real(kind = fp) :: fpass, fstop, c, gn, fl
   integer :: m, n
   character(len = 65) :: decimate_c
 
@@ -40,29 +41,30 @@ program sac_decimation
     allocate(waveform_org(1 : npts))
     call read_sacdata(sacfile(j), npts, waveform_org)
 
-    !mean = 0.0_dp
-    !do i = 1, nmean
-    !  mean = mean + waveform_org(i)
-    !enddo
-    !mean = mean / real(nmean, kind = dp)
-    !waveform_org(1 : npts) = waveform_org(1 : npts) - mean
+    mean = 0.0_dp
+    do i = 1, nmean
+      mean = mean + waveform_org(i)
+    enddo
+    mean = mean / real(nmean, kind = dp)
+    waveform_org(1 : npts) = waveform_org(1 : npts) - mean
 
     write(0, '(a)') "Appling low-pass filter"
     !!new sampling period
     sampling_new = sampling * real(decimate, kind = fp)
     !!fp and fs are determined from new sampling period
-    fpass = 1.0_fp / (sampling_new * 3.0_fp)
-    fstop = 1.0_fp / (sampling_new * 2.5_fp)
+    fpass = 1.0_fp / (sampling_new * 2.5_fp)
+    fstop = 1.0_fp / (sampling_new * 2.0_fp)
+    fl    = 1.0_fp / (180.0_fp * 60.0_fp)
     write(0, '(a, 2(f6.3, 1x))') "old and new sampling period = ", sampling, sampling_new
     write(0, '(a, e15.7)') "new nyquist frequency (Hz) = ", 1.0_fp / (sampling_new * 2.0_fp)
     write(0, '(a, 2(e15.7, 1x))') "parameter fpass and fstop (Hz) = ", fpass, fstop
-    call calc_lpf_order(fpass, fstop, ap, as, sampling, m, n, c)
+    !call calc_lpf_order(fpass, fstop, ap, as, sampling, m, n, c)
+    call calc_bpf_order(fl, fpass, fstop, ap, as, sampling, m, n, c)
     allocate(h(4 * m))
-    call calc_lpf_coef(m, n, h, c, gn)
-    call tandem1(waveform_org, waveform_org, npts, h, m, 1)
-    waveform_org(1 : npts) = waveform_org(1 : npts) * gn
-    call tandem1(waveform_org, waveform_org, npts, h, m, -1)
-    waveform_org(1 : npts) = waveform_org(1 : npts) * gn
+    !call calc_lpf_coef(m, n, h, c, gn)
+    call calc_bpf_coef(fl, fpass, sampling, m, n, h, c, gn)
+    call tandem3(waveform_org, h, gn, 1)
+    call tandem3(waveform_org, h, gn, -1)
 
     allocate(waveform_decimate(npts / decimate))
     do i = 1, npts / decimate
@@ -71,7 +73,7 @@ program sac_decimation
 
     outfile = "decimate_" // trim(sacfile(j))
     write(0, '(2a)') "output ", trim(outfile)
-    open(unit = 20, file = outfile, form = "unformatted", access = "direct", recl = 4)
+    open(unit = 20, file = outfile, form = "unformatted", access = "direct", recl = 4, status = "replace")
     do i = 1, 158
       write(20, rec = i) sachdr_char(i)
     enddo

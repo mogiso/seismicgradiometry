@@ -29,7 +29,7 @@ subroutine calc_lpf_order(fpass, fstop, ap, as, sample, m, n, c)
   sigma_fp = tan(pi * fpass * sample)
   sigma_fs = tan(pi * fstop * sample)
 
-  n = max(2, int(log(as / ap) / log(sigma_fs / sigma_fp) + 0.5_fp))
+  n = max(2, int(log(ap / as) / log(sigma_fp / sigma_fs) + 0.5_fp))
   m = ceiling(real(n, kind = fp) / 2.0_fp)
   c = sqrt(exp(log(ap * as) / real(n, kind = fp)) / (sigma_fp * sigma_fs))
 

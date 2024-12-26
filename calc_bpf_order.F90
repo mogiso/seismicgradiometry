@@ -38,7 +38,7 @@ subroutine calc_bpf_order(fl, fh, fs, ap, as, sample, m, n, c)
   op = sin(sigma_fh - sigma_fl) / (cos(sigma_fl) * cos(sigma_fh))
   os = abs(tan(sigma_fs) - tan(sigma_fh) * tan(sigma_fl) / tan(sigma_fs))
 
-  n = max(2, int(abs(real(log(as / ap) / log(op / os), kind = fp)) + 0.5_fp))
+  n = max(2, int(abs(real(log(ap / as) / log(op / os), kind = fp)) + 0.5_fp))
   m = n
   c = sqrt(exp(log(ap * as) / real(n, kind = fp)) / (op * os))
 

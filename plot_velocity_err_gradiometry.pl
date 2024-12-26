@@ -23,24 +23,26 @@ $dt = 60;
 $ref_sec = $ref_hh * 3600 + $ref_mm * 60 + $ref_ss;
 
 #S-net ref: 142.5E, 38.25N
-#$dgrid_x = 20;
-#$dgrid_y = 20;
-#$min_x = -350;
-#$max_x = 350;
-#$min_y = -600;
-#$max_y = 600;
-#$size_x = 7;
-#$size_y = 12;
+$dgrid_x = 20;
+$dgrid_y = 20;
+$min_x = -350;
+$max_x = 350;
+$min_y = -600;
+$max_y = 600;
+$size_x = 4.8;
+$size_y = 8.22;
+$annot = "a200f100";
 
 #DONET ref: 135.75E, 33.2N
-$dgrid_x = 10;
-$dgrid_y = 10;
-$min_x = -150;
-$max_x = 150;
-$min_y = -100;
-$max_y = 100;
-$size_x = 7;
-$size_y = 4.7;
+#$dgrid_x = 10;
+#$dgrid_y = 10;
+#$min_x = -150;
+#$max_x = 150;
+#$min_y = -100;
+#$max_y = 100;
+#$size_x = 4.8;
+#$size_y = 3.2;
+#$annot = "a100f50";
 
 $dx = $size_x + 0.8;
 
@@ -54,7 +56,7 @@ $cpt_az = "az_err.cpt";
 $txt_x = 0.15;
 $txt_y = $size_y - 0.15;
 $cpt_x = $size_x / 2.0;
-$cpt_y = -1.7;
+$cpt_y = -1.4;
 $cpt_len = $size_x;
 $cpt_width = "0.3";
 $slowness_length = 0.35;
@@ -67,7 +69,8 @@ $txt_y2 = $size_y + 0.3;
 $symbolsize = $size_x / $ngrid_x;
 
 system "gmt set PS_LINE_JOIN round";
-system "gmt set FONT_LABEL 13p,Helvetica";
+system "gmt set FONT_LABEL 11p,Helvetica";
+system "gmt set FONT_ANNOT_PRIMARY 9p,Helvetica";
 system "gmt set MAP_LABEL_OFFSET 5p";
 
 for($index = $index_begin; $index <= $index_end; $index++){
@@ -133,8 +136,8 @@ foreach $index (@index_array){
   
   system "cat /dev/null | gmt psxy -JX1c -R0/1/0/1 -Sc0.1 -K -P -X3c -Y6c > $out";
 
-  system "gmt psbasemap -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Bpxa100f50+l\"Easting (km)\" \\
-                        -Bpya100f50+l\"Northing (km)\" -BWSen -O -K -P >> $out";
+  system "gmt psbasemap -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Bpx${annot}+l\"Easting (km)\" \\
+                        -Bpy${annot}+l\"Northing (km)\" -BWSen -O -K -P >> $out";
   if (-f $coastline){
     system "gmt psxy $coastline -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W0.8p,black -O -K -P >> $out";
   }
@@ -156,7 +159,7 @@ foreach $index (@index_array){
   }
 
   open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -Gwhite -O -K -P >> $out";
-    print OUT "$txt_x $txt_y 14p,Helvetica,black 0 LT $current_yr/$current_mo/$current_dy $current_hh:$current_mm:$current_ss\n";
+    print OUT "$txt_x $txt_y 12p,Helvetica,black 0 LT $current_yr/$current_mo/$current_dy $current_hh:$current_mm\n";
     print OUT "$txt_x2 $txt_y2 14p,Helvetica,black 0 LB (a)\n";
   close OUT;
 
@@ -166,7 +169,7 @@ foreach $index (@index_array){
 
   system "cat /dev/null | gmt psxy -JX1c -R0/1/0/1 -Sc0.1 -O -K -P -X$dx >> $out";
 
-  system "gmt psbasemap -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Bpxa100f50+l\"Easting (km)\" -Bpya100f50 \\
+  system "gmt psbasemap -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -Bpx${annot}+l\"Easting (km)\" -Bpy${annot} \\
                         -BSwen -O -K -P >> $out";
   if (-f $coastline){
     system "gmt psxy $coastline -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W0.8p,black -O -K -P >> $out";

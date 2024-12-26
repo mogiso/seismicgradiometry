@@ -18,7 +18,7 @@ subroutine calc_lpf_coef(m, n, h, c, gn)
   real(kind = fp) :: g, fj, c2, sj, tj, a, dp
   integer :: i
 
-  dp = pi / 2.0_fp / dble(n)
+  dp = pi / 2.0_fp / real(n, kind = fp)
 
   g = 1.0_fp
   fj = 1.0_fp

@@ -7,6 +7,7 @@ program sac_integrate
   use nrtype, only : fp, dp, sp
   use constants, only : pi
   use read_sacfile, only : read_sachdr, read_sacdata
+  use tandem, only : tandem3
 
   implicit none
 
@@ -69,10 +70,8 @@ program sac_integrate
     call calc_bpf_order(fl, fh, fs, ap, as, sampling, m, n, c)
     allocate(h(4 * m))
     call calc_bpf_coef(fl, fh, sampling, m, n, h, c, gn)
-    call tandem1(waveform_vel, waveform_vel, npts, h, m, 1)
-    waveform_vel(1 : npts) = waveform_vel(1 : npts) * gn
-    call tandem1(waveform_disp, waveform_disp, npts, h, m, 1)
-    waveform_disp(1 : npts) = waveform_disp(1 : npts) * gn
+    call tandem3(waveform_vel, h, gn, 1)
+    call tandem3(waveform_disp, h, gn, 1)
 
     decimate = int(sampling_new / sampling)
     allocate(waveform_decimate(npts / decimate))

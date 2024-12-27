@@ -233,7 +233,7 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
     do i = j + 1, nsta
       if(is_usestation(i) .eqv. .false.) cycle
       call greatcircle_dist(location_sta(station_winch(j))%lat, location_sta(station_winch(j))%lon, &
-      &                     location_sta(station_winch(i))%lat, location_sta(station_winch(i))%lat, &
+      &                     location_sta(station_winch(i))%lat, location_sta(station_winch(i))%lon, &
       &                     distance = dist_tmp)
       if(dist_tmp .le. interstationdistance_min) then
         is_usestation(i) = .false.

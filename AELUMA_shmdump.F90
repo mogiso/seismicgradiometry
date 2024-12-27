@@ -7,42 +7,44 @@ program AELUMA_shmdump
   use lonlat_xy_conv
   use taper
   use correlation
-  use itoa
 
   implicit none
-  integer,         parameter :: iwin = 0
-  real(kind = sp), parameter :: window_width = 350.0_sp, window_height = 300.0_sp, scale = 1.0_sp, &
-  &                             width = 320.0_sp, height = 280.0_sp, plotscale = 3.0_sp
-  real(kind = sp)            :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
-  real(kind = fp)            :: maxamp
-  character(len = 8)         :: date_c, time_c
+  !!plot using ixp library
+  integer,         parameter   :: iwin = 0
+  real(kind = sp), parameter   :: window_width = 350.0_sp, window_height = 300.0_sp, scale = 1.0_sp, &
+  &                               width = 320.0_sp, height = 280.0_sp, plotscale = 3.0_sp
+  real(kind = sp)              :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
+  real(kind = fp)              :: maxamp
+  character(len = 8)           :: date_c, time_c
 
-  character(len = 4) :: winch_char, comp_tmp
-  integer            :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
-  &                     recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success
-  character(len = 2) :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
-  &                     hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
-  integer            :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
-  integer, allocatable :: station_winch(:), winch_index(:)
-  real(kind = fp)    :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
-  &                     taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
-  &                     station_sensitivity(1 : nwinch)
-  logical            :: is_usewinch(1 : nwinch)
-  character(len = 6) :: stname(1 : nwinch), stname_tmp
-  character(len = 255) :: chtbl, chtbl_line, sensor_unit
-  real(kind = fp)    :: ad_v_min, sensor_sens, naturalfreq, damp, &
-  &                     stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor 
+  type(location)               :: location_sta(1 : nwinch)
+  integer                      :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
+  &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success
+  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
+  integer, allocatable         :: station_winch(:), winch_index(:)
+  character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
+  &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
+  real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, &
+  &                               stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor 
+  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
+  &                               taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
+  &                               station_sensitivity(1 : nwinch)
   real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :)
-  integer,         allocatable :: triangle_stationwinch(:, :), nsta_count(:), tnbr(:, :)
+  character(len = 4)           :: winch_char, comp_tmp
+  character(len = 6)           :: stname(1 : nwinch), stname_tmp
+  character(len = 255)         :: chtbl, chtbl_line, sensor_unit
+  logical                      :: is_usewinch(1 : nwinch)
   logical,         allocatable :: xcorr_flag(:)
 
-  type(location)     :: location_sta(1 : nwinch)
-  type(location), allocatable :: triangle_center(:)
+  !!delaunay triangulation
+  integer,         allocatable :: triangle_stationwinch(:, :), nsta_count(:), tnbr(:, :)
+  type(location), allocatable  :: triangle_center(:)
+
   !!band-pass filter
-  integer,         parameter :: filter_mode = 1
+  integer,         parameter   :: filter_mode = 1
+  integer                      :: m(1 : nsampling_int), n(1 : nsampling_int)
   real(kind = fp), allocatable :: h(:, :), uv(:, :)
   real(kind = fp)              :: gn(1 : nsampling_int), c(1 : nsampling_int)
-  integer                      :: m(1 : nsampling_int), n(1 : nsampling_int)
 
   call getarg(1, chtbl)
 
@@ -109,7 +111,7 @@ program AELUMA_shmdump
   call pc_setbkcolor(iwin, 255, 255, 255)
   call pc_setcolor(iwin, 0, 0, 0)
   dheight = (2.0_sp * height - window_height) / real(nstation + 1, kind = sp)
-  dwidth  = (2.0_sp * width - window_width) / real(waveform_buf_index_max, kind = sp)
+  dwidth  = (2.0_sp * width  - window_width)  / real(waveform_buf_index_max, kind = sp)
 
   !!read waveforms from standard input, then conduct analysis
   yr(1 : nsec_buf) = "00"
@@ -148,7 +150,6 @@ program AELUMA_shmdump
     !!move previous datum
     waveform_buf(1 : waveform_buf_index_max - sampling_int_use, 1 : nwinch) &
     &  = waveform_buf(sampling_int_use + 1 : waveform_buf_index_max, 1 : nwinch)
-    !waveform_buf(sampling_int_use + 1 : waveform_buf_index_max, 1 : nwinch) = 0.0_fp
 
     !!read waveforms from stdin, filtering, decimation
     do j = 1, nch
@@ -255,9 +256,14 @@ program AELUMA_shmdump
         deallocate(lagtime)
         cycle
       endif
-      narray_success = narray_success + 1
 
       slowness(1 : 2, j) = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
+      if(slowness(1, j) .eq. 0.0_fp .and. slowness(2, j) .eq. 0.0_fp) then
+        xcorr_flag(j) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
+      narray_success = narray_success + 1
       !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)
 
@@ -286,7 +292,8 @@ program AELUMA_shmdump
 
       deallocate(lagtime)
     enddo
-    print '(6(a2, 1x), i4)', yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), narray_success
+    print '(6(a2, 1x), 2(i0, 1x))', yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), &
+    &                               narray_success, ntriangle
     do i = 1, ntriangle
       if(xcorr_flag(i) .eqv. .true.) then
         print '(i0, 5(1x, f9.4))', &

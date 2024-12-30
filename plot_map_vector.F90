@@ -8,9 +8,9 @@ program plot_map_vector
   real(kind = sp), parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp
   real(kind = sp), parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp), parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, lat_s = 22.5_fp, lat_n = 48.0_fp, center_lon = 135.0_fp
-  integer, parameter :: iwin = 0
+  integer, parameter :: iwin = 0, iwin_legend = 1
 
-  integer         :: i, j, k, ios, ncoastline, mapcount, narray, arrayindex, ntriangle, color(1 : 3)
+  integer         :: i, j, k, ios, ncoastline, mapcount, narray, arrayindex, ntriangle, color(1 : 3), max_similarity(1)
   real(kind = fp) :: width_min, width_max, height_min, height_max, dwidth, dheight, maplon, maplat, map_x, map_y, &
   &                  map_x1, map_y1
   real(kind = fp), allocatable :: slowness_x(:), slowness_y(:), lon_array(:), lat_array(:), min_correlation(:)
@@ -20,14 +20,18 @@ program plot_map_vector
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2) :: yr, mo, dy, hh, mm, ss
   character(len = 19) :: date_txt
+  character(len = 6)  :: plottext
   
   !!location estimation
-  integer, parameter   :: nparticle = 1000, niter = 5
+  integer, parameter   :: nparticle = 1000, niter = 10
+  real(kind = fp), parameter :: daz_weight = 10.0_fp * deg2rad
   real(kind = fp), parameter :: sigma_particle = 0.1_fp
+  real(kind = fp), parameter :: cos_similarity_accept_degree = 5.0_fp * deg2rad
   integer, allocatable :: seed(:)
   integer              :: seedsize
   real(kind = fp)      :: cos_similarity(1 : nparticle), lon_particle(1 : nparticle), lat_particle(1 : nparticle), &
-  &                       lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle), particle_probability(1 : nparticle)
+  &                       lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle), particle_probability(1 : nparticle), &
+  &                       az_weight(1 : int(2.0_fp * pi / daz_weight))
   real(kind = fp)      :: rnd, rnd1, rnd2, az, normalize_cos_similarity, cos_similarity_tmp
 
   call random_seed(size = seedsize)
@@ -59,13 +63,83 @@ program plot_map_vector
   close(10)    
  
 
-  call pc_plotinit(iwin, "AELUMA results", 0.0, 0.0, width, height, scale)
+  call pc_plotinit(iwin, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)
   call pc_setbkcolor(iwin, 255, 255, 255)
   call mercator(center_lon, lon_w, lat_s, width_min, height_min)
   call mercator(center_lon, lon_e, lat_n, width_max, height_max)
   dwidth = 1.0_fp / (width_max - width_min)
   dheight = 1.0_fp / (height_max - height_min)
 
+  call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
+  call pc_setbkcolor(iwin_legend, 255, 255, 255)
+  do i = 1, 5
+    if(i .eq. 1) then
+      color(1 : 3) = [220, 204, 222]
+      plottext = "0.0  "
+    elseif(i .eq. 2) then
+      color(1 : 3) = [212, 156, 189]
+      plottext = "0.2  "
+    elseif(i .eq. 3) then
+      color(1 : 3) = [196, 110, 155]
+      plottext = "0.4  "
+    elseif(i .eq. 4) then
+      color(1 : 3) = [136, 97, 141]
+      plottext = "0.6  "
+    elseif(i .eq. 5) then
+      color(1 : 3) = [73, 57, 100]
+      plottext = "0.8  "
+    endif
+    plot_x = real(i, kind = sp) * 16.0_sp
+    plot_y = 20.0_sp
+    call pc_setcolor(iwin_legend, color(1), color(2), color(3))
+    call pc_setline(iwin_legend, 4)
+    call pc_vector(iwin_legend, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
+    call pc_setcolor(iwin_legend, 0, 0, 0)
+    plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
+    call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 4) 
+  enddo
+  plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
+  plottext = "1.0  "
+  call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 4) 
+
+  do i = 1, 6
+    if(i .eq. 1) then
+      color(1 : 3) = [252, 238, 158]
+      plottext = "0.0  "
+    elseif(i .eq. 2) then
+      color(1 : 3) = [238, 179, 87]
+      plottext = "0.2  "
+    elseif(i .eq. 3) then
+      color(1 : 3) = [222, 117, 79]
+      plottext = "0.4  "
+    elseif(i .eq. 4) then
+      color(1 : 3) = [149, 66, 62]
+      plottext = "0.6  "
+    elseif(i .eq. 5) then
+      color(1 : 3) = [63, 39, 23]
+      plottext = "0.8  "
+    elseif(i .eq. 6) then
+      color(1 : 3) = [26, 26, 1]
+      plottext = "1.0  "
+    endif
+    plot_x = real(i, kind = sp) * 16.0_sp
+    plot_y = 10.0_sp
+    call pc_setcolor(iwin_legend, color(1), color(2), color(3))
+    call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 0)
+    call pc_setcolor(iwin_legend, 0, 0, 0)
+    call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 1)
+    plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
+    call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
+  enddo
+  plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
+  plottext = "1.0< "
+  call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
+  plot_x = plot_x + 20.0_sp
+  plottext = "x3e+2"
+  call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
+  call pc_flush(iwin_legend)
+    
+  
 
   !!read AELUMA results from stdin
   do 
@@ -113,6 +187,7 @@ program plot_map_vector
     if(narray .ge. 1) then
       call pc_setline(iwin, 4)
       result_exist(1 : ntriangle) = .false.
+      !!read and plot slowness vector
       do i = 1, narray
         read(*, *) arrayindex, lon_array(arrayindex), lat_array(arrayindex), &
         &          slowness_x(arrayindex), slowness_y(arrayindex), min_correlation(arrayindex)
@@ -153,14 +228,23 @@ program plot_map_vector
           do j = 1, nparticle
             cos_similarity(j) = 0.0_fp
             particle_probability(j) = 0.0_fp
+            az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
             do i = 1, ntriangle
               if(result_exist(i) .eqv. .false.) cycle
               call greatcircle_dist(lat_array(i), lon_array(i), lat_particle(j), lon_particle(j), azimuth = az)
               az = az + pi
+              if(az .gt. 2.0_fp * pi) az = az - 2.0_fp * pi
+              az_weight(int(az / daz_weight) + 1) = az_weight(int(az / daz_weight) + 1) + 1.0_fp
+            enddo
+            do i = 1, ntriangle
+              if(result_exist(i) .eqv. .false.) cycle
+              call greatcircle_dist(lat_array(i), lon_array(i), lat_particle(j), lon_particle(j), azimuth = az)
+              az = az + pi
+              if(az .gt. 2.0_fp * pi) az = az - 2.0_fp * pi
               cos_similarity_tmp =(slowness_x(i) * sin(az) + slowness_y(i) * cos(az)) &
-              &                  / sqrt(slowness_x(i) ** 2 + slowness_y(i) ** 2)
-              if(cos_similarity_tmp .le. cos(pi * 0.25_fp)) cos_similarity_tmp = 0.0_fp
-              cos_similarity(j) = cos_similarity(j) + cos_similarity_tmp * min_correlation(i) * min_correlation(i)
+              &                  / sqrt(slowness_x(i) ** 2 + slowness_y(i) ** 2) 
+              if(cos_similarity_tmp .le. cos(cos_similarity_accept_degree)) cos_similarity_tmp = 0.0_fp
+              cos_similarity(j) = cos_similarity(j) + cos_similarity_tmp / az_weight(int(az / daz_weight) + 1)
             enddo
           enddo
           if(sum(cos_similarity) .eq. 0.0_fp) exit
@@ -181,13 +265,14 @@ program plot_map_vector
             call random_number(rnd2)
             rnd = sqrt(-2.0_fp * log(rnd1)) * cos(2.0_fp * pi * rnd2)
             lon_particle_new(j) = lon_particle(i) + rnd * sigma_particle
+            call random_number(rnd1)
+            call random_number(rnd2)
             rnd = sqrt(-2.0_fp * log(rnd1)) * sin(2.0_fp * pi * rnd2)
             lat_particle_new(j) = lat_particle(i) + rnd * sigma_particle
           enddo
           lon_particle(1 : nparticle) = lon_particle_new(1 : nparticle)
           lat_particle(1 : nparticle) = lat_particle_new(1 : nparticle)
         enddo
-          
          
         !!write circles
         call pc_setline(iwin, 1)
@@ -195,8 +280,32 @@ program plot_map_vector
           call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
           plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
           plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
+          cos_similarity_tmp = cos_similarity(i) * normalize_cos_similarity * 3.0e+2_fp
+          if(cos_similarity_tmp .le. 0.2_fp) then
+            color(1 : 3) = [252, 238, 158]
+          elseif(cos_similarity_tmp .gt. 0.2_fp .and. cos_similarity_tmp .le. 0.4_fp) then
+            color(1 : 3) = [238, 179, 87]
+          elseif(cos_similarity_tmp .gt. 0.4_fp .and. cos_similarity_tmp .le. 0.6_fp) then
+            color(1 : 3) = [222, 117, 79]
+          elseif(cos_similarity_tmp .gt. 0.6_fp .and. cos_similarity_tmp .le. 0.8_fp) then
+            color(1 : 3) = [149, 66, 62]
+          elseif(cos_similarity_tmp .gt. 0.8_fp .and. cos_similarity_tmp .le. 1.0_fp) then
+            color(1 : 3) = [63, 39, 23]
+          elseif(cos_similarity_tmp .gt. 1.0_fp) then
+            color(1 : 3) = [26, 26, 1]
+          endif
+          call pc_setcolor(iwin, color(1), color(2), color(3))
+          call pc_symbol(iwin, plot_x, plot_y, 3.0_sp, 1, 0)
+          call pc_setcolor(iwin, 0, 0, 0)
           call pc_symbol(iwin, plot_x, plot_y, 3.0_sp, 1, 1)
         enddo
+        max_similarity = maxloc(cos_similarity)
+        call mercator(center_lon, lon_particle(max_similarity(1)), lat_particle(max_similarity(1)), map_x, map_y)
+        plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
+        plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
+        call pc_symbol(iwin, plot_x, plot_y, 9.0_sp, 1, 0)
+        call pc_setcolor(iwin, 255, 255, 255)
+        call pc_symbol(iwin, plot_x, plot_y, 4.0_sp, 1, 0)
         
      
       endif
@@ -206,6 +315,7 @@ program plot_map_vector
 
 
   call pc_plotend(iwin, 1)
+  call pc_plotend(iwin_legend, 1)
 
   stop
 end program plot_map_vector

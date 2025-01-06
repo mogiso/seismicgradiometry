@@ -34,8 +34,8 @@ program plot_map_vector
   real(kind = fp)      :: cos_similarity(1 : nparticle), lon_particle(1 : nparticle), lat_particle(1 : nparticle), &
   &                       lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle), particle_probability(1 : nparticle), &
   &                       az_weight(1 : int(2.0_fp * pi / daz_weight))
-  real(kind = fp)      :: rnd, rnd1, rnd2, normalize_cos_similarity, cos_similarity_tmp
-  real(kind = fp), allocatable :: az(:)
+  real(kind = fp)      :: rnd, rnd1, rnd2, normalize_cos_similarity, cos_similarity_tmp, max_cos_similarity
+  real(kind = fp), allocatable :: az(:), az_obs(:)
 
   call random_seed(size = seedsize)
   allocate(seed(1 : seedsize))
@@ -153,7 +153,8 @@ program plot_map_vector
     if(ios .ne. 0) stop
     if(.not. allocated(slowness_x)) then
       allocate(slowness_x(1 : ntriangle), slowness_y(1 : ntriangle), result_exist(1 : ntriangle), arrayindex(1 : ntriangle), &
-      &        lon_array(1 : ntriangle), lat_array(1 : ntriangle), min_correlation(1 : ntriangle), az(1 : ntriangle))
+      &        lon_array(1 : ntriangle), lat_array(1 : ntriangle), min_correlation(1 : ntriangle), az(1 : ntriangle), &
+      &        az_obs(1 : ntriangle))
     endif
     date_txt = "20" // yr // "/" // mo // "/" // dy // " " // hh // ":" // mm // ":" // ss
     call mercator(center_lon, lon_w, lat_n, map_x, map_y)
@@ -228,27 +229,31 @@ program plot_map_vector
         enddo
         particlefilter: do k = 1, niter
           !!calculate cosine-similarity
-          do j = 1, nparticle
+          particleloop: do j = 1, nparticle
             cos_similarity(j) = 0.0_fp
             particle_probability(j) = 0.0_fp
             az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
             do i = 1, narray
+              if(.not. result_exist(arrayindex(i))) cycle
               if(min_correlation(i) .lt. correlation_threshold) cycle
               call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
               &                     lat_particle(j), lon_particle(j), azimuth = az(i))
               az(i) = az(i) + pi
               if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
-              az_weight(int(az(i) / daz_weight) + 1) = az_weight(int(az(i) / daz_weight) + 1) + 1.0_fp
+              az_obs(i) = atan2(slowness_x(arrayindex(i)), slowness_y(arrayindex(i)))
+              if(az_obs(i) .lt. 0.0_fp) az_obs(i) = az_obs(i) + 2.0_fp * pi
+              az_weight(int(az_obs(i) / daz_weight) + 1) = az_weight(int(az_obs(i) / daz_weight) + 1) + 1.0_fp
             enddo
             do i = 1, narray
+              if(.not. result_exist(arrayindex(i))) cycle
               if(min_correlation(i) .lt. correlation_threshold) cycle
               cos_similarity_tmp = (slowness_x(arrayindex(i)) * sin(az(i)) + slowness_y(arrayindex(i)) * cos(az(i))) &
               &              / sqrt(slowness_x(arrayindex(i)) ** 2 + slowness_y(arrayindex(i)) ** 2)
               if(cos_similarity_tmp .le. cos(cos_similarity_accept_degree)) cos_similarity_tmp = 0.0_fp
               cos_similarity(j) = cos_similarity(j) &
-              &                 + cos_similarity_tmp / az_weight(int(az(i) / daz_weight) + 1) * min_correlation(arrayindex(i))
+              &                 + cos_similarity_tmp / az_weight(int(az_obs(i) / daz_weight) + 1) * min_correlation(arrayindex(i))
             enddo
-          enddo
+          enddo particleloop
           if(sum(cos_similarity) .eq. 0.0_fp) exit
           normalize_cos_similarity = 1.0_fp / sum(cos_similarity(1 : nparticle))
           if(k .eq. niter) exit particlefilter
@@ -256,6 +261,8 @@ program plot_map_vector
           do i = 2, nparticle
             particle_probability(i) = particle_probability(i - 1) + cos_similarity(i) * normalize_cos_similarity
           enddo
+          if(k .gt. 1 .and. maxval(cos_similarity) .le. max_cos_similarity) exit particlefilter
+          max_cos_similarity = maxval(cos_similarity)
           !!check
           !write(0, *) "max_particle_prob = ", particle_probability(nparticle)
 
@@ -266,9 +273,8 @@ program plot_map_vector
               if(rnd .le. particle_probability(i)) exit
             enddo
             if(i .gt. nparticle) then
-              write(0, *) i, rnd, particle_probability(i - 1), normalize_cos_similarity
-              do i = 1, narray
-                write(0, *) az(i), min_correlation(arrayindex(i))
+              do i = 1, nparticle
+                write(0, *) i, particle_probability(i), cos_similarity(i)
               enddo
             endif
             call random_number(rnd1)

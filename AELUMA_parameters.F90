@@ -27,7 +27,7 @@ module aeluma_parameters
   integer,         public, parameter :: nsec_buf  = 360
   integer,         public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,         public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
-  real(kind = fp), public, parameter :: xcorr_min = 0.2_fp
+  real(kind = fp), public, parameter :: xcorr_min = 0.4_fp
   real(kind = fp), public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp), public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
   real(kind = fp), public, parameter :: order = 1.0e+6_fp

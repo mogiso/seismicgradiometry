@@ -251,11 +251,11 @@ program AELUMA_shmdump
       !  deallocate(lagtime)
       !  cycle
       !endif
-      if(minval_xcorr(j) .le. xcorr_min) then
-        xcorr_flag(j) = .false.
-        deallocate(lagtime)
-        cycle
-      endif
+      !if(minval_xcorr(j) .le. xcorr_min) then
+      !  xcorr_flag(j) = .false.
+      !  deallocate(lagtime)
+      !  cycle
+      !endif
 
       slowness(1 : 2, j) = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
       if(slowness(1, j) .eq. 0.0_fp .and. slowness(2, j) .eq. 0.0_fp) then

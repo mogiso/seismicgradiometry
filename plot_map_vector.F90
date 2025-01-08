@@ -5,9 +5,6 @@ program plot_map_vector
   use aeluma_parameters
   implicit none
 
-  real(kind = sp), parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp
-  real(kind = sp), parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
-  real(kind = fp), parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, lat_s = 22.5_fp, lat_n = 48.0_fp, center_lon = 135.0_fp
   integer, parameter :: iwin = 0, iwin_legend = 1
 
   integer         :: i, j, k, ios, ncoastline, mapcount, narray, ntriangle, color(1 : 3), max_similarity(1)
@@ -23,12 +20,6 @@ program plot_map_vector
   character(len = 19) :: date_txt
   character(len = 6)  :: plottext
   
-  !!location estimation
-  integer, parameter   :: nparticle = 1000, niter = 6
-  real(kind = fp), parameter :: daz_weight = 10.0_fp * deg2rad
-  real(kind = fp), parameter :: sigma_particle = 0.3_fp
-  real(kind = fp), parameter :: cos_similarity_accept_degree = 5.0_fp * deg2rad
-  real(kind = fp), parameter :: correlation_threshold = 0.5_fp
   integer, allocatable :: seed(:)
   integer              :: seedsize
   real(kind = fp)      :: cos_similarity(1 : nparticle), lon_particle(1 : nparticle), lat_particle(1 : nparticle), &

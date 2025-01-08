@@ -26,7 +26,7 @@ program plot_map_vector
   !!location estimation
   integer, parameter   :: nparticle = 1000, niter = 6
   real(kind = fp), parameter :: daz_weight = 10.0_fp * deg2rad
-  real(kind = fp), parameter :: sigma_particle = 0.1_fp
+  real(kind = fp), parameter :: sigma_particle = 0.3_fp
   real(kind = fp), parameter :: cos_similarity_accept_degree = 5.0_fp * deg2rad
   real(kind = fp), parameter :: correlation_threshold = 0.5_fp
   integer, allocatable :: seed(:)
@@ -138,7 +138,7 @@ program plot_map_vector
   plottext = "1.0< "
   call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
   plot_x = plot_x + 20.0_sp
-  plottext = "x3e+2"
+  plottext = "x2e-1"
   call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
   call pc_flush(iwin_legend)
     
@@ -156,37 +156,6 @@ program plot_map_vector
       &        lon_array(1 : ntriangle), lat_array(1 : ntriangle), min_correlation(1 : ntriangle), az(1 : ntriangle), &
       &        az_obs(1 : ntriangle))
     endif
-    date_txt = "20" // yr // "/" // mo // "/" // dy // " " // hh // ":" // mm // ":" // ss
-    call mercator(center_lon, lon_w, lat_n, map_x, map_y)
-    plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
-    plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-    call pc_text(iwin, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
-
-
-    !!writing map
-    mapcount = 0
-    do i = 1, ncoastline
-      if(mapbuf(i)(1 : 1) .eq. ">") then
-        mapcount = 0
-        cycle
-      endif
-      read(mapbuf(i), *) maplon, maplat
-      call mercator(center_lon, maplon, maplat, map_x, map_y)
-    
-      if(mapcount .eq. 0) then
-        mapcount = 1
-        map_x1 = map_x
-        map_y1 = map_y
-        cycle
-      endif
-      plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
-      plot_x1 = real((map_x1 - width_min)  * dwidth,  kind = sp) * width
-      plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-      plot_y1 = real((map_y1 - height_min) * dheight, kind = sp) * height
-      map_x1 = map_x
-      map_y1 = map_y
-      call pc_line(iwin, plot_x, plot_y, plot_x1, plot_y1)
-    enddo
 
     if(narray .ge. 1) then
       call pc_setline(iwin, 4)
@@ -197,26 +166,7 @@ program plot_map_vector
         &          slowness_x(arrayindex(i)), slowness_y(arrayindex(i)), min_correlation(arrayindex(i))
         if(.not. (slowness_x(arrayindex(i)) .ne. 0.0_fp .and. slowness_y(arrayindex(i)) .ne. 0.0_fp)) cycle
         result_exist(arrayindex(i)) = .true.
-        !theta = atan2(slowness_x, slowness_y) * rad2deg
-        plot_theta = real(atan2(slowness_y(arrayindex(i)), slowness_x(arrayindex(i))) * rad2deg, kind = sp)
-        call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
-        plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
-        plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-        if(min_correlation(arrayindex(i)) .lt. 0.2_fp) then
-          color(1 : 3) = [220, 204, 222]
-        elseif(min_correlation(arrayindex(i)) .ge. 0.2_fp .and. min_correlation(arrayindex(i)) .lt. 0.4_fp) then
-          color(1 : 3) = [212, 156, 189]
-        elseif(min_correlation(arrayindex(i)) .ge. 0.4_fp .and. min_correlation(arrayindex(i)) .lt. 0.6_fp) then
-          color(1 : 3) = [196, 110, 155]
-        elseif(min_correlation(arrayindex(i)) .ge. 0.6_fp .and. min_correlation(arrayindex(i)) .lt. 0.8_fp) then
-          color(1 : 3) = [136, 97, 141]
-        elseif(min_correlation(arrayindex(i)) .ge. 0.8_fp) then
-          color(1 : 3) = [73, 57, 100]
-        endif
-        call pc_setcolor(iwin, color(1), color(2), color(3))
-        call pc_vector(iwin, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
       enddo
-      call pc_setcolor(iwin, 0, 0, 0)
 
       !!estimate location
       if(narray .ge. 5) then
@@ -296,7 +246,7 @@ program plot_map_vector
           call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
           plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
           plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-          cos_similarity_tmp = cos_similarity(i) * normalize_cos_similarity * 3.0e+2_fp
+          cos_similarity_tmp = cos_similarity(i) * 2e-1_fp
           if(cos_similarity_tmp .le. 0.2_fp) then
             color(1 : 3) = [252, 238, 158]
           elseif(cos_similarity_tmp .gt. 0.2_fp .and. cos_similarity_tmp .le. 0.4_fp) then
@@ -322,10 +272,66 @@ program plot_map_vector
         call pc_symbol(iwin, plot_x, plot_y, 9.0_sp, 1, 0)
         call pc_setcolor(iwin, 255, 255, 255)
         call pc_symbol(iwin, plot_x, plot_y, 4.0_sp, 1, 0)
-        
-     
       endif
     endif
+
+    !!plot slowness vector
+    call pc_setline(iwin, 4)
+    do i = 1, narray
+      if(.not. result_exist(arrayindex(i))) cycle
+      !theta = atan2(slowness_x, slowness_y) * rad2deg
+      plot_theta = real(atan2(slowness_y(arrayindex(i)), slowness_x(arrayindex(i))) * rad2deg, kind = sp)
+      call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
+      plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
+      plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
+      if(min_correlation(arrayindex(i)) .lt. 0.2_fp) then
+        color(1 : 3) = [220, 204, 222]
+      elseif(min_correlation(arrayindex(i)) .ge. 0.2_fp .and. min_correlation(arrayindex(i)) .lt. 0.4_fp) then
+        color(1 : 3) = [212, 156, 189]
+      elseif(min_correlation(arrayindex(i)) .ge. 0.4_fp .and. min_correlation(arrayindex(i)) .lt. 0.6_fp) then
+        color(1 : 3) = [196, 110, 155]
+      elseif(min_correlation(arrayindex(i)) .ge. 0.6_fp .and. min_correlation(arrayindex(i)) .lt. 0.8_fp) then
+        color(1 : 3) = [136, 97, 141]
+      elseif(min_correlation(arrayindex(i)) .ge. 0.8_fp) then
+        color(1 : 3) = [73, 57, 100]
+      endif
+      call pc_setcolor(iwin, color(1), color(2), color(3))
+      call pc_vector(iwin, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
+    enddo
+    call pc_setline(iwin, 1)
+
+ 
+    !!plot map
+    call pc_setcolor(iwin, 0, 0, 0)
+    date_txt = "20" // yr // "/" // mo // "/" // dy // " " // hh // ":" // mm // ":" // ss
+    call mercator(center_lon, lon_w, lat_n, map_x, map_y)
+    plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
+    plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
+    call pc_text(iwin, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
+
+    mapcount = 0
+    do i = 1, ncoastline
+      if(mapbuf(i)(1 : 1) .eq. ">") then
+        mapcount = 0
+        cycle
+      endif
+      read(mapbuf(i), *) maplon, maplat
+      call mercator(center_lon, maplon, maplat, map_x, map_y)
+    
+      if(mapcount .eq. 0) then
+        mapcount = 1
+        map_x1 = map_x
+        map_y1 = map_y
+        cycle
+      endif
+      plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
+      plot_x1 = real((map_x1 - width_min)  * dwidth,  kind = sp) * width
+      plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
+      plot_y1 = real((map_y1 - height_min) * dheight, kind = sp) * height
+      map_x1 = map_x
+      map_y1 = map_y
+      call pc_line(iwin, plot_x, plot_y, plot_x1, plot_y1)
+    enddo
     call pc_flush(iwin)
   enddo
 

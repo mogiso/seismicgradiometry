@@ -4,7 +4,8 @@
 !! see https://opensource.org/licenses/MIT
 
 module aeluma_parameters
-  use nrtype, only : fp
+  use nrtype
+  use constants
   implicit none
   private
 

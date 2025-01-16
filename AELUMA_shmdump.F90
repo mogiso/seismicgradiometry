@@ -11,8 +11,8 @@ program AELUMA_shmdump
   implicit none
   !!plot using ixp library
   integer,         parameter   :: iwin = 0
-  real(kind = sp), parameter   :: window_width = 350.0_sp, window_height = 300.0_sp, scale = 1.0_sp, &
-  &                               width = 320.0_sp, height = 280.0_sp, plotscale = 3.0_sp
+  real(kind = sp), parameter   :: wavewindow_width = 350.0_sp, wavewindow_height = 300.0_sp, wavescale = 1.0_sp, &
+  &                               wavewidth = 320.0_sp, waveheight = 280.0_sp, waveplotscale = 3.0_sp
   real(kind = sp)              :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
   real(kind = fp)              :: maxamp
   character(len = 8)           :: date_c, time_c
@@ -107,11 +107,11 @@ program AELUMA_shmdump
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
 
   !!open waveform canvas
-  call pc_plotinit(iwin, "Waveform monitor", 0.0, 0.0, window_width, window_height, scale)
+  call pc_plotinit(iwin, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
   call pc_setbkcolor(iwin, 255, 255, 255)
   call pc_setcolor(iwin, 0, 0, 0)
-  dheight = (2.0_sp * height - window_height) / real(nstation + 1, kind = sp)
-  dwidth  = (2.0_sp * width  - window_width)  / real(waveform_buf_index_max, kind = sp)
+  dheight = (2.0_sp * waveheight - wavewindow_height) / real(nstation + 1, kind = sp)
+  dwidth  = (2.0_sp * wavewidth  - wavewindow_width)  / real(waveform_buf_index_max, kind = sp)
 
   !!read waveforms from standard input, then conduct analysis
   yr(1 : nsec_buf) = "00"
@@ -169,16 +169,16 @@ program AELUMA_shmdump
 
     call pc_clear(iwin)
     !call pc_line(iwin, window_width - width, window_height - height, window_width - width, height                )
-    call pc_line(iwin, window_width - width, height,                 width,                height                )
-    call pc_line(iwin, width,                height,                 width,                window_height - height)
-    call pc_line(iwin, width,                window_height - height, window_width - width, window_height - height)
+    call pc_line(iwin, wavewindow_width - wavewidth, waveheight, wavewidth, waveheight)
+    call pc_line(iwin, wavewidth, waveheight, wavewidth, wavewindow_height - waveheight)
+    call pc_line(iwin, wavewidth, wavewindow_height - waveheight, wavewindow_width - wavewidth, wavewindow_height - waveheight)
     call pc_setdash(iwin, 3)
     !!draw time index line
     do i = 1, int(nsec_buf / 60)
-      plot_x0 = (window_width - width) + 60.0_sp * real(sampling_int_use, kind = sp) * dwidth * real(i - 1, kind = sp)
+      plot_x0 = (wavewindow_width - wavewidth) + 60.0_sp * real(sampling_int_use, kind = sp) * dwidth * real(i - 1, kind = sp)
       plot_x1 = plot_x0
-      plot_y0 = window_height - height
-      plot_y1 = height
+      plot_y0 = wavewindow_height - waveheight
+      plot_y1 = waveheight
       call pc_line(iwin, plot_x0, plot_y0, plot_x1, plot_y1)
       !!draw date and time
       plot_y0 = plot_y0 - 2.0_sp
@@ -191,18 +191,18 @@ program AELUMA_shmdump
     do j = 1, nstation
       maxamp = maxval(waveform_buf(:, station_winch(j)))
       if(maxamp .eq. 0.0_fp) maxamp = 1.0_fp
-      plot_x0 = window_width - width
-      plot_yref = height - dheight * real(j, kind = sp)
-      plot_y0 = plot_yref + real(waveform_buf(1, station_winch(j)) / maxamp, kind = sp) * plotscale
+      plot_x0 = wavewindow_width - wavewidth
+      plot_yref = waveheight - dheight * real(j, kind = sp)
+      plot_y0 = plot_yref + real(waveform_buf(1, station_winch(j)) / maxamp, kind = sp) * waveplotscale
       do i = 1, waveform_buf_index_max - 1
-        plot_y1 = plot_yref + real(waveform_buf(i + 1, station_winch(j)) / maxamp, kind = sp) * plotscale
+        plot_y1 = plot_yref + real(waveform_buf(i + 1, station_winch(j)) / maxamp, kind = sp) * waveplotscale
         plot_x1 = plot_x0 + dwidth
         call pc_line(iwin, plot_x0, plot_y0, plot_x1, plot_y1)
         plot_x0 = plot_x1
         plot_y0 = plot_y1
       enddo
       !!plot stationname
-      plot_x0 = width + 0.8_sp
+      plot_x0 = wavewidth + 0.8_sp
       stname_tmp = trim(stname(station_winch(j)))
       call pc_text(iwin, plot_x0, plot_yref, 4.5, stname_tmp, 0.0, len(stname_tmp), 4)
     enddo

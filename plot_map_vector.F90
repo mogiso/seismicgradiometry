@@ -6,8 +6,9 @@ program plot_map_vector
   implicit none
 
   integer, parameter :: iwin = 0, iwin_legend = 1
+  real(kind = fp), parameter :: sigma_daz2 = (20.0_fp * deg2rad) ** 2
 
-  integer         :: i, j, k, ios, ncoastline, mapcount, narray, ntriangle, color(1 : 3), max_similarity(1)
+  integer         :: i, j, k, ios, ncoastline, mapcount, narray, ntriangle, color(1 : 3), maxloc_likelihood(1)
   real(kind = fp) :: width_min, width_max, height_min, height_max, dwidth, dheight, maplon, maplat, map_x, map_y, &
   &                  map_x1, map_y1
   real(kind = fp), allocatable :: slowness_x(:), slowness_y(:), lon_array(:), lat_array(:), min_correlation(:)
@@ -23,9 +24,11 @@ program plot_map_vector
   integer, allocatable :: seed(:)
   integer              :: seedsize
   real(kind = fp)      :: cos_similarity(1 : nparticle), lon_particle(1 : nparticle), lat_particle(1 : nparticle), &
+  &                       likelihood_particle(1 : nparticle), &
   &                       lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle), particle_probability(1 : nparticle), &
   &                       az_weight(1 : int(2.0_fp * pi / daz_weight))
-  real(kind = fp)      :: rnd, rnd1, rnd2, normalize_cos_similarity, cos_similarity_tmp, max_cos_similarity
+  real(kind = fp)      :: rnd, rnd1, rnd2, normalize_cos_similarity, cos_similarity_tmp, max_cos_similarity, &
+  &                       normalize_likelihood, maxval_likelihood_particle, daz, likelihood_tmp
   real(kind = fp), allocatable :: az(:), az_obs(:)
 
   call random_seed(size = seedsize)
@@ -129,7 +132,7 @@ program plot_map_vector
   plottext = "1.0< "
   call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
   plot_x = plot_x + 20.0_sp
-  plottext = "x2e-1"
+  plottext = "x1e-3"
   call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
   call pc_flush(iwin_legend)
     
@@ -171,12 +174,13 @@ program plot_map_vector
         particlefilter: do k = 1, niter
           !!calculate cosine-similarity
           particleloop: do j = 1, nparticle
-            cos_similarity(j) = 0.0_fp
+            !cos_similarity(j) = 0.0_fp
+            likelihood_particle(j) = 0.0_fp
             particle_probability(j) = 0.0_fp
             az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
             do i = 1, narray
               if(.not. result_exist(arrayindex(i))) cycle
-              if(min_correlation(i) .lt. correlation_threshold) cycle
+              if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
               call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
               &                     lat_particle(j), lon_particle(j), azimuth = az(i))
               az(i) = az(i) + pi
@@ -187,25 +191,28 @@ program plot_map_vector
             enddo
             do i = 1, narray
               if(.not. result_exist(arrayindex(i))) cycle
-              if(min_correlation(i) .lt. correlation_threshold) cycle
-              cos_similarity_tmp = (slowness_x(arrayindex(i)) * sin(az(i)) + slowness_y(arrayindex(i)) * cos(az(i))) &
-              &              / sqrt(slowness_x(arrayindex(i)) ** 2 + slowness_y(arrayindex(i)) ** 2)
-              if(cos_similarity_tmp .le. cos(cos_similarity_accept_degree)) cos_similarity_tmp = 0.0_fp
-              cos_similarity(j) = cos_similarity(j) &
-              &                 + cos_similarity_tmp / az_weight(int(az_obs(i) / daz_weight) + 1) * min_correlation(arrayindex(i))
+              if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+              daz = az_obs(i) - az(i)
+              if(daz .gt.  pi) daz = 2.0_fp * pi - daz
+              if(daz .lt. -pi) daz = 2.0_fp * pi + daz
+              likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / sigma_daz2)
+              !&              * min_correlation(arrayindex(i)) / az_weight(int(az_obs(i) / daz_weight) + 1)
+              if(likelihood_particle(j) .eq. 0.0_fp) then
+                likelihood_particle(j) = likelihood_tmp
+              else
+                likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
+              endif
             enddo
           enddo particleloop
-          if(sum(cos_similarity) .eq. 0.0_fp) exit
-          normalize_cos_similarity = 1.0_fp / sum(cos_similarity(1 : nparticle))
+          if(sum(likelihood_particle) .eq. 0.0_fp) exit
+          normalize_likelihood = 1.0_fp / sum(likelihood_particle)
           if(k .eq. niter) exit particlefilter
-          particle_probability(1) = cos_similarity(1) * normalize_cos_similarity
+          particle_probability(1) = likelihood_particle(1) * normalize_likelihood
           do i = 2, nparticle
-            particle_probability(i) = particle_probability(i - 1) + cos_similarity(i) * normalize_cos_similarity
+            particle_probability(i) = particle_probability(i - 1) + (likelihood_particle(i) * normalize_likelihood)
           enddo
-          if(k .gt. 1 .and. maxval(cos_similarity) .le. max_cos_similarity) exit particlefilter
-          max_cos_similarity = maxval(cos_similarity)
-          !!check
-          !write(0, *) "max_particle_prob = ", particle_probability(nparticle)
+          if(k .gt. 1 .and. maxval(likelihood_particle) .le. maxval_likelihood_particle) exit particlefilter
+          maxval_likelihood_particle = maxval(likelihood_particle)
 
           !!redistribute particle
           do j = 1, nparticle
@@ -215,7 +222,7 @@ program plot_map_vector
             enddo
             if(i .gt. nparticle) then
               do i = 1, nparticle
-                write(0, *) i, particle_probability(i), cos_similarity(i)
+                write(0, *) i, particle_probability(i), likelihood_particle(i)
               enddo
             endif
             call random_number(rnd1)
@@ -237,18 +244,18 @@ program plot_map_vector
           call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
           plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
           plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-          cos_similarity_tmp = cos_similarity(i) * 2e-1_fp
-          if(cos_similarity_tmp .le. 0.2_fp) then
+          likelihood_tmp = likelihood_particle(i) * 1.0e+2_fp
+          if(likelihood_tmp .le. 0.01_fp) then
             color(1 : 3) = [252, 238, 158]
-          elseif(cos_similarity_tmp .gt. 0.2_fp .and. cos_similarity_tmp .le. 0.4_fp) then
+          elseif(likelihood_tmp .gt. 0.01_fp .and. likelihood_tmp .le. 0.1_fp) then
             color(1 : 3) = [238, 179, 87]
-          elseif(cos_similarity_tmp .gt. 0.4_fp .and. cos_similarity_tmp .le. 0.6_fp) then
+          elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 1_fp) then
             color(1 : 3) = [222, 117, 79]
-          elseif(cos_similarity_tmp .gt. 0.6_fp .and. cos_similarity_tmp .le. 0.8_fp) then
+          elseif(likelihood_tmp .gt. 1_fp .and. likelihood_tmp .le. 10.0_fp) then
             color(1 : 3) = [149, 66, 62]
-          elseif(cos_similarity_tmp .gt. 0.8_fp .and. cos_similarity_tmp .le. 1.0_fp) then
+          elseif(likelihood_tmp .gt. 10.0_fp .and. likelihood_tmp .le. 100.0_fp) then
             color(1 : 3) = [63, 39, 23]
-          elseif(cos_similarity_tmp .gt. 1.0_fp) then
+          elseif(likelihood_tmp .gt. 100.0_fp) then
             color(1 : 3) = [26, 26, 1]
           endif
           call pc_setcolor(iwin, color(1), color(2), color(3))
@@ -256,8 +263,8 @@ program plot_map_vector
           call pc_setcolor(iwin, 0, 0, 0)
           call pc_symbol(iwin, plot_x, plot_y, 3.0_sp, 1, 1)
         enddo
-        max_similarity = maxloc(cos_similarity)
-        call mercator(center_lon, lon_particle(max_similarity(1)), lat_particle(max_similarity(1)), map_x, map_y)
+        maxloc_likelihood = maxloc(likelihood_particle)
+        call mercator(center_lon, lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), map_x, map_y)
         plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
         plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
         call pc_symbol(iwin, plot_x, plot_y, 9.0_sp, 1, 0)

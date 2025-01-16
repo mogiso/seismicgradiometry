@@ -39,7 +39,7 @@ module aeluma_parameters
   real(kind = sp), public, parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp), public, parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, lat_s = 22.5_fp, lat_n = 48.0_fp, center_lon = 135.0_fp
   !!location estimation
-  integer,         public, parameter :: nparticle = 1000, niter = 6
+  integer,         public, parameter :: nparticle = 1000, niter = 2
   real(kind = fp), public, parameter :: daz_weight = 10.0_fp * deg2rad
   real(kind = fp), public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp), public, parameter :: cos_similarity_accept_degree = 5.0_fp * deg2rad

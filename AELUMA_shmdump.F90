@@ -28,7 +28,7 @@ program AELUMA_shmdump
   &                               stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor 
   real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
   &                               taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
-  &                               station_sensitivity(1 : nwinch)
+  &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : ntime_fft)
   real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :)
   character(len = 4)           :: winch_char, comp_tmp
   character(len = 6)           :: stname(1 : nwinch), stname_tmp
@@ -264,6 +264,7 @@ program AELUMA_shmdump
         cycle
       endif
       narray_success = narray_success + 1
+
       !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)
 
@@ -298,8 +299,8 @@ program AELUMA_shmdump
       if(xcorr_flag(i) .eqv. .true.) then
         print '(i0, 5(1x, f9.4))', &
         &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
-        write(0, '(i0, 5(1x, f9.4))') &
-        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
+        !write(0, '(i0, 5(1x, f9.4))') &
+        !&      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
       endif
     enddo
 

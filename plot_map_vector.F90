@@ -6,9 +6,10 @@ program plot_map_vector
   implicit none
 
   integer, parameter :: iwin = 0, iwin_legend = 1
-  real(kind = fp), parameter :: sigma_daz2 = (20.0_fp * deg2rad) ** 2
+  real(kind = sp), parameter :: likelihood_legend_normalize = 1.0e+3
+  character(len = 5), parameter :: likelihood_legend_normalize_c = "x1e-3"
 
-  integer         :: i, j, k, ios, ncoastline, mapcount, narray, ntriangle, color(1 : 3), maxloc_likelihood(1)
+  integer         :: i, j, k, ios, ncoastline, mapcount, narray, ntriangle, color(1 : 3), maxloc_likelihood(1), az_weight_index
   real(kind = fp) :: width_min, width_max, height_min, height_max, dwidth, dheight, maplon, maplat, map_x, map_y, &
   &                  map_x1, map_y1
   real(kind = fp), allocatable :: slowness_x(:), slowness_y(:), lon_array(:), lat_array(:), min_correlation(:)
@@ -23,12 +24,12 @@ program plot_map_vector
   
   integer, allocatable :: seed(:)
   integer              :: seedsize
-  real(kind = fp)      :: cos_similarity(1 : nparticle), lon_particle(1 : nparticle), lat_particle(1 : nparticle), &
+  real(kind = fp)      :: lon_particle(1 : nparticle), lat_particle(1 : nparticle), &
   &                       likelihood_particle(1 : nparticle), &
   &                       lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle), particle_probability(1 : nparticle), &
   &                       az_weight(1 : int(2.0_fp * pi / daz_weight))
-  real(kind = fp)      :: rnd, rnd1, rnd2, normalize_cos_similarity, cos_similarity_tmp, max_cos_similarity, &
-  &                       normalize_likelihood, maxval_likelihood_particle, daz, likelihood_tmp
+  real(kind = fp)      :: rnd, rnd1, rnd2, normalize_likelihood, maxval_likelihood_particle, daz, likelihood_tmp, &
+  &                       kahan_val1, kahan_val2, sum_likelihood, likelihood_azweight
   real(kind = fp), allocatable :: az(:), az_obs(:)
 
   call random_seed(size = seedsize)
@@ -72,19 +73,19 @@ program plot_map_vector
   do i = 1, 5
     if(i .eq. 1) then
       color(1 : 3) = [220, 204, 222]
-      plottext = "0.0  "
+      plottext = "0.0   "
     elseif(i .eq. 2) then
       color(1 : 3) = [212, 156, 189]
-      plottext = "0.2  "
+      plottext = "0.2   "
     elseif(i .eq. 3) then
       color(1 : 3) = [196, 110, 155]
-      plottext = "0.4  "
+      plottext = "0.4   "
     elseif(i .eq. 4) then
       color(1 : 3) = [136, 97, 141]
-      plottext = "0.6  "
+      plottext = "0.6   "
     elseif(i .eq. 5) then
       color(1 : 3) = [73, 57, 100]
-      plottext = "0.8  "
+      plottext = "0.8   "
     endif
     plot_x = real(i, kind = sp) * 16.0_sp
     plot_y = 20.0_sp
@@ -93,31 +94,31 @@ program plot_map_vector
     call pc_vector(iwin_legend, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
     call pc_setcolor(iwin_legend, 0, 0, 0)
     plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
-    call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 4) 
+    call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
   enddo
   plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
   plottext = "1.0  "
-  call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 4) 
+  call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
 
   do i = 1, 6
     if(i .eq. 1) then
       color(1 : 3) = [252, 238, 158]
-      plottext = "0.0  "
+      plottext = "<0.1"
     elseif(i .eq. 2) then
       color(1 : 3) = [238, 179, 87]
-      plottext = "0.2  "
+      plottext = "0.1"
     elseif(i .eq. 3) then
       color(1 : 3) = [222, 117, 79]
-      plottext = "0.4  "
+      plottext = "0.3"
     elseif(i .eq. 4) then
       color(1 : 3) = [149, 66, 62]
-      plottext = "0.6  "
+      plottext = "1.0"
     elseif(i .eq. 5) then
       color(1 : 3) = [63, 39, 23]
-      plottext = "0.8  "
+      plottext = "3.0"
     elseif(i .eq. 6) then
       color(1 : 3) = [26, 26, 1]
-      plottext = "1.0  "
+      plottext = "10.0"
     endif
     plot_x = real(i, kind = sp) * 16.0_sp
     plot_y = 10.0_sp
@@ -126,14 +127,14 @@ program plot_map_vector
     call pc_setcolor(iwin_legend, 0, 0, 0)
     call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 1)
     plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-    call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
+    call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
   enddo
   plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-  plottext = "1.0< "
-  call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
+  plottext = "10.0<"
+  call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
   plot_x = plot_x + 20.0_sp
-  plottext = "x1e-3"
-  call pc_text(iwin_legend, plot_x, plot_y, 4.5, trim(plottext), 0.0, len(trim(plottext)), 5) 
+  call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(likelihood_legend_normalize_c), 0.0, &
+  &            len(trim(likelihood_legend_normalize_c)), 5) 
   call pc_flush(iwin_legend)
     
   
@@ -171,12 +172,13 @@ program plot_map_vector
           call random_number(rnd)
           lat_particle(i) = lat_s + (lat_n - lat_s) * rnd
         enddo
+        maxval_likelihood_particle = 0.0_fp
         particlefilter: do k = 1, niter
-          !!calculate cosine-similarity
+          !write(0, '(a, i0)') "iter num = ", k
+          sum_likelihood = 0.0_fp
+          kahan_val1 = 0.0_fp
           particleloop: do j = 1, nparticle
-            !cos_similarity(j) = 0.0_fp
             likelihood_particle(j) = 0.0_fp
-            particle_probability(j) = 0.0_fp
             az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
             do i = 1, narray
               if(.not. result_exist(arrayindex(i))) cycle
@@ -195,24 +197,40 @@ program plot_map_vector
               daz = az_obs(i) - az(i)
               if(daz .gt.  pi) daz = 2.0_fp * pi - daz
               if(daz .lt. -pi) daz = 2.0_fp * pi + daz
-              likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / sigma_daz2)
-              !&              * min_correlation(arrayindex(i)) / az_weight(int(az_obs(i) / daz_weight) + 1)
+              !likelihood_tmp = max(exp(-(daz ** 2) * 0.5_fp / daz_weight2) &
+              !&              * min_correlation(arrayindex(i)) / az_weight(int(az_obs(i) / daz_weight) + 1), 0.005_fp)
+              az_weight_index = int(az_obs(i) / daz_weight) + 1
+              likelihood_azweight = 1.0_fp - 0.9_fp * exp(-(real(az_weight(az_weight_index), kind = fp) ** 2) / sameaz_num2)
+              likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
+              likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
+              !if(j .eq. 1) then
+              !  print *, "filterloop k = ", k, " array = ", arrayindex(i), likelihood_particle(j), likelihood_tmp
+              !endif
               if(likelihood_particle(j) .eq. 0.0_fp) then
                 likelihood_particle(j) = likelihood_tmp
               else
                 likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
               endif
             enddo
+            kahan_val1 = kahan_val1 + likelihood_particle(j)
+            kahan_val2 = sum_likelihood
+            sum_likelihood = sum_likelihood + kahan_val1
+            kahan_val2 = sum_likelihood - kahan_val2
+            kahan_val1 = kahan_val1 - kahan_val2
           enddo particleloop
-          if(sum(likelihood_particle) .eq. 0.0_fp) exit
-          normalize_likelihood = 1.0_fp / sum(likelihood_particle)
+          if(sum_likelihood .le. 1.0e-100_fp) exit particlefilter
+          normalize_likelihood = 1.0_fp / sum_likelihood
+          !print *, maxval(likelihood_particle)
           if(k .eq. niter) exit particlefilter
+          !print *, "iter num = ", k, maxval_likelihood_particle, maxval(likelihood_particle)
+          if(maxval(likelihood_particle) .le. maxval_likelihood_particle) exit particlefilter
+          maxval_likelihood_particle = maxval(likelihood_particle)
+
           particle_probability(1) = likelihood_particle(1) * normalize_likelihood
           do i = 2, nparticle
             particle_probability(i) = particle_probability(i - 1) + (likelihood_particle(i) * normalize_likelihood)
           enddo
-          if(k .gt. 1 .and. maxval(likelihood_particle) .le. maxval_likelihood_particle) exit particlefilter
-          maxval_likelihood_particle = maxval(likelihood_particle)
+
 
           !!redistribute particle
           do j = 1, nparticle
@@ -222,7 +240,7 @@ program plot_map_vector
             enddo
             if(i .gt. nparticle) then
               do i = 1, nparticle
-                write(0, *) i, particle_probability(i), likelihood_particle(i)
+                write(0, *) i, particle_probability(i), likelihood_particle(i), normalize_likelihood, sum_likelihood
               enddo
             endif
             call random_number(rnd1)
@@ -244,18 +262,18 @@ program plot_map_vector
           call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
           plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
           plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-          likelihood_tmp = likelihood_particle(i) * 1.0e+2_fp
-          if(likelihood_tmp .le. 0.01_fp) then
+          likelihood_tmp = likelihood_particle(i) * normalize_likelihood * likelihood_legend_normalize
+          if(likelihood_tmp .le. 0.1_fp) then
             color(1 : 3) = [252, 238, 158]
-          elseif(likelihood_tmp .gt. 0.01_fp .and. likelihood_tmp .le. 0.1_fp) then
+          elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 0.3_fp) then
             color(1 : 3) = [238, 179, 87]
-          elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 1_fp) then
+          elseif(likelihood_tmp .gt. 0.3_fp .and. likelihood_tmp .le. 1_fp) then
             color(1 : 3) = [222, 117, 79]
-          elseif(likelihood_tmp .gt. 1_fp .and. likelihood_tmp .le. 10.0_fp) then
+          elseif(likelihood_tmp .gt. 1_fp .and. likelihood_tmp .le. 3.0_fp) then
             color(1 : 3) = [149, 66, 62]
-          elseif(likelihood_tmp .gt. 10.0_fp .and. likelihood_tmp .le. 100.0_fp) then
+          elseif(likelihood_tmp .gt. 3.0_fp .and. likelihood_tmp .le. 10.0_fp) then
             color(1 : 3) = [63, 39, 23]
-          elseif(likelihood_tmp .gt. 100.0_fp) then
+          elseif(likelihood_tmp .gt. 10.0_fp) then
             color(1 : 3) = [26, 26, 1]
           endif
           call pc_setcolor(iwin, color(1), color(2), color(3))
@@ -282,7 +300,7 @@ program plot_map_vector
       call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
       plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-      if(min_correlation(arrayindex(i)) .lt. 0.2_fp) then
+      if(min_correlation(arrayindex(i)) .lt. 0.01_fp) then
         color(1 : 3) = [220, 204, 222]
       elseif(min_correlation(arrayindex(i)) .ge. 0.2_fp .and. min_correlation(arrayindex(i)) .lt. 0.4_fp) then
         color(1 : 3) = [212, 156, 189]

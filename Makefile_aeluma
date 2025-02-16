@@ -69,6 +69,7 @@ tandem = tandem.F90
 typedef = typedef.F90
 read_sacfile = read_sacfile.F90
 plot_map_vector = plot_map_vector.F90
+jday = jday.F90
 
 ##Module
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
@@ -84,6 +85,7 @@ mod_nrtype = $(nrtype:.F90=.mod)
 mod_tandem = $(tandem:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
 mod_read_sacfile = $(read_sacfile:.F90=.mod)
+mod_jday = $(jday:.F90=.mod)
 
 ##Object
 o_aeluma = $(aeluma:.F90=.o)
@@ -112,6 +114,7 @@ o_geompack2 = $(geompack2:.f90=.o)
 o_geometry = $(geometry:.f90=.o)
 o_read_sacfile = $(read_sacfile:.F90=.o)
 o_plot_map_vector = $(plot_map_vector:.F90=.o)
+o_jday = $(jday:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -127,6 +130,7 @@ $(mod_tandem): $(tandem) $(o_tandem)
 $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
 $(mod_read_sacfile): $(read_sacfile) $(o_read_sacfile)
+$(mod_jday): $(jday)
 
 ##Object dependency
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
@@ -158,6 +162,7 @@ $(o_aeluma_shmdump): $(aeluma_shmdump) \
 $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype)
 $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters)
+$(o_jday): $(mod_jday)
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) $(o_read_sacfile) \
@@ -172,7 +177,7 @@ aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef
 	$(o_aeluma_shmdump)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
-plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_aeluma_parameters) $(o_plot_map_vector)
+plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) $(o_plot_map_vector)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 .F90.mod:

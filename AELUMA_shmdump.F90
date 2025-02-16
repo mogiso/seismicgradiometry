@@ -19,8 +19,8 @@ program AELUMA_shmdump
 
   type(location)               :: location_sta(1 : nwinch)
   integer                      :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
-  &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success
-  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1)
+  &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index
+  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1)
   integer, allocatable         :: station_winch(:), winch_index(:)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
@@ -28,8 +28,9 @@ program AELUMA_shmdump
   &                               stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor 
   real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
   &                               taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
-  &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : ntime_fft)
-  real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :)
+  &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : nsec_buf * sampling_int_use)
+  real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :), &
+  &                               arrivaltime(:)
   character(len = 4)           :: winch_char, comp_tmp
   character(len = 6)           :: stname(1 : nwinch), stname_tmp
   character(len = 255)         :: chtbl, chtbl_line, sensor_unit
@@ -105,6 +106,7 @@ program AELUMA_shmdump
   &                                              ntriangle, triangle_center, slowness_matrix, triangle_stationwinch, &
   &                                              nsta_count, tnbr)
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
+  allocate(arrivaltime(1 : ntriangle))
 
   !!open waveform canvas
   call pc_plotinit(iwin, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
@@ -168,7 +170,6 @@ program AELUMA_shmdump
     enddo
 
     call pc_clear(iwin)
-    !call pc_line(iwin, window_width - width, window_height - height, window_width - width, height                )
     call pc_line(iwin, wavewindow_width - wavewidth, waveheight, wavewidth, waveheight)
     call pc_line(iwin, wavewidth, waveheight, wavewidth, wavewindow_height - waveheight)
     call pc_line(iwin, wavewidth, wavewindow_height - waveheight, wavewindow_width - wavewidth, wavewindow_height - waveheight)
@@ -264,7 +265,24 @@ program AELUMA_shmdump
         cycle
       endif
       narray_success = narray_success + 1
-
+      waveform_stacked(1 : nsec_buf * sampling_int_use) = 0.0_fp
+      do jj = 1, nsta_count(j)
+        do ii = 1, nsec_buf * sampling_int_use
+          stack_index = &
+          &  int((slowness(1, j) * location_sta(triangle_stationwinch(jj, j))%x_east &
+          &     + slowness(2, j) * location_sta(triangle_stationwinch(jj, j))%y_north) * real(sampling_int_use, kind = fp)) &
+          &     + ii
+          if(stack_index .lt. 1 .or. stack_index .gt. nsec_buf * sampling_int_use) cycle
+          waveform_stacked(ii) = waveform_stacked(ii) + waveform_buf(stack_index, triangle_stationwinch(jj, j))
+        enddo
+      enddo
+      maxloc_stack = maxloc(waveform_stacked)
+      minloc_stack = minloc(waveform_stacked)
+      if(abs(waveform_stacked(minloc_stack(1))) .gt. waveform_stacked(maxloc_stack(1))) then
+        arrivaltime(j) = real(minloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
+      else
+        arrivaltime(j) = real(maxloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
+      endif
       !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)
 
@@ -297,10 +315,12 @@ program AELUMA_shmdump
     &                               narray_success, ntriangle
     do i = 1, ntriangle
       if(xcorr_flag(i) .eqv. .true.) then
-        print '(i0, 5(1x, f9.4))', &
-        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
-        !write(0, '(i0, 5(1x, f9.4))') &
-        !&      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), minval_xcorr(i)
+        print '(i0, 6(1x, f9.4))', &
+        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
+        &         minval_xcorr(i), arrivaltime(i)
+        write(0, '(i0, 6(1x, f9.4))') &
+        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
+        &         minval_xcorr(i), arrivaltime(i)
       endif
     enddo
 

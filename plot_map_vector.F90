@@ -3,6 +3,7 @@ program plot_map_vector
   use constants, only : rad2deg, deg2rad, pi
   use greatcircle, only : greatcircle_dist
   use aeluma_parameters
+  use jday
   implicit none
 
   integer, parameter :: iwin = 0, iwin_legend = 1
@@ -10,9 +11,10 @@ program plot_map_vector
   character(len = 5), parameter :: likelihood_legend_normalize_c = "x1e-3"
 
   integer         :: i, j, k, ios, ncoastline, mapcount, narray, ntriangle, color(1 : 3), maxloc_likelihood(1), az_weight_index
+  integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: width_min, width_max, height_min, height_max, dwidth, dheight, maplon, maplat, map_x, map_y, &
   &                  map_x1, map_y1
-  real(kind = fp), allocatable :: slowness_x(:), slowness_y(:), lon_array(:), lat_array(:), min_correlation(:)
+  real(kind = fp), allocatable :: slowness_x(:), slowness_y(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   integer,         allocatable :: arrayindex(:)
   logical, allocatable :: result_exist(:)
   real(kind = sp) :: plot_x, plot_y, plot_x1, plot_y1, plot_theta
@@ -144,12 +146,23 @@ program plot_map_vector
     call pc_clear(iwin)
     call pc_setcolor(iwin, 0, 0, 0)
     call pc_setline(iwin, 1)
+    az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
     read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray, ntriangle
+    read(yr, *) year; year = year + 2000
+    read(mo, *) month
+    read(dy, *) day
+    read(hh, *) hr
+    read(mm, *) mi
+    read(ss, *) sc
+    call ymd2jday(year, month, day, julianday)
+    sec_from_day = hr * 60 * 60 + mi * 60 + sc
+    !print *, '(8(i0, 1x))', yr, mo, dy, hh, mm, ss, narray, ntriangle
+    print *, '(5(i0, 1x))', yr, julianday, sec_from_day, narray, ntriangle
     if(ios .ne. 0) stop
     if(.not. allocated(slowness_x)) then
       allocate(slowness_x(1 : ntriangle), slowness_y(1 : ntriangle), result_exist(1 : ntriangle), arrayindex(1 : ntriangle), &
       &        lon_array(1 : ntriangle), lat_array(1 : ntriangle), min_correlation(1 : ntriangle), az(1 : ntriangle), &
-      &        az_obs(1 : ntriangle))
+      &        az_obs(1 : ntriangle), arrivaltime(1 : ntriangle))
     endif
 
     if(narray .ge. 1) then
@@ -158,9 +171,18 @@ program plot_map_vector
       !!read and plot slowness vector
       do i = 1, narray
         read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
-        &          slowness_x(arrayindex(i)), slowness_y(arrayindex(i)), min_correlation(arrayindex(i))
+        &          slowness_x(arrayindex(i)), slowness_y(arrayindex(i)), min_correlation(arrayindex(i)), &
+        &          arrivaltime(arrayindex(i))
         if(.not. (slowness_x(arrayindex(i)) .ne. 0.0_fp .and. slowness_y(arrayindex(i)) .ne. 0.0_fp)) cycle
+        if(min_correlation(arrayindex(i)) .ge. correlation_threshold) then
+          az_obs(i) = atan2(slowness_x(arrayindex(i)), slowness_y(arrayindex(i)))
+          if(az_obs(i) .lt. 0.0_fp) az_obs(i) = az_obs(i) + 2.0_fp * pi
+          az_weight(int(az_obs(i) / daz_weight) + 1) = az_weight(int(az_obs(i) / daz_weight) + 1) + 1.0_fp
+        endif
         result_exist(arrayindex(i)) = .true.
+        print '(i0, 6(1x, e15.7))', arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
+        &                           slowness_x(arrayindex(i)), slowness_y(arrayindex(i)), min_correlation(arrayindex(i)), &
+        &                           arrivaltime(arrayindex(i))
       enddo
 
       !!estimate location
@@ -179,7 +201,6 @@ program plot_map_vector
           kahan_val1 = 0.0_fp
           particleloop: do j = 1, nparticle
             likelihood_particle(j) = 0.0_fp
-            az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
             do i = 1, narray
               if(.not. result_exist(arrayindex(i))) cycle
               if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
@@ -187,13 +208,6 @@ program plot_map_vector
               &                     lat_particle(j), lon_particle(j), azimuth = az(i))
               az(i) = az(i) + pi
               if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
-              az_obs(i) = atan2(slowness_x(arrayindex(i)), slowness_y(arrayindex(i)))
-              if(az_obs(i) .lt. 0.0_fp) az_obs(i) = az_obs(i) + 2.0_fp * pi
-              az_weight(int(az_obs(i) / daz_weight) + 1) = az_weight(int(az_obs(i) / daz_weight) + 1) + 1.0_fp
-            enddo
-            do i = 1, narray
-              if(.not. result_exist(arrayindex(i))) cycle
-              if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
               daz = az_obs(i) - az(i)
               if(daz .gt.  pi) daz = 2.0_fp * pi - daz
               if(daz .lt. -pi) daz = 2.0_fp * pi + daz

@@ -89,7 +89,7 @@ program AELUMA_shmdump
     station_sensitivity(station_winch(i)) = ad_v_min / (sensor_sens * 10.0_fp ** (sensor_amp / 20))
     location_sta(station_winch(i))%lat = stlat_tmp
     location_sta(station_winch(i))%lon = stlon_tmp
-    write(0, '(i0, a, 1x, z4, 1x, a)') i, " used station winch and name = ", station_winch(i), trim(stname(station_winch(i)))
+    !write(0, '(i0, a, 1x, z4, 1x, a)') i, " used station winch and name = ", station_winch(i), trim(stname(station_winch(i)))
     i = i + 1
   enddo
   close(10)

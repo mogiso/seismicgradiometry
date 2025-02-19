@@ -4,6 +4,7 @@ program plot_map_vector
   use greatcircle, only : greatcircle_dist
   use aeluma_parameters
   use jday
+  use particle_filter
   implicit none
 
   integer, parameter :: iwin = 0, iwin_legend = 1
@@ -157,7 +158,7 @@ program plot_map_vector
     call ymd2jday(year, month, day, julianday)
     sec_from_day = hr * 60 * 60 + mi * 60 + sc
     !print *, '(8(i0, 1x))', yr, mo, dy, hh, mm, ss, narray, ntriangle
-    print *, '(5(i0, 1x))', yr, julianday, sec_from_day, narray, ntriangle
+    !print '(5(i0, 1x))', year, julianday, sec_from_day, narray, ntriangle
     if(ios .ne. 0) stop
     if(.not. allocated(slowness_x)) then
       allocate(slowness_x(1 : ntriangle), slowness_y(1 : ntriangle), result_exist(1 : ntriangle), arrayindex(1 : ntriangle), &
@@ -187,88 +188,90 @@ program plot_map_vector
 
       !!estimate location
       if(narray .ge. 5) then
-        !!initial particle
-        do i = 1, nparticle
-          call random_number(rnd)
-          lon_particle(i) = lon_w + (lon_e - lon_w) * rnd   
-          call random_number(rnd)
-          lat_particle(i) = lat_s + (lat_n - lat_s) * rnd
-        enddo
-        maxval_likelihood_particle = 0.0_fp
-        particlefilter: do k = 1, niter
-          !write(0, '(a, i0)') "iter num = ", k
-          sum_likelihood = 0.0_fp
-          kahan_val1 = 0.0_fp
-          particleloop: do j = 1, nparticle
-            likelihood_particle(j) = 0.0_fp
-            do i = 1, narray
-              if(.not. result_exist(arrayindex(i))) cycle
-              if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
-              call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
-              &                     lat_particle(j), lon_particle(j), azimuth = az(i))
-              az(i) = az(i) + pi
-              if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
-              daz = az_obs(i) - az(i)
-              if(daz .gt.  pi) daz = 2.0_fp * pi - daz
-              if(daz .lt. -pi) daz = 2.0_fp * pi + daz
-              !likelihood_tmp = max(exp(-(daz ** 2) * 0.5_fp / daz_weight2) &
-              !&              * min_correlation(arrayindex(i)) / az_weight(int(az_obs(i) / daz_weight) + 1), 0.005_fp)
-              az_weight_index = int(az_obs(i) / daz_weight) + 1
-              likelihood_azweight = 1.0_fp - 0.9_fp * exp(-(real(az_weight(az_weight_index), kind = fp) ** 2) / sameaz_num2)
-              likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
-              likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
-              !if(j .eq. 1) then
-              !  print *, "filterloop k = ", k, " array = ", arrayindex(i), likelihood_particle(j), likelihood_tmp
-              !endif
-              if(likelihood_particle(j) .eq. 0.0_fp) then
-                likelihood_particle(j) = likelihood_tmp
-              else
-                likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
-              endif
-            enddo
-            kahan_val1 = kahan_val1 + likelihood_particle(j)
-            kahan_val2 = sum_likelihood
-            sum_likelihood = sum_likelihood + kahan_val1
-            kahan_val2 = sum_likelihood - kahan_val2
-            kahan_val1 = kahan_val1 - kahan_val2
-          enddo particleloop
-          if(sum_likelihood .le. 1.0e-100_fp) exit particlefilter
-          normalize_likelihood = 1.0_fp / sum_likelihood
-          !print *, maxval(likelihood_particle)
-          if(k .eq. niter) exit particlefilter
-          !print *, "iter num = ", k, maxval_likelihood_particle, maxval(likelihood_particle)
-          if(maxval(likelihood_particle) .le. maxval_likelihood_particle) exit particlefilter
-          maxval_likelihood_particle = maxval(likelihood_particle)
+      !  !!initial particle
+      !  do i = 1, nparticle
+      !    call random_number(rnd)
+      !    lon_particle(i) = lon_w + (lon_e - lon_w) * rnd   
+      !    call random_number(rnd)
+      !    lat_particle(i) = lat_s + (lat_n - lat_s) * rnd
+      !  enddo
+      !  maxval_likelihood_particle = 0.0_fp
+      !  particlefilter: do k = 1, niter
+      !    !write(0, '(a, i0)') "iter num = ", k
+      !    sum_likelihood = 0.0_fp
+      !    kahan_val1 = 0.0_fp
+      !    particleloop: do j = 1, nparticle
+      !      likelihood_particle(j) = 0.0_fp
+      !      do i = 1, narray
+      !        if(.not. result_exist(arrayindex(i))) cycle
+      !        if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+      !        call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
+      !        &                     lat_particle(j), lon_particle(j), azimuth = az(i))
+      !        az(i) = az(i) + pi
+      !        if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
+      !        daz = az_obs(i) - az(i)
+      !        if(daz .gt.  pi) daz = 2.0_fp * pi - daz
+      !        if(daz .lt. -pi) daz = 2.0_fp * pi + daz
+      !        !likelihood_tmp = max(exp(-(daz ** 2) * 0.5_fp / daz_weight2) &
+      !        !&              * min_correlation(arrayindex(i)) / az_weight(int(az_obs(i) / daz_weight) + 1), 0.005_fp)
+      !        az_weight_index = int(az_obs(i) / daz_weight) + 1
+      !        likelihood_azweight = 1.0_fp - 0.9_fp * exp(-(real(az_weight(az_weight_index), kind = fp) ** 2) / sameaz_num2)
+      !        likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
+      !        likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
+      !        !if(j .eq. 1) then
+      !        !  print *, "filterloop k = ", k, " array = ", arrayindex(i), likelihood_particle(j), likelihood_tmp
+      !        !endif
+      !        if(likelihood_particle(j) .eq. 0.0_fp) then
+      !          likelihood_particle(j) = likelihood_tmp
+      !        else
+      !          likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
+      !        endif
+      !      enddo
+      !      kahan_val1 = kahan_val1 + likelihood_particle(j)
+      !      kahan_val2 = sum_likelihood
+      !      sum_likelihood = sum_likelihood + kahan_val1
+      !      kahan_val2 = sum_likelihood - kahan_val2
+      !      kahan_val1 = kahan_val1 - kahan_val2
+      !    enddo particleloop
+      !    if(sum_likelihood .le. 1.0e-100_fp) exit particlefilter
+      !    normalize_likelihood = 1.0_fp / sum_likelihood
+      !    !print *, maxval(likelihood_particle)
+      !    if(k .eq. niter) exit particlefilter
+      !    !print *, "iter num = ", k, maxval_likelihood_particle, maxval(likelihood_particle)
+      !    if(maxval(likelihood_particle) .le. maxval_likelihood_particle) exit particlefilter
+      !    maxval_likelihood_particle = maxval(likelihood_particle)
 
-          particle_probability(1) = likelihood_particle(1) * normalize_likelihood
-          do i = 2, nparticle
-            particle_probability(i) = particle_probability(i - 1) + (likelihood_particle(i) * normalize_likelihood)
-          enddo
+      !    particle_probability(1) = likelihood_particle(1) * normalize_likelihood
+      !    do i = 2, nparticle
+      !      particle_probability(i) = particle_probability(i - 1) + (likelihood_particle(i) * normalize_likelihood)
+      !    enddo
 
 
-          !!redistribute particle
-          do j = 1, nparticle
-            call random_number(rnd)
-            do i = 1, nparticle
-              if(rnd .le. particle_probability(i)) exit
-            enddo
-            if(i .gt. nparticle) then
-              do i = 1, nparticle
-                write(0, *) i, particle_probability(i), likelihood_particle(i), normalize_likelihood, sum_likelihood
-              enddo
-            endif
-            call random_number(rnd1)
-            call random_number(rnd2)
-            rnd = sqrt(-2.0_fp * log(rnd1)) * cos(2.0_fp * pi * rnd2)
-            lon_particle_new(j) = lon_particle(i) + rnd * sigma_particle
-            call random_number(rnd1)
-            call random_number(rnd2)
-            rnd = sqrt(-2.0_fp * log(rnd1)) * sin(2.0_fp * pi * rnd2)
-            lat_particle_new(j) = lat_particle(i) + rnd * sigma_particle
-          enddo
-          lon_particle(1 : nparticle) = lon_particle_new(1 : nparticle)
-          lat_particle(1 : nparticle) = lat_particle_new(1 : nparticle)
-        enddo particlefilter
+      !    !!redistribute particle
+      !    do j = 1, nparticle
+      !      call random_number(rnd)
+      !      do i = 1, nparticle
+      !        if(rnd .le. particle_probability(i)) exit
+      !      enddo
+      !      if(i .gt. nparticle) then
+      !        do i = 1, nparticle
+      !          write(0, *) i, particle_probability(i), likelihood_particle(i), normalize_likelihood, sum_likelihood
+      !        enddo
+      !      endif
+      !      call random_number(rnd1)
+      !      call random_number(rnd2)
+      !      rnd = sqrt(-2.0_fp * log(rnd1)) * cos(2.0_fp * pi * rnd2)
+      !      lon_particle_new(j) = lon_particle(i) + rnd * sigma_particle
+      !      call random_number(rnd1)
+      !      call random_number(rnd2)
+      !      rnd = sqrt(-2.0_fp * log(rnd1)) * sin(2.0_fp * pi * rnd2)
+      !      lat_particle_new(j) = lat_particle(i) + rnd * sigma_particle
+      !    enddo
+      !    lon_particle(1 : nparticle) = lon_particle_new(1 : nparticle)
+      !    lat_particle(1 : nparticle) = lat_particle_new(1 : nparticle)
+      !  enddo particlefilter
+        call particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, &
+        &                           az_weight, lon_particle, lat_particle, likelihood_particle)
          
         !!write circles
         call pc_setline(iwin, 1)
@@ -276,7 +279,7 @@ program plot_map_vector
           call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
           plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
           plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-          likelihood_tmp = likelihood_particle(i) * normalize_likelihood * likelihood_legend_normalize
+          likelihood_tmp = likelihood_particle(i) * likelihood_legend_normalize
           if(likelihood_tmp .le. 0.1_fp) then
             color(1 : 3) = [252, 238, 158]
           elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 0.3_fp) then

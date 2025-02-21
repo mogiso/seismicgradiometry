@@ -22,7 +22,7 @@ contains
     real(kind = fp), allocatable :: az(:)
 
 
-    ntriangle = size(arrayindex)
+    ntriangle = size(result_exist)
     allocate(az(1 : ntriangle))
 
     do i = 1, nparticle
@@ -44,10 +44,10 @@ contains
           &                     lat_particle(j), lon_particle(j), azimuth = az(i))
           az(i) = az(i) + pi
           if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
-          daz = az_obs(i) - az(i)
+          daz = az_obs(arrayindex(i)) - az(i)
           if(daz .gt.  pi) daz = 2.0_fp * pi - daz
           if(daz .lt. -pi) daz = 2.0_fp * pi + daz
-          az_weight_index = int(az_obs(i) / daz_weight) + 1
+          az_weight_index = int(az_obs(arrayindex(i)) / daz_weight) + 1
           likelihood_azweight = 1.0_fp - 0.9_fp * exp(-(az_weight(az_weight_index) ** 2) / sameaz_num2)
           likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
           likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight

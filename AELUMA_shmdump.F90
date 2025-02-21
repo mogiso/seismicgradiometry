@@ -318,9 +318,9 @@ program AELUMA_shmdump
         print '(i0, 6(1x, f9.4))', &
         &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
         &         minval_xcorr(i), arrivaltime(i)
-        write(0, '(i0, 6(1x, f9.4))') &
-        &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
-        &         minval_xcorr(i), arrivaltime(i)
+        !write(0, '(i0, 6(1x, f9.4))') &
+        !&      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
+        !&         minval_xcorr(i), arrivaltime(i)
       endif
     enddo
 

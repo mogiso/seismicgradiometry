@@ -175,7 +175,9 @@ program plot_map_vector
         read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
         &          slowness_x, slowness_y, min_correlation(arrayindex(i)), &
         &          arrivaltime(arrayindex(i))
+        arrivaltime(arrayindex(i)) = sec_from_day - (real(nsec_buf, kind = fp) + arrivaltime(arrayindex(i)))
         if(.not. slowness_x .ne. 0.0_fp .and. slowness_y .ne. 0.0_fp) cycle
+
         az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
         if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
         appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
@@ -183,6 +185,7 @@ program plot_map_vector
           az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) &
           &  = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
         endif
+
         result_exist(arrayindex(i)) = .true.
         print '(i0, 6(1x, e15.7))', arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
         &                           az_obs(arrayindex(i)), appvel_obs(arrayindex(i)), min_correlation(arrayindex(i)), &
@@ -233,7 +236,6 @@ program plot_map_vector
         &                     appvel_obs, arrivaltime, origintime_candidate, &
         &                     lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), origintime_median, &
         &                     narray_use)
-        origintime_median = sec_from_day - (real(nsec_buf, kind = fp) - origintime_median)
         if(origintime_median .lt. 0.0_fp) then
           origintime_median = origintime_median + 86400.0_fp
           julianday = julianday - 1

@@ -44,6 +44,7 @@ module aeluma_parameters
   real(kind = fp), public, parameter :: daz_weight = 15.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp), public, parameter :: sameaz_num2 = 10.0_fp ** 2
   real(kind = fp), public, parameter :: sigma_particle = 0.3_fp
+  real(kind = fp), public, parameter :: azweight_coef = 0.7_fp
   real(kind = fp), public, parameter :: correlation_threshold = 0.5_fp
 
 

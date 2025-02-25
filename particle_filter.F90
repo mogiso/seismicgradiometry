@@ -48,7 +48,7 @@ contains
           if(daz .gt.  pi) daz = 2.0_fp * pi - daz
           if(daz .lt. -pi) daz = 2.0_fp * pi + daz
           az_weight_index = int(az_obs(arrayindex(i)) / daz_weight) + 1
-          likelihood_azweight = 1.0_fp - 0.9_fp * exp(-(az_weight(az_weight_index) ** 2) / sameaz_num2)
+          likelihood_azweight = 1.0_fp - azweight_coef * exp(-(az_weight(az_weight_index) ** 2) / sameaz_num2)
           likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
           likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
           if(likelihood_particle(j) .eq. 0.0_fp) then

@@ -176,7 +176,6 @@ program plot_map_vector
         &          slowness_x, slowness_y, min_correlation(arrayindex(i)), &
         &          arrivaltime(arrayindex(i))
         arrivaltime(arrayindex(i)) = sec_from_day - (real(nsec_buf, kind = fp) + arrivaltime(arrayindex(i)))
-        if(.not. slowness_x .ne. 0.0_fp .and. slowness_y .ne. 0.0_fp) cycle
 
         az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
         if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
@@ -250,8 +249,8 @@ program plot_map_vector
         hr = int(origintime_median / 3600.0_fp)
         mi = int((origintime_median - 3600.0_fp * real(hr, kind = fp)) / 60.0_fp)
         sc = int(origintime_median - 3600.0_fp * real(hr, kind = fp) - 60.0_fp * real(mi, kind = fp))
-        write(0, '(4(i0, 1x), f8.4)') year, julianday, sec_from_day, narray_use, origintime_median
-        write(0, '(6(i0, 1x))') year, month, day, hr, mi, sc
+        !write(0, '(4(i0, 1x), f8.4)') year, julianday, sec_from_day, narray_use, origintime_median
+        !write(0, '(6(i0, 1x))') year, month, day, hr, mi, sc
  
       endif
 

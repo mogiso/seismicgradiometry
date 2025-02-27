@@ -47,7 +47,8 @@ module aeluma_parameters
   real(kind = fp), public, parameter :: azweight_coef = 0.7_fp
   real(kind = fp), public, parameter :: correlation_threshold = 0.5_fp
 
-
+  integer,         public, parameter :: ntrig_max = 6
+  real(kind = fp), public, parameter :: arrivaltime_diff_threshold = 60.0_fp
 
   integer,         public, parameter :: ntime = 6000, ntimestep = 10
 end module aeluma_parameters

@@ -72,6 +72,7 @@ plot_map_vector = plot_map_vector.F90
 jday = jday.F90
 particle_filter = particle_filter.F90
 origintime = origintime.F90
+make_eventlist = make_eventlist.F90
 
 ##Module
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
@@ -121,6 +122,7 @@ o_plot_map_vector = $(plot_map_vector:.F90=.o)
 o_jday = $(jday:.F90=.o)
 o_particle_filter = $(particle_filter:.F90=.o)
 o_origintime = $(origintime:.F90=.o)
+o_make_eventlist = $(make_eventlist:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -174,6 +176,8 @@ $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_gr
 $(o_jday): $(mod_jday)
 $(o_particle_filter): $(particle_filter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters)
 $(o_origintime): $(origintime) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) $(mod_sort)
+$(o_make_eventlist): $(make_eventlist) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) \
+	$(mod_aeluma_parameters) $(mod_particle_filter) $(mod_origintime) $(mod_jday)
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) $(o_read_sacfile) \
@@ -190,6 +194,10 @@ aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef
 
 plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) $(o_particle_filter) \
 	$(o_sort) $(o_origintime) $(o_plot_map_vector)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+make_eventlist: $(o_nrtype) $(o_constants) $(o_typedef) $(o_greatcircle) $(o_jday) $(o_aeluma_paraemters) $(o_particle_filter) \
+	$(o_sort) $(o_jday) $(o_origintime) $(o_make_eventlist)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 .F90.mod:

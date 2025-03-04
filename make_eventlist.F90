@@ -35,39 +35,34 @@ program make_eventlist
     endif
 
     !!read array results and renew trigger list
-    do j = 1, narray
-      print *, yr_tmp, jday_tmp, j, narray
+    array_loop: do j = 1, narray
       read(*, *) arrayindex, lon_array_tmp, lat_array_tmp, az_obs_tmp, appvel_obs_tmp, min_correlation_tmp, arrivaltime_tmp
-      if(min_correlation_tmp .ge. correlation_threshold) then
-        triglist_loop: do i = 1, ntrig_max
-          if(triglist(i, arrayindex)%trig_exist) then
-            if(abs(arrivaltime_tmp - triglist(i, arrayindex)%arrivaltime) .lt. arrivaltime_diff_threshold) then
-              !!case that arrival times are almost the same
-              if(min_correlation_tmp .ge. triglist(i, arrayindex)%min_correlation) then
-                triglist(i, arrayindex)%lon_array       = lon_array_tmp
-                triglist(i, arrayindex)%lat_array       = lat_array_tmp
-                triglist(i, arrayindex)%az_obs          = az_obs_tmp
-                triglist(i, arrayindex)%appvel_obs      = appvel_obs_tmp
-                triglist(i, arrayindex)%min_correlation = min_correlation_tmp
-                triglist(i, arrayindex)%arrivaltime     = arrivaltime_tmp
-                exit triglist_loop
-              endif
-            else
-              cycle triglist_loop
+      if(min_correlation_tmp .lt. correlation_threshold) cycle
+      triglist_loop: do i = 1, ntrig_max
+        if(triglist(i, arrayindex)%trig_exist) then
+          if(abs(arrivaltime_tmp - triglist(i, arrayindex)%arrivaltime) .lt. arrivaltime_diff_threshold) then
+            if(min_correlation_tmp .ge. triglist(i, arrayindex)%min_correlation) then
+              triglist(i, arrayindex)%lon_array       = lon_array_tmp
+              triglist(i, arrayindex)%lat_array       = lat_array_tmp
+              triglist(i, arrayindex)%az_obs          = az_obs_tmp
+              triglist(i, arrayindex)%appvel_obs      = appvel_obs_tmp
+              triglist(i, arrayindex)%min_correlation = min_correlation_tmp
+              triglist(i, arrayindex)%arrivaltime     = arrivaltime_tmp
             endif
-          else
-            triglist(i, arrayindex)%lon_array       = lon_array_tmp
-            triglist(i, arrayindex)%lat_array       = lat_array_tmp
-            triglist(i, arrayindex)%az_obs          = az_obs_tmp
-            triglist(i, arrayindex)%appvel_obs      = appvel_obs_tmp
-            triglist(i, arrayindex)%min_correlation = min_correlation_tmp
-            triglist(i, arrayindex)%arrivaltime     = arrivaltime_tmp
-            triglist(i, arrayindex)%trig_exist      = .true.
-            exit triglist_loop
+            cycle array_loop
           endif
-        enddo triglist_loop
-      endif
-    enddo
+        else
+          triglist(i, arrayindex)%lon_array       = lon_array_tmp
+          triglist(i, arrayindex)%lat_array       = lat_array_tmp
+          triglist(i, arrayindex)%az_obs          = az_obs_tmp
+          triglist(i, arrayindex)%appvel_obs      = appvel_obs_tmp
+          triglist(i, arrayindex)%min_correlation = min_correlation_tmp
+          triglist(i, arrayindex)%arrivaltime     = arrivaltime_tmp
+          triglist(i, arrayindex)%trig_exist      = .true.
+          cycle array_loop
+        endif
+      enddo triglist_loop
+    enddo array_loop
 
     do j = 1, ntriangle
       do i = 1, ntrig_max

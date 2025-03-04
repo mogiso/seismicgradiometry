@@ -138,9 +138,9 @@ $(mod_tandem): $(tandem) $(o_tandem)
 $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
 $(mod_read_sacfile): $(read_sacfile) $(o_read_sacfile)
-$(mod_jday): $(jday)
+$(mod_jday): $(jday) $(o_jday)
+$(mod_origintime): $(origintime) $(o_origintime)
 $(mod_particle_filter): $(particle_filter) $(o_particle_filter)
-$(mod_origintime) = $(origintime) $(o_origintime)
 
 ##Object dependency
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
@@ -173,11 +173,11 @@ $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype)
 $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
 	$(mod_particle_filter)
-$(o_jday): $(mod_jday)
-$(o_particle_filter): $(particle_filter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters)
+$(o_jday): $(jday)
 $(o_origintime): $(origintime) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) $(mod_sort)
+$(o_particle_filter): $(particle_filter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters)
 $(o_make_eventlist): $(make_eventlist) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) \
-	$(mod_aeluma_parameters) $(mod_particle_filter) $(mod_origintime) $(mod_jday)
+	$(mod_aeluma_parameters) $(mod_particle_filter) $(mod_origintime)
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) $(o_read_sacfile) \

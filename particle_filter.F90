@@ -7,7 +7,7 @@ contains
   &                                 lon_particle, lat_particle, likelihood_particle)
     use nrtype, only : fp
     use constants
-    use AELUMA_parameters
+    use aeluma_parameters
     use greatcircle
 
     implicit none

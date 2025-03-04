@@ -7,7 +7,7 @@ module origintime
   &                           arrivaltime, origintime_candidate, lon_epicenter, lat_epicenter, origintime_median, narray_use)
     use nrtype, only : fp
     use constants
-    use AELUMA_parameters
+    use aeluma_parameters
     use greatcircle
     use sort
 

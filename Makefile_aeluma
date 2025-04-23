@@ -73,6 +73,7 @@ jday = jday.F90
 particle_filter = particle_filter.F90
 origintime = origintime.F90
 make_eventlist = make_eventlist.F90
+legend = legend.F90
 
 ##Module
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
@@ -91,6 +92,7 @@ mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_jday = $(jday:.F90=.mod)
 mod_particle_filter = $(particle_filter:.F90=.mod)
 mod_origintime = $(origintime:.F90=.mod)
+mod_legend = $(legend:.F90=.mod)
 
 ##Object
 o_aeluma = $(aeluma:.F90=.o)
@@ -123,6 +125,7 @@ o_jday = $(jday:.F90=.o)
 o_particle_filter = $(particle_filter:.F90=.o)
 o_origintime = $(origintime:.F90=.o)
 o_make_eventlist = $(make_eventlist:.F90=.o)
+o_legend = $(legend:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -141,6 +144,7 @@ $(mod_read_sacfile): $(read_sacfile) $(o_read_sacfile)
 $(mod_jday): $(jday) $(o_jday)
 $(mod_origintime): $(origintime) $(o_origintime)
 $(mod_particle_filter): $(particle_filter) $(o_particle_filter)
+$(mod_legend): $(legend) $(o_legend)
 
 ##Object dependency
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
@@ -171,8 +175,9 @@ $(o_aeluma_shmdump): $(aeluma_shmdump) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_calc_kernelmatrix) $(mod_correlation) $(mod_aeluma_parameters)
 $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_typedef): $(typedef) $(mod_nrtype)
+$(o_legend): $(legend) $(mod_nrtype) $(mod_aeluma_parameters)
 $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
-	$(mod_particle_filter)
+	$(mod_particle_filter) $(mod_legend)
 $(o_jday): $(jday)
 $(o_origintime): $(origintime) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) $(mod_sort)
 $(o_particle_filter): $(particle_filter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters)
@@ -193,7 +198,7 @@ aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) $(o_particle_filter) \
-	$(o_sort) $(o_origintime) $(o_plot_map_vector)
+	$(o_sort) $(o_origintime) $(o_legend) $(o_plot_map_vector)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 make_eventlist: $(o_nrtype) $(o_constants) $(o_typedef) $(o_greatcircle) $(o_jday) $(o_aeluma_paraemters) $(o_particle_filter) \

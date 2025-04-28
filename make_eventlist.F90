@@ -14,6 +14,7 @@ program make_eventlist
   &                                  arrayindex
   real(kind = fp)                 :: lon_array_tmp, lat_array_tmp, az_obs_tmp, appvel_obs_tmp, min_correlation_tmp, &
   &                                  arrivaltime_tmp
+  real(kind = fp),    allocatable :: lon_array(:), lat_array(:)
 
   integer, allocatable :: seed(:)
   integer              :: seedsize
@@ -30,20 +31,19 @@ program make_eventlist
     read(*, *, iostat = ios) yr_tmp, jday_tmp, sec_from_day_tmp, narray, ntriangle
     if(ios .ne. 0) error stop
     if(.not. allocated(triglist)) then
-      allocate(triglist(1 : ntrig_max, 1 : ntriangle))
+      allocate(triglist(1 : ntrig_max, 1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle))
       triglist(1 : ntrig_max, 1 : ntriangle)%trig_exist = .false.
     endif
 
     !!read array results and renew trigger list
     array_loop: do j = 1, narray
-      read(*, *) arrayindex, lon_array_tmp, lat_array_tmp, az_obs_tmp, appvel_obs_tmp, min_correlation_tmp, arrivaltime_tmp
+      read(*, *) arrayindex, lon_array(arrayindex), lat_array(arrayindex), &
+      &          az_obs_tmp, appvel_obs_tmp, min_correlation_tmp, arrivaltime_tmp
       if(min_correlation_tmp .lt. correlation_threshold) cycle
       triglist_loop: do i = 1, ntrig_max
         if(triglist(i, arrayindex)%trig_exist) then
           if(abs(arrivaltime_tmp - triglist(i, arrayindex)%arrivaltime) .lt. arrivaltime_diff_threshold) then
             if(min_correlation_tmp .ge. triglist(i, arrayindex)%min_correlation) then
-              triglist(i, arrayindex)%lon_array       = lon_array_tmp
-              triglist(i, arrayindex)%lat_array       = lat_array_tmp
               triglist(i, arrayindex)%az_obs          = az_obs_tmp
               triglist(i, arrayindex)%appvel_obs      = appvel_obs_tmp
               triglist(i, arrayindex)%min_correlation = min_correlation_tmp
@@ -52,8 +52,6 @@ program make_eventlist
             cycle array_loop
           endif
         else
-          triglist(i, arrayindex)%lon_array       = lon_array_tmp
-          triglist(i, arrayindex)%lat_array       = lat_array_tmp
           triglist(i, arrayindex)%az_obs          = az_obs_tmp
           triglist(i, arrayindex)%appvel_obs      = appvel_obs_tmp
           triglist(i, arrayindex)%min_correlation = min_correlation_tmp
@@ -67,7 +65,7 @@ program make_eventlist
     do j = 1, ntriangle
       do i = 1, ntrig_max
         if(triglist(i, j)%trig_exist) then
-          print *, i, j, triglist(i, j)%lon_array, triglist(i, j)%lat_array, triglist(i, j)%min_correlation, &
+          print *, i, j, lon_array(j), lat_array(j), triglist(i, j)%min_correlation, &
           &              triglist(i, j)%arrivaltime
         endif
       enddo

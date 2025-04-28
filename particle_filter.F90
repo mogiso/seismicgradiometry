@@ -4,26 +4,43 @@ module particle_filter
 contains
 
   subroutine particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, az_weight, &
-  &                                 lon_particle, lat_particle, likelihood_particle)
+  &                                 lon_particle, lat_particle, likelihood_particle, appvel, arrivaltime, origintime)
     use nrtype, only : fp
     use constants
     use aeluma_parameters
     use greatcircle
 
     implicit none
-    integer, intent(in) :: narray, arrayindex(:)
-    logical, intent(in) :: result_exist(:)
-    real(kind = fp), intent(in) :: min_correlation(:), lon_array(:), lat_array(:), az_obs(:), az_weight(:)
-    real(kind = fp), intent(out) :: lon_particle(:), lat_particle(:), likelihood_particle(:)
-    integer :: i, j, k, ntriangle, az_weight_index
-    real(kind = fp) :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, likelihood_azweight, &
-    &                  kahan_val1, kahan_val2, sum_likelihood, normalize_likelihood
-    real(kind = fp) :: particle_probability(1 : nparticle), lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
-    real(kind = fp), allocatable :: az(:)
+    integer,         intent(in)            :: narray, arrayindex(:)
+    logical,         intent(in)            :: result_exist(:)
+    real(kind = fp), intent(in)            :: min_correlation(:), lon_array(:), lat_array(:), az_obs(:), az_weight(:)
+    real(kind = fp), intent(out)           :: lon_particle(:), lat_particle(:), likelihood_particle(:)
+    real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
+    real(kind = fp), intent(out), optional :: origintime
+    integer                                :: i, j, k, ntriangle, az_weight_index
+    real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp,
+    &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
+    &                                         normalize_likelihood
+    real(kind = fp)                        :: particle_probability(1 : nparticle), &
+    &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
+    real(kind = fp), allocatable           :: az(:), dist(:)
 
 
     ntriangle = size(result_exist)
-    allocate(az(1 : ntriangle))
+    allocate(az(1 : narray), dist(1 : narray))
+
+    if(present(arrivaltime)) then
+      min_arrivaltime = 10.0_fp
+      min_arrivaltimeindex = 0
+      do i = 1, narray
+        if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+        if(arrivaltime(arrayindex(i)) .le. min_arrivaltime) then
+          min_arrivaltime = arrivaltime(arrayindex(i))
+          min_arrivaltimeindex = i
+        endif
+      enddo
+      if(min_arrivaltimeindex .eq. 0) error stop
+    endif
 
     do i = 1, nparticle
       call random_number(rnd)
@@ -41,7 +58,7 @@ contains
           if(.not. result_exist(arrayindex(i))) cycle
           if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
           call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
-          &                     lat_particle(j), lon_particle(j), azimuth = az(i))
+          &                     lat_particle(j), lon_particle(j), distance = dist(i), azimuth = az(i))
           az(i) = az(i) + pi
           if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
           daz = az_obs(arrayindex(i)) - az(i)
@@ -57,6 +74,13 @@ contains
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
         enddo
+        if(present(arrivaltime)) then
+          origintime_tmp = arrivaltime_min - dist(min_arrivaltimeindex) * appvel(arrayindex(min_arrivaltimeindex))
+          do i = 1, narray
+            arrivaltime_diff = arrivaltime(arrayindex(i)) - (dist(i) * appvel(arrayindex(i)))
+            likelihood_tmp = 1.0_fp - ttime_coef * exp(-(arrivaltime_diff) ** 2 / sigma_arrivaltime2)
+
+
         kahan_val1 = kahan_val1 + likelihood_particle(j)
         kahan_val2 = sum_likelihood
         sum_likelihood = sum_likelihood + kahan_val1

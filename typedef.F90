@@ -8,7 +8,7 @@ module typedef
   end type location
 
   type trigger_list
-    real(kind = fp) :: lon_array, lat_array, az_obs, appvel_obs, min_correlation, arrivaltime
+    real(kind = fp) :: az_obs, appvel_obs, min_correlation, arrivaltime
     integer         :: ref_yr, ref_jday, ref_secfromday
     logical         :: trig_exist, trig_used
   end type trigger_list

@@ -6,6 +6,7 @@ program plot_map_vector
   use jday
   use particle_filter
   use origintime
+  use legend
   implicit none
 
 
@@ -17,10 +18,6 @@ program plot_map_vector
   integer,         allocatable :: arrayindex(:)
   logical,         allocatable :: result_exist(:)
 
-  
-  integer,              parameter   :: iwin = 0, iwin_legend = 1
-  real(kind = sp),      parameter   :: likelihood_legend_normalize = 1.0e+3
-  character(len = 5),   parameter   :: likelihood_legend_normalize_c = "x1e-3"
   integer                           :: color(1 : 3)
   real(kind = sp)                   :: plot_x, plot_y, plot_x1, plot_y1, plot_theta
   real(kind = fp)                   :: width_min, width_max, height_min, height_max, dwidth, dheight, maplon, maplat, &
@@ -29,7 +26,6 @@ program plot_map_vector
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   character(len = 19)               :: date_txt
-  character(len = 6)                :: plottext
   
   integer, allocatable :: seed(:)
   integer              :: seedsize
@@ -44,6 +40,7 @@ program plot_map_vector
   enddo
   call random_seed(put = seed(:))
 
+  !!Read coastline
   call getarg(1, coastline_txt)
   ncoastline = 0
   open(unit = 10, file = trim(coastline_txt))
@@ -65,90 +62,22 @@ program plot_map_vector
   enddo
   close(10)    
  
+  !!Plot legend
+  call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
+  call plot_legend
 
-  call pc_plotinit(iwin, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)
-  call pc_setbkcolor(iwin, 255, 255, 255)
+  !!Read and plot AELUMA results
+  call pc_plotinit(iwin_map, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)
+  call pc_setbkcolor(iwin_map, 255, 255, 255)
   call mercator(center_lon, lon_w, lat_s, width_min, height_min)
   call mercator(center_lon, lon_e, lat_n, width_max, height_max)
   dwidth = 1.0_fp / (width_max - width_min)
   dheight = 1.0_fp / (height_max - height_min)
-
-  call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
-  call pc_setbkcolor(iwin_legend, 255, 255, 255)
-  do i = 1, 5
-    if(i .eq. 1) then
-      color(1 : 3) = [220, 204, 222]
-      plottext = "0.0   "
-    elseif(i .eq. 2) then
-      color(1 : 3) = [212, 156, 189]
-      plottext = "0.2   "
-    elseif(i .eq. 3) then
-      color(1 : 3) = [196, 110, 155]
-      plottext = "0.4   "
-    elseif(i .eq. 4) then
-      color(1 : 3) = [136, 97, 141]
-      plottext = "0.6   "
-    elseif(i .eq. 5) then
-      color(1 : 3) = [73, 57, 100]
-      plottext = "0.8   "
-    endif
-    plot_x = real(i, kind = sp) * 16.0_sp
-    plot_y = 20.0_sp
-    call pc_setcolor(iwin_legend, color(1), color(2), color(3))
-    call pc_setline(iwin_legend, 4)
-    call pc_vector(iwin_legend, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
-    call pc_setcolor(iwin_legend, 0, 0, 0)
-    plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
-    call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
-  enddo
-  plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
-  plottext = "1.0  "
-  call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
-
-  do i = 1, 6
-    if(i .eq. 1) then
-      color(1 : 3) = [252, 238, 158]
-      plottext = "<0.1"
-    elseif(i .eq. 2) then
-      color(1 : 3) = [238, 179, 87]
-      plottext = "0.1"
-    elseif(i .eq. 3) then
-      color(1 : 3) = [222, 117, 79]
-      plottext = "0.3"
-    elseif(i .eq. 4) then
-      color(1 : 3) = [149, 66, 62]
-      plottext = "1.0"
-    elseif(i .eq. 5) then
-      color(1 : 3) = [63, 39, 23]
-      plottext = "3.0"
-    elseif(i .eq. 6) then
-      color(1 : 3) = [26, 26, 1]
-      plottext = "10.0"
-    endif
-    plot_x = real(i, kind = sp) * 16.0_sp
-    plot_y = 10.0_sp
-    call pc_setcolor(iwin_legend, color(1), color(2), color(3))
-    call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 0)
-    call pc_setcolor(iwin_legend, 0, 0, 0)
-    call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 1)
-    plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-    call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
-  enddo
-  plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-  plottext = "10.0<"
-  call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
-  plot_x = plot_x + 20.0_sp
-  call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(likelihood_legend_normalize_c), 0.0, &
-  &            len(trim(likelihood_legend_normalize_c)), 5) 
-  call pc_flush(iwin_legend)
-    
-  
-
   !!read AELUMA results from stdin
   do 
-    call pc_clear(iwin)
-    call pc_setcolor(iwin, 0, 0, 0)
-    call pc_setline(iwin, 1)
+    call pc_clear(iwin_map)
+    call pc_setcolor(iwin_map, 0, 0, 0)
+    call pc_setline(iwin_map, 1)
     az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
     read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray, ntriangle
     read(yr, *) year; year = year + 2000
@@ -168,14 +97,15 @@ program plot_map_vector
     endif
 
     if(narray .ge. 1) then
-      call pc_setline(iwin, 4)
+      call pc_setline(iwin_map, 4)
       result_exist(1 : ntriangle) = .false.
       !!read and plot slowness vector
       do i = 1, narray
         read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
         &          slowness_x, slowness_y, min_correlation(arrayindex(i)), &
         &          arrivaltime(arrayindex(i))
-        arrivaltime(arrayindex(i)) = sec_from_day - (real(nsec_buf, kind = fp) + arrivaltime(arrayindex(i)))
+        !!arrival time: relative time in s from current time
+        arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
 
         az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
         if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
@@ -197,7 +127,7 @@ program plot_map_vector
         &                           az_weight, lon_particle, lat_particle, likelihood_particle)
          
         !!write particles
-        call pc_setline(iwin, 1)
+        call pc_setline(iwin_map, 1)
         do i = 1, nparticle
           call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
           plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
@@ -216,18 +146,18 @@ program plot_map_vector
           elseif(likelihood_tmp .gt. 10.0_fp) then
             color(1 : 3) = [26, 26, 1]
           endif
-          call pc_setcolor(iwin, color(1), color(2), color(3))
-          call pc_symbol(iwin, plot_x, plot_y, 3.0_sp, 1, 0)
-          call pc_setcolor(iwin, 0, 0, 0)
-          call pc_symbol(iwin, plot_x, plot_y, 3.0_sp, 1, 1)
+          call pc_setcolor(iwin_map, color(1), color(2), color(3))
+          call pc_symbol(iwin_map, plot_x, plot_y, 3.0_sp, 1, 0)
+          call pc_setcolor(iwin_map, 0, 0, 0)
+          call pc_symbol(iwin_map, plot_x, plot_y, 3.0_sp, 1, 1)
         enddo
         maxloc_likelihood = maxloc(likelihood_particle)
         call mercator(center_lon, lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), map_x, map_y)
         plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
         plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-        call pc_symbol(iwin, plot_x, plot_y, 9.0_sp, 1, 0)
-        call pc_setcolor(iwin, 255, 255, 255)
-        call pc_symbol(iwin, plot_x, plot_y, 4.0_sp, 1, 0)
+        call pc_symbol(iwin_map, plot_x, plot_y, 9.0_sp, 1, 0)
+        call pc_setcolor(iwin_map, 255, 255, 255)
+        call pc_symbol(iwin_map, plot_x, plot_y, 4.0_sp, 1, 0)
 
         !!estimate origintime
         if(.not. allocated(origintime_candidate)) allocate(origintime_candidate(1 : ntriangle))
@@ -257,7 +187,7 @@ program plot_map_vector
     endif
 
     !!plot slowness vector
-    call pc_setline(iwin, 4)
+    call pc_setline(iwin_map, 4)
     do i = 1, narray
       if(.not. result_exist(arrayindex(i))) cycle
       !theta = atan2(slowness_x, slowness_y) * rad2deg
@@ -276,19 +206,19 @@ program plot_map_vector
       elseif(min_correlation(arrayindex(i)) .ge. 0.8_fp) then
         color(1 : 3) = [73, 57, 100]
       endif
-      call pc_setcolor(iwin, color(1), color(2), color(3))
-      call pc_vector(iwin, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
+      call pc_setcolor(iwin_map, color(1), color(2), color(3))
+      call pc_vector(iwin_map, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
     enddo
-    call pc_setline(iwin, 1)
+    call pc_setline(iwin_map, 1)
 
  
     !!plot map
-    call pc_setcolor(iwin, 0, 0, 0)
+    call pc_setcolor(iwin_map, 0, 0, 0)
     date_txt = "20" // yr // "/" // mo // "/" // dy // " " // hh // ":" // mm // ":" // ss
     call mercator(center_lon, lon_w, lat_n, map_x, map_y)
     plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
     plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-    call pc_text(iwin, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
+    call pc_text(iwin_map, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
 
     mapcount = 0
     do i = 1, ncoastline
@@ -311,13 +241,13 @@ program plot_map_vector
       plot_y1 = real((map_y1 - height_min) * dheight, kind = sp) * height
       map_x1 = map_x
       map_y1 = map_y
-      call pc_line(iwin, plot_x, plot_y, plot_x1, plot_y1)
+      call pc_line(iwin_map, plot_x, plot_y, plot_x1, plot_y1)
     enddo
-    call pc_flush(iwin)
+    call pc_flush(iwin_map)
   enddo
 
 
-  call pc_plotend(iwin, 1)
+  call pc_plotend(iwin_map, 1)
   call pc_plotend(iwin_legend, 1)
 
   stop

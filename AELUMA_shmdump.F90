@@ -10,7 +10,6 @@ program AELUMA_shmdump
 
   implicit none
   !!plot using ixp library
-  integer,         parameter   :: iwin = 0
   real(kind = sp), parameter   :: wavewindow_width = 350.0_sp, wavewindow_height = 300.0_sp, wavescale = 1.0_sp, &
   &                               wavewidth = 320.0_sp, waveheight = 280.0_sp, waveplotscale = 3.0_sp
   real(kind = sp)              :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
@@ -109,9 +108,9 @@ program AELUMA_shmdump
   allocate(arrivaltime(1 : ntriangle))
 
   !!open waveform canvas
-  call pc_plotinit(iwin, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
-  call pc_setbkcolor(iwin, 255, 255, 255)
-  call pc_setcolor(iwin, 0, 0, 0)
+  call pc_plotinit(iwin_wave, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
+  call pc_setbkcolor(iwin_wave, 255, 255, 255)
+  call pc_setcolor(iwin_wave, 0, 0, 0)
   dheight = (2.0_sp * waveheight - wavewindow_height) / real(nstation + 1, kind = sp)
   dwidth  = (2.0_sp * wavewidth  - wavewindow_width)  / real(waveform_buf_index_max, kind = sp)
 
@@ -169,25 +168,25 @@ program AELUMA_shmdump
       enddo
     enddo
 
-    call pc_clear(iwin)
-    call pc_line(iwin, wavewindow_width - wavewidth, waveheight, wavewidth, waveheight)
-    call pc_line(iwin, wavewidth, waveheight, wavewidth, wavewindow_height - waveheight)
-    call pc_line(iwin, wavewidth, wavewindow_height - waveheight, wavewindow_width - wavewidth, wavewindow_height - waveheight)
-    call pc_setdash(iwin, 3)
+    call pc_clear(iwin_wave)
+    call pc_line(iwin_wave, wavewindow_width - wavewidth, waveheight, wavewidth, waveheight)
+    call pc_line(iwin_wave, wavewidth, waveheight, wavewidth, wavewindow_height - waveheight)
+    call pc_line(iwin_wave, wavewidth, wavewindow_height - waveheight, wavewindow_width - wavewidth, wavewindow_height - waveheight)
+    call pc_setdash(iwin_wave, 3)
     !!draw time index line
     do i = 1, int(nsec_buf / 60)
       plot_x0 = (wavewindow_width - wavewidth) + 60.0_sp * real(sampling_int_use, kind = sp) * dwidth * real(i - 1, kind = sp)
       plot_x1 = plot_x0
       plot_y0 = wavewindow_height - waveheight
       plot_y1 = waveheight
-      call pc_line(iwin, plot_x0, plot_y0, plot_x1, plot_y1)
+      call pc_line(iwin_wave, plot_x0, plot_y0, plot_x1, plot_y1)
       !!draw date and time
       plot_y0 = plot_y0 - 2.0_sp
       plot_y1 = plot_y0 - 5.5_sp
       date_c = yr(60 * (i - 1) + 1) // "/" // mo(60 * (i - 1) + 1) // "/" // dy(60 * (i - 1) + 1)
       time_c = hh(60 * (i - 1) + 1) // ":" // mm(60 * (i - 1) + 1) // ":" // ss(60 * (i - 1) + 1)
-      call pc_text(iwin, plot_x0, plot_y0, 6.0, date_c, 0.0, len(date_c), 4)
-      call pc_text(iwin, plot_x0, plot_y1, 6.0, time_c, 0.0, len(time_c), 4)
+      call pc_text(iwin_wave, plot_x0, plot_y0, 6.0, date_c, 0.0, len(date_c), 4)
+      call pc_text(iwin_wave, plot_x0, plot_y1, 6.0, time_c, 0.0, len(time_c), 4)
     enddo
     do j = 1, nstation
       maxamp = maxval(waveform_buf(:, station_winch(j)))
@@ -198,16 +197,16 @@ program AELUMA_shmdump
       do i = 1, waveform_buf_index_max - 1
         plot_y1 = plot_yref + real(waveform_buf(i + 1, station_winch(j)) / maxamp, kind = sp) * waveplotscale
         plot_x1 = plot_x0 + dwidth
-        call pc_line(iwin, plot_x0, plot_y0, plot_x1, plot_y1)
+        call pc_line(iwin_wave, plot_x0, plot_y0, plot_x1, plot_y1)
         plot_x0 = plot_x1
         plot_y0 = plot_y1
       enddo
       !!plot stationname
       plot_x0 = wavewidth + 0.8_sp
       stname_tmp = trim(stname(station_winch(j)))
-      call pc_text(iwin, plot_x0, plot_yref, 4.5, stname_tmp, 0.0, len(stname_tmp), 4)
+      call pc_text(iwin_wave, plot_x0, plot_yref, 4.5, stname_tmp, 0.0, len(stname_tmp), 4)
     enddo
-    call pc_flush(iwin)
+    call pc_flush(iwin_wave)
 
     !!calculate correlation between two stations within the array
     narray_success = 0
@@ -327,7 +326,7 @@ program AELUMA_shmdump
 
   enddo time_loop
 
-  call pc_plotend(iwin, 1)
+  call pc_plotend(iwin_wave, 1)
 
   stop
 end program AELUMA_shmdump

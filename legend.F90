@@ -3,20 +3,16 @@ module legend
   public :: plot_legend
 
   contains
+
   subroutine plot_legend
     use nrtype, only : sp
     use aeluma_parameters
 
     implicit none
-
-    integer, parameter :: iwin_legend = 1
     integer            :: i, color(1 : 3)
     real(kind = sp)    :: plot_x, plot_y
     character(len = 6) :: plottext
-    character(len = 5),   parameter   :: likelihood_legend_normalize_c = "x1e-3"
 
-
-    call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
     call pc_setbkcolor(iwin_legend, 255, 255, 255)
     do i = 1, 5
       if(i .eq. 1) then

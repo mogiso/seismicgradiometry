@@ -1,26 +1,31 @@
 module particle_filter
-  public :: particle_filter_search
+  public :: particle_filter_search, particle_filter_init
 
 contains
 
   subroutine particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, az_weight, &
+  &                                 randomnumber_status, &
   &                                 lon_particle, lat_particle, likelihood_particle, appvel, arrivaltime, origintime)
     use nrtype, only : fp
     use constants
     use aeluma_parameters
     use greatcircle
+    use random_number
+    use xorshift1024star
 
     implicit none
     integer,         intent(in)            :: narray, arrayindex(:)
     logical,         intent(in)            :: result_exist(:)
     real(kind = fp), intent(in)            :: min_correlation(:), lon_array(:), lat_array(:), az_obs(:), az_weight(:)
-    real(kind = fp), intent(out)           :: lon_particle(:), lat_particle(:), likelihood_particle(:)
+    type(xorshift1024star_state), intent(inout) :: randomnumber_status
+    real(kind = fp), intent(inout)         :: lon_particle(:), lat_particle(:), likelihood_particle(:)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
     real(kind = fp), intent(out), optional :: origintime
-    integer                                :: i, j, k, ntriangle, az_weight_index
-    real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp,
+    integer                                :: i, j, ntriangle, arrivaltimeindex_min, az_weight_index, particlefilter_count
+    real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
-    &                                         normalize_likelihood
+    &                                         normalize_likelihood, arrivaltime_min, origintime_tmp, arrivaltime_diff, &
+    &                                         likelihood_distweight
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
     real(kind = fp), allocatable           :: az(:), dist(:)
@@ -29,27 +34,23 @@ contains
     ntriangle = size(result_exist)
     allocate(az(1 : narray), dist(1 : narray))
 
-    if(present(arrivaltime)) then
-      min_arrivaltime = 10.0_fp
-      min_arrivaltimeindex = 0
+    if(present(arrivaltime) .and. present(appvel)) then
+      arrivaltime_min = 10.0_fp
+      arrivaltimeindex_min = 0
       do i = 1, narray
         if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
-        if(arrivaltime(arrayindex(i)) .le. min_arrivaltime) then
-          min_arrivaltime = arrivaltime(arrayindex(i))
-          min_arrivaltimeindex = i
+        if(arrivaltime(arrayindex(i)) .le. arrivaltime_min) then
+          arrivaltime_min = arrivaltime(arrayindex(i))
+          arrivaltimeindex_min = i
         endif
       enddo
-      if(min_arrivaltimeindex .eq. 0) error stop
+      if(arrivaltimeindex_min .eq. 0) error stop
     endif
 
-    do i = 1, nparticle
-      call random_number(rnd)
-      lon_particle(i) = lon_w + (lon_e - lon_w) * rnd
-      call random_number(rnd)
-      lat_particle(i) = lat_s + (lat_n - lat_s) * rnd
-    enddo
     maxval_likelihood_particle = 0.0_fp
-    particlefilter: do k = 1, niter
+    particlefilter_count = 0
+    particlefilter: do
+      write(0, *) "particlefilter_count = ", particlefilter_count
       sum_likelihood = 0.0_fp
       kahan_val1 = 0.0_fp
       particleloop: do j = 1, nparticle
@@ -74,12 +75,21 @@ contains
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
         enddo
-        if(present(arrivaltime)) then
-          origintime_tmp = arrivaltime_min - dist(min_arrivaltimeindex) * appvel(arrayindex(min_arrivaltimeindex))
+
+        if(present(arrivaltime) .and. present(appvel)) then
+          origintime_tmp = arrivaltime_min - dist(arrivaltimeindex_min) * appvel(arrayindex(arrivaltimeindex_min))
           do i = 1, narray
             arrivaltime_diff = arrivaltime(arrayindex(i)) - (dist(i) * appvel(arrayindex(i)))
-            likelihood_tmp = 1.0_fp - ttime_coef * exp(-(arrivaltime_diff) ** 2 / sigma_arrivaltime2)
-
+            likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) ** 2) / sigma_dist2)
+            likelihood_tmp = exp(-(arrivaltime_diff ** 2) / sigma_arrivaltimediff2)
+            likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight
+            if(likelihood_particle(j) .eq. 0.0_fp) then
+              likelihood_particle(j) = likelihood_tmp
+            else
+              likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
+            endif
+          enddo
+        endif
 
         kahan_val1 = kahan_val1 + likelihood_particle(j)
         kahan_val2 = sum_likelihood
@@ -89,9 +99,15 @@ contains
       enddo particleloop
       if(sum_likelihood .le. 1.0e-100_fp) exit particlefilter
       normalize_likelihood = 1.0_fp / sum_likelihood
-      if(k .eq. niter) exit particlefilter
-      if(maxval(likelihood_particle) .le. maxval_likelihood_particle) exit particlefilter
-      maxval_likelihood_particle = maxval(likelihood_particle)
+
+      !!Rule for exit particlefilter loop
+      if(maxval(likelihood_particle) .le. maxval_likelihood_particle) then
+        particlefilter_count = particlefilter_count + 1
+      else
+        maxval_likelihood_particle = maxval(likelihood_particle)
+      endif
+      if(particlefilter_count .gt. niter) exit particlefilter
+
       particle_probability(1) = likelihood_particle(1) * normalize_likelihood
       do i = 2, nparticle
         particle_probability(i) = particle_probability(i - 1) + likelihood_particle(i) * normalize_likelihood
@@ -99,7 +115,7 @@ contains
 
       !!Redistribute particle
       do j = 1, nparticle
-        call random_number(rnd)
+        call gen_random_number(randomnumber_status, rnd)
         do i = 1, nparticle
           if(rnd .le. particle_probability(i)) exit
         enddo
@@ -108,8 +124,8 @@ contains
             write(0, *) i, particle_probability(i), likelihood_particle(i), normalize_likelihood, sum_likelihood
           enddo
         endif
-        call random_number(rnd1)
-        call random_number(rnd2)
+        call gen_random_number(randomnumber_status, rnd1)
+        call gen_random_number(randomnumber_status, rnd2)
         rnd = sqrt(-2.0_fp * log(rnd1)) * cos(2.0_fp * pi * rnd2)
         lon_particle_new(j) = lon_particle(i) + rnd * sigma_particle
         rnd = sqrt(-2.0_fp * log(rnd1)) * sin(2.0_fp * pi * rnd2)
@@ -123,5 +139,29 @@ contains
     deallocate(az)
     return
   end subroutine particle_filter_search
+
+  subroutine particle_filter_init(randomnumber_status, lon_particle, lat_particle)
+    use nrtype, only : fp
+    use aeluma_parameters
+    use random_number
+    use xorshift1024star
+
+    implicit none
+    type(xorshift1024star_state), intent(inout) :: randomnumber_status
+    real(kind = fp),              intent(out)   :: lon_particle(:), lat_particle(:)
+    integer                                     :: i
+    real(kind = fp)                             :: rnd
+
+    do i = 1, nparticle
+      call gen_random_number(randomnumber_status, rnd)
+      lon_particle(i) = lon_w + (lon_e - lon_w) * rnd
+      call gen_random_number(randomnumber_status, rnd)
+      lat_particle(i) = lat_s + (lat_n - lat_s) * rnd
+    enddo
+
+    return
+  end subroutine particle_filter_init
+
+
 
 end module particle_filter

@@ -5,7 +5,7 @@
 module sort
   use nrtype, only : fp
   private
-  public :: bubblesort
+  public :: bubblesort, combsort
 
 contains
 

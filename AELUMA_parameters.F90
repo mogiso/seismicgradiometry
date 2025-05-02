@@ -29,7 +29,7 @@ module aeluma_parameters
   integer,            public, parameter :: nsec_buf  = 360
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
-  real(kind = fp),    public, parameter :: xcorr_min = 0.4_fp
+  real(kind = fp),    public, parameter :: xcorr_min = 0.5_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
@@ -47,14 +47,15 @@ module aeluma_parameters
 
   !!location estimation
   !integer,         public, parameter :: nparticle = 1000, niter = 2
-  integer,            public, parameter :: nparticle = 1000, niter = 3
+  integer,            public, parameter :: nparticle = 1000, niter = 3, nepicenter = 3
   real(kind = fp),    public, parameter :: daz_weight = 15.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp),    public, parameter :: sameaz_num2 = 10.0_fp ** 2
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_dist2 = 100.0_fp ** 2, ttime_coef = 0.7_fp, &
-  &                                        sigma_arrivaltimediff2 = 60.0_fp ** 2
+  &                                        sigma_traveltimediff2 = 60.0_fp ** 2
   real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
+  real(kind = fp),    public, parameter :: phasevelocity = 3.5_fp
 
   integer,            public, parameter :: ntrig_max = 6
   real(kind = fp),    public, parameter :: arrivaltime_diff_threshold = 60.0_fp

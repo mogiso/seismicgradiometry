@@ -5,7 +5,6 @@ program plot_map_vector
   use aeluma_parameters
   use jday
   use particle_filter
-  use origintime
   use legend
   use random_number
   use mapprojection
@@ -27,7 +26,12 @@ program plot_map_vector
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   
   real(kind = fp)      :: lon_particle(1 : nparticle), lat_particle(1 : nparticle), &
+  &                       lon_particle_list(1 : nparticle, 1 : nepicenter), &
+  &                       lat_particle_list(1 : nparticle, 1 : nepicenter), &
+  &                       likelihood_particle_list(1 : nparticle, 1 : nepicenter), &
+  &                       max_likelihood(1 : nepicenter), &
   &                       likelihood_particle(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight))
+  logical              :: epicenter_exist(1 : nepicenter)
 
   !!initiate random number generator
   call make_seed(seed)
@@ -97,9 +101,9 @@ program plot_map_vector
         read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
         &          slowness_x, slowness_y, min_correlation(arrayindex(i)), &
         &          arrivaltime(arrayindex(i))
+        result_exist(arrayindex(i)) = .true.
         !!arrival time: relative time in s from current time
         arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
-
         az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
         if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
         appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
@@ -107,44 +111,20 @@ program plot_map_vector
           az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) &
           &  = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
         endif
-
-        result_exist(arrayindex(i)) = .true.
-        print '(i0, 6(1x, e15.7))', arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
-        &                           az_obs(arrayindex(i)), appvel_obs(arrayindex(i)), min_correlation(arrayindex(i)), &
-        &                           arrivaltime(arrayindex(i))
       enddo
 
       !!estimate location
       if(narray .ge. 5) then
         call particle_filter_init(random_status, lon_particle, lat_particle)
         call particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, &
-        &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle)
+        &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
+        &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime_median)
+
+       
+
+        write(0, '(a, f0.5)') "origintime = ", origintime_median
         !!write particles
         call plot_particle(lon_particle, lat_particle, likelihood_particle, width_tmp, height_tmp, dwidth, dheight)
-
-        !!estimate origintime
-        !if(.not. allocated(origintime_candidate)) allocate(origintime_candidate(1 : ntriangle))
-        !call ot_search_median(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, &
-        !&                     appvel_obs, arrivaltime, origintime_candidate, &
-        !&                     lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), origintime_median, &
-        !&                     narray_use)
-        !if(origintime_median .lt. 0.0_fp) then
-        !  origintime_median = origintime_median + 86400.0_fp
-        !  julianday = julianday - 1
-        !endif
-        !if(julianday .eq. 0) then
-        !  year = year - 1
-        !  month = 12
-        !  day = 31
-        !else
-        !  call jday2ymd(julianday, year, month, day)
-        !endif
-        !hr = int(origintime_median / 3600.0_fp)
-        !mi = int((origintime_median - 3600.0_fp * real(hr, kind = fp)) / 60.0_fp)
-        !sc = int(origintime_median - 3600.0_fp * real(hr, kind = fp) - 60.0_fp * real(mi, kind = fp))
-        !write(0, '(4(i0, 1x), f8.4)') year, julianday, sec_from_day, narray_use, origintime_median
-        !write(0, '(6(i0, 1x))') year, month, day, hr, mi, sc
- 
       endif
 
     endif
@@ -152,7 +132,6 @@ program plot_map_vector
     !!plot slowness vector
     call plot_slowness_vector(narray, arrayindex, result_exist, lon_array, lat_array, az_obs, min_correlation, &
     &                         width_tmp, height_tmp, dwidth, dheight)
-
     !!plot map
     call pc_setline(iwin_map, 1)
     call pc_setcolor(iwin_map, 0, 0, 0)

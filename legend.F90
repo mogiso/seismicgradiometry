@@ -17,16 +17,16 @@ module legend
     do i = 1, 5
       if(i .eq. 1) then
         color(1 : 3) = [220, 204, 222]
-        plottext = "0.0   "
+        plottext = "0.5   "
       elseif(i .eq. 2) then
         color(1 : 3) = [212, 156, 189]
-        plottext = "0.2   "
+        plottext = "0.6   "
       elseif(i .eq. 3) then
         color(1 : 3) = [196, 110, 155]
-        plottext = "0.4   "
+        plottext = "0.7   "
       elseif(i .eq. 4) then
         color(1 : 3) = [136, 97, 141]
-        plottext = "0.6   "
+        plottext = "0.8   "
       elseif(i .eq. 5) then
         color(1 : 3) = [73, 57, 100]
         plottext = "0.8   "

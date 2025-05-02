@@ -47,6 +47,10 @@ module plotmodule
     call pc_setcolor(iwin_map, 255, 255, 255)
     call pc_symbol(iwin_map, plot_x, plot_y, 4.0_sp, 1, 0)
 
+    write(0, '(a, f0.4, a, f0.4, a, e15.7)') " Lon = ", lon_particle(maxloc_likelihood(1)), &
+    &                                        " Lat = ", lat_particle(maxloc_likelihood(1)), &
+    &                                        " likelihood = ", likelihood_particle(maxloc_likelihood(1))
+
     return
   end subroutine plot_particle
 
@@ -75,15 +79,17 @@ module plotmodule
       call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
-      if(min_correlation(arrayindex(i)) .lt. 0.01_fp) then
+      if(min_correlation(arrayindex(i)) .lt. 0.5_fp) then
+        cycle
+      elseif(min_correlation(arrayindex(i)) .ge. 0.5_fp .and. min_correlation(arrayindex(i)) .lt. 0.6_fp) then
         color(1 : 3) = [220, 204, 222]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.2_fp .and. min_correlation(arrayindex(i)) .lt. 0.4_fp) then
+      elseif(min_correlation(arrayindex(i)) .ge. 0.6_fp .and. min_correlation(arrayindex(i)) .lt. 0.7_fp) then
         color(1 : 3) = [212, 156, 189]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.4_fp .and. min_correlation(arrayindex(i)) .lt. 0.6_fp) then
+      elseif(min_correlation(arrayindex(i)) .ge. 0.7_fp .and. min_correlation(arrayindex(i)) .lt. 0.8_fp) then
         color(1 : 3) = [196, 110, 155]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.6_fp .and. min_correlation(arrayindex(i)) .lt. 0.8_fp) then
+      elseif(min_correlation(arrayindex(i)) .ge. 0.8_fp .and. min_correlation(arrayindex(i)) .lt. 0.9_fp) then
         color(1 : 3) = [136, 97, 141]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.8_fp) then
+      elseif(min_correlation(arrayindex(i)) .ge. 0.9_fp) then
         color(1 : 3) = [73, 57, 100]
       endif
       call pc_setcolor(iwin_map, color(1), color(2), color(3))

@@ -12,6 +12,7 @@ contains
     use greatcircle
     use random_number
     use xorshift1024star
+    use sort
 
     implicit none
     integer,         intent(in)            :: narray, arrayindex(:)
@@ -24,33 +25,21 @@ contains
     integer                                :: i, j, ntriangle, arrivaltimeindex_min, az_weight_index, particlefilter_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
-    &                                         normalize_likelihood, arrivaltime_min, origintime_tmp, arrivaltime_diff, &
+    &                                         normalize_likelihood, origintime_tmp, traveltime_diff, &
     &                                         likelihood_distweight
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
-    real(kind = fp), allocatable           :: az(:), dist(:)
+    real(kind = fp), allocatable           :: az(:), dist(:), ot_est(:)
 
 
     ntriangle = size(result_exist)
-    allocate(az(1 : narray), dist(1 : narray))
+    allocate(az(1 : narray), dist(1 : narray), ot_est(1 : narray))
 
-    if(present(arrivaltime) .and. present(appvel)) then
-      arrivaltime_min = 10.0_fp
-      arrivaltimeindex_min = 0
-      do i = 1, narray
-        if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
-        if(arrivaltime(arrayindex(i)) .le. arrivaltime_min) then
-          arrivaltime_min = arrivaltime(arrayindex(i))
-          arrivaltimeindex_min = i
-        endif
-      enddo
-      if(arrivaltimeindex_min .eq. 0) error stop
-    endif
 
+    likelihood_particle(1 : nparticle) = 0.0_fp
     maxval_likelihood_particle = 0.0_fp
     particlefilter_count = 0
     particlefilter: do
-      write(0, *) "particlefilter_count = ", particlefilter_count
       sum_likelihood = 0.0_fp
       kahan_val1 = 0.0_fp
       particleloop: do j = 1, nparticle
@@ -58,6 +47,7 @@ contains
         do i = 1, narray
           if(.not. result_exist(arrayindex(i))) cycle
           if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+
           call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
           &                     lat_particle(j), lon_particle(j), distance = dist(i), azimuth = az(i))
           az(i) = az(i) + pi
@@ -74,14 +64,32 @@ contains
           else
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
+          if(present(arrivaltime) .and. present(appvel)) then
+            if(appvel(arrayindex(i)) .lt. 3.5_fp) then
+              ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / phasevelocity
+            else
+              ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
+            endif
+          endif
         enddo
 
         if(present(arrivaltime) .and. present(appvel)) then
-          origintime_tmp = arrivaltime_min - dist(arrivaltimeindex_min) * appvel(arrayindex(arrivaltimeindex_min))
+          call combsort(ot_est)
+          if(mod(narray, 2) .eq. 0) then
+            origintime = 0.5_fp * (ot_est(narray / 2) + ot_est(narray / 2 + 1))
+          else
+            origintime = ot_est((narray + 1) / 2)
+          endif
+          
           do i = 1, narray
-            arrivaltime_diff = arrivaltime(arrayindex(i)) - (dist(i) * appvel(arrayindex(i)))
+            if(appvel(arrayindex(i)) .lt. 3.5_fp) then
+              traveltime_diff = (origintime - arrivaltime(arrayindex(i))) - (dist(i) * phasevelocity)
+            else
+              traveltime_diff = (origintime - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i)))
+            endif
+
             likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) ** 2) / sigma_dist2)
-            likelihood_tmp = exp(-(arrivaltime_diff ** 2) / sigma_arrivaltimediff2)
+            likelihood_tmp = exp(-(traveltime_diff ** 2) / sigma_traveltimediff2)
             likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight
             if(likelihood_particle(j) .eq. 0.0_fp) then
               likelihood_particle(j) = likelihood_tmp
@@ -136,7 +144,7 @@ contains
     enddo particlefilter  
 
     likelihood_particle(1 : nparticle) = likelihood_particle(1 : nparticle) * normalize_likelihood
-    deallocate(az)
+    deallocate(az, dist, ot_est)
     return
   end subroutine particle_filter_search
 

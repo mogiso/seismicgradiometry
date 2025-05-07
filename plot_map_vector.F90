@@ -90,10 +90,7 @@ program plot_map_vector
         az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
         if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
         appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
-        if(min_correlation(arrayindex(i)) .ge. correlation_threshold) then
-          az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) &
-          &  = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
-        endif
+        az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
       enddo
 
       !!estimate location

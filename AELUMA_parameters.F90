@@ -21,6 +21,7 @@ module aeluma_parameters
 
   real(kind = fp),    public, parameter :: interstationdistance_min = 5.0_fp
   real(kind = fp),    public, parameter :: cutoff_dist = 100.0_fp
+  real(kind = fp),    public, parameter :: dtimestep = 1.0_fp
   integer,            public, parameter :: nsampling_int = 2
   integer,            public, parameter :: sampling_int(1 : nsampling_int) = [100, 20]
   real(kind = fp),    public, parameter :: sampling_sec(1 : nsampling_int) &

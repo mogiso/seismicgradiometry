@@ -21,11 +21,11 @@ contains
     type(xorshift1024star_state), intent(inout) :: randomnumber_status
     real(kind = fp), intent(inout)         :: lon_particle(:), lat_particle(:), likelihood_particle(:)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
-    real(kind = fp), intent(out), optional :: origintime
+    real(kind = fp), intent(out), optional :: origintime(:)
     integer                                :: i, j, ntriangle, arrivaltimeindex_min, az_weight_index, particlefilter_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
-    &                                         normalize_likelihood, origintime_tmp, traveltime_diff, &
+    &                                         normalize_likelihood, traveltime_diff, &
     &                                         likelihood_distweight
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
@@ -76,20 +76,22 @@ contains
         if(present(arrivaltime) .and. present(appvel)) then
           call combsort(ot_est)
           if(mod(narray, 2) .eq. 0) then
-            origintime = 0.5_fp * (ot_est(narray / 2) + ot_est(narray / 2 + 1))
+            origintime(j) = 0.5_fp * (ot_est(narray / 2) + ot_est(narray / 2 + 1))
           else
-            origintime = ot_est((narray + 1) / 2)
+            origintime(j) = ot_est((narray + 1) / 2)
           endif
           
           do i = 1, narray
             if(appvel(arrayindex(i)) .lt. 3.5_fp) then
-              traveltime_diff = (origintime - arrivaltime(arrayindex(i))) - (dist(i) * phasevelocity)
+              traveltime_diff = ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * phasevelocity)) &
+              &               * ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * phasevelocity))
             else
-              traveltime_diff = (origintime - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i)))
+              traveltime_diff = ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i)))) *
+              &               * ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i))))
             endif
 
-            likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) ** 2) / sigma_dist2)
-            likelihood_tmp = exp(-(traveltime_diff ** 2) / sigma_traveltimediff2)
+            likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) * dist(i)) / sigma_dist2)
+            likelihood_tmp = exp(-traveltime_diff / sigma_traveltimediff2)
             likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight
             if(likelihood_particle(j) .eq. 0.0_fp) then
               likelihood_particle(j) = likelihood_tmp

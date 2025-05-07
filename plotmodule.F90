@@ -1,6 +1,6 @@
 module plotmodule
   private
-  public :: plot_particle, plot_slowness_vector, plot_coastline, plot_currentdate
+  public :: plot_particle, plot_slowness_vector, read_coastline, plot_coastline, plot_currentdate
 
   contains
 
@@ -96,6 +96,35 @@ module plotmodule
       call pc_vector(iwin_map, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
     enddo
   end subroutine plot_slowness_vector
+
+  subroutine read_coastline(coastline_txt, mapbuf)
+    implicit none
+    character(len = *),              intent(in)  :: coastline_txt
+    character(len = *), allocatable, intent(out) :: mapbuf(:)
+    character(len = 255)                         :: mapbuf_tmp
+    integer :: i, ncoastline, ios
+    
+    ncoastline = 0
+    open(unit = 10, file = trim(coastline_txt))
+    do
+      read(10, '(a255)', iostat = ios) mapbuf_tmp
+      if(ios .ne. 0) exit
+      if(mapbuf_tmp(1 : 1) .eq. "#") cycle
+      ncoastline = ncoastline + 1
+    enddo
+    rewind(10)
+    allocate(mapbuf(1 : ncoastline))
+    i = 1
+    do
+      read(10, '(a255)', iostat = ios) mapbuf
+      if(ios .ne. 0) exit
+      if(mapbuf_tmp(1 : 1) .eq. "#") cycle
+      mapbuf(i) = mapbuf_tmp
+      i = i + 1
+    enddo
+    close(10)
+    return
+  end subroutine read_coastline
 
   subroutine plot_coastline(ncoastline, mapbuf, width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : fp, sp

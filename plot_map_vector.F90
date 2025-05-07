@@ -39,25 +39,8 @@ program plot_map_vector
 
   !!Read coastline
   call getarg(1, coastline_txt)
-  ncoastline = 0
-  open(unit = 10, file = trim(coastline_txt))
-  do
-    read(10, '(a255)', iostat = ios) mapbuf_tmp
-    if(ios .ne. 0) exit
-    if(mapbuf_tmp(1 : 1) .eq. "#") cycle
-    ncoastline = ncoastline + 1
-  enddo
-  rewind(10)
-  allocate(mapbuf(1 : ncoastline))
-  i = 1
-  do
-    read(10, '(a255)', iostat = ios) mapbuf_tmp
-    if(ios .ne. 0) exit
-    if(mapbuf_tmp(1 : 1) .eq. "#") cycle
-    mapbuf(i) = mapbuf_tmp
-    i = i + 1
-  enddo
-  close(10)    
+  call read_coastline(coastline_txt, mapbuf)
+  ncoastline = ubound(mapbuf, 1)
  
   !!Plot legend
   call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)

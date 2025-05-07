@@ -12,16 +12,16 @@ program plot_map_vector
   implicit none
 
 
-  integer         :: i, ios, ncoastline, narray, ntriangle
+  integer         :: i, j, k, ios, ncoastline, narray, ntriangle
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, origintime_median
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:), &
   &                               origintime_candidate(:)
   integer,         allocatable :: arrayindex(:)
-  logical,         allocatable :: result_exist(:)
+  logical,         allocatable :: result_exist(:, :)
 
   real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
-  character(len = 255)              :: coastline_txt, mapbuf_tmp
+  character(len = 255)              :: coastline_txt
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   
@@ -29,8 +29,9 @@ program plot_map_vector
   &                       lon_particle_list(1 : nparticle, 1 : nepicenter), &
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter), &
   &                       likelihood_particle_list(1 : nparticle, 1 : nepicenter), &
+  &                       origintime_list(1 : nepicenter), &
   &                       max_likelihood(1 : nepicenter), &
-  &                       likelihood_particle(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight))
+  &                       likelihood_particle(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight), 1 : nepicenter)
   logical              :: epicenter_exist(1 : nepicenter)
 
   !!initiate random number generator
@@ -72,25 +73,37 @@ program plot_map_vector
     print '(5(i0, 1x))', year, julianday, sec_from_day, narray, ntriangle
     if(ios .ne. 0) stop
     if(.not. allocated(arrayindex)) then
-      allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle), arrayindex(1 : ntriangle), &
-      &        lon_array(1 : ntriangle), lat_array(1 : ntriangle), min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle))
+      allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 1 : nepicenter), &
+      &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
+      &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle))
     endif
 
     if(narray .ge. 1) then
       call pc_setline(iwin_map, 4)
       result_exist(1 : ntriangle) = .false.
       !!read and plot slowness vector
-      do i = 1, narray
-        read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
-        &          slowness_x, slowness_y, min_correlation(arrayindex(i)), &
-        &          arrivaltime(arrayindex(i))
-        result_exist(arrayindex(i)) = .true.
-        !!arrival time: relative time in s from current time
-        arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
-        az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
-        if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
-        appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
-        az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
+      do k = 1, narray
+        read(*, *) arrayindex(k), lon_array(arrayindex(k)), lat_array(arrayindex(k)), &
+        &          slowness_x, slowness_y, min_correlation(arrayindex(k)), &
+        &          arrivaltime(arrayindex(k))
+        do j = 1, nepicenter
+          if(epicenter_exist(j)) then
+            likelihood_tmp = 0.0_fp
+            do i = 1, nparticle
+              call greatcircle_dist(lat_array(arrayindex(k)), lon_array(arrayindex(k)), &
+              &                     lat_particle_list(i, j),  lon_particle_list(i, j),  &
+              &                     distance = dist_tmp,      azimuth = az_tmp)
+              ttime_diff = (origintime_list(i, j) - dist_tmp * appvel_obs(k)) &
+              &          * (origintime_list(i, j) - dist_tmp * appvel_obs(k))
+              likelihood_tmp = likelihood_tmp +
+            
+          !result_exist(arrayindex(i)) = .true.
+          !!arrival time: relative time in s from current time
+          !arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
+          !az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
+          !if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
+          !appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
+          !az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
       enddo
 
       !!estimate location

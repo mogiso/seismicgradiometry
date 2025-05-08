@@ -42,6 +42,9 @@ program plot_map_vector
   call getarg(1, coastline_txt)
   call read_coastline(coastline_txt, mapbuf)
   ncoastline = ubound(mapbuf, 1)
+
+  !!initiaalize event list
+  epicenter_exist(1 : nepicenter) = .false.
  
   !!Plot legend
   call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
@@ -82,43 +85,44 @@ program plot_map_vector
       call pc_setline(iwin_map, 4)
       result_exist(1 : ntriangle) = .false.
       !!read and plot slowness vector
-      do k = 1, narray
-        read(*, *) arrayindex(k), lon_array(arrayindex(k)), lat_array(arrayindex(k)), &
-        &          slowness_x, slowness_y, min_correlation(arrayindex(k)), &
-        &          arrivaltime(arrayindex(k))
-        do j = 1, nepicenter
-          if(epicenter_exist(j)) then
-            likelihood_tmp = 0.0_fp
-            do i = 1, nparticle
-              call greatcircle_dist(lat_array(arrayindex(k)), lon_array(arrayindex(k)), &
-              &                     lat_particle_list(i, j),  lon_particle_list(i, j),  &
-              &                     distance = dist_tmp,      azimuth = az_tmp)
-              ttime_diff = (origintime_list(i, j) - dist_tmp * appvel_obs(k)) &
-              &          * (origintime_list(i, j) - dist_tmp * appvel_obs(k))
-              likelihood_tmp = likelihood_tmp +
-            
-          !result_exist(arrayindex(i)) = .true.
-          !!arrival time: relative time in s from current time
-          !arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
-          !az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
-          !if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
-          !appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
-          !az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
+      do i = 1, narray
+        read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
+        &          slowness_x, slowness_y, min_correlation(arrayindex(i)), &
+        &          arrivaltime(arrayindex(i))
+        !!arrival time: relative time in s from current time
+        arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
+        az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
+        if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
+        appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
+        az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
+        result_exist(arrayindex(i), 1 : nepicenter) = .true.
       enddo
 
       !!estimate location
-      if(narray .ge. 5) then
-        call particle_filter_init(random_status, lon_particle, lat_particle)
-        call particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, &
+      do k = 1, nepicenter
+        if(epicenter_exist(j)) then
+          do j = 1, narray
+            likelihood_tmp = 0.0_fp
+            do i = 1, nparticle
+              call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
+              &                     lat_particle_list(i, k),  lon_particle_list(i, k),  &
+              &                     distance = dist_tmp,      azimuth = az_tmp)
+              ttime_diff = (origintime_list(i, k) - dist_tmp * appvel_obs(j))
+              likelihood_tmp = likelihood_tmp + likelihood_particle(i, k) * 0.5_fp * 
+            enddo
+        else
+          call particle_filter_init(random_status, lon_particle, lat_particle)
+        endif
+
+        call particle_filter_search(narray, arrayindex, result_exist(:, j), lon_array, lat_array, min_correlation, az_obs, &
         &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
         &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime_median)
 
-       
+     
 
-        write(0, '(a, f0.5)') "origintime = ", origintime_median
-        !!write particles
-        call plot_particle(lon_particle, lat_particle, likelihood_particle, width_tmp, height_tmp, dwidth, dheight)
-      endif
+      write(0, '(a, f0.5)') "origintime = ", origintime_median
+      !!write particles
+      call plot_particle(lon_particle, lat_particle, likelihood_particle, width_tmp, height_tmp, dwidth, dheight)
 
     endif
 

@@ -94,11 +94,13 @@ program plot_map_vector
         az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
         if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
         appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
+        if(appvel_obs(arrayindex(i)) .lt. phasevelocity) appvel_obs(arrayindex(i)) = phasevelocity
         az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) = az_weight(int(az_obs(arrayindex(i)) / daz_weight) + 1) + 1.0_fp
         result_exist(arrayindex(i), 1 : nepicenter) = .true.
       enddo
 
       !!estimate location
+      narray_use(1 : nepicenter) = narray
       do k = 1, nepicenter
         if(epicenter_exist(j)) then
           do j = 1, narray
@@ -108,8 +110,24 @@ program plot_map_vector
               &                     lat_particle_list(i, k),  lon_particle_list(i, k),  &
               &                     distance = dist_tmp,      azimuth = az_tmp)
               ttime_diff = (origintime_list(i, k) - dist_tmp * appvel_obs(j))
-              likelihood_tmp = likelihood_tmp + likelihood_particle(i, k) * 0.5_fp * 
+              az_tmp = az_tmp * pi
+              if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
+              daz = az_obs(j) - az_tmp
+              likelihood_tmp = likelihood_tmp &
+              &              + likelihood_particle(i, k) * 0.5_fp / (pi * sigma_traveltimediff * daz_weight) &
+              &              * exp(-0.5_fp * ((ttime_diff * ttime_diff / sigma_traveltimediff / sigma_traveltimediff) &
+              &                            +  (daz        * daz        / daz_weight2)))
             enddo
+            if(likelihood_tmp .lt. min_likelihood_eqobs) then
+              result_exist(arrayindex(j), k) = .false.
+              narray_use(k) = narray_use(k) - 1
+            else
+              result_exist(arrayindex(j), k + 1 : nepicenter) = .false.
+              narray_use(k + 1 : nepicenter) = narray_use(k * 1 : nepicenter) - 1
+            endif
+          enddo
+          if(narray_use .ge. narray_use_min) then
+            
         else
           call particle_filter_init(random_status, lon_particle, lat_particle)
         endif

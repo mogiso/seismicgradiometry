@@ -56,7 +56,9 @@ contains
           if(daz .gt.  pi) daz = 2.0_fp * pi - daz
           if(daz .lt. -pi) daz = 2.0_fp * pi + daz
           az_weight_index = int(az_obs(arrayindex(i)) / daz_weight) + 1
-          likelihood_azweight = 1.0_fp - azweight_coef * exp(-(az_weight(az_weight_index) ** 2) / sameaz_num2)
+          likelihood_azweight = 1.0_fp &
+          &                   - azweight_coef &
+          &                   * exp(-(az_weight(az_weight_index) / sameaz_num * az_weight(az_weight_index) / sameaz_num))
           likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
           likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
           if(likelihood_particle(j) .eq. 0.0_fp) then
@@ -65,11 +67,7 @@ contains
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
           if(present(arrivaltime) .and. present(appvel)) then
-            if(appvel(arrayindex(i)) .lt. 3.5_fp) then
-              ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / phasevelocity
-            else
-              ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
-            endif
+            ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
           endif
         enddo
 
@@ -82,16 +80,9 @@ contains
           endif
           
           do i = 1, narray
-            if(appvel(arrayindex(i)) .lt. 3.5_fp) then
-              traveltime_diff = ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * phasevelocity)) &
-              &               * ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * phasevelocity))
-            else
-              traveltime_diff = ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i)))) *
-              &               * ((origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i))))
-            endif
-
-            likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) * dist(i)) / sigma_dist2)
-            likelihood_tmp = exp(-traveltime_diff / sigma_traveltimediff2)
+            traveltime_diff = (origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i)))
+            likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) / sigma_dist) * (dist(i) / sigma_dist))
+            likelihood_tmp = exp(-0.5_fp * (traveltime_diff * traveltime_diff / sigma_traveltimediff / sigma_traveltimediff))
             likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight
             if(likelihood_particle(j) .eq. 0.0_fp) then
               likelihood_particle(j) = likelihood_tmp

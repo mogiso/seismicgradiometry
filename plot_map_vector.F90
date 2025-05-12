@@ -129,18 +129,18 @@ program plot_map_vector
           if(narray_use .ge. narray_use_min) then
             
         else
-          call particle_filter_init(random_status, lon_particle, lat_particle)
+          call particle_filter_init(random_status, lon_particle_list(:, k), lat_particle_list(:, k))
         endif
 
-        call particle_filter_search(narray, arrayindex, result_exist(:, j), lon_array, lat_array, min_correlation, az_obs, &
-        &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
-        &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime_median)
+        call particle_filter_search(narray, arrayindex, result_exist(:, k), lon_array, lat_array, min_correlation, az_obs, &
+        &                           az_weight, random_status, &
+        &                           lon_particle_list(:, k), lat_particle_list(:, k), likelihood_particle_list(:, k), &
+        &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime_list(k))
 
-     
-
-      write(0, '(a, f0.5)') "origintime = ", origintime_median
-      !!write particles
-      call plot_particle(lon_particle, lat_particle, likelihood_particle, width_tmp, height_tmp, dwidth, dheight)
+        !!write particles
+        if(epicenter_exist(k) &
+        &  call plot_particle(lon_particle_list(:, k), lat_particle_list(:, k), likelihood_particle_list(:, k), &
+        &                     width_tmp, height_tmp, dwidth, dheight)
 
     endif
 

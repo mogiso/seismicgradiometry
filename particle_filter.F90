@@ -19,14 +19,14 @@ contains
     logical,         intent(in)            :: result_exist(:)
     real(kind = fp), intent(in)            :: min_correlation(:), lon_array(:), lat_array(:), az_obs(:), az_weight(:)
     type(xorshift1024star_state), intent(inout) :: randomnumber_status
-    real(kind = fp), intent(inout)         :: lon_particle(:), lat_particle(:), likelihood_particle(:)
+    real(kind = fp), intent(inout)         :: lon_particle(1 : nparticle), lat_particle(1 : nparticle)
+    real(kind = fp), intent(out)           :: likelihood_particle(1 : nparticle)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
-    real(kind = fp), intent(out), optional :: origintime(:)
-    integer                                :: i, j, ntriangle, arrivaltimeindex_min, az_weight_index, particlefilter_count
+    real(kind = fp), intent(out), optional :: origintime(1 : nparticle)
+    integer                                :: i, j, k, ntriangle, az_weight_index, particlefilter_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
-    &                                         normalize_likelihood, traveltime_diff, &
-    &                                         likelihood_distweight
+    &                                         normalize_likelihood, traveltime_diff, likelihood_distweight
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
     real(kind = fp), allocatable           :: az(:), dist(:), ot_est(:)
@@ -35,8 +35,6 @@ contains
     ntriangle = size(result_exist)
     allocate(az(1 : narray), dist(1 : narray), ot_est(1 : narray))
 
-
-    likelihood_particle(1 : nparticle) = 0.0_fp
     maxval_likelihood_particle = 0.0_fp
     particlefilter_count = 0
     particlefilter: do
@@ -59,20 +57,20 @@ contains
           likelihood_azweight = 1.0_fp &
           &                   - azweight_coef &
           &                   * exp(-(az_weight(az_weight_index) / sameaz_num * az_weight(az_weight_index) / sameaz_num))
-          likelihood_tmp = exp(-(daz ** 2) * 0.5_fp / daz_weight2)
+          likelihood_tmp = exp(-0.5_fp * daz * daz / daz_weight2)
           likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
           if(likelihood_particle(j) .eq. 0.0_fp) then
             likelihood_particle(j) = likelihood_tmp
           else
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
-          if(present(arrivaltime) .and. present(appvel)) then
+          if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
             ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
           endif
         enddo
 
-        if(present(arrivaltime) .and. present(appvel)) then
-          call combsort(ot_est)
+        if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
+          call bubblesort(ot_est)
           if(mod(narray, 2) .eq. 0) then
             origintime(j) = 0.5_fp * (ot_est(narray / 2) + ot_est(narray / 2 + 1))
           else
@@ -80,14 +78,25 @@ contains
           endif
           
           do i = 1, narray
-            traveltime_diff = (origintime(j) - arrivaltime(arrayindex(i))) - (dist(i) * appvel(arrayindex(i)))
+            if(.not. result_exist(arrayindex(i))) cycle
+            if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+            traveltime_diff = origintime(j) - ot_est(i)
             likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) / sigma_dist) * (dist(i) / sigma_dist))
-            likelihood_tmp = exp(-0.5_fp * (traveltime_diff * traveltime_diff / sigma_traveltimediff / sigma_traveltimediff))
+            likelihood_tmp = exp(-0.5_fp * (traveltime_diff * traveltime_diff / (sigma_traveltimediff * sigma_traveltimediff)))
             likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight
             if(likelihood_particle(j) .eq. 0.0_fp) then
               likelihood_particle(j) = likelihood_tmp
             else
               likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
+            endif
+            if(likelihood_particle(j) * 0.0_fp .ne. 0.0_fp) then
+              print *, i, j, lon_particle(j), lat_particle(j)
+              do k = 1, narray
+                print *, ot_est(k), arrivaltime(arrayindex(k)), az_obs(arrayindex(k)), &
+                &        appvel(arrayindex(k)), result_exist(arrayindex(k)), dist(k), &
+                &        lon_array(arrayindex(k)), lat_array(arrayindex(k))
+              enddo
+              error stop
             endif
           enddo
         endif
@@ -120,15 +129,12 @@ contains
         do i = 1, nparticle
           if(rnd .le. particle_probability(i)) exit
         enddo
-        if(i .gt. nparticle) then
-          do i = 1, nparticle
-            write(0, *) i, particle_probability(i), likelihood_particle(i), normalize_likelihood, sum_likelihood
-          enddo
-        endif
         call gen_random_number(randomnumber_status, rnd1)
         call gen_random_number(randomnumber_status, rnd2)
         rnd = sqrt(-2.0_fp * log(rnd1)) * cos(2.0_fp * pi * rnd2)
         lon_particle_new(j) = lon_particle(i) + rnd * sigma_particle
+        call gen_random_number(randomnumber_status, rnd1)
+        call gen_random_number(randomnumber_status, rnd2)
         rnd = sqrt(-2.0_fp * log(rnd1)) * sin(2.0_fp * pi * rnd2)
         lat_particle_new(j) = lat_particle(i) + rnd * sigma_particle
       enddo
@@ -149,7 +155,7 @@ contains
 
     implicit none
     type(xorshift1024star_state), intent(inout) :: randomnumber_status
-    real(kind = fp),              intent(out)   :: lon_particle(:), lat_particle(:)
+    real(kind = fp),              intent(out)   :: lon_particle(1 : nparticle), lat_particle(1 : nparticle)
     integer                                     :: i
     real(kind = fp)                             :: rnd
 

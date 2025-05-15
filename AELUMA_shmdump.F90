@@ -131,9 +131,9 @@ program AELUMA_shmdump
     ss(1 : nsec_buf - 1) = ss(2 : nsec_buf)
     read(*, *, iostat = ios) yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), nch
     if(ios .ne. 0) error stop
-    write(0, '(a, 6(a2, 1x))') "Reading ", &
-    &                             yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
-    write(0, '(a, i0)') "nch = ", nch
+    !write(0, '(a, 6(a2, 1x))') "Reading ", &
+    !&                             yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
+    !write(0, '(a, i0)') "nch = ", nch
 
     if(.not. allocated(waveform_buf)) then
       allocate(waveform_buf(1 : waveform_buf_index_max, 1 : nwinch))
@@ -287,6 +287,7 @@ program AELUMA_shmdump
       else
         arrivaltime(j) = real(maxloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
       endif
+      if(abs(arrivaltime(j)) .lt. 1.0_fp / real(sampling_int_use, kind = fp)) xcorr_flag(j) = .false.
       !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)
 

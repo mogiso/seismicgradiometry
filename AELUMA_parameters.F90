@@ -30,14 +30,16 @@ module aeluma_parameters
   integer,            public, parameter :: nsec_buf  = 360
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
-  real(kind = fp),    public, parameter :: xcorr_min = 0.5_fp
+  real(kind = fp),    public, parameter :: xcorr_min = 0.3_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
   integer,            public, parameter :: nwinch = 65536
 
   integer,            public, parameter :: iwin_wave = 0  !!AELUMA_shmudmp.F90
-  integer,            public, parameter :: iwin_map = 0, iwin_legend = 1 !!plot_map_vector.F90
+  integer,            public, parameter :: iwin_map = 0, iwin_legend = 1, iwin_eplist = 2  !!plot_map_vector.F90
+  real(kind = sp),    public, parameter :: plot_dy_eplist = 9.0_sp
+  real(kind = sp),    public, parameter :: plot_x_eplist = 1.0_sp, plot_y_eplist = 30.0_sp
   !!For plot_map_vector.F90
   real(kind = sp),    public, parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp
   real(kind = sp),    public, parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
@@ -55,11 +57,12 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_dist = 100.0_fp, ttime_coef = 0.7_fp, &
   &                                        sigma_traveltimediff = 60.0_fp
-  real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
-  real(kind = fp),    public, parameter :: phasevelocity = 3.5_fp
+  real(kind = fp),    public, parameter :: correlation_threshold = 0.65_fp
+  real(kind = fp),    public, parameter :: phasevelocity = 3.0_fp
 
-  integer,            public, parameter :: narray_use_min = 6
-  real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp * pi / daz_weight / sigma_traveltimediff &
+  integer,            public, parameter :: narray_use_min = 8
+  integer,            public, parameter :: epicenter_timecount_threshold = 5
+  real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * daz_weight * sigma_traveltimediff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 
   !!Random number

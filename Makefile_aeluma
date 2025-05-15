@@ -182,7 +182,8 @@ $(o_nrtype): $(nrtype)
 $(o_xorshift1024star): $(xorshift1024star) $(mod_nrtype)
 $(o_random_number): $(random_number) $(mod_nrtype) $(mod_xorshift1024star)
 $(o_mapprojection): $(mapprojection) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_plotmodule): $(plotmodule) $(mod_nrtype) $(mod_constants) $(o_constants) $(mod_aeluma_parameters) $(mod_mapprojection)
+$(o_plotmodule): $(plotmodule) $(mod_nrtype) $(mod_constants) $(o_constants) $(mod_aeluma_parameters) $(mod_mapprojection) \
+	$(mod_jday)
 
 $(o_aeluma): $(aeluma) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_cosine_taper) $(mod_tandem) $(mod_itoa) $(mod_correlation) \

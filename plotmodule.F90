@@ -1,7 +1,7 @@
 module plotmodule
   private
-  public :: plot_particle, plot_particle_maxlikelihood, &
-  &         plot_slowness_vector, read_coastline, plot_coastline, plot_currentdate, plot_legend, plot_eplist
+  public :: plot_particle, plot_particle_maxlikelihood, plot_slowness_vector, read_coastline, plot_coastline, &
+  &         plot_currentdate, plot_legend, epicenter2char, plot_eplist
 
   contains
 
@@ -292,22 +292,24 @@ module plotmodule
     return
   end subroutine plot_legend
 
-  subroutine plot_eplist(year, julianday, sec_from_day, lon_particle, lat_particle, origintime, likelihood_particle, &
-  &                      plot_x, plot_y)
+  subroutine epicenter2char(year, julianday, sec_from_day, lon_particle, lat_particle, origintime, likelihood_particle, &
+  &                         epicenter_info, sigma_lon, sigma_lat, sigma_ot, maxval_likelihood)
     use nrtype, only : fp, sp
     use aeluma_parameters
     use jday
     implicit none
 
-    integer, intent(in) :: year, julianday, sec_from_day
-    real(kind = fp), intent(in) :: lon_particle(:), lat_particle(:), origintime(:), likelihood_particle(:)
-    real(kind = sp), intent(inout) :: plot_x, plot_y
-    integer :: ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1)
+    integer,            intent(in)            :: year, julianday, sec_from_day
+    real(kind = fp),    intent(in)            :: lon_particle(:), lat_particle(:), origintime(:), likelihood_particle(:)
+    character(len = *), intent(out)           :: epicenter_info
+    real(kind = fp),    intent(out), optional :: sigma_lon, sigma_lat, sigma_ot, maxval_likelihood
+
+    integer         :: i, ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1)
     real(kind = fp) :: epicenter_lon, epicenter_lat, ot_list, ot_from_day
-    character(len = 50) :: epicenter_info
-    logical :: leap
+    logical         :: leap
 
     maxloc_likelihood_particle = maxloc(likelihood_particle(:))
+    if(present(maxval_likelihood)) maxval_likelihood = likelihood_particle(maxloc_likelihood_particle(1))
     epicenter_lon = lon_particle(maxloc_likelihood_particle(1))
     epicenter_lat = lat_particle(maxloc_likelihood_particle(1))
     ot_list = origintime(maxloc_likelihood_particle(1))
@@ -334,6 +336,32 @@ module plotmodule
     write(epicenter_info, '(i4, a, 5(i2.2, a), 2(a, f0.3))') &
     &  ot_year, "/", ot_mo, "/", ot_dy, " ", ot_hour, ":", ot_min, ":", ot_sec, " ", &
     &  "Lon = ", epicenter_lon, " Lat = ", epicenter_lat
+
+    if(present(sigma_lon) .and. present(sigma_lat) .and. present(sigma_ot)) then
+      sigma_lon = 0.0_fp
+      sigma_lat = 0.0_fp
+      sigma_ot = 0.0_fp
+      do i = 1, nparticle
+        sigma_lon = sigma_lon + (epicenter_lon - lon_particle(i)) ** 2
+        sigma_lat = sigma_lat + (epicenter_lat - lat_particle(i)) ** 2
+        sigma_ot  = sigma_ot  + (ot_list - origintime(i)) ** 2
+      enddo
+      sigma_lon = sqrt(sigma_lon / real(nparticle - 1, kind = fp))
+      sigma_lat = sqrt(sigma_lat / real(nparticle - 1, kind = fp))
+      sigma_ot  = sqrt(sigma_ot  / real(nparticle - 1, kind = fp))
+    endif
+ 
+    return
+  end subroutine epicenter2char
+
+  subroutine plot_eplist(epicenter_info, plot_x, plot_y)
+    use nrtype, only : sp
+    use aeluma_parameters
+    implicit none
+
+    character(len = *), intent(in) :: epicenter_info
+    real(kind = sp), intent(inout) :: plot_x, plot_y
+
     call pc_text(iwin_eplist, plot_x, plot_y, 5.0, trim(epicenter_info), 0.0, len(trim(epicenter_info)), 7)
     plot_y = plot_y - plot_dy_eplist
  

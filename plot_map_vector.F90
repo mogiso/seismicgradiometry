@@ -13,14 +13,15 @@ program plot_map_vector
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
-  real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ttime_diff, kahan_val1, kahan_val2
+  real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ttime_diff, kahan_val1, kahan_val2, &
+  &                  error_lon, error_lat, error_ot, maxval_likelihood
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   integer,         allocatable :: arrayindex(:)
   logical,         allocatable :: result_exist(:, :), result_exist_org(:)
 
   real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
-  character(len = 255)              :: coastline_txt
+  character(len = 255)              :: coastline_txt, epicenter_info
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   
@@ -52,7 +53,7 @@ program plot_map_vector
   call plot_legend
 
   !!Open epicenter window
-  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2, 30.0_sp, scale)
+  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
 
   !!Read and plot AELUMA results
   call pc_plotinit(iwin_map, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)
@@ -180,23 +181,30 @@ program plot_map_vector
     enddo
 
     do i = 1, nepicenter
-      if(narray_use(i) .lt. narray_use_min) then
-        epicenter_exist(i) = .false.
-      endif
-      !!plot particles
       if(epicenter_exist(i)) then
+        !!plot particles
+        if(narray_use(i) .lt. narray_use_min) then
+          epicenter_exist(i) = .false.
+          call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+          &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
+          &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
+          &                   maxval_likelihood = maxval_likelihood)
+          if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
+            print '(i0, 2a, 4(1x, e15.7))', i, " ", trim(epicenter_info), error_lon, error_lat, error_ot, maxval_likelihood
+          endif
+          epicenter_timecount(i) = 0
+          cycle
+        endif
         epicenter_timecount(i) = epicenter_timecount(i) + 1
         if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
           call plot_particle(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                              width_tmp, height_tmp, dwidth, dheight)
           call plot_particle_maxlikelihood(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                                            width_tmp, height_tmp, dwidth, dheight)
-
-          call plot_eplist(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-          &                origintime_list(:, i), likelihood_particle_list(:, i), plot_x_tmp, plot_y_tmp)
+          call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+          &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
+          call plot_eplist(epicenter_info, plot_x_tmp, plot_y_tmp)
         endif
-      else
-        epicenter_timecount(i) = 0
       endif
     enddo
     call pc_flush(iwin_eplist)
@@ -264,4 +272,3 @@ program plot_map_vector
   stop
 end program plot_map_vector
 
-   

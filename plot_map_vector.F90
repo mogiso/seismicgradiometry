@@ -190,7 +190,8 @@ program plot_map_vector
           &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
           &                   maxval_likelihood = maxval_likelihood)
           if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
-            print '(i0, 2a, 4(1x, e15.7))', i, " ", trim(epicenter_info), error_lon, error_lat, error_ot, maxval_likelihood
+            print '(a, 4(1x, e15.7), 1x, i0)', trim(epicenter_info), error_lon, error_lat, error_ot, &
+            &                                  maxval_likelihood, epicenter_timecount(i)
           endif
           epicenter_timecount(i) = 0
           cycle

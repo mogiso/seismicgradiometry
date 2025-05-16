@@ -30,7 +30,7 @@ module aeluma_parameters
   integer,            public, parameter :: nsec_buf  = 360
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
-  real(kind = fp),    public, parameter :: xcorr_min = 0.3_fp
+  real(kind = fp),    public, parameter :: xcorr_min = 0.2_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
@@ -38,8 +38,8 @@ module aeluma_parameters
 
   integer,            public, parameter :: iwin_wave = 0  !!AELUMA_shmudmp.F90
   integer,            public, parameter :: iwin_map = 0, iwin_legend = 1, iwin_eplist = 2  !!plot_map_vector.F90
-  real(kind = sp),    public, parameter :: plot_dy_eplist = 9.0_sp
-  real(kind = sp),    public, parameter :: plot_x_eplist = 1.0_sp, plot_y_eplist = 30.0_sp
+  real(kind = sp),    public, parameter :: plot_dy_eplist = 7.0_sp
+  real(kind = sp),    public, parameter :: plot_x_eplist = 1.0_sp, plot_y_eplist = 27.0_sp
   !!For plot_map_vector.F90
   real(kind = sp),    public, parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp
   real(kind = sp),    public, parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0

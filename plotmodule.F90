@@ -342,13 +342,13 @@ module plotmodule
       sigma_lat = 0.0_fp
       sigma_ot = 0.0_fp
       do i = 1, nparticle
-        sigma_lon = sigma_lon + (epicenter_lon - lon_particle(i)) ** 2
-        sigma_lat = sigma_lat + (epicenter_lat - lat_particle(i)) ** 2
-        sigma_ot  = sigma_ot  + (ot_list - origintime(i)) ** 2
+        sigma_lon = sigma_lon + likelihood_particle(i) * (epicenter_lon - lon_particle(i)) ** 2
+        sigma_lat = sigma_lat + likelihood_particle(i) * (epicenter_lat - lat_particle(i)) ** 2
+        sigma_ot  = sigma_ot  + likelihood_particle(i) * (ot_list - origintime(i)) ** 2
       enddo
-      sigma_lon = sqrt(sigma_lon / real(nparticle - 1, kind = fp))
-      sigma_lat = sqrt(sigma_lat / real(nparticle - 1, kind = fp))
-      sigma_ot  = sqrt(sigma_ot  / real(nparticle - 1, kind = fp))
+      sigma_lon = sqrt(sigma_lon)
+      sigma_lat = sqrt(sigma_lat)
+      sigma_ot  = sqrt(sigma_ot)
     endif
  
     return

@@ -3,7 +3,7 @@ module particle_filter
 
 contains
 
-  subroutine particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, min_correlation, az_obs, az_weight, &
+  subroutine particle_filter_search(narray, arrayindex, result_exist, lon_array, lat_array, az_obs, az_weight, &
   &                                 randomnumber_status, &
   &                                 lon_particle, lat_particle, likelihood_particle, appvel, arrivaltime, origintime)
     use nrtype, only : fp
@@ -17,13 +17,13 @@ contains
     implicit none
     integer,         intent(in)            :: narray, arrayindex(:)
     logical,         intent(in)            :: result_exist(:)
-    real(kind = fp), intent(in)            :: min_correlation(:), lon_array(:), lat_array(:), az_obs(:), az_weight(:)
+    real(kind = fp), intent(in)            :: lon_array(:), lat_array(:), az_obs(:), az_weight(:)
     type(xorshift1024star_state), intent(inout) :: randomnumber_status
     real(kind = fp), intent(inout)         :: lon_particle(1 : nparticle), lat_particle(1 : nparticle)
     real(kind = fp), intent(out)           :: likelihood_particle(1 : nparticle)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
     real(kind = fp), intent(out), optional :: origintime(1 : nparticle)
-    integer                                :: i, j, k, ntriangle, az_weight_index, particlefilter_count
+    integer                                :: i, j, k, narray_use_tmp, ntriangle, az_weight_index, particlefilter_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
     &                                         normalize_likelihood, traveltime_diff, likelihood_distweight
@@ -42,9 +42,11 @@ contains
       kahan_val1 = 0.0_fp
       particleloop: do j = 1, nparticle
         likelihood_particle(j) = 0.0_fp
+        narray_use_tmp = 0
         do i = 1, narray
           if(.not. result_exist(arrayindex(i))) cycle
-          if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+          narray_use_tmp = narray_use_tmp + 1
+          !if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
 
           call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
           &                     lat_particle(j), lon_particle(j), distance = dist(i), azimuth = az(i))
@@ -65,22 +67,24 @@ contains
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
           if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
-            ot_est(i) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
+            ot_est(narray_use_tmp) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
           endif
         enddo
 
         if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
-          call bubblesort(ot_est)
-          if(mod(narray, 2) .eq. 0) then
-            origintime(j) = 0.5_fp * (ot_est(narray / 2) + ot_est(narray / 2 + 1))
+          call bubblesort(ot_est(1 : narray_use_tmp))
+          if(mod(narray_use_tmp, 2) .eq. 0) then
+            origintime(j) = 0.5_fp * (ot_est(narray_use_tmp / 2) + ot_est(narray_use_tmp / 2 + 1))
           else
-            origintime(j) = ot_est((narray + 1) / 2)
+            origintime(j) = ot_est((narray_use_tmp + 1) / 2)
           endif
           
+          narray_use_tmp = 0
           do i = 1, narray
             if(.not. result_exist(arrayindex(i))) cycle
-            if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
-            traveltime_diff = origintime(j) - ot_est(i)
+            narray_use_tmp = narray_use_tmp + 1
+            !if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
+            traveltime_diff = origintime(j) - ot_est(narray_use_tmp)
             likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) / sigma_dist) * (dist(i) / sigma_dist))
             likelihood_tmp = exp(-0.5_fp * (traveltime_diff * traveltime_diff / (sigma_traveltimediff * sigma_traveltimediff)))
             likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight

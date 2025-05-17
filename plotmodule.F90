@@ -170,6 +170,7 @@ module plotmodule
     real(kind = sp)                :: plot_x, plot_x1, plot_y, plot_y1
 
     mapcount = 0
+    call pc_setcolor(iwin_map, 0, 0, 0)
     do i = 1, ncoastline
       if(mapbuf(i)(1 : 1) .eq. ">") then
         mapcount = 0
@@ -209,6 +210,8 @@ module plotmodule
     call mercator(center_lon, lon_w, lat_n, map_x, map_y)
     plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
     plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
+    call pc_rect(iwin_map, plot_x, plot_y - 10.0_sp, plot_x + 80.0_sp, plot_y - 10.0_sp)
+    call pc_setcolor(iwin_map, 255, 255, 255)
     call pc_text(iwin_map, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
 
     return

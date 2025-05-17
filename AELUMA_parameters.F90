@@ -49,7 +49,6 @@ module aeluma_parameters
   character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x8e-2"
 
   !!location estimation
-  !integer,         public, parameter :: nparticle = 1000, niter = 2
   integer,            public, parameter :: nparticle = 1000, niter = 3, nepicenter = 3
   real(kind = fp),    public, parameter :: daz_weight = 15.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp
@@ -57,11 +56,11 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_dist = 100.0_fp, ttime_coef = 0.7_fp, &
   &                                        sigma_traveltimediff = 60.0_fp
-  real(kind = fp),    public, parameter :: correlation_threshold = 0.65_fp
+  real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
   real(kind = fp),    public, parameter :: phasevelocity = 3.0_fp
 
   integer,            public, parameter :: narray_use_min = 8
-  integer,            public, parameter :: epicenter_timecount_threshold = 5
+  integer,            public, parameter :: epicenter_timecount_threshold = 10
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * daz_weight * sigma_traveltimediff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 

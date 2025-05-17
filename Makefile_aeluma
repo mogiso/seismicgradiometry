@@ -158,12 +158,12 @@ $(mod_plotmodule): $(plotmodule) $(o_plotmodule)
 $(mod_sort): $(sort) $(o_sort)
 
 ##Object dependency
+$(o_typedef): $(typedef) $(mod_nrtype)
 $(o_sort): $(sort) $(mod_nrtype)
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
-        $(mod_aeluma_parameters) \
-	$(o_constants) $(o_sort) $(o_aeluma_parameters)
+        $(mod_aeluma_parameters) $(o_constants)
 $(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_constants): $(constants) $(mod_nrtype)
@@ -192,7 +192,6 @@ $(o_aeluma_shmdump): $(aeluma_shmdump) \
 	$(mod_nrtype) $(mod_constants) $(mod_cosine_taper) $(mod_tandem) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_calc_kernelmatrix) $(mod_correlation) $(mod_aeluma_parameters)
 $(o_tandem): $(tandem) $(mod_nrtype)
-$(o_typedef): $(typedef) $(mod_nrtype)
 $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
 	$(mod_particle_filter) $(mod_xorshift1024star) $(mod_random_number) $(mod_plotmodule)
 $(o_jday): $(jday)

@@ -72,9 +72,8 @@ module plotmodule
     plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
     plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
     call pc_setcolor(iwin_map, 0, 0, 0)
-    call pc_setline(iwin_map, 9)
-    call pc_symbol(iwin_map, plot_x, plot_y, 7.0_sp, 4, 1)
-    call pc_symbol(iwin_map, plot_x, plot_y, 7.0_sp, 7, 1)
+    !call pc_setline(iwin_map, 9)
+    call pc_symbol(iwin_map, plot_x, plot_y, 8.0_sp, 1, 0)
     call pc_setcolor(iwin_map, 255, 255, 255)
     call pc_symbol(iwin_map, plot_x, plot_y, 3.5_sp, 1, 0)
 

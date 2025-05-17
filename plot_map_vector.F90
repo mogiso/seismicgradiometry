@@ -25,7 +25,8 @@ program plot_map_vector
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   
-  integer              :: narray_use(1 : nepicenter), maxloc_likelihood_particle(1), epicenter_timecount(1 : nepicenter)
+  integer              :: narray_use(1 : nepicenter), narray_use_list(1 : nepicenter), &
+  &                       maxloc_likelihood_particle(1), epicenter_timecount(1 : nepicenter)
   real(kind = fp)      :: lon_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       origintime_list(1 : nparticle, 1 : nepicenter),          &
@@ -117,10 +118,10 @@ program plot_map_vector
       if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
 
       appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
-      if(appvel_obs(arrayindex(i)) .lt. phasevelocity) appvel_obs(arrayindex(i)) = phasevelocity
+      !if(appvel_obs(arrayindex(i)) .lt. phasevelocity) appvel_obs(arrayindex(i)) = phasevelocity
     enddo
 
-    !!estimate location
+    !!Link observation and events
     do k = 1, nepicenter
       origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
 
@@ -148,9 +149,15 @@ program plot_map_vector
             kahan_val2 = likelihood_tmp - kahan_val2
             kahan_val1 = kahan_val1 - kahan_val2
           enddo
+          maxloc_likelihood_particle = maxloc(likelihood_particle_list(:, k))
+          call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
+          &                     lat_particle_list(maxloc_likelihood_particle(1), k),  &
+          &                     lon_particle_list(maxloc_likelihood_particle(1), k),  &
+          &                     distance = dist_tmp,      azimuth = az_tmp)
           !print '(a, i0, a, i0, a, 5(e15.7, 1x))', &
           !&      "epicenter = ", k, " array = ", arrayindex(j), " likelihood_tmp = ", likelihood_tmp, min_likelihood_eqobs, &
-          !&      az_obs(arrayindex(j)) * rad2deg, appvel_obs(arrayindex(j)), arrivaltime(arrayindex(j))
+          !&      az_obs(arrayindex(j)) * rad2deg, arrivaltime(arrayindex(j)) - dist_tmp / appvel_obs(arrayindex(j)), &
+          !&      origintime_list(maxloc_likelihood_particle(1), k)
           !print '(a, 3(e15.7, 1x))', "array obs = ", &
           !&       az_obs(arrayindex(j)) * rad2deg, appvel_obs(arrayindex(j)), arrivaltime(arrayindex(j))
           if(likelihood_tmp .lt. min_likelihood_eqobs) then
@@ -197,22 +204,24 @@ program plot_map_vector
           cycle
         endif
         epicenter_timecount(i) = epicenter_timecount(i) + 1
-        if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
-          call plot_particle(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
-                             width_tmp, height_tmp, dwidth, dheight)
-          call plot_particle_maxlikelihood(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
-                                           width_tmp, height_tmp, dwidth, dheight)
-          call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-          &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
-          call plot_eplist(epicenter_info, plot_x_tmp, plot_y_tmp)
-        endif
+        call plot_particle(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
+                           width_tmp, height_tmp, dwidth, dheight)
+        call plot_particle_maxlikelihood(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
+                                         width_tmp, height_tmp, dwidth, dheight)
+        call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+        &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
+        call plot_eplist(epicenter_info, plot_x_tmp, plot_y_tmp)
       endif
     enddo
     call pc_flush(iwin_eplist)
 
  
+    !!estimate event epicenters
     do i = 1, nepicenter
-      if(narray_use(i) .lt. narray_use_min) cycle
+      if(narray_use(i) .lt. narray_use_min) then
+        epicenter_exist(i) = .false.
+        cycle
+      endif
 
       !!calculate azimuthal weighting array
       az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) = 0.0_fp
@@ -220,6 +229,7 @@ program plot_map_vector
         if(result_exist(arrayindex(j), i)) then
           az_weight(int(az_obs(arrayindex(j)) / daz_weight) + 1) &
           &  = az_weight(int(az_obs(arrayindex(j)) / daz_weight) + 1) + 1.0_fp
+          !print *, arrayindex(j)
         endif
       enddo
 
@@ -231,9 +241,8 @@ program plot_map_vector
         lat_particle(1 : nparticle) = lat_particle_list(1 : nparticle, i)
       endif
 
-      !print *, "particle_filter search"
-      call particle_filter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, min_correlation, az_obs, &
-      &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle,             &
+      call particle_filter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
+      &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
       &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime)
       maxloc_likelihood_particle = maxloc(likelihood_particle)
 
@@ -244,13 +253,16 @@ program plot_map_vector
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
         likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
         maxval_likelihood_particle_list(i) = likelihood_particle(maxloc_likelihood_particle(1))
+        narray_use_list(i) = narray_use(i)
       else
-        if(likelihood_particle(maxloc_likelihood_particle(1)) .ge. maxval_likelihood_particle_list(i)) then
+        if(likelihood_particle(maxloc_likelihood_particle(1)) .ge. maxval_likelihood_particle_list(i) .and. &
+        &  narray_use(i) .ge. narray_use_list(i)) then
           lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
           lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
           origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
           likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
           maxval_likelihood_particle_list(i) = likelihood_particle(maxloc_likelihood_particle(1))
+          narray_use_list(i) = narray_use(i)
         endif
       endif
     enddo

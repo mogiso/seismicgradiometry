@@ -13,6 +13,7 @@ contains
     use random_number
     use xorshift1024star
     use sort
+    use particlefilter_functions
 
     implicit none
     integer,         intent(in)            :: narray, arrayindex(:)
@@ -52,32 +53,23 @@ contains
           &                     lat_particle(j), lon_particle(j), distance = dist(i), azimuth = az(i))
           az(i) = az(i) + pi
           if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
-          daz = az_obs(arrayindex(i)) - az(i)
-          if(daz .gt.  pi) daz = 2.0_fp * pi - daz
-          if(daz .lt. -pi) daz = 2.0_fp * pi + daz
+          daz = delta_az(az_obs(arrayindex(i)), az(i))
           az_weight_index = int(az_obs(arrayindex(i)) / daz_weight) + 1
-          likelihood_azweight = 1.0_fp &
-          &                   - azweight_coef &
-          &                   * exp(-(az_weight(az_weight_index) / sameaz_num * az_weight(az_weight_index) / sameaz_num))
-          likelihood_tmp = exp(-0.5_fp * daz * daz / daz_weight2)
-          likelihood_tmp = (1.0_fp - likelihood_azweight) * likelihood_tmp + likelihood_azweight
+          likelihood_azweight = likelihood_weight(azweight_coef, sameaz_num2, az_weight(az_weight_index))
+          likelihood_tmp = likelihood_modified(daz, daz_weight2, likelihood_azweight)
           if(likelihood_particle(j) .eq. 0.0_fp) then
             likelihood_particle(j) = likelihood_tmp
           else
             likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
           endif
           if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
-            ot_est(narray_use_tmp) = arrivaltime(arrayindex(i)) - dist(i) / appvel(arrayindex(i)) 
+            ot_est(narray_use_tmp) = origintime_cal(arrivaltime(arrayindex(i)), dist(i), appvel(arrayindex(i)))
           endif
         enddo
 
         if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
           call bubblesort(ot_est(1 : narray_use_tmp))
-          if(mod(narray_use_tmp, 2) .eq. 0) then
-            origintime(j) = 0.5_fp * (ot_est(narray_use_tmp / 2) + ot_est(narray_use_tmp / 2 + 1))
-          else
-            origintime(j) = ot_est((narray_use_tmp + 1) / 2)
-          endif
+          call pickup_medianval(ot_est(1 : narray_use_tmp), origintime(j))
           
           narray_use_tmp = 0
           do i = 1, narray
@@ -85,9 +77,8 @@ contains
             narray_use_tmp = narray_use_tmp + 1
             !if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
             traveltime_diff = origintime(j) - ot_est(narray_use_tmp)
-            likelihood_distweight = 1.0_fp - ttime_coef * exp(-(dist(i) / sigma_dist) * (dist(i) / sigma_dist))
-            likelihood_tmp = exp(-0.5_fp * (traveltime_diff * traveltime_diff / (sigma_traveltimediff * sigma_traveltimediff)))
-            likelihood_tmp = (1.0_fp - likelihood_distweight) * likelihood_tmp + likelihood_distweight
+            likelihood_distweight = likelihood_weight(ttime_coef, sigma_dist2, dist(i))
+            likelihood_tmp = likelihood_modified(traveltime_diff, sigma_traveltimediff2, likelihood_distweight)
             if(likelihood_particle(j) .eq. 0.0_fp) then
               likelihood_particle(j) = likelihood_tmp
             else
@@ -137,8 +128,6 @@ contains
         call gen_random_number(randomnumber_status, rnd2)
         rnd = sqrt(-2.0_fp * log(rnd1)) * cos(2.0_fp * pi * rnd2)
         lon_particle_new(j) = lon_particle(i) + rnd * sigma_particle
-        call gen_random_number(randomnumber_status, rnd1)
-        call gen_random_number(randomnumber_status, rnd2)
         rnd = sqrt(-2.0_fp * log(rnd1)) * sin(2.0_fp * pi * rnd2)
         lat_particle_new(j) = lat_particle(i) + rnd * sigma_particle
       enddo

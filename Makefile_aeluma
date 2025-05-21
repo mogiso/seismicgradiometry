@@ -76,6 +76,7 @@ random_number = random_number.F90
 xorshift1024star = xorshift1024star.F90
 mapprojection = mapprojection.F90
 plotmodule = plotmodule.F90
+particlefilter_functions = particlefilter_functions.F90
 
 
 ##Module
@@ -99,6 +100,7 @@ mod_xorshift1024star = $(xorshift1024star:.F90=.mod)
 mod_mapprojection = $(mapprojection:.F90=.mod)
 mod_plotmodule = $(plotmodule:.F90=.mod)
 mod_sort = $(sort:.F90=.mod)
+mod_particlefilter_functions = $(particlefilter_functions:.F90=.mod)
 
 ##Object
 o_aeluma = $(aeluma:.F90=.o)
@@ -134,6 +136,7 @@ o_random_number = $(random_number:.F90=.o)
 o_xorshift1024star = $(xorshift1024star:.F90=.o)
 o_mapprojection = $(mapprojection:.F90=.o)
 o_plotmodule = $(plotmodule:.F90=.o)
+o_particlefilter_functions = $(particlefilter_functions:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -156,34 +159,34 @@ $(mod_xorshift1024star): $(xorshift1024star) $(o_xorshift1024star)
 $(mod_mapprojection): $(mapprojection) $(o_mapprojection)
 $(mod_plotmodule): $(plotmodule) $(o_plotmodule)
 $(mod_sort): $(sort) $(o_sort)
+$(mod_particlefilter_functions): $(particlefilter_functions) $(o_particlefilter_functions)
 
 ##Object dependency
 $(o_typedef): $(typedef) $(mod_nrtype)
 $(o_sort): $(sort) $(mod_nrtype)
-$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants)
+$(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
-        $(mod_aeluma_parameters) $(o_constants)
-$(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
+        $(mod_aeluma_parameters)
+$(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants)
+$(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants)
 $(o_constants): $(constants) $(mod_nrtype)
 $(o_correlation): $(correlation) $(mod_nrtype) $(o_fftsg)
-$(o_cosine_taper): $(cosine_taper) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_cosine_taper): $(cosine_taper) $(mod_nrtype) $(mod_constants)
+$(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants)
 $(o_read_sacfile): $(read_sacfile) $(mod_nrtype)
 $(o_fftsg): $(fftsg)
-$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_aeluma_parameters): $(aeluma_parameters) $(mod_nrtype) $(mod_constants) $(o_constants) $(mod_xorshift1024star)
-$(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants)
+$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants)
+$(o_aeluma_parameters): $(aeluma_parameters) $(mod_nrtype) $(mod_constants) $(mod_xorshift1024star)
+$(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants)
 $(o_itoa): $(itoa)
-$(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_lonlat_xy_conv): $(lonlat_xy_conv) $(mod_nrtype) $(mod_constants)
 $(o_nrtype): $(nrtype)
 $(o_xorshift1024star): $(xorshift1024star) $(mod_nrtype)
 $(o_random_number): $(random_number) $(mod_nrtype) $(mod_xorshift1024star)
-$(o_mapprojection): $(mapprojection) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_plotmodule): $(plotmodule) $(mod_nrtype) $(mod_constants) $(o_constants) $(mod_aeluma_parameters) $(mod_mapprojection) \
-	$(mod_jday)
+$(o_mapprojection): $(mapprojection) $(mod_nrtype) $(mod_constants)
+$(o_plotmodule): $(plotmodule) $(mod_nrtype) $(mod_constants) $(mod_aeluma_parameters) $(mod_mapprojection) $(mod_jday)
 
 $(o_aeluma): $(aeluma) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_cosine_taper) $(mod_tandem) $(mod_itoa) $(mod_correlation) \
@@ -193,10 +196,10 @@ $(o_aeluma_shmdump): $(aeluma_shmdump) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_calc_kernelmatrix) $(mod_correlation) $(mod_aeluma_parameters)
 $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
-	$(mod_particle_filter) $(mod_xorshift1024star) $(mod_random_number) $(mod_plotmodule)
+	$(mod_particle_filter) $(mod_xorshift1024star) $(mod_random_number) $(mod_plotmodule) $(mod_paritclefilter_functions)
 $(o_jday): $(jday)
 $(o_particle_filter): $(particle_filter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
-	$(mod_xorshift1024star) $(mod_random_number) $(mod_sort) $(mod_mapprojection)
+	$(mod_xorshift1024star) $(mod_random_number) $(mod_sort) $(mod_mapprojection) $(mod_particlefilter_functions)
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) $(o_read_sacfile) \
@@ -211,7 +214,8 @@ aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef
 	$(o_aeluma_shmdump)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
-plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) $(o_particle_filter) \
+plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) \
+        $(o_particlefilter_functions) $(o_particle_filter) $(o_particlefilter_functions) \
 	$(o_sort) $(o_xorshift1024star) $(o_random_number) $(o_mapprojection) $(o_plotmodule) \
 	$(o_plot_map_vector)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)

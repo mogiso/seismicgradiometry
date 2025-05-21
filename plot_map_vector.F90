@@ -8,6 +8,7 @@ program plot_map_vector
   use random_number
   use mapprojection
   use plotmodule
+  use particlefilter_functions
   implicit none
 
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
@@ -98,6 +99,7 @@ program plot_map_vector
     result_exist_org(1 : ntriangle)             = .false.
     result_exist(1 : ntriangle, 1 : nepicenter) = .false.
     call pc_setline(iwin_map, 4)
+
     !!read and plot slowness vector
     narray_use(1 : nepicenter) = narray
     do i = 1, narray
@@ -116,7 +118,6 @@ program plot_map_vector
       arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
       az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
       if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
-
       appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
       !if(appvel_obs(arrayindex(i)) .lt. phasevelocity) appvel_obs(arrayindex(i)) = phasevelocity
     enddo
@@ -134,12 +135,10 @@ program plot_map_vector
             call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
             &                     lat_particle_list(i, k),  lon_particle_list(i, k),  &
             &                     distance = dist_tmp,      azimuth = az_tmp)
-            ttime_diff = origintime_list(i, k) - (arrivaltime(arrayindex(j)) - dist_tmp / appvel_obs(arrayindex(j)))
             az_tmp = az_tmp + pi
             if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
-            daz = az_obs(arrayindex(j)) - az_tmp
-            if(daz .gt.  pi) daz = 2.0_fp * pi - daz
-            if(daz .lt. -pi) daz = 2.0_fp * pi + daz
+            daz = delta_az(az_obs(arrayindex(j)), az_tmp)
+            ttime_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
             kahan_val1 = kahan_val1 &
             &          + likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_traveltimediff * daz_weight) &
             &          * exp(-0.5_fp * ((ttime_diff * ttime_diff / (sigma_traveltimediff * sigma_traveltimediff)) &
@@ -149,11 +148,11 @@ program plot_map_vector
             kahan_val2 = likelihood_tmp - kahan_val2
             kahan_val1 = kahan_val1 - kahan_val2
           enddo
-          maxloc_likelihood_particle = maxloc(likelihood_particle_list(:, k))
-          call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
-          &                     lat_particle_list(maxloc_likelihood_particle(1), k),  &
-          &                     lon_particle_list(maxloc_likelihood_particle(1), k),  &
-          &                     distance = dist_tmp,      azimuth = az_tmp)
+          !maxloc_likelihood_particle = maxloc(likelihood_particle_list(:, k))
+          !call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
+          !&                     lat_particle_list(maxloc_likelihood_particle(1), k),  &
+          !&                     lon_particle_list(maxloc_likelihood_particle(1), k),  &
+          !&                     distance = dist_tmp,      azimuth = az_tmp)
           !print '(a, i0, a, i0, a, 5(e15.7, 1x))', &
           !&      "epicenter = ", k, " array = ", arrayindex(j), " likelihood_tmp = ", likelihood_tmp, min_likelihood_eqobs, &
           !&      az_obs(arrayindex(j)) * rad2deg, arrivaltime(arrayindex(j)) - dist_tmp / appvel_obs(arrayindex(j)), &
@@ -191,19 +190,22 @@ program plot_map_vector
       if(epicenter_exist(i)) then
         !!plot particles
         if(narray_use(i) .lt. narray_use_min) then
-          epicenter_exist(i) = .false.
-          call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-          &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
-          &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
-          &                   maxval_likelihood = maxval_likelihood)
-          if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
-            print '(a, 4(1x, e15.7), 1x, i0)', trim(epicenter_info), error_lon, error_lat, error_ot, &
-            &                                  maxval_likelihood, epicenter_timecount(i)
+          epicenter_timecount(i) = epicenter_timecount(i) + 1
+        !if(narray_use(i) .lt. 1) then
+          if(epicenter_timecount(i) .gt. epicenter_timecount_threshold) then
+            epicenter_exist(i) = .false.
+            call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+            &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
+            &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
+            &                   maxval_likelihood = maxval_likelihood)
+            if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
+              print '(a, 4(1x, e15.7), 1x, i0)', trim(epicenter_info), error_lon, error_lat, error_ot, &
+              &                                  maxval_likelihood, epicenter_timecount(i)
+            endif
+            epicenter_timecount(i) = 0
+            cycle
           endif
-          epicenter_timecount(i) = 0
-          cycle
         endif
-        epicenter_timecount(i) = epicenter_timecount(i) + 1
         call plot_particle(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                            width_tmp, height_tmp, dwidth, dheight)
         call plot_particle_maxlikelihood(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
@@ -219,7 +221,7 @@ program plot_map_vector
     !!estimate event epicenters
     do i = 1, nepicenter
       if(narray_use(i) .lt. narray_use_min) then
-        epicenter_exist(i) = .false.
+        !epicenter_exist(i) = .false.
         cycle
       endif
 

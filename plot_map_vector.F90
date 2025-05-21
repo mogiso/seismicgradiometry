@@ -72,12 +72,12 @@ program plot_map_vector
     plot_y_tmp = plot_y_eplist
     call pc_clear(iwin_map)
     call pc_setcolor(iwin_map, 0, 0, 0)
-    call pc_setline(iwin_map, 1)
     call pc_clear(iwin_eplist)
     call pc_setcolor(iwin_eplist, 0, 0, 0)
     call pc_setline(iwin_eplist, 2)
     !az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
     read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray, ntriangle
+    if(ios .ne. 0) error stop
     read(yr, *) year; year = year + 2000
     read(mo, *) month
     read(dy, *) day
@@ -88,7 +88,7 @@ program plot_map_vector
     sec_from_day = hr * 60 * 60 + mi * 60 + sc
     write(0, '(8(i0, 1x))') year, month, day, hr, mi, sc, narray, ntriangle
     !print '(5(i0, 1x))', year, julianday, sec_from_day, narray, ntriangle
-    if(ios .ne. 0) stop
+
     if(.not. allocated(arrayindex)) then
       allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 1 : nepicenter), &
       &        result_exist_org(1 : ntriangle), &

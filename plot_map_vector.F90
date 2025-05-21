@@ -188,24 +188,21 @@ program plot_map_vector
 
     do i = 1, nepicenter
       if(epicenter_exist(i)) then
-        !!plot particles
         if(narray_use(i) .lt. narray_use_min) then
           epicenter_timecount(i) = epicenter_timecount(i) + 1
-        !if(narray_use(i) .lt. 1) then
           if(epicenter_timecount(i) .gt. epicenter_timecount_threshold) then
             epicenter_exist(i) = .false.
             call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
             &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
             &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
             &                   maxval_likelihood = maxval_likelihood)
-            if(epicenter_timecount(i) .ge. epicenter_timecount_threshold) then
-              print '(a, 4(1x, e15.7), 1x, i0)', trim(epicenter_info), error_lon, error_lat, error_ot, &
-              &                                  maxval_likelihood, epicenter_timecount(i)
-            endif
+            print '(a, 4(1x, e15.7), 1x, i0)', trim(epicenter_info), error_lon, error_lat, error_ot, &
+            &                                  maxval_likelihood, epicenter_timecount(i)
             epicenter_timecount(i) = 0
             cycle
           endif
         endif
+        !!plot particles
         call plot_particle(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                            width_tmp, height_tmp, dwidth, dheight)
         call plot_particle_maxlikelihood(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
@@ -220,10 +217,7 @@ program plot_map_vector
  
     !!estimate event epicenters
     do i = 1, nepicenter
-      if(narray_use(i) .lt. narray_use_min) then
-        !epicenter_exist(i) = .false.
-        cycle
-      endif
+      if(narray_use(i) .lt. narray_use_min) cycle
 
       !!calculate azimuthal weighting array
       az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) = 0.0_fp

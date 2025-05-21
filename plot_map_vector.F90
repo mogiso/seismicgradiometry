@@ -14,7 +14,7 @@ program plot_map_vector
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
-  real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ttime_diff, kahan_val1, kahan_val2, &
+  real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
   &                  error_lon, error_lat, error_ot, maxval_likelihood
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
@@ -138,11 +138,11 @@ program plot_map_vector
             az_tmp = az_tmp + pi
             if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
             daz = delta_az(az_obs(arrayindex(j)), az_tmp)
-            ttime_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
+            ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
             kahan_val1 = kahan_val1 &
-            &          + likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_traveltimediff * daz_weight) &
-            &          * exp(-0.5_fp * ((ttime_diff * ttime_diff / (sigma_traveltimediff * sigma_traveltimediff)) &
-            &                        +  (daz        * daz        / daz_weight2)))
+            &          + likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
+            &          * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
+            &                        +  (daz     * daz     / daz_weight2)))
             kahan_val2 = likelihood_tmp
             likelihood_tmp = likelihood_tmp + kahan_val1
             kahan_val2 = likelihood_tmp - kahan_val2

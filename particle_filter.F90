@@ -24,16 +24,15 @@ contains
     real(kind = fp), intent(out)           :: likelihood_particle(1 : nparticle)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
     real(kind = fp), intent(out), optional :: origintime(1 : nparticle)
-    integer                                :: i, j, k, narray_use_tmp, ntriangle, az_weight_index, particlefilter_count
+    integer                                :: i, j, k, narray_use_tmp, az_weight_index, particlefilter_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
-    &                                         normalize_likelihood, traveltime_diff, likelihood_distweight
+    &                                         normalize_likelihood, ot_diff, likelihood_distweight
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
     real(kind = fp), allocatable           :: az(:), dist(:), ot_est(:)
 
 
-    ntriangle = size(result_exist)
     allocate(az(1 : narray), dist(1 : narray), ot_est(1 : narray))
 
     maxval_likelihood_particle = 0.0_fp
@@ -47,7 +46,6 @@ contains
         do i = 1, narray
           if(.not. result_exist(arrayindex(i))) cycle
           narray_use_tmp = narray_use_tmp + 1
-          !if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
 
           call greatcircle_dist(lat_array(arrayindex(i)), lon_array(arrayindex(i)), &
           &                     lat_particle(j), lon_particle(j), distance = dist(i), azimuth = az(i))
@@ -57,11 +55,7 @@ contains
           az_weight_index = int(az_obs(arrayindex(i)) / daz_weight) + 1
           likelihood_azweight = likelihood_weight(azweight_coef, sameaz_num2, az_weight(az_weight_index))
           likelihood_tmp = likelihood_modified(daz, daz_weight2, likelihood_azweight)
-          if(likelihood_particle(j) .eq. 0.0_fp) then
-            likelihood_particle(j) = likelihood_tmp
-          else
-            likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
-          endif
+          likelihood_particle(j) = likelihood_renew(likelihood_particle(j), likelihood_tmp)
           if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
             ot_est(narray_use_tmp) = origintime_cal(arrivaltime(arrayindex(i)), dist(i), appvel(arrayindex(i)))
           endif
@@ -75,15 +69,11 @@ contains
           do i = 1, narray
             if(.not. result_exist(arrayindex(i))) cycle
             narray_use_tmp = narray_use_tmp + 1
-            !if(min_correlation(arrayindex(i)) .lt. correlation_threshold) cycle
-            traveltime_diff = origintime(j) - ot_est(narray_use_tmp)
-            likelihood_distweight = likelihood_weight(ttime_coef, sigma_dist2, dist(i))
-            likelihood_tmp = likelihood_modified(traveltime_diff, sigma_traveltimediff2, likelihood_distweight)
-            if(likelihood_particle(j) .eq. 0.0_fp) then
-              likelihood_particle(j) = likelihood_tmp
-            else
-              likelihood_particle(j) = likelihood_particle(j) * likelihood_tmp
-            endif
+
+            ot_diff = origintime(j) - ot_est(narray_use_tmp)
+            likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist(i))
+            likelihood_tmp = likelihood_modified(ot_diff, sigma_otdiff2, likelihood_distweight)
+            likelihood_particle(j) = likelihood_renew(likelihood_particle(j), likelihood_tmp)
             if(likelihood_particle(j) * 0.0_fp .ne. 0.0_fp) then
               print *, i, j, lon_particle(j), lat_particle(j)
               do k = 1, narray

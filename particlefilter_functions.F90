@@ -1,6 +1,6 @@
 module particlefilter_functions
   private
-  public :: delta_az, likelihood_weight, likelihood_modified, origintime_cal, pickup_medianval
+  public :: delta_az, likelihood_weight, likelihood_modified, likelihood_renew, origintime_cal, pickup_medianval
 
   contains
 
@@ -25,7 +25,7 @@ module particlefilter_functions
     real(kind = fp) :: c0, c1, k0, likelihood_weight
 
     likelihood_weight = 1.0_fp - c0 * exp(-0.5_fp * k0 * k0 / c1)
-
+    return
   end function likelihood_weight
 
   function likelihood_modified(delta_obs, sigma2, likelihood_weight)
@@ -36,7 +36,6 @@ module particlefilter_functions
     real(kind = fp) :: delta_obs, sigma2, likelihood_weight, likelihood_modified
 
     likelihood_modified = (1.0_fp - likelihood_weight) * exp(-0.5_fp * delta_obs * delta_obs / sigma2) + likelihood_weight
-
     return
   end function likelihood_modified
 
@@ -48,6 +47,20 @@ module particlefilter_functions
     origintime_cal = arrivaltime - distance / apparentvel
     return
   end function origintime_cal
+
+  function likelihood_renew(likelihood_val, likelihood_add)
+    !!calculate likelihood_val * likelihood_add
+    use nrtype, only : fp
+    implicit none
+    real(kind = fp) :: likelihood_val, likelihood_add, likelihood_renew
+
+    if(likelihood_val .eq. 0.0_fp) then
+      likelihood_renew = likelihood_add
+    else
+      likelihood_renew = likelihood_val * likelihood_add
+    endif
+    return
+  end function likelihood_renew
 
   subroutine pickup_medianval(array, val)
     !!pickup median value of array(1 : n), array should be already sorted

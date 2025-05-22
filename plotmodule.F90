@@ -24,13 +24,13 @@ module plotmodule
       likelihood_tmp = likelihood_particle(i) * likelihood_legend_normalize
       if(likelihood_tmp .le. 0.1_fp) then
         color(1 : 3) = [252, 238, 158]
-      elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 0.3_fp) then
+      elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 0.333_fp) then
         color(1 : 3) = [238, 179, 87]
-      elseif(likelihood_tmp .gt. 0.3_fp .and. likelihood_tmp .le. 1_fp) then
+      elseif(likelihood_tmp .gt. 0.333_fp .and. likelihood_tmp .le. 1_fp) then
         color(1 : 3) = [222, 117, 79]
-      elseif(likelihood_tmp .gt. 1_fp .and. likelihood_tmp .le. 3.0_fp) then
+      elseif(likelihood_tmp .gt. 1_fp .and. likelihood_tmp .le. 3.333_fp) then
         color(1 : 3) = [149, 66, 62]
-      elseif(likelihood_tmp .gt. 3.0_fp .and. likelihood_tmp .le. 10.0_fp) then
+      elseif(likelihood_tmp .gt. 3.333_fp .and. likelihood_tmp .le. 10.0_fp) then
         color(1 : 3) = [63, 39, 23]
       elseif(likelihood_tmp .gt. 10.0_fp) then
         color(1 : 3) = [26, 26, 1]
@@ -263,13 +263,13 @@ module plotmodule
         plottext = "0.1"
       elseif(i .eq. 3) then
         color(1 : 3) = [222, 117, 79]
-        plottext = "0.3"
+        plottext = "0.33"
       elseif(i .eq. 4) then
         color(1 : 3) = [149, 66, 62]
         plottext = "1.0"
       elseif(i .eq. 5) then
         color(1 : 3) = [63, 39, 23]
-        plottext = "3.0"
+        plottext = "3.3"
       elseif(i .eq. 6) then
         color(1 : 3) = [26, 26, 1]
         plottext = "10.0"

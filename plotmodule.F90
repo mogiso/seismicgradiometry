@@ -5,18 +5,19 @@ module plotmodule
 
   contains
 
-  subroutine plot_particle(lon_particle, lat_particle, likelihood_particle, width_tmp, height_tmp, dwidth, dheight)
+  subroutine plot_particle(iwin_plot, lon_particle, lat_particle, likelihood_particle, width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : fp, sp
     use aeluma_parameters
     use mapprojection
     implicit none
+    integer, intent(in)         :: iwin_plot
     real(kind = fp), intent(in) :: lon_particle(:), lat_particle(:), likelihood_particle(:), &
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
     real(kind = fp) :: map_x, map_y, likelihood_tmp
     real(kind = sp) :: plot_x, plot_y
     integer :: i, color(1 : 3)
 
-    call pc_setline(iwin_map, 1)
+    call pc_setline(iwin_plot, 1)
     do i = 1, nparticle
       call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
@@ -35,10 +36,10 @@ module plotmodule
       elseif(likelihood_tmp .gt. 10.0_fp) then
         color(1 : 3) = [26, 26, 1]
       endif
-      call pc_setcolor(iwin_map, color(1), color(2), color(3))
-      call pc_symbol(iwin_map, plot_x, plot_y, 3.0_sp, 1, 0)
-      call pc_setcolor(iwin_map, 0, 0, 0)
-      call pc_symbol(iwin_map, plot_x, plot_y, 3.0_sp, 1, 1)
+      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 0)
+      call pc_setcolor(iwin_plot, 0, 0, 0)
+      call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 1)
     enddo
     !maxloc_likelihood = maxloc(likelihood_particle)
     !call mercator(center_lon, lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), map_x, map_y)
@@ -55,12 +56,13 @@ module plotmodule
     return
   end subroutine plot_particle
 
-  subroutine plot_particle_maxlikelihood(lon_particle, lat_particle, likelihood_particle, &
+  subroutine plot_particle_maxlikelihood(iwin_plot, lon_particle, lat_particle, likelihood_particle, &
   &                                      width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : fp, sp
     use aeluma_parameters
     use mapprojection
     implicit none
+    integer,         intent(in) :: iwin_plot
     real(kind = fp), intent(in) :: lon_particle(:), lat_particle(:), likelihood_particle(:), &
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
     real(kind = fp) :: map_x, map_y
@@ -73,9 +75,9 @@ module plotmodule
     plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
     call pc_setcolor(iwin_map, 0, 0, 0)
     !call pc_setline(iwin_map, 9)
-    call pc_symbol(iwin_map, plot_x, plot_y, 8.0_sp, 1, 0)
-    call pc_setcolor(iwin_map, 255, 255, 255)
-    call pc_symbol(iwin_map, plot_x, plot_y, 3.5_sp, 1, 0)
+    call pc_symbol(iwin_plot, plot_x, plot_y, 8.0_sp, 1, 0)
+    call pc_setcolor(iwin_plot, 255, 255, 255)
+    call pc_symbol(iwin_plot, plot_x, plot_y, 3.5_sp, 1, 0)
 
     write(0, '(a, f0.4, a, f0.4, a, e15.7)') " Lon = ", lon_particle(maxloc_likelihood(1)), &
     &                                        " Lat = ", lat_particle(maxloc_likelihood(1)), &
@@ -83,7 +85,7 @@ module plotmodule
 
   end subroutine plot_particle_maxlikelihood
 
-  subroutine plot_slowness_vector(narray, arrayindex, result_exist, lon_array, lat_array, az_obs, min_correlation, &
+  subroutine plot_slowness_vector(iwin_plot, narray, arrayindex, result_exist, lon_array, lat_array, az_obs, min_correlation, &
   &                               width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : fp, sp
     use constants, only : rad2deg
@@ -91,7 +93,7 @@ module plotmodule
     use mapprojection
 
     implicit none
-    integer,         intent(in) :: narray, arrayindex(1 : narray)
+    integer,         intent(in) :: iwin_plot, narray, arrayindex(1 : narray)
     logical,         intent(in) :: result_exist(:)
     real(kind = fp), intent(in) :: lon_array(:), lat_array(:), az_obs(:), min_correlation(:), &
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
@@ -100,7 +102,7 @@ module plotmodule
     real(kind = sp) :: plot_theta, plot_x, plot_y
     real(kind = fp) :: map_x, map_y
 
-    call pc_setline(iwin_map, 4)
+    call pc_setline(iwin_plot, 4)
     do i = 1, narray
       if(.not. result_exist(arrayindex(i))) cycle
       !theta = atan2(slowness_x, slowness_y) * rad2deg
@@ -121,8 +123,8 @@ module plotmodule
       elseif(min_correlation(arrayindex(i)) .ge. 0.9_fp) then
         color(1 : 3) = [73, 57, 100]
       endif
-      call pc_setcolor(iwin_map, color(1), color(2), color(3))
-      call pc_vector(iwin_map, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
+      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_vector(iwin_plot, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
     enddo
   end subroutine plot_slowness_vector
 
@@ -155,14 +157,14 @@ module plotmodule
     return
   end subroutine read_coastline
 
-  subroutine plot_coastline(ncoastline, mapbuf, width_tmp, height_tmp, dwidth, dheight)
+  subroutine plot_coastline(iwin_plot, ncoastline, mapbuf, width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : fp, sp
     use mapprojection
     use aeluma_parameters
     implicit none
 
     real(kind = fp),    intent(in) :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
-    integer,            intent(in) :: ncoastline
+    integer,            intent(in) :: iwin_plot, ncoastline
     character(len = *), intent(in) :: mapbuf(1 : ncoastline)
     integer                        :: i, mapcount
     real(kind = fp)                :: map_x, map_y, map_x1, map_y1, maplon, maplat
@@ -190,15 +192,16 @@ module plotmodule
       plot_y1 = real((map_y1 - height_tmp(1)) * dheight, kind = sp) * height
       map_x1 = map_x
       map_y1 = map_y
-      call pc_line(iwin_map, plot_x, plot_y, plot_x1, plot_y1)
+      call pc_line(iwin_plot, plot_x, plot_y, plot_x1, plot_y1)
     enddo
   end subroutine plot_coastline
 
-  subroutine plot_currentdate(yr, mo, dy, hh, mm, ss, width_tmp, height_tmp, dwidth, dheight)
+  subroutine plot_currentdate(iwin_plot, yr, mo, dy, hh, mm, ss, width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : sp, fp
     use aeluma_parameters
     use mapprojection
     implicit none
+    integer,            intent(in) :: iwin_plot
     character(len = 2), intent(in) :: yr, mo, dy, hh, mm, ss
     real(kind = fp),    intent(in) :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
     real(kind = sp)                :: plot_x, plot_y
@@ -209,19 +212,20 @@ module plotmodule
     call mercator(center_lon, lon_w, lat_n, map_x, map_y)
     plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
     plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
-    call pc_rect(iwin_map, plot_x, plot_y - 10.0_sp, plot_x + 80.0_sp, plot_y - 10.0_sp)
-    call pc_setcolor(iwin_map, 255, 255, 255)
-    call pc_text(iwin_map, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
+    call pc_rect(iwin_plot, plot_x, plot_y - 10.0_sp, plot_x + 80.0_sp, plot_y - 10.0_sp)
+    call pc_setcolor(iwin_plot, 255, 255, 255)
+    call pc_text(iwin_plot, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
 
     return
   end subroutine plot_currentdate
  
 
-  subroutine plot_legend
+  subroutine plot_legend(iwin_plot)
     use nrtype, only : sp
     use aeluma_parameters
 
     implicit none
+    integer, intent(in) :: iwin_plot
     integer            :: i, color(1 : 3)
     real(kind = sp)    :: plot_x, plot_y
     character(len = 6) :: plottext
@@ -246,12 +250,12 @@ module plotmodule
       endif
       plot_x = real(i, kind = sp) * 16.0_sp
       plot_y = 20.0_sp
-      call pc_setcolor(iwin_legend, color(1), color(2), color(3))
-      call pc_setline(iwin_legend, 4)
-      call pc_vector(iwin_legend, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
-      call pc_setcolor(iwin_legend, 0, 0, 0)
+      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_setline(iwin_plot, 4)
+      call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
+      call pc_setcolor(iwin_plot, 0, 0, 0)
       plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
-      call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
+      call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
     enddo
 
     do i = 1, 6
@@ -276,20 +280,20 @@ module plotmodule
       endif
       plot_x = real(i, kind = sp) * 16.0_sp
       plot_y = 10.0_sp
-      call pc_setcolor(iwin_legend, color(1), color(2), color(3))
-      call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 0)
-      call pc_setcolor(iwin_legend, 0, 0, 0)
-      call pc_symbol(iwin_legend, plot_x, plot_y, 3.0_sp, 1, 1)
+      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 0)
+      call pc_setcolor(iwin_plot, 0, 0, 0)
+      call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 1)
       plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-      call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
+      call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
     enddo
     plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
     plottext = "10.0<"
-    call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
+    call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
     plot_x = plot_x + 20.0_sp
-    call pc_text(iwin_legend, plot_x, plot_y, 4.0, trim(likelihood_legend_normalize_c), 0.0, &
+    call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(likelihood_legend_normalize_c), 0.0, &
     &            len(trim(likelihood_legend_normalize_c)), 5) 
-    call pc_flush(iwin_legend)
+    call pc_flush(iwin_plot)
 
     return
   end subroutine plot_legend
@@ -356,15 +360,16 @@ module plotmodule
     return
   end subroutine epicenter2char
 
-  subroutine plot_eplist(epicenter_info, plot_x, plot_y)
+  subroutine plot_eplist(iwin_plot, epicenter_info, plot_x, plot_y)
     use nrtype, only : sp
     use aeluma_parameters
     implicit none
 
+    integer,            intent(in) :: iwin_plot
     character(len = *), intent(in) :: epicenter_info
     real(kind = sp), intent(inout) :: plot_x, plot_y
 
-    call pc_text(iwin_eplist, plot_x, plot_y, 5.0, trim(epicenter_info), 0.0, len(trim(epicenter_info)), 7)
+    call pc_text(iwin_plot, plot_x, plot_y, 5.0, trim(epicenter_info), 0.0, len(trim(epicenter_info)), 7)
     plot_y = plot_y - plot_dy_eplist
  
     return

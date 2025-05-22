@@ -52,7 +52,7 @@ program plot_map_vector
  
   !!Plot legend
   call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
-  call plot_legend
+  call plot_legend(iwin_legend)
 
   !!Open epicenter window
   call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
@@ -203,13 +203,13 @@ program plot_map_vector
           endif
         endif
         !!plot particles
-        call plot_particle(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
+        call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                            width_tmp, height_tmp, dwidth, dheight)
-        call plot_particle_maxlikelihood(lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
-                                         width_tmp, height_tmp, dwidth, dheight)
+        call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
+        &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
-        call plot_eplist(epicenter_info, plot_x_tmp, plot_y_tmp)
+        call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
       endif
     enddo
     call pc_flush(iwin_eplist)
@@ -264,13 +264,13 @@ program plot_map_vector
     enddo
 
     !!plot slowness vector
-    call plot_slowness_vector(narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, min_correlation, &
+    call plot_slowness_vector(iwin_map, narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, min_correlation, &
     &                         width_tmp, height_tmp, dwidth, dheight)
     !!plot map
     call pc_setline(iwin_map, 1)
     call pc_setcolor(iwin_map, 0, 0, 0)
-    call plot_currentdate(yr, mo, dy, hh, mm, ss, width_tmp, height_tmp, dwidth, dheight)
-    call plot_coastline(ncoastline, mapbuf, width_tmp, height_tmp, dwidth, dheight)
+    call plot_currentdate(iwin_map, yr, mo, dy, hh, mm, ss, width_tmp, height_tmp, dwidth, dheight)
+    call plot_coastline(iwin_map, ncoastline, mapbuf, width_tmp, height_tmp, dwidth, dheight)
 
     call pc_flush(iwin_map)
   enddo

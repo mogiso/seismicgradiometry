@@ -138,6 +138,7 @@ o_xorshift1024star = $(xorshift1024star:.F90=.o)
 o_mapprojection = $(mapprojection:.F90=.o)
 o_plotmodule = $(plotmodule:.F90=.o)
 o_particlefilter_functions = $(particlefilter_functions:.F90=.o)
+o_plot_likelihood = $(plot_likelihood:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -165,8 +166,10 @@ $(mod_particlefilter_functions): $(particlefilter_functions) $(o_particlefilter_
 ##Object dependency
 $(o_typedef): $(typedef) $(mod_nrtype)
 $(o_sort): $(sort) $(mod_nrtype)
+$(o_jday): $(jday)
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants)
 $(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants)
+$(o_tandem): $(tandem) $(mod_nrtype)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
         $(mod_aeluma_parameters)
 $(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants)
@@ -192,15 +195,20 @@ $(o_plotmodule): $(plotmodule) $(mod_nrtype) $(mod_constants) $(mod_aeluma_param
 $(o_aeluma): $(aeluma) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_cosine_taper) $(mod_tandem) $(mod_itoa) $(mod_correlation) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_aeluma_parameters) $(mod_calc_kernelmatrix) $(mod_read_sacfile)
+
 $(o_aeluma_shmdump): $(aeluma_shmdump) \
 	$(mod_nrtype) $(mod_constants) $(mod_cosine_taper) $(mod_tandem) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_calc_kernelmatrix) $(mod_correlation) $(mod_aeluma_parameters)
-$(o_tandem): $(tandem) $(mod_nrtype)
-$(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
-	$(mod_particle_filter) $(mod_xorshift1024star) $(mod_random_number) $(mod_plotmodule) $(mod_paritclefilter_functions)
-$(o_jday): $(jday)
+
+$(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) $(mod_jday) \
+	$(mod_particlefilter) $(mod_xorshift1024star) $(mod_random_number) $(mod_plotmodule) $(mod_paritclefilter_functions)
+
 $(o_particlefilter): $(particlefilter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
 	$(mod_xorshift1024star) $(mod_random_number) $(mod_sort) $(mod_mapprojection) $(mod_particlefilter_functions)
+
+$(o_plot_likelihood): $(plot_likelihood) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
+	$(mod_xorshift1024star) $(mod_random_number) $(mod_sort) $(mod_plotmodule) $(mod_paritclefilter_functions)
+
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_correlation) $(o_read_sacfile) \
@@ -219,6 +227,12 @@ plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aelum
         $(o_particlefilter_functions) $(o_particlefilter) \
 	$(o_sort) $(o_xorshift1024star) $(o_random_number) $(o_mapprojection) $(o_plotmodule) \
 	$(o_plot_map_vector)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+plot_likelihood: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) \
+        $(o_sort) $(o_particlefilter_functions) \
+	$(o_sort) $(o_xorshift1024star) $(o_random_number) $(o_mapprojection) $(o_plotmodule) \
+	$(o_plot_likelihood)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 .F90.mod:

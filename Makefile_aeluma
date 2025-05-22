@@ -70,13 +70,14 @@ typedef = typedef.F90
 read_sacfile = read_sacfile.F90
 plot_map_vector = plot_map_vector.F90
 jday = jday.F90
-particle_filter = particle_filter.F90
+particlefilter = particlefilter.F90
 make_eventlist = make_eventlist.F90
 random_number = random_number.F90
 xorshift1024star = xorshift1024star.F90
 mapprojection = mapprojection.F90
 plotmodule = plotmodule.F90
 particlefilter_functions = particlefilter_functions.F90
+plot_likelihood = plot_likelihood.F90
 
 
 ##Module
@@ -94,7 +95,7 @@ mod_tandem = $(tandem:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
 mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_jday = $(jday:.F90=.mod)
-mod_particle_filter = $(particle_filter:.F90=.mod)
+mod_particlefilter = $(particlefilter:.F90=.mod)
 mod_random_number = $(random_number:.F90=.mod)
 mod_xorshift1024star = $(xorshift1024star:.F90=.mod)
 mod_mapprojection = $(mapprojection:.F90=.mod)
@@ -130,7 +131,7 @@ o_geometry = $(geometry:.f90=.o)
 o_read_sacfile = $(read_sacfile:.F90=.o)
 o_plot_map_vector = $(plot_map_vector:.F90=.o)
 o_jday = $(jday:.F90=.o)
-o_particle_filter = $(particle_filter:.F90=.o)
+o_particlefilter = $(particlefilter:.F90=.o)
 o_make_eventlist = $(make_eventlist:.F90=.o)
 o_random_number = $(random_number:.F90=.o)
 o_xorshift1024star = $(xorshift1024star:.F90=.o)
@@ -153,7 +154,7 @@ $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
 $(mod_read_sacfile): $(read_sacfile) $(o_read_sacfile)
 $(mod_jday): $(jday) $(o_jday)
-$(mod_particle_filter): $(particle_filter) $(o_particle_filter)
+$(mod_particlefilter): $(particlefilter) $(o_particlefilter)
 $(mod_random_number): $(random_number) $(o_random_number)
 $(mod_xorshift1024star): $(xorshift1024star) $(o_xorshift1024star)
 $(mod_mapprojection): $(mapprojection) $(o_mapprojection)
@@ -198,7 +199,7 @@ $(o_tandem): $(tandem) $(mod_nrtype)
 $(o_plot_map_vector): $(plot_map_vector) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
 	$(mod_particle_filter) $(mod_xorshift1024star) $(mod_random_number) $(mod_plotmodule) $(mod_paritclefilter_functions)
 $(o_jday): $(jday)
-$(o_particle_filter): $(particle_filter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
+$(o_particlefilter): $(particlefilter) $(mod_nrtype) $(mod_constants) $(mod_greatcircle) $(mod_aeluma_parameters) \
 	$(mod_xorshift1024star) $(mod_random_number) $(mod_sort) $(mod_mapprojection) $(mod_particlefilter_functions)
 
 aeluma: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
@@ -215,7 +216,7 @@ aeluma_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 plot_map_vector: $(o_nrtype) $(o_constants) $(o_greatcircle) $(o_jday) $(o_aeluma_parameters) \
-        $(o_particlefilter_functions) $(o_particle_filter) $(o_particlefilter_functions) \
+        $(o_particlefilter_functions) $(o_particlefilter) \
 	$(o_sort) $(o_xorshift1024star) $(o_random_number) $(o_mapprojection) $(o_plotmodule) \
 	$(o_plot_map_vector)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)

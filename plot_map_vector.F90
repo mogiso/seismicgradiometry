@@ -4,7 +4,7 @@ program plot_map_vector
   use greatcircle, only : greatcircle_dist
   use aeluma_parameters
   use jday
-  use particle_filter
+  use particlefilter
   use random_number
   use mapprojection
   use plotmodule
@@ -231,13 +231,13 @@ program plot_map_vector
 
       !!Initialize location of each particle
       if(.not. epicenter_exist(i)) then
-        call particle_filter_init(random_status, lon_particle, lat_particle)
+        call particlefilter_init(random_status, lon_particle, lat_particle)
       else
         lon_particle(1 : nparticle) = lon_particle_list(1 : nparticle, i)
         lat_particle(1 : nparticle) = lat_particle_list(1 : nparticle, i)
       endif
 
-      call particle_filter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
+      call particlefilter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
       &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
       &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime)
       maxloc_likelihood_particle = maxloc(likelihood_particle)

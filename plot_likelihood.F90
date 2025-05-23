@@ -13,17 +13,7 @@ program plot_likelihood
 
   integer, parameter :: iwin_likelihood(1 : 3) = [0, 1, 2]
   integer, parameter :: nparticle_plot = 3000000
-  integer, parameter :: color(1 : 3, 1 : 10) = reshape([255, 255, 153, &
-  &                                                     255, 255,  51, &
-  &                                                     255, 221,   0, &
-  &                                                     255, 153,   0, &
-  &                                                     255,  85,   0, &
-  &                                                     255,  17,   0, &
-  &                                                     204,   0,   0, &
-  &                                                     136,   0,   0, &
-  &                                                      68,   0,   0, &
-  &                                                       0,   0,   0], [3, 10])
-  real(kind = fp), parameter :: coefficient = 1.0e+2;
+  real(kind = fp), parameter :: coefficient = 1.0e+3;
 
   real(kind = sp) :: plot_x, plot_y
   integer         :: i, j, ios, ncoastline, narray, ntriangle, narray_use_tmp, az_weight_index, color_index, narray_tmp
@@ -187,28 +177,29 @@ program plot_likelihood
         call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
         plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
         plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
-        if(likelihood(i, j) .le. 0.02_fp) then
+        if(likelihood(i, j) .le. 0.1_fp) then
           color_index = 1
-        elseif(likelihood(i, j) .gt. 0.02_fp .and. likelihood(i, j) .lt. 0.05_fp) then
-          color_index = 2
-        elseif(likelihood(i, j) .gt. 0.05_fp .and. likelihood(i, j) .lt. 0.1_fp) then
-          color_index = 3 
         elseif(likelihood(i, j) .gt. 0.1_fp .and. likelihood(i, j) .lt. 0.2_fp) then
-          color_index = 4
+          color_index = 2
         elseif(likelihood(i, j) .gt. 0.2_fp .and. likelihood(i, j) .lt. 0.5_fp) then
-          color_index = 5 
+          color_index = 3 
         elseif(likelihood(i, j) .gt. 0.5_fp .and. likelihood(i, j) .lt. 1.0_fp) then
-          color_index = 6 
+          color_index = 4
         elseif(likelihood(i, j) .gt. 1.0_fp .and. likelihood(i, j) .lt. 2.0_fp) then
-          color_index = 7
+          color_index = 5 
         elseif(likelihood(i, j) .gt. 2.0_fp .and. likelihood(i, j) .lt. 5.0_fp) then
-          color_index = 8
+          color_index = 6 
         elseif(likelihood(i, j) .gt. 5.0_fp .and. likelihood(i, j) .lt. 10.0_fp) then
+          color_index = 7
+        elseif(likelihood(i, j) .gt. 10.0_fp .and. likelihood(i, j) .lt. 20.0_fp) then
+          color_index = 8
+        elseif(likelihood(i, j) .gt. 20.0_fp .and. likelihood(i, j) .lt. 50.0_fp) then
           color_index = 9
-        elseif(likelihood(i, j) .gt. 10.0_fp) then
+        elseif(likelihood(i, j) .gt. 50.0_fp) then
           color_index = 10
         endif
-        call pc_setcolor(iwin_likelihood(j), color(1, color_index), color(2, color_index), color(3, color_index))
+        call pc_setcolor(iwin_likelihood(j), &
+        &                color_likelihood(1, color_index), color_likelihood(2, color_index), color_likelihood(3, color_index))
         call pc_symbol(iwin_likelihood(j), plot_x, plot_y, 3.0_sp, 1, 0)
         call pc_setcolor(iwin_likelihood(j), 0, 0, 0)
         call pc_symbol(iwin_likelihood(j), plot_x, plot_y, 3.0_sp, 1, 1)

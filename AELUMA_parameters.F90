@@ -30,7 +30,7 @@ module aeluma_parameters
   integer,            public, parameter :: nsec_buf  = 360
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
-  real(kind = fp),    public, parameter :: xcorr_min = 0.2_fp
+  real(kind = fp),    public, parameter :: xcorr_min = 0.02_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
@@ -45,22 +45,44 @@ module aeluma_parameters
   real(kind = sp),    public, parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp),    public, parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, &
   &                                        lat_s = 22.5_fp,  lat_n = 48.0_fp, center_lon = 135.0_fp
-  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 8.0e+2
-  character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x8e-2"
+  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 2.0e+3
+  character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x2e-3"
+
+  !!Color palette
+  integer,            public, parameter :: color_likelihood(1 : 3, 1 : 10) = reshape([255, 255, 204, &  !!scm/lajolla -T0/8/1
+  &                                                                                   253, 245, 175, &
+  &                                                                                   247, 216, 117, &
+  &                                                                                   237, 174,  86, &
+  &                                                                                   229, 136,  81, &
+  &                                                                                   208,  96,  76, &
+  &                                                                                   155,  68,  63, &
+  &                                                                                    99,  51,  40, &
+  &                                                                                    48,  34,  16, &
+  &                                                                                    26,  26,   1], [3, 10])
+  integer,            public, parameter :: color_correlation(1 : 3, 1 : 10) = reshape([230, 230, 240, & !!scm/acton -T0/8/1 -I
+  &                                                                                    223, 213, 228, &
+  &                                                                                    214, 181, 206, &
+  &                                                                                    212, 153, 187, &
+  &                                                                                    209, 124, 166, &
+  &                                                                                    177, 103, 149, &
+  &                                                                                    140,  98, 142, &
+  &                                                                                     99,  77, 121, &
+  &                                                                                     62,  48,  91, &
+  &                                                                                     46,  33,  77], [3, 10])
 
   !!location estimation
   integer,            public, parameter :: nparticle = 1000, niter = 3, nepicenter = 3
-  real(kind = fp),    public, parameter :: daz_weight = 15.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
+  real(kind = fp),    public, parameter :: daz_weight = 25.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp, sameaz_num2 = sameaz_num ** 2
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_dist = 100.0_fp, ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
-  real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
+  real(kind = fp),    public, parameter :: correlation_threshold = 0.6_fp
   real(kind = fp),    public, parameter :: phasevelocity = 3.0_fp
 
   integer,            public, parameter :: narray_use_min = 8
-  integer,            public, parameter :: epicenter_timecount_threshold = 60
+  integer,            public, parameter :: epicenter_timecount_threshold = 30
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * daz_weight * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 

@@ -15,7 +15,7 @@ module plotmodule
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
     real(kind = fp) :: map_x, map_y, likelihood_tmp
     real(kind = sp) :: plot_x, plot_y
-    integer :: i, color(1 : 3)
+    integer :: i, colorindex
 
     call pc_setline(iwin_plot, 1)
     do i = 1, nparticle
@@ -24,19 +24,28 @@ module plotmodule
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
       likelihood_tmp = likelihood_particle(i) * likelihood_legend_normalize
       if(likelihood_tmp .le. 0.1_fp) then
-        color(1 : 3) = [252, 238, 158]
-      elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 0.333_fp) then
-        color(1 : 3) = [238, 179, 87]
-      elseif(likelihood_tmp .gt. 0.333_fp .and. likelihood_tmp .le. 1_fp) then
-        color(1 : 3) = [222, 117, 79]
-      elseif(likelihood_tmp .gt. 1_fp .and. likelihood_tmp .le. 3.333_fp) then
-        color(1 : 3) = [149, 66, 62]
-      elseif(likelihood_tmp .gt. 3.333_fp .and. likelihood_tmp .le. 10.0_fp) then
-        color(1 : 3) = [63, 39, 23]
-      elseif(likelihood_tmp .gt. 10.0_fp) then
-        color(1 : 3) = [26, 26, 1]
+        colorindex = 1
+      elseif(likelihood_tmp .gt. 0.1_fp .and. likelihood_tmp .le. 0.2_fp) then
+        colorindex = 2
+      elseif(likelihood_tmp .gt. 0.2_fp .and. likelihood_tmp .le. 0.5_fp) then
+        colorindex = 3
+      elseif(likelihood_tmp .gt. 0.5_fp .and. likelihood_tmp .le. 1.0_fp) then
+        colorindex = 4
+      elseif(likelihood_tmp .gt. 1.0_fp .and. likelihood_tmp .le. 2.0_fp) then
+        colorindex = 5
+      elseif(likelihood_tmp .gt. 2.0_fp .and. likelihood_tmp .le. 5.0_fp) then
+        colorindex = 6
+      elseif(likelihood_tmp .gt. 5.0_fp .and. likelihood_tmp .le. 10.0_fp) then
+        colorindex = 7
+      elseif(likelihood_tmp .gt. 10.0_fp .and. likelihood_tmp .le. 20.0_fp) then
+        colorindex = 8
+      elseif(likelihood_tmp .gt. 20.0_fp .and. likelihood_tmp .le. 50.0_fp) then
+        colorindex = 9
+      elseif(likelihood_tmp .gt. 50.0_fp) then
+        colorindex = 10
       endif
-      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_setcolor(iwin_plot, &
+      &                color_likelihood(1, colorindex), color_likelihood(2, colorindex), color_likelihood(3, colorindex))
       call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 0)
       call pc_setcolor(iwin_plot, 0, 0, 0)
       call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 1)
@@ -98,7 +107,7 @@ module plotmodule
     real(kind = fp), intent(in) :: lon_array(:), lat_array(:), az_obs(:), min_correlation(:), &
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
 
-    integer :: i, color(1 : 3)
+    integer :: i, colorindex
     real(kind = sp) :: plot_theta, plot_x, plot_y
     real(kind = fp) :: map_x, map_y
 
@@ -111,19 +120,28 @@ module plotmodule
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
       if(min_correlation(arrayindex(i)) .lt. 0.1_fp) then
-        cycle
-      elseif(min_correlation(arrayindex(i)) .ge. 0.1_fp .and. min_correlation(arrayindex(i)) .lt. 0.3_fp) then
-        color(1 : 3) = [220, 204, 222]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.3_fp .and. min_correlation(arrayindex(i)) .lt. 0.5_fp) then
-        color(1 : 3) = [212, 156, 189]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.5_fp .and. min_correlation(arrayindex(i)) .lt. 0.7_fp) then
-        color(1 : 3) = [196, 110, 155]
-      elseif(min_correlation(arrayindex(i)) .ge. 0.7_fp .and. min_correlation(arrayindex(i)) .lt. 0.9_fp) then
-        color(1 : 3) = [136, 97, 141]
+        colorindex = 1
+      elseif(min_correlation(arrayindex(i)) .ge. 0.1_fp .and. min_correlation(arrayindex(i)) .lt. 0.2_fp) then
+        colorindex = 2
+      elseif(min_correlation(arrayindex(i)) .ge. 0.2_fp .and. min_correlation(arrayindex(i)) .lt. 0.3_fp) then
+        colorindex = 3 
+      elseif(min_correlation(arrayindex(i)) .ge. 0.3_fp .and. min_correlation(arrayindex(i)) .lt. 0.4_fp) then
+        colorindex = 4 
+      elseif(min_correlation(arrayindex(i)) .ge. 0.4_fp .and. min_correlation(arrayindex(i)) .lt. 0.5_fp) then
+        colorindex = 5
+      elseif(min_correlation(arrayindex(i)) .ge. 0.5_fp .and. min_correlation(arrayindex(i)) .lt. 0.6_fp) then
+        colorindex = 6
+      elseif(min_correlation(arrayindex(i)) .ge. 0.6_fp .and. min_correlation(arrayindex(i)) .lt. 0.7_fp) then
+        colorindex = 7
+      elseif(min_correlation(arrayindex(i)) .ge. 0.7_fp .and. min_correlation(arrayindex(i)) .lt. 0.8_fp) then
+        colorindex = 8
+      elseif(min_correlation(arrayindex(i)) .ge. 0.8_fp .and. min_correlation(arrayindex(i)) .lt. 0.9_fp) then
+        colorindex = 9
       elseif(min_correlation(arrayindex(i)) .ge. 0.9_fp) then
-        color(1 : 3) = [73, 57, 100]
+        colorindex = 10
       endif
-      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_setcolor(iwin_plot, &
+      &                color_correlation(1, colorindex), color_correlation(2, colorindex), color_correlation(3, colorindex))
       call pc_vector(iwin_plot, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
     enddo
   end subroutine plot_slowness_vector
@@ -226,71 +244,76 @@ module plotmodule
 
     implicit none
     integer, intent(in) :: iwin_plot
-    integer            :: i, color(1 : 3)
-    real(kind = sp)    :: plot_x, plot_y
-    character(len = 6) :: plottext
+    integer             :: i
+    real(kind = sp)     :: plot_x, plot_y
+    character(len = 6)  :: plottext
 
     call pc_setbkcolor(iwin_legend, 255, 255, 255)
-    do i = 1, 5
+    do i = 1, 10
       if(i .eq. 1) then
-        color(1 : 3) = [220, 204, 222]
-        plottext = "0.1   "
+        plottext = "0.1  "
       elseif(i .eq. 2) then
-        color(1 : 3) = [212, 156, 189]
-        plottext = "0.3   "
+        plottext = "0.2   "
       elseif(i .eq. 3) then
-        color(1 : 3) = [196, 110, 155]
-        plottext = "0.5   "
+        plottext = "0.3   "
       elseif(i .eq. 4) then
-        color(1 : 3) = [136, 97, 141]
-        plottext = "0.7   "
+        plottext = "0.4   "
       elseif(i .eq. 5) then
-        color(1 : 3) = [73, 57, 100]
+        plottext = "0.5   "
+      elseif(i .eq. 6) then
+        plottext = "0.6   "
+      elseif(i .eq. 7) then
+        plottext = "0.7   "
+      elseif(i .eq. 8) then
+        plottext = "0.8   "
+      elseif(i .eq. 9) then
         plottext = "0.9   "
+      elseif(i .eq. 10) then
+        plottext = "1.0   "
       endif
-      plot_x = real(i, kind = sp) * 16.0_sp
+      plot_x = real(i, kind = sp) * 14.0_sp - 10.0_sp
       plot_y = 20.0_sp
-      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_setcolor(iwin_plot, color_correlation(1, i), color_correlation(2, i), color_correlation(3, i))
       call pc_setline(iwin_plot, 4)
       call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
       call pc_setcolor(iwin_plot, 0, 0, 0)
-      plot_x = real(i, kind = sp) * 16.0_sp - 10.0_sp
-      call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 4) 
+      plot_x = plot_x + 6.0_sp
+      if(i .ne. 10) call pc_text(iwin_plot, plot_x, plot_y, 4.0_sp, trim(plottext), 0.0_sp, len(trim(plottext)), 4) 
     enddo
 
-    do i = 1, 6
+    do i = 1, 10 
       if(i .eq. 1) then
-        color(1 : 3) = [252, 238, 158]
-        plottext = "<0.1"
-      elseif(i .eq. 2) then
-        color(1 : 3) = [238, 179, 87]
         plottext = "0.1"
+      elseif(i .eq. 2) then
+        plottext = "0.2"
       elseif(i .eq. 3) then
-        color(1 : 3) = [222, 117, 79]
-        plottext = "0.33"
+        plottext = "0.5"
       elseif(i .eq. 4) then
-        color(1 : 3) = [149, 66, 62]
         plottext = "1.0"
       elseif(i .eq. 5) then
-        color(1 : 3) = [63, 39, 23]
-        plottext = "3.3"
+        plottext = "2.0"
       elseif(i .eq. 6) then
-        color(1 : 3) = [26, 26, 1]
+        plottext = "5.0"
+      elseif(i .eq. 7) then
         plottext = "10.0"
+      elseif(i .eq. 8) then
+        plottext = "20.0"
+      elseif(i .eq. 9) then
+        plottext = "50.0"
+      elseif(i .eq. 10) then
+        plottext = "5.0"
       endif
-      plot_x = real(i, kind = sp) * 16.0_sp
+      plot_x = real(i, kind = sp) * 14.0_sp - 8.0_sp
       plot_y = 10.0_sp
-      call pc_setcolor(iwin_plot, color(1), color(2), color(3))
+      call pc_setline(iwin_plot, 1)
+      call pc_setcolor(iwin_plot, color_likelihood(1, i), color_likelihood(2, i), color_likelihood(3, i))
       call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 0)
       call pc_setcolor(iwin_plot, 0, 0, 0)
       call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 1)
-      plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-      call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
+      plot_x = plot_x + 7.0_sp
+      if(i .ne. 10) call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
     enddo
-    plot_x = real(i, kind = sp) * 16.0_sp - 8.0_sp
-    plottext = "10.0<"
-    call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(plottext), 0.0, len(trim(plottext)), 5) 
-    plot_x = plot_x + 20.0_sp
+    plot_x = plot_x + 3.0_sp
     call pc_text(iwin_plot, plot_x, plot_y, 4.0, trim(likelihood_legend_normalize_c), 0.0, &
     &            len(trim(likelihood_legend_normalize_c)), 5) 
     call pc_flush(iwin_plot)

@@ -83,6 +83,7 @@ module aeluma_parameters
 
   integer,            public, parameter :: narray_use_min = 8
   integer,            public, parameter :: epicenter_timecount_threshold = 30
+  integer,            public, parameter :: epicenter_acceptcount_threshold = 60
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * daz_weight * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 

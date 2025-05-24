@@ -25,9 +25,11 @@ program plot_map_vector
   character(len = 255)              :: coastline_txt, epicenter_info
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
+  character(len = 3)                :: narray_use_c
   
   integer              :: narray_use(1 : nepicenter), narray_use_list(1 : nepicenter), &
-  &                       maxloc_likelihood_particle(1), epicenter_timecount(1 : nepicenter)
+  &                       maxloc_likelihood_particle(1), epicenter_timecount(1 : nepicenter), &
+  &                       epicenter_acceptcount(1 : nepicenter)
   real(kind = fp)      :: lon_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       origintime_list(1 : nparticle, 1 : nepicenter),          &
@@ -66,6 +68,7 @@ program plot_map_vector
   dheight = 1.0_fp / (height_tmp(2) - height_tmp(1))
 
   epicenter_timecount(1 : nepicenter) = 0
+  epicenter_acceptcount(1 : nepicenter) = 0
   !!read AELUMA results from stdin
   do 
     plot_x_tmp = plot_x_eplist
@@ -191,14 +194,17 @@ program plot_map_vector
         if(narray_use(i) .lt. narray_use_min) then
           epicenter_timecount(i) = epicenter_timecount(i) + 1
           if(epicenter_timecount(i) .gt. epicenter_timecount_threshold) then
+            if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
+              call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+              &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
+              &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
+              &                   maxval_likelihood = maxval_likelihood)
+              print '(a, 4(1x, e15.7), 3(1x, i0))', trim(epicenter_info), error_lon, error_lat, error_ot, maxval_likelihood, &
+              &                                     narray_use_list(i), epicenter_timecount(i), epicenter_acceptcount(i)
+            endif
             epicenter_exist(i) = .false.
-            call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-            &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
-            &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
-            &                   maxval_likelihood = maxval_likelihood)
-            print '(a, 4(1x, e15.7), 1x, i0)', trim(epicenter_info), error_lon, error_lat, error_ot, &
-            &                                  maxval_likelihood, epicenter_timecount(i)
             epicenter_timecount(i) = 0
+            epicenter_acceptcount(i) = 0
             cycle
           endif
         endif
@@ -209,7 +215,10 @@ program plot_map_vector
         &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
+        write(narray_use_c, '(i3.3)') narray_use(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(narray_use_c)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
+        epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
       endif
     enddo
     call pc_flush(iwin_eplist)

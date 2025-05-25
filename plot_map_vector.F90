@@ -215,7 +215,7 @@ program plot_map_vector
         &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
-        write(narray_use_c, '(i3.3)') narray_use(i)
+        write(narray_use_c, '(i0)') narray_use(i)
         epicenter_info = trim(epicenter_info) // " " // trim(narray_use_c)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
         epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1

@@ -160,6 +160,7 @@ program AELUMA_shmdump
       do i = 1, nsampling_int
         if(nsample .eq. sampling_int(i)) exit
       enddo
+      if(i .gt. nsampling_int) cycle
       waveform_real(1 : nsample) = real(waveform_tmp(1 : nsample), kind = fp) * station_sensitivity(winch_tmp)
       call tandem3(waveform_real(1 : nsample), h(:, i), gn(i), filter_mode, past_uv = uv(:, winch_tmp))
       ndecimate = sampling_int(i) / sampling_int_use

@@ -20,7 +20,7 @@ program AELUMA_shmdump
   integer                      :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
   &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index
   integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1)
-  integer, allocatable         :: station_winch(:), winch_index(:)
+  integer, allocatable         :: station_winch(:)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
   real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, &
@@ -139,10 +139,6 @@ program AELUMA_shmdump
       allocate(waveform_buf(1 : waveform_buf_index_max, 1 : nwinch))
       waveform_buf(1 : waveform_buf_index_max, 1 : nwinch) = 0.0_fp
     endif
-    if(.not. allocated(winch_index)) then
-      allocate(winch_index(1 : nwinch))
-      winch_index(1 : nwinch) = 0
-    endif
     if(.not. allocated(uv)) then
       allocate(uv(1 : 4 * maxval(m), 1 : nwinch))
       uv(1 : 4 * maxval(m), 1 : nwinch) = 0.0_fp
@@ -156,13 +152,14 @@ program AELUMA_shmdump
     do j = 1, nch
       read(*, *) winch_char, nsample, (waveform_tmp(i), i = 1, nsample)
       read(winch_char, '(z4)') winch_tmp
-      winch_index(winch_tmp) = j
+      if(.not. is_usewinch(winch_tmp)) cycle
       do i = 1, nsampling_int
         if(nsample .eq. sampling_int(i)) exit
       enddo
-      if(i .gt. nsampling_int) cycle
       waveform_real(1 : nsample) = real(waveform_tmp(1 : nsample), kind = fp) * station_sensitivity(winch_tmp)
-      call tandem3(waveform_real(1 : nsample), h(:, i), gn(i), filter_mode, past_uv = uv(:, winch_tmp))
+      if(i .le. nsampling_int) then
+        call tandem3(waveform_real(1 : nsample), h(:, i), gn(i), filter_mode, past_uv = uv(:, winch_tmp))
+      endif
       ndecimate = sampling_int(i) / sampling_int_use
       do i = 1, nsample / ndecimate
         waveform_buf(waveform_buf_index_max - sampling_int_use + i, winch_tmp) = waveform_real(ndecimate * (i - 1) + 1)

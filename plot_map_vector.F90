@@ -191,9 +191,9 @@ program plot_map_vector
 
     do i = 1, nepicenter
       if(epicenter_exist(i)) then
-        if(narray_use(i) .lt. narray_use_min) then
+        if(narray_use(i) .lt. 1) then
           epicenter_timecount(i) = epicenter_timecount(i) + 1
-          if(epicenter_timecount(i) .gt. epicenter_timecount_threshold) then
+          !if(epicenter_timecount(i) .gt. epicenter_timecount_threshold) then
             if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
               call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
               &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
@@ -206,7 +206,7 @@ program plot_map_vector
             epicenter_timecount(i) = 0
             epicenter_acceptcount(i) = 0
             cycle
-          endif
+          !endif
         endif
         !!plot particles
         call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &

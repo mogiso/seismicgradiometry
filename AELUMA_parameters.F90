@@ -45,8 +45,8 @@ module aeluma_parameters
   real(kind = sp),    public, parameter :: vector_len_ref = 0.5, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp),    public, parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, &
   &                                        lat_s = 22.5_fp,  lat_n = 48.0_fp, center_lon = 135.0_fp
-  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 2.0e+3
-  character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x2e-3"
+  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 1.0e+3
+  character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x1e-3"
 
   !!Color palette
   integer,            public, parameter :: color_likelihood(1 : 3, 1 : 10) = reshape([255, 255, 204, &  !!scm/lajolla -T0/8/1

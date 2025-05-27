@@ -28,8 +28,7 @@ program plot_map_vector
   character(len = 3)                :: narray_use_c
   
   integer              :: narray_use(1 : nepicenter), narray_use_list(1 : nepicenter), &
-  &                       maxloc_likelihood_particle(1), epicenter_timecount(1 : nepicenter), &
-  &                       epicenter_acceptcount(1 : nepicenter)
+  &                       maxloc_likelihood_particle(1), epicenter_acceptcount(1 : nepicenter)
   real(kind = fp)      :: lon_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       origintime_list(1 : nparticle, 1 : nepicenter),          &
@@ -67,7 +66,6 @@ program plot_map_vector
   dwidth = 1.0_fp / (width_tmp(2) - width_tmp(1))
   dheight = 1.0_fp / (height_tmp(2) - height_tmp(1))
 
-  epicenter_timecount(1 : nepicenter) = 0
   epicenter_acceptcount(1 : nepicenter) = 0
   !!read AELUMA results from stdin
   do 
@@ -191,21 +189,17 @@ program plot_map_vector
     do i = 1, nepicenter
       if(epicenter_exist(i)) then
         if(narray_use(i) .lt. 1) then
-          epicenter_timecount(i) = epicenter_timecount(i) + 1
-          !if(epicenter_timecount(i) .gt. epicenter_timecount_threshold) then
-            if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
-              call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-              &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
-              &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
-              &                   maxval_likelihood = maxval_likelihood)
-              print '(a, 4(1x, e15.7), 3(1x, i0))', trim(epicenter_info), error_lon, error_lat, error_ot, maxval_likelihood, &
-              &                                     narray_use_list(i), epicenter_timecount(i), epicenter_acceptcount(i)
-            endif
-            epicenter_exist(i) = .false.
-            epicenter_timecount(i) = 0
-            epicenter_acceptcount(i) = 0
-            cycle
-          !endif
+          if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
+            call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+            &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
+            &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
+            &                   maxval_likelihood = maxval_likelihood)
+            print '(a, 4(1x, e15.7), 2(1x, i0))', trim(epicenter_info), error_lon, error_lat, error_ot, maxval_likelihood, &
+            &                                     narray_use_list(i), epicenter_acceptcount(i)
+          endif
+          epicenter_exist(i) = .false.
+          epicenter_acceptcount(i) = 0
+          cycle
         endif
         !!plot particles
         call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
@@ -237,7 +231,7 @@ program plot_map_vector
         endif
       enddo
 
-      !!Initialize location of each particle
+      !!initialize location of each particle
       if(.not. epicenter_exist(i)) then
         call particlefilter_init(random_status, lon_particle, lat_particle)
       else
@@ -245,11 +239,14 @@ program plot_map_vector
         lat_particle(1 : nparticle) = lat_particle_list(1 : nparticle, i)
       endif
 
+      !!do particle filter
+      if(epicenter_exist(i) .and. narray_use(i) .lt. narray_use_list(i)) cycle
       call particlefilter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
       &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
       &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime)
       maxloc_likelihood_particle = maxloc(likelihood_particle)
 
+      !!renew epicenter parameters
       if(.not. epicenter_exist(i)) then
         epicenter_exist(i) = .true.
         lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)

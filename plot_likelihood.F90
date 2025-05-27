@@ -206,7 +206,7 @@ program plot_likelihood
       enddo
       !!plot slowness vector
       call plot_slowness_vector(iwin_likelihood(j), narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, &
-      &                         min_correlation, width_tmp, height_tmp, dwidth, dheight)
+      &                         appvel_obs, min_correlation, width_tmp, height_tmp, dwidth, dheight)
       !!plot map
       call pc_setline(iwin_likelihood(j), 1)
       call pc_setcolor(iwin_likelihood(j), 0, 0, 0)

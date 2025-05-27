@@ -94,8 +94,8 @@ module plotmodule
 
   end subroutine plot_particle_maxlikelihood
 
-  subroutine plot_slowness_vector(iwin_plot, narray, arrayindex, result_exist, lon_array, lat_array, az_obs, min_correlation, &
-  &                               width_tmp, height_tmp, dwidth, dheight)
+  subroutine plot_slowness_vector(iwin_plot, narray, arrayindex, result_exist, lon_array, lat_array, az_obs, appvel_obs, &
+  &                               min_correlation, width_tmp, height_tmp, dwidth, dheight)
     use nrtype, only : fp, sp
     use constants, only : rad2deg
     use aeluma_parameters
@@ -104,11 +104,11 @@ module plotmodule
     implicit none
     integer,         intent(in) :: iwin_plot, narray, arrayindex(1 : narray)
     logical,         intent(in) :: result_exist(:)
-    real(kind = fp), intent(in) :: lon_array(:), lat_array(:), az_obs(:), min_correlation(:), &
+    real(kind = fp), intent(in) :: lon_array(:), lat_array(:), az_obs(:), appvel_obs(:), min_correlation(:), &
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
 
     integer :: i, colorindex
-    real(kind = sp) :: plot_theta, plot_x, plot_y
+    real(kind = sp) :: plot_theta, plot_x, plot_y, vector_len
     real(kind = fp) :: map_x, map_y
 
     call pc_setline(iwin_plot, 4)
@@ -116,6 +116,8 @@ module plotmodule
       if(.not. result_exist(arrayindex(i))) cycle
       !theta = atan2(slowness_x, slowness_y) * rad2deg
       plot_theta = 90.0_sp - real(az_obs(arrayindex(i)) * rad2deg, kind = sp)
+      vector_len = vector_len_ref * real(appvel_obs(arrayindex(i)) / min_appvelocity, kind = sp)
+      if(vector_len .gt. 15.0_sp) vector_len = 15.0_sp
       call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
@@ -245,10 +247,11 @@ module plotmodule
     implicit none
     integer, intent(in) :: iwin_plot
     integer             :: i
-    real(kind = sp)     :: plot_x, plot_y
+    real(kind = sp)     :: plot_x, plot_y, vector_len
     character(len = 6)  :: plottext
 
     call pc_setbkcolor(iwin_legend, 255, 255, 255)
+    vector_len = vector_len_ref * 10.0_sp
     do i = 1, 10
       if(i .eq. 1) then
         plottext = "0.1  "
@@ -281,6 +284,31 @@ module plotmodule
       if(i .ne. 10) call pc_text(iwin_plot, plot_x, plot_y, 4.0_sp, trim(plottext), 0.0_sp, len(trim(plottext)), 4) 
     enddo
 
+    plot_x = 4.0_sp
+    plot_y = 13.0_sp
+    call pc_setcolor(iwin_plot, 0, 0, 0)
+    vector_len = vector_len_ref * 10.0_sp
+    plottext = "3 km/s"
+    call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
+    plot_x = plot_x + vector_len + 2.0_sp
+    call pc_text(iwin_plot, plot_x, plot_y, 4.0_sp, trim(plottext), 0.0_sp, len(trim(plottext)), 4) 
+
+    plot_x = plot_x + 20.0_sp
+    vector_len = vector_len_ref * 20.0_sp
+    plottext = "6 km/s"
+    call pc_setline(iwin_plot, 4)
+    call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
+    plot_x = plot_x + vector_len + 2.0_sp
+    call pc_text(iwin_plot, plot_x, plot_y, 4.0_sp, trim(plottext), 0.0_sp, len(trim(plottext)), 4) 
+
+    plot_x = plot_x + 20.0_sp
+    vector_len = vector_len_ref * 30.0_sp
+    plottext = "9 km/s"
+    call pc_setline(iwin_plot, 4)
+    call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
+    plot_x = plot_x + vector_len + 2.0_sp
+    call pc_text(iwin_plot, plot_x, plot_y, 4.0_sp, trim(plottext), 0.0_sp, len(trim(plottext)), 4) 
+
     do i = 1, 10 
       if(i .eq. 1) then
         plottext = "0.1"
@@ -304,7 +332,7 @@ module plotmodule
         plottext = "5.0"
       endif
       plot_x = real(i, kind = sp) * 14.0_sp - 8.0_sp
-      plot_y = 10.0_sp
+      plot_y = 5.0_sp
       call pc_setline(iwin_plot, 1)
       call pc_setcolor(iwin_plot, color_likelihood(1, i), color_likelihood(2, i), color_likelihood(3, i))
       call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 0)

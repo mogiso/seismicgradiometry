@@ -122,7 +122,6 @@ program plot_map_vector
       az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
       if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
       appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
-      !if(appvel_obs(arrayindex(i)) .lt. phasevelocity) appvel_obs(arrayindex(i)) = phasevelocity
     enddo
 
     !!Link observation and events
@@ -273,8 +272,8 @@ program plot_map_vector
     enddo
 
     !!plot slowness vector
-    call plot_slowness_vector(iwin_map, narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, min_correlation, &
-    &                         width_tmp, height_tmp, dwidth, dheight)
+    call plot_slowness_vector(iwin_map, narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, appvel_obs, &
+    &                         min_correlation, width_tmp, height_tmp, dwidth, dheight)
     !!plot map
     call pc_setline(iwin_map, 1)
     call pc_setcolor(iwin_map, 0, 0, 0)

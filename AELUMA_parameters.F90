@@ -38,11 +38,11 @@ module aeluma_parameters
 
   integer,            public, parameter :: iwin_wave = 0  !!AELUMA_shmudmp.F90
   integer,            public, parameter :: iwin_map = 0, iwin_legend = 1, iwin_eplist = 2  !!plot_map_vector.F90
-  real(kind = sp),    public, parameter :: plot_dy_eplist = 7.0_sp
+  real(kind = sp),    public, parameter :: plot_dy_eplist = 5.0_sp
   real(kind = sp),    public, parameter :: plot_x_eplist = 1.0_sp, plot_y_eplist = 27.0_sp
   !!For plot_map_vector.F90
   real(kind = sp),    public, parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp
-  real(kind = sp),    public, parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
+  real(kind = sp),    public, parameter :: vector_len_ref = 0.5, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp),    public, parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, &
   &                                        lat_s = 22.5_fp,  lat_n = 48.0_fp, center_lon = 135.0_fp
   real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 2.0e+3
@@ -71,7 +71,7 @@ module aeluma_parameters
   &                                                                                     46,  33,  77], [3, 10])
 
   !!location estimation
-  integer,            public, parameter :: nparticle = 1000, niter = 3, nepicenter = 3
+  integer,            public, parameter :: nparticle = 1000, niter = 3, nepicenter = 4
   real(kind = fp),    public, parameter :: daz_weight = 25.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp, sameaz_num2 = sameaz_num ** 2
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
@@ -79,7 +79,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: sigma_dist = 100.0_fp, ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
   real(kind = fp),    public, parameter :: correlation_threshold = 0.6_fp
-  real(kind = fp),    public, parameter :: phasevelocity = 3.0_fp
+  real(kind = fp),    public, parameter :: min_appvelocity = 0.3_fp
 
   integer,            public, parameter :: narray_use_min = 8
   integer,            public, parameter :: epicenter_timecount_threshold = 30

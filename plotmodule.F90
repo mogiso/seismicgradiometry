@@ -117,7 +117,7 @@ module plotmodule
       !theta = atan2(slowness_x, slowness_y) * rad2deg
       plot_theta = 90.0_sp - real(az_obs(arrayindex(i)) * rad2deg, kind = sp)
       vector_len = vector_len_ref * real(appvel_obs(arrayindex(i)) / min_appvelocity, kind = sp)
-      if(vector_len .gt. 15.0_sp) vector_len = 15.0_sp
+      if(vector_len .gt. 20.0_sp) vector_len = 20.0_sp
       call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
@@ -304,6 +304,14 @@ module plotmodule
     plot_x = plot_x + 20.0_sp
     vector_len = vector_len_ref * 30.0_sp
     plottext = "9 km/s"
+    call pc_setline(iwin_plot, 4)
+    call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
+    plot_x = plot_x + vector_len + 2.0_sp
+    call pc_text(iwin_plot, plot_x, plot_y, 4.0_sp, trim(plottext), 0.0_sp, len(trim(plottext)), 4) 
+
+    plot_x = plot_x + 20.0_sp
+    vector_len = vector_len_ref * 40.0_sp
+    plottext = "12km/s"
     call pc_setline(iwin_plot, 4)
     call pc_vector(iwin_plot, plot_x, plot_y, 0.0_sp, vector_len, vector_width, vector_head1, vector_head2, 1)
     plot_x = plot_x + vector_len + 2.0_sp

@@ -31,6 +31,7 @@ module aeluma_parameters
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
   real(kind = fp),    public, parameter :: xcorr_min = 0.02_fp
+  real(kind = fp),    public, parameter :: lagtime_ratio_threshold = 0.2_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
@@ -45,8 +46,8 @@ module aeluma_parameters
   real(kind = sp),    public, parameter :: vector_len_ref = 0.5, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp),    public, parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, &
   &                                        lat_s = 22.5_fp,  lat_n = 48.0_fp, center_lon = 135.0_fp
-  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 1.0e+3
-  character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x1e-3"
+  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 2.0e+3
+  character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x5e-4"
 
   !!Color palette
   integer,            public, parameter :: color_likelihood(1 : 3, 1 : 10) = reshape([255, 255, 204, &  !!scm/lajolla -T0/8/1
@@ -72,7 +73,7 @@ module aeluma_parameters
 
   !!location estimation
   integer,            public, parameter :: nparticle = 1000, niter = 3, nepicenter = 4
-  real(kind = fp),    public, parameter :: daz_weight = 15.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
+  real(kind = fp),    public, parameter :: daz_weight = 20.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp, sameaz_num2 = sameaz_num ** 2
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: azweight_coef = 0.7_fp

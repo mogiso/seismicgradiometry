@@ -19,12 +19,13 @@ program AELUMA_shmdump
   type(location)               :: location_sta(1 : nwinch)
   integer                      :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
   &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index
-  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1)
-  integer, allocatable         :: station_winch(:)
+  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1), &
+  &                               xcorr_check_index(1 : 2)
+  integer, allocatable         :: station_winch(:), xcorr_index(:, :, :)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
   real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, &
-  &                               stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor 
+  &                               stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor, sum_abslagtime, sum_lagtime
   real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
   &                               taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
   &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : nsec_buf * sampling_int_use)
@@ -105,7 +106,7 @@ program AELUMA_shmdump
   &                                              ntriangle, triangle_center, slowness_matrix, triangle_stationwinch, &
   &                                              nsta_count, tnbr)
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
-  allocate(arrivaltime(1 : ntriangle))
+  allocate(arrivaltime(1 : ntriangle), xcorr_index(1 : maxval(nsta_count), 1 : maxval(nsta_count), 1 : ntriangle))
 
   !!open waveform canvas
   call pc_plotinit(iwin_wave, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
@@ -169,7 +170,9 @@ program AELUMA_shmdump
     call pc_clear(iwin_wave)
     call pc_line(iwin_wave, wavewindow_width - wavewidth, waveheight, wavewidth, waveheight)
     call pc_line(iwin_wave, wavewidth, waveheight, wavewidth, wavewindow_height - waveheight)
-    call pc_line(iwin_wave, wavewidth, wavewindow_height - waveheight, wavewindow_width - wavewidth, wavewindow_height - waveheight)
+    call pc_line(iwin_wave, wavewidth, wavewindow_height - waveheight, &
+    &                                  wavewindow_width  - wavewidth,  &
+    &                                  wavewindow_height - waveheight)
     call pc_setdash(iwin_wave, 3)
     !!draw time index line
     do i = 1, int(nsec_buf / 60)
@@ -222,13 +225,14 @@ program AELUMA_shmdump
       allocate(lagtime(1 : npair_tmp))
       lagtime(1 : npair_tmp) = 0.0_fp
 
-      i = 1
+      i = 0
       do jj = 1, nsta_count(j) - 1
         waveform_fft(1 : ntime_fft, 1) = 0.0_fp
         waveform_fft(1 : nsec_buf * sampling_int_use, 1) &
         &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(jj, j)) &
         &  * taper_window(1 : nsec_buf * sampling_int_use) * order
         do ii = jj + 1, nsta_count(j)
+          i = i + 1
           waveform_fft(1 : ntime_fft, 2) = 0.0_fp
           waveform_fft(1 : nsec_buf * sampling_int_use, 2) &
           &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(ii, j)) &
@@ -239,8 +243,25 @@ program AELUMA_shmdump
 
           if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
           lagtime(i) = real(max_xcorr(1), kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
-          i = i + 1
+          xcorr_index(ii, jj, j) = i
         enddo
+      enddo
+
+      !!check cross-correlation value
+      do jj = 1, nsta_count(j) - 2
+        i = 0
+        do ii = jj + 1, jj + 2
+          sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(ii, jj, j)))
+          sum_lagtime    = sum_lagtime    + lagtime(xcorr_index(ii, jj, j))
+          i = i + 1
+          xcorr_check_index(i) = ii
+        enddo
+        sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(1), xcorr_check_index(2), j)))
+        sum_lagtime    = sum_lagtime    -     lagtime(xcorr_index(xcorr_check_index(1), xcorr_check_index(2), j))
+        if(abs(sum_lagtime) / sum_abslagtime .gt. lagtime_ratio_threshold) then
+          minval_xcorr(j) = xcorr_min
+          exit
+        endif
       enddo
 
 

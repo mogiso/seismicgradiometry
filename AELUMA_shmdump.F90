@@ -24,8 +24,8 @@ program AELUMA_shmdump
   integer, allocatable         :: station_winch(:), xcorr_index(:, :)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
-  real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, &
-  &                               stlat_tmp, stlon_tmp, stelev_tmp, ptime_cor, stime_cor, sum_abslagtime, sum_lagtime
+  real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
+  &                               ptime_cor, stime_cor, sum_abslagtime, sum_lagtime, correlation_checkval
   real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
   &                               taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
   &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : nsec_buf * sampling_int_use)
@@ -132,9 +132,9 @@ program AELUMA_shmdump
     ss(1 : nsec_buf - 1) = ss(2 : nsec_buf)
     read(*, *, iostat = ios) yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), nch
     if(ios .ne. 0) error stop
-    !write(0, '(a, 6(a2, 1x))') "Reading ", &
-    !&                             yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
-    !write(0, '(a, i0)') "nch = ", nch
+    write(0, '(a, 6(a2, 1x))') "Reading ", &
+    &                             yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
+    write(0, '(a, i0)') "nch = ", nch
 
     if(.not. allocated(waveform_buf)) then
       allocate(waveform_buf(1 : waveform_buf_index_max, 1 : nwinch))
@@ -260,9 +260,10 @@ program AELUMA_shmdump
         enddo
         sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1))))
         sum_lagtime    = sum_lagtime    +     lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1)))
-        if(1.0_fp - abs(sum_lagtime) / sum_abslagtime .le. lagtime_ratio_threshold) then
-          !write(0, '(a, i0, 2(a, e15.7))') "array num = ", j, " checkindex = ", 1.0_fp - abs(sum_lagtime) / sum_abslagtime, &
-          !&                                " minval_xcorr = ", minval_xcorr(j)
+        correlation_checkval = 1.0_fp - abs(sum_lagtime) / sum_abslagtime
+        if(correlation_checkval .le. lagtime_ratio_threshold) then
+          write(0, '(a, i0, 2(a, e15.7))') "cross-correlation consistency error, array num = ", j, &
+          &                                " checkvalue = ", correlation_checkval, " minval_xcorr = ", minval_xcorr(j)
           minval_xcorr(j) = xcorr_min
           exit
         endif

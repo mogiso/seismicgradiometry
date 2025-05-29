@@ -263,7 +263,8 @@ program AELUMA_shmdump
         sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1))))
         sum_lagtime    = sum_lagtime    -     lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1)))
         if(1.0_fp - sum_lagtime / sum_abslagtime .le. lagtime_ratio_threshold) then
-          !write(0, *) "array num = ", j, " sum_abslagtime = ", sum_abslagtime, " sum_lagtime = ", sum_lagtime
+          write(0, '(a, i0, 2(a, e15.7))') "array num = ", j, " checkindex = ", 1.0_fp - sum_lagtime / sum_abslagtime, &
+          &                                " minval_xcorr = ", minval_xcorr(j)
           minval_xcorr(j) = xcorr_min
           exit
         endif

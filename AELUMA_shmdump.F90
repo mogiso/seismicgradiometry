@@ -21,7 +21,7 @@ program AELUMA_shmdump
   &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index
   integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1), &
   &                               xcorr_check_index(1 : 2)
-  integer, allocatable         :: station_winch(:), xcorr_index(:, :, :)
+  integer, allocatable         :: station_winch(:), xcorr_index(:, :)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
   real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, &
@@ -106,7 +106,7 @@ program AELUMA_shmdump
   &                                              ntriangle, triangle_center, slowness_matrix, triangle_stationwinch, &
   &                                              nsta_count, tnbr)
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
-  allocate(arrivaltime(1 : ntriangle), xcorr_index(1 : maxval(nsta_count), 1 : maxval(nsta_count), 1 : ntriangle))
+  allocate(arrivaltime(1 : ntriangle), xcorr_index(1 : maxval(nsta_count), 1 : maxval(nsta_count)))
 
   !!open waveform canvas
   call pc_plotinit(iwin_wave, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
@@ -243,7 +243,7 @@ program AELUMA_shmdump
 
           if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
           lagtime(i) = real(max_xcorr(1), kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
-          xcorr_index(ii, jj, j) = i
+          xcorr_index(ii, jj) = i
         enddo
       enddo
 
@@ -251,13 +251,13 @@ program AELUMA_shmdump
       do jj = 1, nsta_count(j) - 2
         i = 0
         do ii = jj + 1, jj + 2
-          sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(ii, jj, j)))
-          sum_lagtime    = sum_lagtime    + lagtime(xcorr_index(ii, jj, j))
+          sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(ii, jj)))
+          sum_lagtime    = sum_lagtime    + lagtime(xcorr_index(ii, jj))
           i = i + 1
           xcorr_check_index(i) = ii
         enddo
-        sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(1), xcorr_check_index(2), j)))
-        sum_lagtime    = sum_lagtime    -     lagtime(xcorr_index(xcorr_check_index(1), xcorr_check_index(2), j))
+        sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1))))
+        sum_lagtime    = sum_lagtime    -     lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1)))
         if(abs(sum_lagtime) / sum_abslagtime .gt. lagtime_ratio_threshold) then
           minval_xcorr(j) = xcorr_min
           exit

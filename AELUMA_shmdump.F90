@@ -250,15 +250,20 @@ program AELUMA_shmdump
       !!check cross-correlation value
       do jj = 1, nsta_count(j) - 2
         i = 0
+        sum_abslagtime = 0.0_fp
+        sum_lagtime = 0.0_fp
         do ii = jj + 1, jj + 2
           sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(ii, jj)))
           sum_lagtime    = sum_lagtime    + lagtime(xcorr_index(ii, jj))
           i = i + 1
           xcorr_check_index(i) = ii
+          !write(0, *) lagtime(xcorr_index(ii, jj))
         enddo
+        !write(0, *) lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1)))
         sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1))))
         sum_lagtime    = sum_lagtime    -     lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1)))
-        if(abs(sum_lagtime) / sum_abslagtime .gt. lagtime_ratio_threshold) then
+        if(1.0_fp - sum_lagtime / sum_abslagtime .le. lagtime_ratio_threshold) then
+          !write(0, *) "array num = ", j, " sum_abslagtime = ", sum_abslagtime, " sum_lagtime = ", sum_lagtime
           minval_xcorr(j) = xcorr_min
           exit
         endif

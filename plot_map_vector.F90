@@ -15,7 +15,7 @@ program plot_map_vector
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
-  &                  error_lon, error_lat, error_ot, maxval_likelihood
+  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   integer,         allocatable :: arrayindex(:)
@@ -25,7 +25,7 @@ program plot_map_vector
   character(len = 255)              :: coastline_txt, epicenter_info
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
-  character(len = 3)                :: narray_use_c
+  character(len = 10)               :: text_tmp
   
   integer              :: narray_use(1 : nepicenter), narray_use_list(1 : nepicenter), &
   &                       maxloc_likelihood_particle(1), epicenter_acceptcount(1 : nepicenter)
@@ -33,6 +33,7 @@ program plot_map_vector
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       origintime_list(1 : nparticle, 1 : nepicenter),          &
   &                       maxval_likelihood_particle_list(1 : nepicenter),         &
+  &                       appvel_median_list(1 : nepicenter),                      &
   &                       likelihood_particle_list(1 : nparticle, 1 : nepicenter), &
   &                       lon_particle(1 : nparticle), lat_particle(1 : nparticle), likelihood_particle(1 : nparticle), &
   &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight) + 1)
@@ -194,8 +195,9 @@ program plot_map_vector
             &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
             &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
             &                   maxval_likelihood = maxval_likelihood)
-            print '(a, 4(1x, e15.7), 2(1x, i0))', trim(epicenter_info), error_lon, error_lat, error_ot, maxval_likelihood, &
-            &                                     narray_use_list(i), epicenter_acceptcount(i)
+            print '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)', trim(epicenter_info), error_lon, error_lat, error_ot, &
+            &                                               maxval_likelihood, narray_use_list(i), epicenter_acceptcount(i), &
+            &                                               appvel_median_list(i)
           endif
           epicenter_exist(i) = .false.
           epicenter_acceptcount(i) = 0
@@ -208,8 +210,8 @@ program plot_map_vector
         &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
-        write(narray_use_c, '(i0)') narray_use(i)
-        epicenter_info = trim(epicenter_info) // " " // trim(narray_use_c)
+        write(text_tmp, '(i0)') narray_use(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
         epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
       endif
@@ -243,7 +245,8 @@ program plot_map_vector
       if(epicenter_exist(i) .and. narray_use(i) .lt. narray_use_list(i)) cycle
       call particlefilter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
       &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
-      &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime)
+      &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime, &
+      &                           appvel_median = appvel_median)
       maxloc_likelihood_particle = maxloc(likelihood_particle)
 
       !!renew epicenter parameters
@@ -254,6 +257,7 @@ program plot_map_vector
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
         likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
         maxval_likelihood_particle_list(i) = likelihood_particle(maxloc_likelihood_particle(1))
+        appvel_median_list(i) = appvel_median
         narray_use_list(i) = narray_use(i)
       else
         if(likelihood_particle(maxloc_likelihood_particle(1)) .ge. maxval_likelihood_particle_list(i) .and. &
@@ -263,6 +267,7 @@ program plot_map_vector
           origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
           likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
           maxval_likelihood_particle_list(i) = likelihood_particle(maxloc_likelihood_particle(1))
+          appvel_median_list(i) = appvel_median
           narray_use_list(i) = narray_use(i)
         endif
       endif

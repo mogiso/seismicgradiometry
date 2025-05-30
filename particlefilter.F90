@@ -5,7 +5,8 @@ contains
 
   subroutine particlefilter_search(narray, arrayindex, result_exist, lon_array, lat_array, az_obs, az_weight, &
   &                                 randomnumber_status, &
-  &                                 lon_particle, lat_particle, likelihood_particle, appvel, arrivaltime, origintime)
+  &                                 lon_particle, lat_particle, likelihood_particle, appvel, arrivaltime, origintime, &
+  &                                 appvel_median)
     use nrtype, only : fp
     use constants
     use aeluma_parameters
@@ -23,14 +24,14 @@ contains
     real(kind = fp), intent(inout)         :: lon_particle(1 : nparticle), lat_particle(1 : nparticle)
     real(kind = fp), intent(out)           :: likelihood_particle(1 : nparticle)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
-    real(kind = fp), intent(out), optional :: origintime(1 : nparticle)
+    real(kind = fp), intent(out), optional :: origintime(1 : nparticle), appvel_median
     integer                                :: i, j, k, narray_use_tmp, az_weight_index, particlefilter_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
     &                                         normalize_likelihood, ot_diff, likelihood_distweight
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
-    real(kind = fp), allocatable           :: az(:), dist(:), ot_est(:)
+    real(kind = fp), allocatable           :: az(:), dist(:), ot_est(:), appvel_tmp(:)
 
 
     allocate(az(1 : narray), dist(1 : narray), ot_est(1 : narray))
@@ -126,6 +127,21 @@ contains
     enddo particlefilter  
 
     likelihood_particle(1 : nparticle) = likelihood_particle(1 : nparticle) * normalize_likelihood
+
+    if(present(appvel_median) .and. present(appvel)) then
+      allocate(appvel_tmp(1 : narray))
+      appvel_tmp(1 : narray) = 0.0_fp
+      narray_use_tmp = 0
+      do i = 1, narray
+        if(.not. result_exist(arrayindex(i))) cycle
+        narray_use_tmp = narray_use_tmp + 1
+        appvel_tmp(narray_use_tmp) = appvel(i)
+      enddo
+      call bubblesort(appvel_tmp(1 : narray_use_tmp))
+      call pickup_medianval(appvel_tmp(1 : narray_use_tmp), appvel_median)
+      deallocate(appvel_tmp)
+    endif
+
     deallocate(az, dist, ot_est)
     return
   end subroutine particlefilter_search

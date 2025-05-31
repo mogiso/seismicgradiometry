@@ -210,7 +210,7 @@ program plot_map_vector
         &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
-        write(text_tmp, '(f3.1)') appvel_median_list(i)
+        write(text_tmp, '(f4.1)') appvel_median_list(i)
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp) // "km/s"
         write(text_tmp, '(i0)') narray_use(i)
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)

@@ -57,7 +57,7 @@ program plot_map_vector
   call plot_legend(iwin_legend)
 
   !!Open epicenter window
-  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2 + 30.0_sp, 27.0_sp, scale)
+  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2 + 60.0_sp, 27.0_sp, scale)
 
   !!Read and plot AELUMA results
   call pc_plotinit(iwin_map, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)

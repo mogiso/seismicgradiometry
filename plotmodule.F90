@@ -428,7 +428,7 @@ module plotmodule
     character(len = *), intent(in) :: epicenter_info
     real(kind = sp), intent(inout) :: plot_x, plot_y
 
-    call pc_text(iwin_plot, plot_x, plot_y, 5.0, trim(epicenter_info), 0.0, len(trim(epicenter_info)), 7)
+    call pc_text(iwin_plot, plot_x, plot_y, 6.0, trim(epicenter_info), 0.0, len(trim(epicenter_info)), 7)
     plot_y = plot_y - plot_dy_eplist
  
     return

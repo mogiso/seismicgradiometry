@@ -128,14 +128,14 @@ contains
 
     likelihood_particle(1 : nparticle) = likelihood_particle(1 : nparticle) * normalize_likelihood
 
-    if(present(appvel_median) .and. present(appvel)) then
+    if(present(appvel_median) .and. present(appvel) .and. present(arrivaltime)) then
       allocate(appvel_tmp(1 : narray))
       appvel_tmp(1 : narray) = 0.0_fp
       narray_use_tmp = 0
       do i = 1, narray
         if(.not. result_exist(arrayindex(i))) cycle
         narray_use_tmp = narray_use_tmp + 1
-        appvel_tmp(narray_use_tmp) = appvel(i)
+        appvel_tmp(narray_use_tmp) = appvel(arrayindex(i))
       enddo
       call bubblesort(appvel_tmp(1 : narray_use_tmp))
       call pickup_medianval(appvel_tmp(1 : narray_use_tmp), appvel_median)

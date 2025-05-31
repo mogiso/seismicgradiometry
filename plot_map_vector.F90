@@ -57,7 +57,7 @@ program plot_map_vector
   call plot_legend(iwin_legend)
 
   !!Open epicenter window
-  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
+  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2 + 30.0_sp, 27.0_sp, scale)
 
   !!Read and plot AELUMA results
   call pc_plotinit(iwin_map, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)
@@ -210,6 +210,8 @@ program plot_map_vector
         &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
+        write(text_tmp, '(f3.1)') appvel_median_list(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp) // "km/s"
         write(text_tmp, '(i0)') narray_use(i)
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)

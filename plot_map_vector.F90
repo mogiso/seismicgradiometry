@@ -262,8 +262,9 @@ program plot_map_vector
         appvel_median_list(i) = appvel_median
         narray_use_list(i) = narray_use(i)
       else
-        if(likelihood_particle(maxloc_likelihood_particle(1)) .ge. maxval_likelihood_particle_list(i) .and. &
-        &  narray_use(i) .ge. narray_use_list(i)) then
+        !if(likelihood_particle(maxloc_likelihood_particle(1)) .ge. maxval_likelihood_particle_list(i) .and. &
+        !&  narray_use(i) .ge. narray_use_list(i)) then
+        if(narray_use(i) .ge. narray_use_list(i)) then
           lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
           lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
           origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)

@@ -215,7 +215,7 @@ program plot_map_vector
         write(text_tmp, '(i0)') narray_use(i)
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
-        epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+        if(narray_use(i) .ge. narray_use_min) epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
       endif
     enddo
     call pc_flush(iwin_eplist)

@@ -7,24 +7,6 @@
 .SUFFIXES:
 .SUFFIXES: .f .F90 .f90 .o
 
-ifeq ($(arch), ifx)
-  FC = ifx
-  FFLAGS = -assume byterecl -mcmodel=medium -O3 -xHOST -no-prec-div -ipo -qmkl -warn all -traceback
-  DEFS = -DDOUBLE -DMKL
-  LIBS = -lmkl_lapack95_lp64
-  LIBDIR = 
-  INCDIR = -I. 
-endif
-
-ifeq ($(arch),ifx-debug)
-  FC = ifx
-  FFLAGS = -assume byterecl -mcmodel=medium -O0 -qmkl -warn all -check all -fpe0 -CB -traceback -g
-  DEFS = -DDOUBLE -DMKL
-  LIBS = -lmkl_lapack95_lp64
-  LIBDIR = 
-  INCDIR = -I.
-endif
-
 ifeq ($(arch),gfortran-debug)
   FC = gfortran
   FFLAGS = -O0 -Wall -fbounds-check -mcmodel=medium -fbacktrace -Wuninitialized -g

@@ -19,8 +19,7 @@ program AELUMA_shmdump
   type(location)               :: location_sta(1 : nwinch)
   integer                      :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
   &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index
-  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1), &
-  &                               xcorr_check_index(1 : 2)
+  integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1)
   integer, allocatable         :: station_winch(:), xcorr_index(:, :)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
@@ -248,26 +247,20 @@ program AELUMA_shmdump
       enddo
 
       !!check cross-correlation value
-      do jj = 1, nsta_count(j) - 2
-        i = 0
-        sum_abslagtime = 0.0_fp
-        sum_lagtime = 0.0_fp
-        do ii = jj + 1, jj + 2
-          sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(ii, jj)))
-          sum_lagtime    = sum_lagtime    + lagtime(xcorr_index(ii, jj)) * ((-1.0_fp) ** (ii - jj - 1))
-          i = i + 1
-          xcorr_check_index(i) = ii
+      correlation_consistency: do jj = 1, nsta_count(j) - 2
+        do ii = jj + 1, nsta_count(j) - 1
+          sum_abslagtime = abs(lagtime(xcorr_index(ii, jj))) + abs(lagtime(xcorr_index(ii + 1, jj))) &
+          &              + abs(lagtime(xcorr_index(ii + 1, ii)))
+          sum_lagtime    = lagtime(xcorr_index(ii, jj)) - lagtime(xcorr_index(ii + 1, jj)) + lagtime(xcorr_index(ii + 1, ii))
+          correlation_checkval = 1.0_fp - abs(sum_lagtime) / sum_abslagtime
+          if(correlation_checkval .le. lagtime_ratio_threshold) then
+            write(0, '(a, i0, 2(a, e15.7))') "cross-correlation consistency error, array num = ", j, &
+            &                                " checkvalue = ", correlation_checkval, " minval_xcorr = ", minval_xcorr(j)
+            minval_xcorr(j) = xcorr_min
+            exit correlation_consistency
+          endif
         enddo
-        sum_abslagtime = sum_abslagtime + abs(lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1))))
-        sum_lagtime    = sum_lagtime    +     lagtime(xcorr_index(xcorr_check_index(2), xcorr_check_index(1)))
-        correlation_checkval = 1.0_fp - abs(sum_lagtime) / sum_abslagtime
-        if(correlation_checkval .le. lagtime_ratio_threshold) then
-          write(0, '(a, i0, 2(a, e15.7))') "cross-correlation consistency error, array num = ", j, &
-          &                                " checkvalue = ", correlation_checkval, " minval_xcorr = ", minval_xcorr(j)
-          minval_xcorr(j) = xcorr_min
-          exit
-        endif
-      enddo
+      enddo correlation_consistency
 
 
       !if(.not. (maxval(lagtime) .le. lagtime_max .and. minval(lagtime) .ge. lagtime_min)) then

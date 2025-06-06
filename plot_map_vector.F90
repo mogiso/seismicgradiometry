@@ -12,7 +12,7 @@ program plot_map_vector
   implicit none
 
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
-  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, narray_use_tmp
+  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, integer_tmp
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
   &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median
@@ -28,7 +28,7 @@ program plot_map_vector
   character(len = 10)               :: text_tmp
   
   integer              :: narray_use(1 : nepicenter), narray_use_list(1 : nepicenter), &
-  &                       maxloc_likelihood_particle(1), epicenter_acceptcount(1 : nepicenter)
+  &                       epicenter_acceptcount(1 : nepicenter)
   real(kind = fp)      :: lon_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       origintime_list(1 : nparticle, 1 : nepicenter),          &
@@ -123,7 +123,7 @@ program plot_map_vector
       appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
     enddo
 
-    !!Link observation and events
+    !!associate observation and events
     do k = 1, nepicenter
       origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
 
@@ -209,10 +209,38 @@ program plot_map_vector
     enddo
     call pc_flush(iwin_eplist)
 
+    !!swap the order of epicenter list
+    do j = 1, nepicenter - 1
+      if(epicenter_exist(j)) cycle
+      do i = j + 1, nepicenter
+        if(epicenter_exist(i)) then
+          result_exist_tmp(1 : ntriangle) = result_exist(1 : ntriangle, i)
+          result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, j)
+          result_exist(1 : ntriangle, j) = result_exist_tmp(1 : ntriangle)
+          lon_particle_list(1 : nparticle, j) = lon_particle_list(1 : nparticle, i)
+          lat_particle_list(1 : nparticle, j) = lat_particle_list(1 : nparticle, i)
+          likelihood_particle_list(1 : nparticle, j) = likelihood_particle_list(1 : nparticle, i)
+          origintime_list(1 : nparticle, j) = origintime_list(1 : nparticle, i)
+          maxval_likelihood_particle_list(j) = maxval_likelihood_particle_list(i)
+          appvel_median_list(j) = appvel_median_list(i)
+          narray_use_list(j) = narray_use_list(i)
+          integer_tmp = narray_use(j)
+          narray_use(j) = narray_use(i)
+          narray_use(i) = integer_tmp
+          epicenter_acceptcount(j) = epicenter_acceptcount(i)
+          epicenter_exist(j) = .true.
+          epicenter_exist(i) = .false.
+          exit
+        endif
+      enddo
+    enddo
  
     !!estimate event epicenters
     do i = 1, nepicenter
       if(narray_use(i) .lt. narray_use_min) cycle
+      if(epicenter_exist(i)) then
+        if(narray_use(i) .le. narray_use_list(i)) cycle
+      endif
 
       !!calculate azimuthal weighting array
       az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) = 0.0_fp
@@ -220,16 +248,10 @@ program plot_map_vector
         if(result_exist(arrayindex(j), i)) then
           az_weight(int(az_obs(arrayindex(j)) / daz_weight) + 1) &
           &  = az_weight(int(az_obs(arrayindex(j)) / daz_weight) + 1) + 1.0_fp
-          !print *, arrayindex(j)
         endif
       enddo
-      az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) = az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) / sum(az_weight)
 
       !!do particle filter
-      if(epicenter_exist(i)) then 
-        if(narray_use(i) .lt. narray_use_list(i)) cycle
-      endif
-
       !!initialize location of each particle
       if(.not. epicenter_exist(i)) then
         call particlefilter_init(random_status, lon_particle, lat_particle)
@@ -242,7 +264,7 @@ program plot_map_vector
       &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
       &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime, &
       &                           appvel_median = appvel_median)
-      maxloc_likelihood_particle = maxloc(likelihood_particle)
+      maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
       if(.not. epicenter_exist(i)) then
@@ -251,45 +273,20 @@ program plot_map_vector
         lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
         likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
-        maxval_likelihood_particle_list(i) = likelihood_particle(maxloc_likelihood_particle(1))
+        maxval_likelihood_particle_list(i) = maxval_likelihood
         appvel_median_list(i) = appvel_median
         narray_use_list(i) = narray_use(i)
       else
-        if(likelihood_particle(maxloc_likelihood_particle(1)) .ge. maxval_likelihood_particle_list(i) .and. &
-        &  narray_use(i) .ge. narray_use_list(i)) then
-        !if(narray_use(i) .ge. narray_use_list(i)) then
+        if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
           lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
           lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
           origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
           likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
-          maxval_likelihood_particle_list(i) = likelihood_particle(maxloc_likelihood_particle(1))
+          maxval_likelihood_particle_list(i) = maxval_likelihood
           appvel_median_list(i) = appvel_median
           narray_use_list(i) = narray_use(i)
         endif
       endif
-    enddo
-
-    !!swap the order of epicenter list
-    do j = 1, nepicenter - 1
-      if(epicenter_exist(j)) cycle
-      do i = j + 1, nepicenter
-        if(epicenter_exist(i)) then
-          result_exist_tmp(1 : ntriangle) = result_exist(1 : ntriangle, i)
-          result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, j)
-          result_exist(1 : ntriangle, j) = result_exist_tmp(1 : ntriangle)
-          lon_particle_list(1 : nparticle, j) = lon_particle_list(1 : nparticle, i)
-          lat_particle_list(1 : nparticle, j) = lat_particle_list(1 : nparticle, i)
-          origintime_list(1 : nparticle, j) = origintime_list(1 : nparticle, i)
-          maxval_likelihood_particle_list(j) = maxval_likelihood_particle_list(i)
-          appvel_median_list(j) = appvel_median_list(i)
-          narray_use_tmp = narray_use_list(j)
-          narray_use_list(j) = narray_use_list(i)
-          narray_use_list(i) = narray_use_tmp
-          epicenter_exist(j) = .true.
-          epicenter_exist(i) = .false.
-          exit
-        endif
-      enddo
     enddo
 
     !!plot slowness vector

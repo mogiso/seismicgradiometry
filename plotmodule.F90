@@ -369,9 +369,10 @@ module plotmodule
     character(len = *), intent(out)           :: epicenter_info
     real(kind = fp),    intent(out), optional :: sigma_lon, sigma_lat, sigma_ot, maxval_likelihood
 
-    integer         :: i, ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1)
+    integer         :: i, ios, ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1)
     real(kind = fp) :: epicenter_lon, epicenter_lat, ot_list, ot_from_day
     logical         :: leap
+    character(len = 255) :: outfile
 
     maxloc_likelihood_particle = maxloc(likelihood_particle(:))
     if(present(maxval_likelihood)) maxval_likelihood = likelihood_particle(maxloc_likelihood_particle(1))
@@ -414,6 +415,15 @@ module plotmodule
       sigma_lon = sqrt(sigma_lon)
       sigma_lat = sqrt(sigma_lat)
       sigma_ot  = sqrt(sigma_ot)
+      write(outfile, '(i4, 5(i2.2), a)') ot_year, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, "_likelihood_particle.dat"
+      open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 3)
+      ios = 0
+      do i = 1, nparticle
+        ios = ios + 1
+        write(10, rec = ios) real(lon_particle(i), kind = sp), real(lat_particle(i), kind = sp), &
+        &                    real(likelihood_particle(i), kind = sp)
+      enddo
+      close(10)
     endif
  
     return

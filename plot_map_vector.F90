@@ -213,7 +213,7 @@ program plot_map_vector
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
         if(narray_use(i) .ge. narray_use_min) then
           epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
-          write(0, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", epicenter_info
+          write(0, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
         endif
       endif
     enddo

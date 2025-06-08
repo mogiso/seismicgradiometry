@@ -358,7 +358,8 @@ module plotmodule
   end subroutine plot_legend
 
   subroutine epicenter2char(year, julianday, sec_from_day, lon_particle, lat_particle, origintime, likelihood_particle, &
-  &                         epicenter_info, sigma_lon, sigma_lat, sigma_ot, maxval_likelihood)
+  &                         epicenter_info, sigma_lon, sigma_lat, sigma_ot, maxval_likelihood, &
+  &                         lon_array, lat_array, az_obs, appvel_obs, array_used)
     use nrtype, only : fp, sp
     use aeluma_parameters
     use jday
@@ -368,6 +369,9 @@ module plotmodule
     real(kind = fp),    intent(in)            :: lon_particle(:), lat_particle(:), origintime(:), likelihood_particle(:)
     character(len = *), intent(out)           :: epicenter_info
     real(kind = fp),    intent(out), optional :: sigma_lon, sigma_lat, sigma_ot, maxval_likelihood
+    real(kind = fp),    intent(in),  optional :: lon_array(:), lat_array(:)
+    real(kind = sp),    intent(in),  optional :: az_obs(:), appvel_obs(:)
+    logical,            intent(in),  optional :: array_used(:)
 
     integer         :: i, ios, ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1)
     real(kind = fp) :: epicenter_lon, epicenter_lat, ot_list, ot_from_day
@@ -415,6 +419,7 @@ module plotmodule
       sigma_lon = sqrt(sigma_lon)
       sigma_lat = sqrt(sigma_lat)
       sigma_ot  = sqrt(sigma_ot)
+
       write(outfile, '(i4, 5(i2.2), a)') ot_year, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, "_likelihood_particle.dat"
       open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 3)
       ios = 0
@@ -424,6 +429,19 @@ module plotmodule
         &                    real(likelihood_particle(i), kind = sp)
       enddo
       close(10)
+      if(present(lon_array) .and. present(lat_array) .and. present(az_obs) .and. present(appvel_obs) .and. &
+      &  present(array_used)) then
+        write(outfile, '(i4, 5(i2.2), a)') ot_year, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, "_array_obs.dat"
+        open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 4)
+        ios = 0
+        do i = 1, ubound(array_used, 1)
+          if(array_used(i)) then
+            ios = ios + 1
+            write(10, rec = ios) real(lon_array(i), kind = sp), real(lat_array(i), kind = sp), az_obs(i), appvel_obs(i)
+          endif
+        enddo
+        close(10)
+      endif
     endif
  
     return

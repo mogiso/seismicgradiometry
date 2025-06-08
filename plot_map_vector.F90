@@ -18,8 +18,9 @@ program plot_map_vector
   &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
+  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :)
   integer,         allocatable :: arrayindex(:)
-  logical,         allocatable :: result_exist(:, :), result_exist_org(:), result_exist_tmp(:)
+  logical,         allocatable :: result_exist(:, :), result_exist_org(:), result_exist_tmp(:), array_used_list(:, :)
 
   real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
   character(len = 255)              :: coastline_txt, epicenter_info
@@ -96,6 +97,8 @@ program plot_map_vector
       &        result_exist_org(1 : ntriangle), result_exist_tmp(1 : ntriangle), &
       &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
       &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle))
+      allocate(az_obs_used(1 : ntriangle, 1 : nepicenter), appvel_obs_used(1 : ntriangle, 1 : nepicenter), &
+      &        array_used_list(1 : ntriangle, 1 : nepicenter))
     endif
 
     result_exist_org(1 : ntriangle)             = .false.
@@ -183,10 +186,14 @@ program plot_map_vector
             call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
             &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
             &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
-            &                   maxval_likelihood = maxval_likelihood)
+            &                   maxval_likelihood = maxval_likelihood, &
+            &                   lon_array = lon_array, lat_array = lat_array, &
+            &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
+            &                   array_used = array_used_list(:, i))
             print '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)', trim(epicenter_info), error_lon, error_lat, error_ot, &
             &                                               maxval_likelihood, narray_use_list(i), epicenter_acceptcount(i), &
             &                                               appvel_median_list(i)
+
           endif
           epicenter_exist(i) = .false.
           epicenter_acceptcount(i) = 0
@@ -228,6 +235,9 @@ program plot_map_vector
           narray_use(j) = narray_use(i)
           narray_use(i) = integer_tmp
           epicenter_acceptcount(j) = epicenter_acceptcount(i)
+          az_obs_used(1 : ntriangle, j) = az_obs_used(1 : ntriangle, i)
+          appvel_obs_used(1 : ntriangle, j) = appvel_obs_used(1 : ntriangle, i)
+          array_used_list(1 : ntriangle, j) = array_used_list(1 : ntriangle, i)
           epicenter_exist(j) = .true.
           epicenter_exist(i) = .false.
           exit
@@ -276,6 +286,9 @@ program plot_map_vector
         maxval_likelihood_particle_list(i) = maxval_likelihood
         appvel_median_list(i) = appvel_median
         narray_use_list(i) = narray_use(i)
+        array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
+        az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle), kind = sp)
+        appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
       else
         if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
           lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
@@ -285,6 +298,9 @@ program plot_map_vector
           maxval_likelihood_particle_list(i) = maxval_likelihood
           appvel_median_list(i) = appvel_median
           narray_use_list(i) = narray_use(i)
+          array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
+          az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle), kind = sp)
+          appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
         endif
       endif
     enddo

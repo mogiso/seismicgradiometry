@@ -211,8 +211,10 @@ program plot_map_vector
         write(text_tmp, '(i0)') narray_use(i)
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
-        write(0, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", epicenter_info
-        if(narray_use(i) .ge. narray_use_min) epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+        if(narray_use(i) .ge. narray_use_min) then
+          epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+          write(0, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", epicenter_info
+        endif
       endif
     enddo
     call pc_flush(iwin_eplist)

@@ -287,7 +287,7 @@ program plot_map_vector
         appvel_median_list(i) = appvel_median
         narray_use_list(i) = narray_use(i)
         array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
-        az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle), kind = sp)
+        az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
       else
         if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
@@ -299,7 +299,7 @@ program plot_map_vector
           appvel_median_list(i) = appvel_median
           narray_use_list(i) = narray_use(i)
           array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
-          az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle), kind = sp)
+          az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
           appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
         endif
       endif

@@ -404,7 +404,7 @@ module plotmodule
     ot_sec  = int(ot_from_day  - real(ot_hour, kind = fp) * 3600.0_fp - real(ot_min, kind = fp) * 60.0_fp)
     call jday2ymd(ot_julianday, ot_year, ot_mo, ot_dy)
     write(epicenter_info, '(i4, a, 5(i2.2, a), 2(a, f0.4))') &
-    &  ot_year, "/", ot_mo, "/", ot_dy, " ", ot_hour, ":", ot_min, ":", ot_sec, " ", &
+    &  ot_year, "-", ot_mo, "-", ot_dy, "T", ot_hour, ":", ot_min, ":", ot_sec, " ", &
     &  "Lon = ", epicenter_lon, " Lat = ", epicenter_lat
 
     if(present(sigma_lon) .and. present(sigma_lat) .and. present(sigma_ot)) then

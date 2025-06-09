@@ -82,7 +82,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: min_appvelocity = 0.3_fp
 
   integer,            public, parameter :: narray_use_min = 6 
-  integer,            public, parameter :: epicenter_acceptcount_threshold = 45
+  integer,            public, parameter :: epicenter_acceptcount_threshold = 60
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * daz_weight * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 

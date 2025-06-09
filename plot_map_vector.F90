@@ -23,7 +23,7 @@ program plot_map_vector
   logical,         allocatable :: result_exist(:, :), result_exist_org(:), result_exist_tmp(:), array_used_list(:, :)
 
   real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
-  character(len = 255)              :: coastline_txt, epicenter_info
+  character(len = 255)              :: coastline_txt, epicenter_info, outfile
   character(len = 255), allocatable :: mapbuf(:)
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   character(len = 10)               :: text_tmp
@@ -190,10 +190,16 @@ program plot_map_vector
             &                   lon_array = lon_array, lat_array = lat_array, &
             &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
             &                   array_used = array_used_list(:, i))
-            print '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)', trim(epicenter_info), error_lon, error_lat, error_ot, &
-            &                                               maxval_likelihood, narray_use_list(i), epicenter_acceptcount(i), &
-            &                                               appvel_median_list(i)
-
+            write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter.txt"
+            open(unit = 12, file = trim(outfile), iostat = ios, status = "old", position = "append")
+            if(ios .ne. 0) then
+              close(12)
+              open(unit = 12, file = trim(outfile), iostat = ios, status = "new")
+            endif
+            write(12, '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon, error_lat, error_ot, &
+            &                                                   maxval_likelihood, narray_use_list(i), &
+            &                                                   epicenter_acceptcount(i), appvel_median_list(i)
+            close(12)
           endif
           epicenter_exist(i) = .false.
           epicenter_acceptcount(i) = 0
@@ -213,7 +219,14 @@ program plot_map_vector
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
         if(narray_use(i) .ge. narray_use_min) then
           epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
-          write(0, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
+          write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
+          open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
+          if(ios .ne. 0) then
+            close(11)
+            open(unit = 10, file = trim(outfile), iostat = ios, status = "new")
+          endif
+          write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
+          close(11)
         endif
       endif
     enddo

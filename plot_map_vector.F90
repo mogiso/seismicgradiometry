@@ -28,7 +28,7 @@ program plot_map_vector
   character(len = 2)                :: yr, mo, dy, hh, mm, ss
   character(len = 10)               :: text_tmp
   
-  integer              :: narray_use(1 : nepicenter), narray_use_list(1 : nepicenter), &
+  integer              :: narray_use(0 : nepicenter), narray_use_list(1 : nepicenter), &
   &                       epicenter_acceptcount(1 : nepicenter)
   real(kind = fp)      :: lon_particle_list(1 : nparticle, 1 : nepicenter),        &
   &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
@@ -93,7 +93,7 @@ program plot_map_vector
     !print '(5(i0, 1x))', year, julianday, sec_from_day, narray, ntriangle
 
     if(.not. allocated(arrayindex)) then
-      allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 1 : nepicenter), &
+      allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 0 : nepicenter), &
       &        result_exist_org(1 : ntriangle), result_exist_tmp(1 : ntriangle), &
       &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
       &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle))
@@ -102,15 +102,16 @@ program plot_map_vector
     endif
 
     result_exist_org(1 : ntriangle)             = .false.
-    result_exist(1 : ntriangle, 1 : nepicenter) = .false.
+    result_exist(1 : ntriangle, 0 : nepicenter) = .false.
     call pc_setline(iwin_map, 4)
 
     !!read and plot slowness vector
-    narray_use(1 : nepicenter) = narray
+    narray_use(0 : nepicenter) = narray
     do i = 1, narray
       read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
       &          slowness_x, slowness_y, min_correlation(arrayindex(i)), arrivaltime(arrayindex(i))
       result_exist_org(arrayindex(i))  = .true.
+      result_exist(arrayindex(i), 0) = .true.
       do j = 1, nepicenter
         result_exist(arrayindex(i), j) = .true.
         if(min_correlation(arrayindex(i)) .le. correlation_threshold) then
@@ -156,7 +157,7 @@ program plot_map_vector
             result_exist(arrayindex(j), k) = .false.
             narray_use(k) = narray_use(k) - 1
           else
-            do i = 1, nepicenter
+            do i = 0, nepicenter
               if(i .eq. k) cycle
               if(result_exist(arrayindex(j), i)) then
                 result_exist(arrayindex(j), i) = .false.
@@ -165,6 +166,17 @@ program plot_map_vector
             enddo
           endif
         enddo
+      endif
+    enddo
+    do i = 1, nepicenter
+      if(epicenter_exist(i)) then
+        if(epicenter_acceptcount(i) .eq. 0) then
+          if(narray_use(i) .lt. narray_use_min) then
+            epicenter_exist(i) = .false.
+            narray_use(i) = narray_use(0)
+            result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, 0)
+          endif
+        endif
       endif
     enddo
 
@@ -306,7 +318,7 @@ program plot_map_vector
         az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
       else
-        if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
+        !if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
           lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
           lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
           origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
@@ -317,7 +329,7 @@ program plot_map_vector
           array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
           az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
           appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-        endif
+        !endif
       endif
     enddo
 

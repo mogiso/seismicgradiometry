@@ -183,6 +183,7 @@ program plot_map_vector
     no_associated_arrayuse = .false.
     do i = 1, nepicenter
       if(.not. epicenter_exist(i)) then
+        epicenter_acceptcount(i) = 0
         if(.not. no_associated_arrayuse) then
           no_associated_arrayuse = .true.
         else
@@ -230,7 +231,6 @@ program plot_map_vector
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
         if(narray_use(i) .ge. narray_use_min) then
-          epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
           write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
           open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
           if(ios .ne. 0) then
@@ -239,6 +239,7 @@ program plot_map_vector
           endif
           write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
           close(11)
+          epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
         endif
       endif
     enddo
@@ -277,7 +278,7 @@ program plot_map_vector
     do i = 1, nepicenter
       if(narray_use(i) .lt. narray_use_min) cycle
       if(epicenter_exist(i)) then
-        if(narray_use(i) .le. narray_use_list(i)) cycle
+        if(narray_use(i) .lt. narray_use_list(i)) cycle
       endif
 
       !!calculate azimuthal weighting array
@@ -318,7 +319,7 @@ program plot_map_vector
         az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
       else
-        !if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
+        if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
           lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
           lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
           origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
@@ -329,7 +330,7 @@ program plot_map_vector
           array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
           az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
           appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-        !endif
+        endif
       endif
     enddo
 

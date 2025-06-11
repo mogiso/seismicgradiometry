@@ -129,9 +129,9 @@ program plot_map_vector
 
     !!associate observation and events
     do k = 1, nepicenter
-      origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
 
       if(epicenter_exist(k)) then
+        origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
         do j = 1, narray
           if(.not. result_exist(arrayindex(j), k)) cycle 
           likelihood_tmp = 0.0_fp

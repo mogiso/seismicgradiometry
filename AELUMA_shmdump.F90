@@ -174,7 +174,7 @@ program AELUMA_shmdump
     &                                  wavewindow_height - waveheight)
     call pc_setdash(iwin_wave, 3)
     !!draw time index line
-    do i = 1, int(nsec_buf / 60)
+    do i = 1, int(nsec_buf / 60) + 1
       plot_x0 = (wavewindow_width - wavewidth) + 60.0_sp * real(sampling_int_use, kind = sp) * dwidth * real(i - 1, kind = sp)
       plot_x1 = plot_x0
       plot_y0 = wavewindow_height - waveheight
@@ -182,11 +182,18 @@ program AELUMA_shmdump
       call pc_line(iwin_wave, plot_x0, plot_y0, plot_x1, plot_y1)
       !!draw date and time
       plot_y0 = plot_y0 - 2.0_sp
-      plot_y1 = plot_y0 - 5.5_sp
-      date_c = yr(60 * (i - 1) + 1) // "/" // mo(60 * (i - 1) + 1) // "/" // dy(60 * (i - 1) + 1)
-      time_c = hh(60 * (i - 1) + 1) // ":" // mm(60 * (i - 1) + 1) // ":" // ss(60 * (i - 1) + 1)
-      call pc_text(iwin_wave, plot_x0, plot_y0, 6.0, date_c, 0.0, len(date_c), 4)
-      call pc_text(iwin_wave, plot_x0, plot_y1, 6.0, time_c, 0.0, len(time_c), 4)
+      plot_y1 = plot_y0 - 5.3_sp
+      if(i .eq. int(nsec_buf / 60) + 1) then
+        date_c = yr(nsec_buf) // "/" // mo(nsec_buf) // "/" // dy(nsec_buf)
+        time_c = hh(nsec_buf) // ":" // mm(nsec_buf) // ":" // ss(nsec_buf)
+        call pc_text(iwin_wave, plot_x0, plot_y0, 6.0_sp, date_c, 0.0, len(date_c), 5)
+        call pc_text(iwin_wave, plot_x0, plot_y1, 6.0_sp, time_c, 0.0, len(time_c), 5)
+      else
+        date_c = yr(60 * (i - 1) + 1) // "/" // mo(60 * (i - 1) + 1) // "/" // dy(60 * (i - 1) + 1)
+        time_c = hh(60 * (i - 1) + 1) // ":" // mm(60 * (i - 1) + 1) // ":" // ss(60 * (i - 1) + 1)
+        call pc_text(iwin_wave, plot_x0, plot_y0, 6.0_sp, date_c, 0.0, len(date_c), 4)
+        call pc_text(iwin_wave, plot_x0, plot_y1, 6.0_sp, time_c, 0.0, len(time_c), 4)
+      endif
     enddo
     do j = 1, nstation
       maxamp = maxval(waveform_buf(:, station_winch(j)))

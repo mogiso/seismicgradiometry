@@ -25,7 +25,7 @@ contains
     real(kind = fp), intent(out)           :: likelihood_particle(1 : nparticle)
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
     real(kind = fp), intent(out), optional :: origintime(1 : nparticle), appvel_median
-    integer                                :: i, j, k, narray_use_tmp, az_weight_index, particlefilter_count
+    integer                                :: i, j, k, narray_use_tmp, az_weight_index, particlefilter_count, iteration_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
     &                                         normalize_likelihood, ot_diff, likelihood_distweight
@@ -38,12 +38,14 @@ contains
 
     maxval_likelihood_particle = 0.0_fp
     particlefilter_count = 0
+    iteration_count = 0
     particlefilter: do
       sum_likelihood = 0.0_fp
       kahan_val1 = 0.0_fp
       particleloop: do j = 1, nparticle
         likelihood_particle(j) = 0.0_fp
         narray_use_tmp = 0
+        iteration_count = iteration_count + 1
         do i = 1, narray
           if(.not. result_exist(arrayindex(i))) cycle
           narray_use_tmp = narray_use_tmp + 1
@@ -103,6 +105,7 @@ contains
         maxval_likelihood_particle = maxval(likelihood_particle)
       endif
       if(particlefilter_count .gt. niter) exit particlefilter
+      if(iteration_count .gt. iteration_count_max) exit
 
       particle_probability(1) = likelihood_particle(1) * normalize_likelihood
       do i = 2, nparticle

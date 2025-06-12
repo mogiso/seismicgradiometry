@@ -42,10 +42,10 @@ contains
     particlefilter: do
       sum_likelihood = 0.0_fp
       kahan_val1 = 0.0_fp
+      iteration_count = iteration_count + 1
       particleloop: do j = 1, nparticle
         likelihood_particle(j) = 0.0_fp
         narray_use_tmp = 0
-        iteration_count = iteration_count + 1
         do i = 1, narray
           if(.not. result_exist(arrayindex(i))) cycle
           narray_use_tmp = narray_use_tmp + 1

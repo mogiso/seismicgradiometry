@@ -28,7 +28,7 @@ contains
     integer                                :: i, j, k, narray_use_tmp, az_weight_index, particlefilter_count, iteration_count
     real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
-    &                                         normalize_likelihood, ot_diff, likelihood_distweight
+    &                                         normalize_likelihood, ot_diff, likelihood_distweight, dist_tmp
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
     &                                         lon_particle_new(1 : nparticle), lat_particle_new(1 : nparticle)
     real(kind = fp), allocatable           :: az(:), dist(:), ot_est(:), appvel_tmp(:)
@@ -74,7 +74,10 @@ contains
             narray_use_tmp = narray_use_tmp + 1
 
             ot_diff = origintime(j) - ot_est(narray_use_tmp)
-            likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist(i))
+            dist_tmp = log(dist(i))
+            if(dist_tmp .lt. 1.0_fp) dist_tmp = 1.0_fp
+            likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist_tmp)
+            !likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist(i))
             likelihood_tmp = likelihood_modified(ot_diff, sigma_otdiff2, likelihood_distweight)
             likelihood_particle(j) = likelihood_renew(likelihood_particle(j), likelihood_tmp)
             if(likelihood_particle(j) * 0.0_fp .ne. 0.0_fp) then

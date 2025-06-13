@@ -72,16 +72,18 @@ module aeluma_parameters
   &                                                                                     46,  33,  77], [3, 10])
 
   !!location estimation
-  integer,            public, parameter :: nparticle = 1200, niter = 3, iteration_count_max = 100, nepicenter = 4
+  integer,            public, parameter :: nparticle = 1000, niter = 3, iteration_count_max = 1000, nepicenter = 4
   real(kind = fp),    public, parameter :: daz_weight = 30.0_fp * deg2rad, daz_weight2 = daz_weight ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp, sameaz_num2 = sameaz_num ** 2, azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
-  real(kind = fp),    public, parameter :: sigma_dist = 100.0_fp, ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
+  !real(kind = fp),    public, parameter :: sigma_dist = 100.0_fp, ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
+  !&                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
+  real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
   real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
   real(kind = fp),    public, parameter :: min_appvelocity = 0.3_fp
 
-  integer,            public, parameter :: narray_use_min = 8 
+  integer,            public, parameter :: narray_use_min = 6 
   integer,            public, parameter :: epicenter_acceptcount_threshold = 60
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * daz_weight * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))

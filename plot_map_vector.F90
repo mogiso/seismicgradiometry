@@ -235,7 +235,7 @@ program plot_map_vector
           open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
           if(ios .ne. 0) then
             close(11)
-            open(unit = 10, file = trim(outfile), iostat = ios, status = "new")
+            open(unit = 11, file = trim(outfile), iostat = ios, status = "new")
           endif
           write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
           close(11)

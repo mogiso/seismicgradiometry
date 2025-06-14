@@ -12,15 +12,15 @@ program plot_map_vector
   implicit none
 
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
-  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, integer_tmp
+  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
-  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median
+  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
-  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :)
+  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:)
   integer,         allocatable :: arrayindex(:)
-  logical,         allocatable :: result_exist(:, :), result_exist_org(:), result_exist_tmp(:), array_used_list(:, :)
+  logical,         allocatable :: result_exist(:, :), result_exist_org(:), array_used_list(:, :), swap_logical(:)
 
   real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
   character(len = 255)              :: coastline_txt, epicenter_info, outfile
@@ -37,8 +37,8 @@ program plot_map_vector
   &                       appvel_median_list(1 : nepicenter),                      &
   &                       likelihood_particle_list(1 : nparticle, 1 : nepicenter), &
   &                       lon_particle(1 : nparticle), lat_particle(1 : nparticle), likelihood_particle(1 : nparticle), &
-  &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight) + 1)
-  logical              :: epicenter_exist(1 : nepicenter)
+  &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight) + 1), &
+  &                       swap_array2(1 : nparticle)
 
   !!initiate random number generator
   call make_seed(seed)
@@ -51,7 +51,13 @@ program plot_map_vector
   ncoastline = ubound(mapbuf, 1)
 
   !!initiaalize event list
-  epicenter_exist(1 : nepicenter) = .false.
+  lon_particle_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  lat_particle_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  origintime_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  likelihood_particle_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  maxval_likelihood_particle_list(1 : nepicenter) = 0.0_fp
+  appvel_median_list(1 : nepicenter) = 0.0_fp
+  
  
   !!Plot legend
   call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
@@ -94,11 +100,11 @@ program plot_map_vector
 
     if(.not. allocated(arrayindex)) then
       allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 0 : nepicenter), &
-      &        result_exist_org(1 : ntriangle), result_exist_tmp(1 : ntriangle), &
+      &        result_exist_org(1 : ntriangle), &
       &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
-      &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle))
+      &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle), swap_array1(1 : ntriangle))
       allocate(az_obs_used(1 : ntriangle, 1 : nepicenter), appvel_obs_used(1 : ntriangle, 1 : nepicenter), &
-      &        array_used_list(1 : ntriangle, 1 : nepicenter))
+      &        array_used_list(1 : ntriangle, 1 : nepicenter), swap_logical(1 : ntriangle))
     endif
 
     result_exist_org(1 : ntriangle)             = .false.
@@ -111,9 +117,8 @@ program plot_map_vector
       read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
       &          slowness_x, slowness_y, min_correlation(arrayindex(i)), arrivaltime(arrayindex(i))
       result_exist_org(arrayindex(i))  = .true.
-      result_exist(arrayindex(i), 0) = .true.
-      do j = 1, nepicenter
-        result_exist(arrayindex(i), j) = .true.
+      result_exist(arrayindex(i), 0 : nepicenter) = .true.
+      do j = 0, nepicenter
         if(min_correlation(arrayindex(i)) .le. correlation_threshold) then
           result_exist(arrayindex(i), j) = .false.
           narray_use(j) = narray_use(j) - 1
@@ -129,9 +134,9 @@ program plot_map_vector
 
     !!associate observation and events
     do k = 1, nepicenter
+       origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
 
-      if(epicenter_exist(k)) then
-        origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
+      if(maxval_likelihood_particle_list(k) .gt. 0.0_fp) then
         do j = 1, narray
           if(.not. result_exist(arrayindex(j), k)) cycle 
           likelihood_tmp = 0.0_fp
@@ -168,11 +173,12 @@ program plot_map_vector
         enddo
       endif
     enddo
+
     do i = 1, nepicenter
-      if(epicenter_exist(i)) then
+      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(epicenter_acceptcount(i) .eq. 0) then
           if(narray_use(i) .lt. narray_use_min) then
-            epicenter_exist(i) = .false.
+            maxval_likelihood_particle_list(i) = 0.0_fp
             narray_use(i) = narray_use(0)
             result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, 0)
           endif
@@ -182,7 +188,7 @@ program plot_map_vector
 
     no_associated_arrayuse = .false.
     do i = 1, nepicenter
-      if(.not. epicenter_exist(i)) then
+      if(maxval_likelihood_particle_list(i) .eq. 0.0_fp) then
         epicenter_acceptcount(i) = 0
         if(.not. no_associated_arrayuse) then
           no_associated_arrayuse = .true.
@@ -193,7 +199,7 @@ program plot_map_vector
     enddo
 
     do i = 1, nepicenter
-      if(epicenter_exist(i)) then
+      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .lt. 1) then
           if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
             call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
@@ -214,7 +220,7 @@ program plot_map_vector
             &                                                   epicenter_acceptcount(i), appvel_median_list(i)
             close(12)
           endif
-          epicenter_exist(i) = .false.
+          maxval_likelihood_particle_list(i) = 0.0_fp
           epicenter_acceptcount(i) = 0
           cycle
         endif
@@ -247,37 +253,68 @@ program plot_map_vector
 
     !!swap the order of epicenter list
     do j = 1, nepicenter - 1
-      if(epicenter_exist(j)) cycle
-      do i = j + 1, nepicenter
-        if(epicenter_exist(i)) then
-          result_exist_tmp(1 : ntriangle) = result_exist(1 : ntriangle, i)
-          result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, j)
-          result_exist(1 : ntriangle, j) = result_exist_tmp(1 : ntriangle)
-          lon_particle_list(1 : nparticle, j) = lon_particle_list(1 : nparticle, i)
-          lat_particle_list(1 : nparticle, j) = lat_particle_list(1 : nparticle, i)
-          likelihood_particle_list(1 : nparticle, j) = likelihood_particle_list(1 : nparticle, i)
-          origintime_list(1 : nparticle, j) = origintime_list(1 : nparticle, i)
-          maxval_likelihood_particle_list(j) = maxval_likelihood_particle_list(i)
-          appvel_median_list(j) = appvel_median_list(i)
-          narray_use_list(j) = narray_use_list(i)
-          integer_tmp = narray_use(j)
-          narray_use(j) = narray_use(i)
-          narray_use(i) = integer_tmp
-          epicenter_acceptcount(j) = epicenter_acceptcount(i)
-          az_obs_used(1 : ntriangle, j) = az_obs_used(1 : ntriangle, i)
-          appvel_obs_used(1 : ntriangle, j) = appvel_obs_used(1 : ntriangle, i)
-          array_used_list(1 : ntriangle, j) = array_used_list(1 : ntriangle, i)
-          epicenter_exist(j) = .true.
-          epicenter_exist(i) = .false.
-          exit
+      do i = 2, nepicenter - j + 1
+        if(maxval_likelihood_particle_list(i) .gt. maxval_likelihood_particle_list(i - 1)) then
+          swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
+          result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
+          result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
+
+          swap_array2(1 : nparticle)              = lon_particle_list(1 : nparticle, i)
+          lon_particle_list(1 : nparticle, i)     = lon_particle_list(1 : nparticle, i - 1)
+          lon_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)              = lat_particle_list(1 : nparticle, i)
+          lat_particle_list(1 : nparticle, i)     = lat_particle_list(1 : nparticle, i - 1)
+          lat_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)                     = likelihood_particle_list(1 : nparticle, i)
+          likelihood_particle_list(1 : nparticle, i)     = likelihood_particle_list(1 : nparticle, i - 1)
+          likelihood_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)            = origintime_list(1 : nparticle, i)
+          origintime_list(1 : nparticle, i)     = origintime_list(1 : nparticle, i - 1)
+          origintime_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_float                             = maxval_likelihood_particle_list(i)
+          maxval_likelihood_particle_list(i)     = maxval_likelihood_particle_list(i - 1)
+          maxval_likelihood_particle_list(i - 1) = swap_float
+
+          swap_float                = appvel_median_list(i)
+          appvel_median_list(i)     = appvel_median_list(i - 1)
+          appvel_median_list(i - 1) = swap_float
+
+          swap_integer           = narray_use_list(i)
+          narray_use_list(i)     = narray_use_list(i - 1)
+          narray_use_list(i - 1) = swap_integer
+
+          swap_integer      = narray_use(i)
+          narray_use(i)     = narray_use(i - 1)
+          narray_use(i - 1) = swap_integer
+
+          swap_integer                 = epicenter_acceptcount(i)
+          epicenter_acceptcount(i)     = epicenter_acceptcount(i - 1)
+          epicenter_acceptcount(i - 1) = swap_integer
+
+          swap_array1(1 : ntriangle)        = az_obs_used(1 : ntriangle, i)
+          az_obs_used(1 : ntriangle, i)     = az_obs_used(1 : ntriangle, i - 1)
+          az_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
+          appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)
+          appvel_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_logical(1 : ntriangle)           = array_used_list(1 : ntriangle, i)
+          array_used_list(1 : ntriangle, i)     = array_used_list(1 : ntriangle, i - 1)
+          array_used_list(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
         endif
       enddo
     enddo
  
     !!estimate event epicenters
     do i = 1, nepicenter
+      print *, maxval_likelihood_particle_list(i), narray_use(i)
       if(narray_use(i) .lt. narray_use_min) cycle
-      if(epicenter_exist(i)) then
+      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .lt. narray_use_list(i)) cycle
       endif
 
@@ -292,7 +329,7 @@ program plot_map_vector
 
       !!do particle filter
       !!initialize location of each particle
-      if(.not. epicenter_exist(i)) then
+      if(maxval_likelihood_particle_list(i) .eq. 0.0_fp) then
         call particlefilter_init(random_status, lon_particle, lat_particle)
       else
         lon_particle(1 : nparticle) = lon_particle_list(1 : nparticle, i)
@@ -306,8 +343,7 @@ program plot_map_vector
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
-      if(.not. epicenter_exist(i)) then
-        epicenter_exist(i) = .true.
+      if(maxval_likelihood_particle_list(i) .eq. 0.0_fp) then
         lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
         lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)

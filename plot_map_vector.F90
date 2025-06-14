@@ -198,59 +198,6 @@ program plot_map_vector
       endif
     enddo
 
-    do i = 1, nepicenter
-      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
-        if(narray_use(i) .lt. 1) then
-          if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
-            call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-            &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
-            &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
-            &                   maxval_likelihood = maxval_likelihood, &
-            &                   lon_array = lon_array, lat_array = lat_array, &
-            &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
-            &                   array_used = array_used_list(:, i))
-            write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter.txt"
-            open(unit = 12, file = trim(outfile), iostat = ios, status = "old", position = "append")
-            if(ios .ne. 0) then
-              close(12)
-              open(unit = 12, file = trim(outfile), iostat = ios, status = "new")
-            endif
-            write(12, '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon, error_lat, error_ot, &
-            &                                                   maxval_likelihood, narray_use_list(i), &
-            &                                                   epicenter_acceptcount(i), appvel_median_list(i)
-            close(12)
-          endif
-          maxval_likelihood_particle_list(i) = 0.0_fp
-          epicenter_acceptcount(i) = 0
-          cycle
-        endif
-        !!plot particles
-        call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
-                           width_tmp, height_tmp, dwidth, dheight)
-        call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
-        &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
-        call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
-        &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
-        write(text_tmp, '(f4.1)') appvel_median_list(i)
-        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp) // "km/s"
-        write(text_tmp, '(i0)') narray_use(i)
-        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
-        call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
-        if(narray_use(i) .ge. narray_use_min) then
-          write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
-          open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
-          if(ios .ne. 0) then
-            close(11)
-            open(unit = 11, file = trim(outfile), iostat = ios, status = "new")
-          endif
-          write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
-          close(11)
-          epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
-        endif
-      endif
-    enddo
-    call pc_flush(iwin_eplist)
-
     !!swap the order of epicenter list
     do j = 1, nepicenter - 1
       do i = 2, nepicenter - j + 1
@@ -310,9 +257,63 @@ program plot_map_vector
       enddo
     enddo
  
+
+    do i = 1, nepicenter
+      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
+        if(narray_use(i) .lt. 1) then
+          if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
+            call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+            &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
+            &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
+            &                   maxval_likelihood = maxval_likelihood, &
+            &                   lon_array = lon_array, lat_array = lat_array, &
+            &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
+            &                   array_used = array_used_list(:, i))
+            write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter.txt"
+            open(unit = 12, file = trim(outfile), iostat = ios, status = "old", position = "append")
+            if(ios .ne. 0) then
+              close(12)
+              open(unit = 12, file = trim(outfile), iostat = ios, status = "new")
+            endif
+            write(12, '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon, error_lat, error_ot, &
+            &                                                   maxval_likelihood, narray_use_list(i), &
+            &                                                   epicenter_acceptcount(i), appvel_median_list(i)
+            close(12)
+          endif
+          maxval_likelihood_particle_list(i) = 0.0_fp
+          epicenter_acceptcount(i) = 0
+          cycle
+        endif
+        !!plot particles
+        call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
+                           width_tmp, height_tmp, dwidth, dheight)
+        call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
+        &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
+        call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+        &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
+        write(text_tmp, '(f4.1)') appvel_median_list(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp) // "km/s"
+        write(text_tmp, '(i0)') narray_use(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
+        call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
+        if(narray_use(i) .ge. narray_use_min) then
+          write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
+          open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
+          if(ios .ne. 0) then
+            close(11)
+            open(unit = 11, file = trim(outfile), iostat = ios, status = "new")
+          endif
+          write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
+          close(11)
+          epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+        endif
+      endif
+    enddo
+    call pc_flush(iwin_eplist)
+
     !!estimate event epicenters
     do i = 1, nepicenter
-      print *, maxval_likelihood_particle_list(i), narray_use(i)
+      !print *, maxval_likelihood_particle_list(i), narray_use(i)
       if(narray_use(i) .lt. narray_use_min) cycle
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .lt. narray_use_list(i)) cycle

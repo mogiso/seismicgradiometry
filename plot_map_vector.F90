@@ -175,13 +175,17 @@ program plot_map_vector
     enddo
 
     !!reject the candidate if it does not satisfy the condition just after estimation
-    do i = 1, nepicenter
-      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
-        if(epicenter_acceptcount(i) .eq. 0) then
-          if(narray_use(i) .lt. narray_use_min) then
-            maxval_likelihood_particle_list(i) = 0.0_fp
-            narray_use(i) = narray_use(0)
-            result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, 0)
+    do j = 1, nepicenter
+      if(maxval_likelihood_particle_list(j) .gt. 0.0_fp) then
+        if(epicenter_acceptcount(j) .eq. 0) then
+          if(narray_use(j) .lt. narray_use_min) then
+            maxval_likelihood_particle_list(j) = 0.0_fp
+            do i = 1, narray
+              if(result_exist(arrayindex(i), j)) then
+                result_exist(arrayindex(i), 0) = .true.
+                narray_use(0) = narray_use(0) + 1
+              endif
+            enddo
           endif
         endif
       endif
@@ -193,6 +197,8 @@ program plot_map_vector
         epicenter_acceptcount(i) = 0
         if(.not. no_associated_arrayuse) then
           no_associated_arrayuse = .true.
+          narray_use(i) = narray_use(0)
+          result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, 0)
         else
           narray_use(i) = 0
         endif

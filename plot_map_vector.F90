@@ -174,6 +174,7 @@ program plot_map_vector
       endif
     enddo
 
+    !!reject the candidate if it does not satisfy the condition just after estimation
     do i = 1, nepicenter
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(epicenter_acceptcount(i) .eq. 0) then
@@ -198,66 +199,7 @@ program plot_map_vector
       endif
     enddo
 
-    !!swap the order of epicenter list
-    do j = 1, nepicenter - 1
-      do i = 2, nepicenter - j + 1
-        if(maxval_likelihood_particle_list(i) .gt. maxval_likelihood_particle_list(i - 1)) then
-          swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
-          result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
-          result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
-
-          swap_array2(1 : nparticle)              = lon_particle_list(1 : nparticle, i)
-          lon_particle_list(1 : nparticle, i)     = lon_particle_list(1 : nparticle, i - 1)
-          lon_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
-
-          swap_array2(1 : nparticle)              = lat_particle_list(1 : nparticle, i)
-          lat_particle_list(1 : nparticle, i)     = lat_particle_list(1 : nparticle, i - 1)
-          lat_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
-
-          swap_array2(1 : nparticle)                     = likelihood_particle_list(1 : nparticle, i)
-          likelihood_particle_list(1 : nparticle, i)     = likelihood_particle_list(1 : nparticle, i - 1)
-          likelihood_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
-
-          swap_array2(1 : nparticle)            = origintime_list(1 : nparticle, i)
-          origintime_list(1 : nparticle, i)     = origintime_list(1 : nparticle, i - 1)
-          origintime_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
-
-          swap_float                             = maxval_likelihood_particle_list(i)
-          maxval_likelihood_particle_list(i)     = maxval_likelihood_particle_list(i - 1)
-          maxval_likelihood_particle_list(i - 1) = swap_float
-
-          swap_float                = appvel_median_list(i)
-          appvel_median_list(i)     = appvel_median_list(i - 1)
-          appvel_median_list(i - 1) = swap_float
-
-          swap_integer           = narray_use_list(i)
-          narray_use_list(i)     = narray_use_list(i - 1)
-          narray_use_list(i - 1) = swap_integer
-
-          swap_integer      = narray_use(i)
-          narray_use(i)     = narray_use(i - 1)
-          narray_use(i - 1) = swap_integer
-
-          swap_integer                 = epicenter_acceptcount(i)
-          epicenter_acceptcount(i)     = epicenter_acceptcount(i - 1)
-          epicenter_acceptcount(i - 1) = swap_integer
-
-          swap_array1(1 : ntriangle)        = az_obs_used(1 : ntriangle, i)
-          az_obs_used(1 : ntriangle, i)     = az_obs_used(1 : ntriangle, i - 1)
-          az_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
-
-          swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
-          appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)
-          appvel_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
-
-          swap_logical(1 : ntriangle)           = array_used_list(1 : ntriangle, i)
-          array_used_list(1 : ntriangle, i)     = array_used_list(1 : ntriangle, i - 1)
-          array_used_list(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
-        endif
-      enddo
-    enddo
- 
-
+    !!plot and output epicentral parameters
     do i = 1, nepicenter
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .lt. 1) then
@@ -371,6 +313,65 @@ program plot_map_vector
       endif
     enddo
 
+    !!sort the order of epicenter list
+    do j = 1, nepicenter - 1
+      do i = 2, nepicenter - j + 1
+        if(maxval_likelihood_particle_list(i) .gt. maxval_likelihood_particle_list(i - 1)) then
+          swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
+          result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
+          result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
+
+          swap_array2(1 : nparticle)              = lon_particle_list(1 : nparticle, i)
+          lon_particle_list(1 : nparticle, i)     = lon_particle_list(1 : nparticle, i - 1)
+          lon_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)              = lat_particle_list(1 : nparticle, i)
+          lat_particle_list(1 : nparticle, i)     = lat_particle_list(1 : nparticle, i - 1)
+          lat_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)                     = likelihood_particle_list(1 : nparticle, i)
+          likelihood_particle_list(1 : nparticle, i)     = likelihood_particle_list(1 : nparticle, i - 1)
+          likelihood_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)            = origintime_list(1 : nparticle, i)
+          origintime_list(1 : nparticle, i)     = origintime_list(1 : nparticle, i - 1)
+          origintime_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_float                             = maxval_likelihood_particle_list(i)
+          maxval_likelihood_particle_list(i)     = maxval_likelihood_particle_list(i - 1)
+          maxval_likelihood_particle_list(i - 1) = swap_float
+
+          swap_float                = appvel_median_list(i)
+          appvel_median_list(i)     = appvel_median_list(i - 1)
+          appvel_median_list(i - 1) = swap_float
+
+          swap_integer           = narray_use_list(i)
+          narray_use_list(i)     = narray_use_list(i - 1)
+          narray_use_list(i - 1) = swap_integer
+
+          swap_integer      = narray_use(i)
+          narray_use(i)     = narray_use(i - 1)
+          narray_use(i - 1) = swap_integer
+
+          swap_integer                 = epicenter_acceptcount(i)
+          epicenter_acceptcount(i)     = epicenter_acceptcount(i - 1)
+          epicenter_acceptcount(i - 1) = swap_integer
+
+          swap_array1(1 : ntriangle)        = az_obs_used(1 : ntriangle, i)
+          az_obs_used(1 : ntriangle, i)     = az_obs_used(1 : ntriangle, i - 1)
+          az_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
+          appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)
+          appvel_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_logical(1 : ntriangle)           = array_used_list(1 : ntriangle, i)
+          array_used_list(1 : ntriangle, i)     = array_used_list(1 : ntriangle, i - 1)
+          array_used_list(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
+        endif
+      enddo
+    enddo
+ 
     !!plot slowness vector
     call plot_slowness_vector(iwin_map, narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, appvel_obs, &
     &                         min_correlation, width_tmp, height_tmp, dwidth, dheight)

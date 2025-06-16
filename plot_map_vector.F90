@@ -292,7 +292,7 @@ program plot_map_vector
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
-      if(maxval_likelihood_particle_list(i) .eq. 0.0_fp) then
+      if(maxval_likelihood .gt. maxval_likelihood_particle_list(i)) then
         lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
         lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
@@ -303,26 +303,14 @@ program plot_map_vector
         array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
         az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-      else
-        if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
-          lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
-          lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
-          origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
-          likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
-          maxval_likelihood_particle_list(i) = maxval_likelihood
-          appvel_median_list(i) = appvel_median
-          narray_use_list(i) = narray_use(i)
-          array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
-          az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
-          appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-        endif
       endif
     enddo
 
     !!sort the order of epicenter list
     do j = 1, nepicenter - 1
       do i = 2, nepicenter - j + 1
-        if(maxval_likelihood_particle_list(i) .gt. maxval_likelihood_particle_list(i - 1)) then
+        if(epicenter_acceptcount(i) .gt. epicenter_acceptcount(i - 1)) then
+        !if(maxval_likelihood_particle_list(i) .gt. maxval_likelihood_particle_list(i - 1)) then
           swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
           result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
           result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)

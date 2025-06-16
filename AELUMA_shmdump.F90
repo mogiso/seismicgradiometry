@@ -223,7 +223,6 @@ program AELUMA_shmdump
         xcorr_flag(j) = .false.
         cycle
       endif
-      minval_xcorr(j) = 1.0e+38_fp
       npair_tmp = 0
       do i = 1, nsta_count(j) - 1
         npair_tmp = npair_tmp + i
@@ -232,6 +231,7 @@ program AELUMA_shmdump
       lagtime(1 : npair_tmp) = 0.0_fp
 
       i = 0
+      minval_xcorr(j) = 0.0_fp
       do jj = 1, nsta_count(j) - 1
         waveform_fft(1 : ntime_fft, 1) = 0.0_fp
         waveform_fft(1 : nsec_buf * sampling_int_use, 1) &
@@ -247,11 +247,13 @@ program AELUMA_shmdump
           call correlation_fft(waveform_fft, ntime_fft, xcorr)
           max_xcorr = maxloc(xcorr) - ntime_fft2
 
-          if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
+          !if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
+          minval_xcorr(j) = minval_xcorr(j) + xcorr(max_xcorr(1))
           lagtime(i) = real(max_xcorr(1), kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
           xcorr_index(ii, jj) = i
         enddo
       enddo
+      minval_xcorr(j) = minval_xcorr(j) / real(i, kind = fp)
 
       !!check cross-correlation value
       correlation_consistency: do jj = 1, nsta_count(j) - 2
@@ -311,6 +313,8 @@ program AELUMA_shmdump
       else
         arrivaltime(j) = real(maxloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
       endif
+      !arrivaltime(j) = (real(maxloc_stack(1), kind = fp) + real(minloc_stack(1), kind = fp)) * 0.5_fp &
+      !&              / real(sampling_int_use, kind = fp)
       if(abs(arrivaltime(j)) .lt. 1.0_fp / real(sampling_int_use, kind = fp)) xcorr_flag(j) = .false.
       !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)

@@ -1039,7 +1039,7 @@ subroutine ball01_sample_nd ( dim_num, seed, p )
     r = r8_uniform_01 ( seed )
     random_cosine = 2.0_fp * r - 1.0_fp
     r = r8_uniform_01 ( seed )
-    random_sign = real ( 2 * int ( 2.0_fp * r ) - 1, kind = 8 )
+    random_sign = real ( 2 * int ( 2.0_fp * r ) - 1, kind = fp )
     r = r8_uniform_01 ( seed )
     random_sine = random_sign * sqrt ( 1.0_fp - random_cosine * random_cosine )
 
@@ -1051,7 +1051,7 @@ subroutine ball01_sample_nd ( dim_num, seed, p )
 
   r = r8_uniform_01 ( seed )
 
-  r = r ** ( 1.0_fp / real ( dim_num, kind = 8 ) )
+  r = r ** ( 1.0_fp / real ( dim_num, kind = fp ) )
 
   p(1:dim_num) = r * p(1:dim_num)
 
@@ -2566,7 +2566,7 @@ subroutine circle_imp_point_near_2d ( r, pc, p, pn, dist )
 
   if ( all ( p(1:dim_num) == pc(1:dim_num) ) ) then
     dist = r
-    pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = 8 ) )
+    pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = fp ) )
     return
   end if
 
@@ -2631,7 +2631,7 @@ subroutine circle_imp_points_2d ( r, pc, n, p )
   real ( kind = fp ) theta
 
   do j = 1, n
-    theta = 2.0_fp * r8_pi * real ( j - 1, kind = 8 ) / real ( n, kind = 8 )
+    theta = 2.0_fp * r8_pi * real ( j - 1, kind = fp ) / real ( n, kind = fp )
     p(1:dim_num,j) = pc(1:dim_num) + r * (/ cos ( theta ), sin ( theta ) /)
   end do
 
@@ -2710,8 +2710,8 @@ subroutine circle_imp_points_3d ( r, pc, nc, n, p )
 !
   do j = 1, n
 
-    theta = ( 2.0_fp * r8_pi * real ( j - 1, kind = 8 ) ) &
-      / real ( n, kind = 8 )
+    theta = ( 2.0_fp * r8_pi * real ( j - 1, kind = fp ) ) &
+      / real ( n, kind = fp )
 
     p(1:dim_num,j) = pc(1:dim_num) &
       + r * ( cos ( theta ) * n1(1:dim_num) &
@@ -2791,9 +2791,9 @@ subroutine circle_imp_points_arc_2d ( r, pc, theta1, theta2, n, p )
   do i = 1, n
 
     if ( 1 < n ) then
-      theta = ( real ( n - i,     kind = 8 ) * theta1   &
-              + real (     i - 1, kind = 8 ) * theta3 ) &
-              / real ( n     - 1, kind = 8 )
+      theta = ( real ( n - i,     kind = fp ) * theta1   &
+              + real (     i - 1, kind = fp ) * theta3 ) &
+              / real ( n     - 1, kind = fp )
     else
       theta = 0.5_fp * ( theta1 + theta3 )
     end if
@@ -3372,8 +3372,8 @@ subroutine circle_lune_height_by_angle_2d ( r, angle, height )
   implicit none
 
   real ( kind = fp ) angle
-  real  ( kind = 8 ) height
-  real  ( kind = 8 ) r
+  real  ( kind = fp ) height
+  real  ( kind = fp ) r
 
   height = r * cos ( angle / 2.0_fp )
 
@@ -5630,9 +5630,9 @@ subroutine dms_to_radians ( degrees, minutes, seconds, radians )
   real ( kind = fp ) radians
   integer ( kind = 4 ) seconds
 
-  angle =   real ( degrees, kind = 8 ) &
-        + ( real ( minutes, kind = 8 ) &
-        + ( real ( seconds, kind = 8 ) / 60.0_fp ) ) / 60.0_fp
+  angle =   real ( degrees, kind = fp ) &
+        + ( real ( minutes, kind = fp ) &
+        + ( real ( seconds, kind = fp ) / 60.0_fp ) ) / 60.0_fp
 
   radians = ( angle / 180.0_fp ) * r8_pi
 
@@ -6485,8 +6485,8 @@ subroutine ellipse_points_2d ( pc, r1, r2, psi, n, p )
 
   do i = 1, n
 
-    theta = ( 2.0_fp * r8_pi * real ( i - 1, kind = 8 ) ) &
-      / real ( n, kind = 8 )
+    theta = ( 2.0_fp * r8_pi * real ( i - 1, kind = fp ) ) &
+      / real ( n, kind = fp )
 
     p(1,i) = pc(1) + r1 * cos ( psi ) * cos ( theta ) &
                    - r2 * sin ( psi ) * sin ( theta )
@@ -6575,9 +6575,9 @@ subroutine ellipse_points_arc_2d ( pc, r1, r2, psi, theta1, theta2, n, p )
   do i = 1, n
 
     if ( 1 < n ) then
-      theta = ( real ( n - i,     kind = 8 ) * theta1 &
-              + real (     i - 1, kind = 8 ) * theta3 ) &
-              / real ( n     - 1, kind = 8 )
+      theta = ( real ( n - i,     kind = fp ) * theta1 &
+              + real (     i - 1, kind = fp ) * theta3 ) &
+              / real ( n     - 1, kind = fp )
     else
       theta = 0.5_fp * ( theta1 + theta3 )
     end if
@@ -6635,12 +6635,12 @@ subroutine get_seed ( seed )
 
   temp = 0.0_fp
 
-  temp = temp + real ( values(2) - 1, kind = 8 ) / 11.0_fp
-  temp = temp + real ( values(3) - 1, kind = 8 ) / 30.0_fp
-  temp = temp + real ( values(5),     kind = 8 ) / 23.0_fp
-  temp = temp + real ( values(6),     kind = 8 ) / 59.0_fp
-  temp = temp + real ( values(7),     kind = 8 ) / 59.0_fp
-  temp = temp + real ( values(8),     kind = 8 ) / 999.0_fp
+  temp = temp + real ( values(2) - 1, kind = fp ) / 11.0_fp
+  temp = temp + real ( values(3) - 1, kind = fp ) / 30.0_fp
+  temp = temp + real ( values(5),     kind = fp ) / 23.0_fp
+  temp = temp + real ( values(6),     kind = fp ) / 59.0_fp
+  temp = temp + real ( values(7),     kind = fp ) / 59.0_fp
+  temp = temp + real ( values(8),     kind = fp ) / 999.0_fp
   temp = temp / 6.0_fp
 !
 !  Force 0 < TEMP <= 1.
@@ -6653,7 +6653,7 @@ subroutine get_seed ( seed )
     temp = temp - 1.0_fp
   end do
 
-  seed = int ( real ( huge ( 1 ), kind = 8 ) * temp )
+  seed = int ( real ( huge ( 1 ), kind = fp ) * temp )
 !
 !  Never use a seed of 0 or maximum integer.
 !
@@ -7286,9 +7286,9 @@ subroutine helix_shape_3d ( a, n, r, theta1, theta2, p )
     if ( n == 1 ) then
       theta = 0.5_fp * ( theta1 + theta2 )
     else
-      theta = ( real ( n - i,     kind = 8 ) * theta1 &
-              + real (     i - 1, kind = 8 ) * theta2 ) &
-              / real ( n     - 1, kind = 8 )
+      theta = ( real ( n - i,     kind = fp ) * theta1 &
+              + real (     i - 1, kind = fp ) * theta2 ) &
+              / real ( n     - 1, kind = fp )
     end if
 
     p(1,i) = r * cos ( theta )
@@ -7663,13 +7663,13 @@ function hyperball01_volume ( m )
     m_half = ( m / 2 )
     volume = r8_pi ** m_half
     do i = 1, m_half
-      volume = volume / real ( i, kind = 8 )
+      volume = volume / real ( i, kind = fp )
     end do
   else
     m_half = ( ( m - 1 ) / 2 )
     volume = r8_pi ** m_half * 2.0_fp ** m
     do i = m_half + 1, 2 * m_half + 1
-      volume = volume / real ( i, kind = 8 )
+      volume = volume / real ( i, kind = fp )
     end do
   end if
 
@@ -7718,8 +7718,8 @@ function i4_dedekind_factor ( p, q )
   if ( mod ( p, q ) == 0 ) then
     i4_dedekind_factor = 0.0_fp
   else
-    i4_dedekind_factor = real ( p, kind = 8 ) / real ( q, kind = 8 ) &
-      - real ( ( p / q ), kind = 8 ) - 0.5_fp
+    i4_dedekind_factor = real ( p, kind = fp ) / real ( q, kind = fp ) &
+      - real ( ( p / q ), kind = fp ) - 0.5_fp
   end if
 
   return
@@ -14944,15 +14944,15 @@ subroutine plane_exp_grid_3d ( p1, p2, p3, ncor3, line_num, cor3, lines, &
 
   do j = 1, ny
 
-    b = ( real ( ny - j,     kind = 8 ) * bmin &
-        + real (      j - 1, kind = 8 ) * bmax ) &
-        / real ( ny     - 1, kind = 8 )
+    b = ( real ( ny - j,     kind = fp ) * bmin &
+        + real (      j - 1, kind = fp ) * bmax ) &
+        / real ( ny     - 1, kind = fp )
 
     do i = 1, nx
 
-      a = ( real ( nx - i,     kind = 8 ) * amin &
-          + real (      i - 1, kind = 8 ) * amax ) &
-          / real ( nx     - 1, kind = 8 )
+      a = ( real ( nx - i,     kind = fp ) * amin &
+          + real (      i - 1, kind = fp ) * amax ) &
+          / real ( nx     - 1, kind = fp )
 
       ncor3 = ncor3 + 1
       cor3(1:dim_num,ncor3) = a * v1(1:dim_num) + b * v2(1:dim_num)
@@ -18350,7 +18350,7 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
 
   if ( x_scale < y_scale ) then
 
-    delta = nint ( real ( x_ps_max - x_ps_min, kind = 8 ) &
+    delta = nint ( real ( x_ps_max - x_ps_min, kind = fp ) &
       * ( y_scale - x_scale ) / ( 2.0_fp * y_scale ) )
 
     x_ps_max = x_ps_max - delta
@@ -18363,7 +18363,7 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
 
   else if ( y_scale < x_scale ) then
 
-    delta = nint ( real ( y_ps_max - y_ps_min, kind = 8 ) &
+    delta = nint ( real ( y_ps_max - y_ps_min, kind = fp ) &
       * ( x_scale - y_scale ) / ( 2.0_fp * x_scale ) )
 
     y_ps_max = y_ps_max - delta
@@ -18460,13 +18460,13 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
   do node = 1, node_num
 
     x_ps = int ( &
-      ( ( x_max - node_xy(1,node)         ) * real ( x_ps_min, kind = 8 )   &
-      + (         node_xy(1,node) - x_min ) * real ( x_ps_max, kind = 8 ) ) &
+      ( ( x_max - node_xy(1,node)         ) * real ( x_ps_min, kind = fp )   &
+      + (         node_xy(1,node) - x_min ) * real ( x_ps_max, kind = fp ) ) &
       / ( x_max                   - x_min ) )
 
     y_ps = int ( &
-      ( ( y_max - node_xy(2,node)         ) * real ( y_ps_min, kind = 8 )   &
-      + (         node_xy(2,node) - y_min ) * real ( y_ps_max, kind = 8 ) ) &
+      ( ( y_max - node_xy(2,node)         ) * real ( y_ps_min, kind = fp )   &
+      + (         node_xy(2,node) - y_min ) * real ( y_ps_max, kind = fp ) ) &
       / ( y_max                   - y_min ) )
 
     write ( file_unit, '(a,i4,2x,i4,2x,i4,2x,a)' ) 'newpath ', x_ps, y_ps, &
@@ -18491,13 +18491,13 @@ subroutine points_plot ( file_name, node_num, node_xy, node_label )
     do node = 1, node_num
 
       x_ps = int ( &
-        ( ( x_max - node_xy(1,node)         ) * real ( x_ps_min, kind = 8 )   &
-        + (       + node_xy(1,node) - x_min ) * real ( x_ps_max, kind = 8 ) ) &
+        ( ( x_max - node_xy(1,node)         ) * real ( x_ps_min, kind = fp )   &
+        + (       + node_xy(1,node) - x_min ) * real ( x_ps_max, kind = fp ) ) &
         / ( x_max                   - x_min ) )
 
       y_ps = int ( &
-        ( ( y_max - node_xy(2,node)         ) * real ( y_ps_min, kind = 8 )   &
-        + (         node_xy(2,node) - y_min ) * real ( y_ps_max, kind = 8 ) ) &
+        ( ( y_max - node_xy(2,node)         ) * real ( y_ps_min, kind = fp )   &
+        + (         node_xy(2,node) - y_min ) * real ( y_ps_max, kind = fp ) ) &
         / ( y_max                   - y_min ) )
 
       write ( string, '(i4)' ) node
@@ -18990,7 +18990,7 @@ subroutine polygon_area_3d ( n, v, area, normal )
   if ( area /= 0.0_fp ) then
     normal(1:dim_num) = normal(1:dim_num) / area
   else
-    normal(1:dim_num) = 1.0_fp / sqrt ( real ( dim_num, kind = 8 ) )
+    normal(1:dim_num) = 1.0_fp / sqrt ( real ( dim_num, kind = fp ) )
   end if
 
   area = 0.5_fp * area
@@ -19759,8 +19759,8 @@ subroutine polygon_inrad_data_2d ( n, radin, area, radout, side )
     stop 1
   end if
 
-  angle = r8_pi / real ( n, kind = 8 )
-  area = real ( n, kind = 8 ) * radin * radin * tan ( angle )
+  angle = r8_pi / real ( n, kind = fp )
+  area = real ( n, kind = fp ) * radin * radin * tan ( angle )
   side = 2.0_fp * radin * tan ( angle )
   radout = 0.5_fp * side / sin ( angle )
 
@@ -19982,7 +19982,7 @@ subroutine polygon_lattice_area_2d ( i, b, area )
   integer ( kind = 4 ) b
   integer ( kind = 4 ) i
 
-  area = real ( i, kind = 8 ) + real ( b, kind = 8 ) / 2.0_fp - 1.0_fp
+  area = real ( i, kind = fp ) + real ( b, kind = fp ) / 2.0_fp - 1.0_fp
 
   return
 end
@@ -20132,8 +20132,8 @@ subroutine polygon_outrad_data_2d ( n, radout, area, radin, side )
     stop 1
   end if
 
-  angle = r8_pi / real ( n, kind = 8 )
-  area = 0.5_fp * real ( n, kind = 8 ) * radout * radout &
+  angle = r8_pi / real ( n, kind = fp )
+  area = 0.5_fp * real ( n, kind = fp ) * radout * radout &
     * sin ( 2.0_fp * angle )
   side = 2.0_fp * radout * sin ( angle )
   radin = 0.5_fp * side / tan ( angle )
@@ -20324,8 +20324,8 @@ subroutine polygon_side_data_2d ( n, side, area, radin, radout )
     stop 1
   end if
 
-  angle = r8_pi / real ( n, kind = 8 )
-  area = 0.25_fp * real ( n, kind = 8 ) * side * side / tan ( angle )
+  angle = r8_pi / real ( n, kind = fp )
+  area = 0.25_fp * real ( n, kind = fp ) * side * side / tan ( angle )
   radin = 0.5_fp * side / tan ( angle )
   radout = 0.5_fp * side / sin ( angle )
 
@@ -20464,7 +20464,7 @@ subroutine polygon_solid_angle_3d ( n, v, p, solid_angle )
 
   end do
 
-  area = area - r8_pi * real ( n - 2, kind = 8 )
+  area = area - r8_pi * real ( n - 2, kind = fp )
 
   if ( 0.0_fp < dot_product ( plane(1:dim_num), r1(1:dim_num) ) ) then
     solid_angle = -area
@@ -21733,9 +21733,9 @@ subroutine polyline_points_nd ( dim_num, n, p, nt, pt )
 
   do it = 1,  nt
 
-    st = ( real ( nt - it,     kind = 8 ) * 0.0_fp + &
-           real (      it - 1, kind = 8 ) * s(n) ) &
-         / real ( nt      - 1, kind = 8 )
+    st = ( real ( nt - it,     kind = fp ) * 0.0_fp + &
+           real (      it - 1, kind = fp ) * s(n) ) &
+         / real ( nt      - 1, kind = fp )
 
     do
 
@@ -21948,9 +21948,9 @@ subroutine polyloop_points_nd ( dim_num, nk, pk, nt, pt )
 
   do it = 1,  nt
 
-    st = ( real ( nt - it,     kind = 8 ) * 0.0_fp + &
-           real (      it - 1, kind = 8 ) * sk(nk+1) ) &
-         / real ( nt      - 1, kind = 8 )
+    st = ( real ( nt - it,     kind = fp ) * 0.0_fp + &
+           real (      it - 1, kind = fp ) * sk(nk+1) ) &
+         / real ( nt      - 1, kind = fp )
 
     do
 
@@ -23102,11 +23102,11 @@ function r8_is_int ( r )
   real ( kind = fp ) r
   logical ( kind = 4 ) r8_is_int
 
-  if ( real ( huge ( i ), kind = 8 ) < r ) then
+  if ( real ( huge ( i ), kind = fp ) < r ) then
     r8_is_int = .false.
-  else if ( r < - real ( huge ( i ), kind = 8 ) ) then
+  else if ( r < - real ( huge ( i ), kind = fp ) ) then
     r8_is_int = .false.
-  else if ( r == real ( int ( r ), kind = 8 ) ) then
+  else if ( r == real ( int ( r ), kind = fp ) ) then
     r8_is_int = .true.
   else
     r8_is_int = .false.
@@ -23564,7 +23564,7 @@ function r8_uniform ( a, b, seed )
     seed = seed + 2147483647
   end if
 
-  r8_uniform = a + ( b - a ) * real ( seed, kind = 8 ) * 4.656612875D-10
+  r8_uniform = a + ( b - a ) * real ( seed, kind = fp ) * 4.656612875D-10
 
   return
 end
@@ -23666,7 +23666,7 @@ function r8_uniform_01 ( seed )
 !  Although SEED can be represented exactly as a 32 bit integer,
 !  it generally cannot be represented exactly as a 32 bit real number!
 !
-  r8_uniform_01 = real ( seed, kind = 8 ) * 4.656612875D-10
+  r8_uniform_01 = real ( seed, kind = fp ) * 4.656612875D-10
 
   return
 end
@@ -24662,7 +24662,7 @@ subroutine r8mat_print_some ( m, n, a, ilo, jlo, ihi, jhi, title )
 
         j = j2lo - 1 + j2
 
-        if ( a(i,j) == real ( int ( a(i,j) ), kind = 8 ) ) then
+        if ( a(i,j) == real ( int ( a(i,j) ), kind = fp ) ) then
           write ( ctemp(j2), '(f8.0,6x)' ) a(i,j)
         else
           write ( ctemp(j2), '(g14.6)' ) a(i,j)
@@ -25065,7 +25065,7 @@ subroutine r8mat_uniform ( m, n, a, b, seed, r )
         seed = seed + 2147483647
       end if
 
-      r(i,j) = a + ( b - a ) * real ( seed, kind = 8 ) * 4.656612875D-10
+      r(i,j) = a + ( b - a ) * real ( seed, kind = fp ) * 4.656612875D-10
 
     end do
   end do
@@ -25155,7 +25155,7 @@ subroutine r8mat_uniform_01 ( m, n, seed, r )
         seed = seed + 2147483647
       end if
 
-      r(i,j) = real ( seed, kind = 8 ) * 4.656612875D-10
+      r(i,j) = real ( seed, kind = fp ) * 4.656612875D-10
 
     end do
   end do
@@ -26547,7 +26547,7 @@ subroutine r8vec_uniform_01 ( n, seed, r )
       seed = seed + 2147483647
     end if
 
-    r(i) = real ( seed, kind = 8 ) * 4.656612875D-10
+    r(i) = real ( seed, kind = fp ) * 4.656612875D-10
 
   end do
 
@@ -26633,7 +26633,7 @@ subroutine r8vec_uniform_ab ( n, a, b, seed, r )
       seed = seed + 2147483647
     end if
 
-    r(i) = a + ( b - a ) * real ( seed, kind = 8 ) * 4.656612875D-10
+    r(i) = a + ( b - a ) * real ( seed, kind = fp ) * 4.656612875D-10
 
   end do
 
@@ -26905,9 +26905,9 @@ subroutine radians_to_dms ( angle_rad, degrees, minutes, seconds )
   angle_deg = 180.0_fp * abs ( angle_rad ) / r8_pi
 
   degrees = int ( angle_deg )
-  angle_deg = ( angle_deg - real ( degrees, kind = 8 ) ) * 60.0_fp
+  angle_deg = ( angle_deg - real ( degrees, kind = fp ) ) * 60.0_fp
   minutes = int ( angle_deg )
-  angle_deg = ( angle_deg - real ( minutes, kind = 8 ) ) * 60.0_fp
+  angle_deg = ( angle_deg - real ( minutes, kind = fp ) ) * 60.0_fp
   seconds = nint ( angle_deg )
 
   if ( angle_rad < 0.0_fp ) then
@@ -28476,7 +28476,7 @@ subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
 !
 !  Determine the angle subtended by a single side.
 !
-  sector_angle = 360.0_fp / real ( side_num, kind = 8 )
+  sector_angle = 360.0_fp / real ( side_num, kind = fp )
 !
 !  How long is the half-diagonal?
 !
@@ -28494,7 +28494,7 @@ subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
 !  nearest distance is the midpoint of any such side.
 !
   if ( all ( p(1:dim_num) == pc(1:dim_num) ) ) then
-    dist = radius * cos ( r8_pi / real ( side_num, kind = 8 ) )
+    dist = radius * cos ( r8_pi / real ( side_num, kind = fp ) )
     return
   end if
 !
@@ -28509,12 +28509,12 @@ subroutine shape_point_dist_2d ( pc, p1, side_num, p, dist )
 !
 !  Generate the two corner points that terminate the SECTOR-th side.
 !
-  angle2 = real ( sector_index - 1, kind = 8 ) * sector_angle
+  angle2 = real ( sector_index - 1, kind = fp ) * sector_angle
   angle2 = degrees_to_radians ( angle2 )
 
   call vector_rotate_base_2d ( p1, pc, angle2, pa )
 
-  angle2 = real ( sector_index, kind = 8 ) * sector_angle
+  angle2 = real ( sector_index, kind = fp ) * sector_angle
   angle2 = degrees_to_radians ( angle2 )
 
   call vector_rotate_base_2d ( p1, pc, angle2, pb )
@@ -28590,7 +28590,7 @@ subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
 !
 !  Determine the angle subtended by a single side.
 !
-  sector_angle = 360.0_fp / real ( side_num, kind = 8 )
+  sector_angle = 360.0_fp / real ( side_num, kind = fp )
 !
 !  How long is the half-diagonal?
 !
@@ -28609,7 +28609,7 @@ subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
 !  nearest distance is the midpoint of any such side.
 !
   if ( all ( p(1:dim_num) == pc(1:dim_num) ) ) then
-    angle = r8_pi / real ( side_num, kind = 8 )
+    angle = r8_pi / real ( side_num, kind = fp )
     pd(1) =   ( p(1) - pc(1) ) * cos ( angle ) &
             + ( p(2) - pc(2) ) * sin ( angle )
     pd(2) = - ( p(1) - pc(1) ) * sin ( angle ) &
@@ -28631,12 +28631,12 @@ subroutine shape_point_near_2d ( pc, p1, side_num, p, pn, dist )
 !
 !  Generate the two corner points that terminate the SECTOR-th side.
 !
-  angle2 = real ( sector_index - 1, kind = 8 ) * sector_angle
+  angle2 = real ( sector_index - 1, kind = fp ) * sector_angle
   angle2 = degrees_to_radians ( angle2 )
 
   call vector_rotate_base_2d ( p1, pc, angle2, pa )
 
-  angle2 = real ( sector_index, kind = 8 ) * sector_angle
+  angle2 = real ( sector_index, kind = fp ) * sector_angle
   angle2 = degrees_to_radians ( angle2 )
 
   call vector_rotate_base_2d ( p1, pc, angle2, pb )
@@ -28797,7 +28797,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 !
 !  Determine the angle subtended by a single side.
 !
-  sector_angle = 360.0_fp / real ( side_num, kind = 8 )
+  sector_angle = 360.0_fp / real ( side_num, kind = fp )
 !
 !  How long is the half-diagonal?
 !
@@ -28822,7 +28822,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 !
     if ( sector_index == 1 ) then
 
-      angle2 = real ( sector_index - 1, kind = 8 ) * sector_angle
+      angle2 = real ( sector_index - 1, kind = fp ) * sector_angle
       angle2 = degrees_to_radians ( angle2 )
 
       call vector_rotate_base_2d ( p1, pc, angle2, v1 )
@@ -28833,7 +28833,7 @@ subroutine shape_ray_int_2d ( pc, p1, side_num, pa, pb, pint )
 
     end if
 
-    angle2 = real ( sector_index, kind = 8 ) * sector_angle
+    angle2 = real ( sector_index, kind = fp ) * sector_angle
     angle2 = degrees_to_radians ( angle2 )
 
     call vector_rotate_base_2d ( p1, pc, angle2, v2 )
@@ -29207,7 +29207,7 @@ subroutine simplex01_volume_nd ( dim_num, volume )
 
   volume = 1.0_fp
   do i = 1, dim_num
-    volume = volume / real ( i, kind = 8 )
+    volume = volume / real ( i, kind = fp )
   end do
 
   return
@@ -29278,7 +29278,7 @@ subroutine simplex_volume_nd ( dim_num, a, volume )
 
     volume = abs ( det )
     do i = 1, dim_num
-      volume = volume / real ( i, kind = 8 )
+      volume = volume / real ( i, kind = fp )
     end do
 
   end if
@@ -29360,9 +29360,9 @@ function sin_power_int ( a, b, n )
   end if
 
   do m = mlo, n, 2
-    value = ( real ( m - 1, kind = 8 ) * value &
+    value = ( real ( m - 1, kind = fp ) * value &
               + sa**( m - 1 ) * ca - sb**( m - 1 ) * cb ) &
-      / real ( m, kind = 8 )
+      / real ( m, kind = fp )
   end do
 
   sin_power_int = value
@@ -29439,7 +29439,7 @@ subroutine soccer_shape_3d ( point_num, face_num, face_order_max, point_coord, &
 !  Set the point coordinates.
 !
   point_coord(1:dim_num,1:point_num) = reshape ( (/ &
-       -0.100714D+01,   0.153552_fp,   0.067258_fp, &
+       -0.100714e+01_fp,   0.153552_fp,   0.067258_fp, &
        -0.960284_fp,   0.0848813_fp, -0.336290_fp, &
        -0.951720_fp,  -0.153552_fp,   0.336290_fp, &
        -0.860021_fp,   0.529326_fp,   0.150394_fp, &
@@ -29467,10 +29467,10 @@ subroutine soccer_shape_3d ( point_num, face_num, face_order_max, point_coord, &
        -0.165499_fp,   0.608015_fp,  -0.803348_fp, &
        -0.147123_fp,  -0.375774_fp,   0.937864_fp, &
        -0.103533_fp,   0.882697_fp,  -0.502561_fp, &
-       -0.513806D-01,   0.666667_fp,   0.771593_fp, &
+       -0.513806e-01_fp,   0.666667_fp,   0.771593_fp, &
         0.000000_fp,   0.000000_fp,   1.021000_fp, &
         0.000000_fp,   0.000000_fp,  -1.021000_fp, &
-        0.513806D-01,  -0.666667_fp,  -0.771593_fp, &
+        0.513806e-01_fp,  -0.666667_fp,  -0.771593_fp, &
         0.103533_fp,  -0.882697_fp,   0.502561_fp, &
         0.147123_fp,   0.375774_fp,  -0.937864_fp, &
         0.165499_fp,  -0.608015_fp,   0.803348_fp, &
@@ -30010,9 +30010,9 @@ subroutine sphere_cap_area_nd ( dim_num, r, h, area )
     do i = 2, dim_num-2
       tk = tj
       tj = ti
-      ti = ( real ( i - 1, kind = 8 ) * tk &
+      ti = ( real ( i - 1, kind = fp ) * tk &
         - cos ( theta ) * sin ( theta ) ** ( i - 1 ) ) &
-        / real ( i, kind = 8 )
+        / real ( i, kind = fp )
     end do
 
     area = sphere_k ( dim_num-1 ) * ti * r ** ( dim_num - 1 )
@@ -30742,7 +30742,7 @@ subroutine sphere_exp_point_near_3d ( p1, p2, p3, p4, p, pn )
   norm = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
 
   if ( norm == 0.0_fp ) then
-    pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = 8 ) )
+    pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = fp ) )
     return
   end if
 !
@@ -31189,9 +31189,9 @@ subroutine sphere_imp_line_project_3d ( r, pc, n, p, maxpnt2, n2, pp, &
             do j = 1, nfill-1
 
               pd(1:dim_num) = &
-                ( real ( nfill - j, kind = 8 ) &
+                ( real ( nfill - j, kind = fp ) &
                 * ( p1(1:dim_num) - pc(1:dim_num) ) &
-                + real (         j, kind = 8 ) &
+                + real (         j, kind = fp ) &
                 * ( p2(1:dim_num) - pc(1:dim_num) ) )
 
               tnorm = sqrt ( sum ( pd(1:dim_num)**2 ) )
@@ -31334,7 +31334,7 @@ subroutine sphere_imp_point_near_3d ( r, pc, p, pn )
   norm = sqrt ( sum ( ( p(1:dim_num) - pc(1:dim_num) )**2 ) )
 
   if ( norm == 0.0_fp ) then
-    pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = 8 ) )
+    pn(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = fp ) )
     return
   end if
 !
@@ -31395,7 +31395,7 @@ subroutine sphere_imp_point_project_3d ( r, pc, p, pp )
 
   else if ( all ( p(1:dim_num) == pc(1:dim_num) ) ) then
 
-    pp(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = 8 ) )
+    pp(1:dim_num) = pc(1:dim_num) + r / sqrt ( real ( dim_num, kind = fp ) )
 
   else
 
@@ -31771,7 +31771,7 @@ function sphere_k ( dim_num )
     sphere_k = 2.0_fp * ( 2.0_fp * r8_pi ) ** ( ( dim_num - 1 ) / 2 )
   end if
 
-  sphere_k = sphere_k / real ( i4_factorial2 ( dim_num - 2 ), kind = 8 )
+  sphere_k = sphere_k / real ( i4_factorial2 ( dim_num - 2 ), kind = fp )
 
   return
 end
@@ -32297,13 +32297,13 @@ function sphere01_area_nd ( dim_num )
     m = dim_num / 2
     area = 2.0_fp * ( r8_pi ) ** m
     do i = 1, m - 1
-      area = area / real ( i, kind = 8 )
+      area = area / real ( i, kind = fp )
     end do
   else
     m = ( dim_num - 1 ) / 2
     area = ( r8_pi ) ** m * 2.0_fp ** dim_num
     do i = m + 1, 2 * m
-      area = area / real ( i,  kind = 8 )
+      area = area / real ( i,  kind = fp )
     end do
   end if
 
@@ -32383,24 +32383,24 @@ subroutine sphere01_area_values ( n_data, n, area )
 
   real ( kind = fp ) area
   real ( kind = fp ), save, dimension ( n_max ) :: area_vec = (/ &
-    0.2000000000000000D+01, &
-    0.6283185307179586D+01, &
-    0.1256637061435917D+02, &
-    0.1973920880217872D+02, &
-    0.2631894506957162D+02, &
-    0.3100627668029982D+02, &
-    0.3307336179231981D+02, &
-    0.3246969701133415D+02, &
-    0.2968658012464836D+02, &
-    0.2550164039877345D+02, &
-    0.2072514267328890D+02, &
-    0.1602315322625507D+02, &
-    0.1183817381218268D+02, &
-    0.8389703410491089D+01, &
-    0.5721649212349567D+01, &
-    0.3765290085742291D+01, &
-    0.2396678817591364D+01, &
-    0.1478625959000308D+01, &
+    0.2000000000000000e+01_fp, &
+    0.6283185307179586e+01_fp, &
+    0.1256637061435917e+02_fp, &
+    0.1973920880217872e+02_fp, &
+    0.2631894506957162e+02_fp, &
+    0.3100627668029982e+02_fp, &
+    0.3307336179231981e+02_fp, &
+    0.3246969701133415e+02_fp, &
+    0.2968658012464836e+02_fp, &
+    0.2550164039877345e+02_fp, &
+    0.2072514267328890e+02_fp, &
+    0.1602315322625507e+02_fp, &
+    0.1183817381218268e+02_fp, &
+    0.8389703410491089e+01_fp, &
+    0.5721649212349567e+01_fp, &
+    0.3765290085742291e+01_fp, &
+    0.2396678817591364e+01_fp, &
+    0.1478625959000308e+01_fp, &
     0.8858104195716824_fp, &
     0.5161378278002812_fp /)
   integer ( kind = 4 ) n_data
@@ -32693,7 +32693,7 @@ subroutine sphere01_sample_nd ( dim_num, seed, x )
     random_cosine = r8_uniform_01 ( seed )
     random_cosine = 2.0_fp * random_cosine - 1.0_fp
     random_sign = r8_uniform_01 ( seed )
-    random_sign = real ( 2 * int ( 2.0_fp * random_sign ) - 1,  kind = 8 )
+    random_sign = real ( 2 * int ( 2.0_fp * random_sign ) - 1,  kind = fp )
     random_sine = random_sign * sqrt ( 1.0_fp - random_cosine**2 )
     xi = x(i)
     x(i  ) = random_cosine * xi
@@ -32884,13 +32884,13 @@ function sphere01_volume_nd ( dim_num )
     m = dim_num / 2
     volume = r8_pi ** m
     do i = 1, m
-      volume = volume / real ( i, kind = 8 )
+      volume = volume / real ( i, kind = fp )
     end do
   else
     m = ( dim_num - 1 ) / 2
     volume = r8_pi ** m * 2.0_fp**dim_num
     do i = m + 1, 2 * m + 1
-      volume = volume / real ( i, kind = 8 )
+      volume = volume / real ( i, kind = fp )
     end do
   end if
 
@@ -32987,26 +32987,26 @@ subroutine sphere01_volume_values ( n_data, n, volume )
     19, 20 /)
   real ( kind = fp ) volume
   real ( kind = fp ), save, dimension ( n_max ) :: volume_vec = (/ &
-    0.2000000000000000D+01, &
-    0.3141592653589793D+01, &
-    0.4188790204786391D+01, &
-    0.4934802200544679D+01, &
-    0.5263789013914325D+01, &
-    0.5167712780049970D+01, &
-    0.4724765970331401D+01, &
-    0.4058712126416768D+01, &
-    0.3298508902738707D+01, &
-    0.2550164039877345D+01, &
-    0.1884103879389900D+01, &
-    0.1335262768854589D+01, &
+    0.2000000000000000e+01_fp, &
+    0.3141592653589793e+01_fp, &
+    0.4188790204786391e+01_fp, &
+    0.4934802200544679e+01_fp, &
+    0.5263789013914325e+01_fp, &
+    0.5167712780049970e+01_fp, &
+    0.4724765970331401e+01_fp, &
+    0.4058712126416768e+01_fp, &
+    0.3298508902738707e+01_fp, &
+    0.2550164039877345e+01_fp, &
+    0.1884103879389900e+01_fp, &
+    0.1335262768854589e+01_fp, &
     0.9106287547832831_fp, &
     0.5992645293207921_fp, &
     0.3814432808233045_fp, &
     0.2353306303588932_fp, &
     0.1409811069171390_fp, &
-    0.8214588661112823D-01, &
-    0.4662160103008855D-01, &
-    0.2580689139001406D-01 /)
+    0.8214588661112823e-01_fp, &
+    0.4662160103008855e-01_fp, &
+    0.2580689139001406e-01_fp /)
 
   if ( n_data < 0 ) then
     n_data = 0
@@ -34007,8 +34007,8 @@ subroutine super_ellipse_points_2d ( pc, r1, r2, expo, psi, n, p )
 
   do i = 1, n
 
-    theta = ( 2.0_fp * r8_pi * real ( i - 1, kind = 8 ) ) &
-      / real ( n, kind = 8 )
+    theta = ( 2.0_fp * r8_pi * real ( i - 1, kind = fp ) ) &
+      / real ( n, kind = fp )
 
     act = abs ( cos ( theta ) )
     sct = sign ( 1.0_fp, cos ( theta ) )
@@ -36255,13 +36255,13 @@ subroutine tmat_rot_axis ( a, angle, axis, b )
 !
   implicit none
 
-  real      ( kind = 8 ) a(4,4)
-  real      ( kind = 8 ) angle
-  real      ( kind = 8 ) angle_rad
+  real      ( kind = fp ) a(4,4)
+  real      ( kind = fp ) angle
+  real      ( kind = fp ) angle_rad
   character              axis
-  real      ( kind = 8 ) b(4,4)
-  real      ( kind = 8 ) c(4,4)
-  real      ( kind = 8 ) degrees_to_radians
+  real      ( kind = fp ) b(4,4)
+  real      ( kind = fp ) c(4,4)
+  real      ( kind = fp ) degrees_to_radians
 
   angle_rad = degrees_to_radians ( angle )
 
@@ -38695,15 +38695,15 @@ subroutine triangle_gridpoints_2d ( t, sub_num, grid_max, grid_num, g )
 
         grid_num = grid_num + 1
 
-        g(1,grid_num) = ( real (           i,     kind = 8 ) * t(1,1) &
-                        + real (               j, kind = 8 ) * t(1,2) &
-                        + real ( sub_num - i - j, kind = 8 ) * t(1,3) ) &
-                        / real ( sub_num,         kind = 8 )
+        g(1,grid_num) = ( real (           i,     kind = fp ) * t(1,1) &
+                        + real (               j, kind = fp ) * t(1,2) &
+                        + real ( sub_num - i - j, kind = fp ) * t(1,3) ) &
+                        / real ( sub_num,         kind = fp )
 
-        g(2,grid_num) = ( real (           i,     kind = 8 ) * t(2,1) &
-                        + real (               j, kind = 8 ) * t(2,2) &
-                        + real ( sub_num - i - j, kind = 8 ) * t(2,3) ) &
-                        / real ( sub_num,         kind = 8 )
+        g(2,grid_num) = ( real (           i,     kind = fp ) * t(2,1) &
+                        + real (               j, kind = fp ) * t(2,2) &
+                        + real ( sub_num - i - j, kind = fp ) * t(2,3) ) &
+                        / real ( sub_num,         kind = fp )
       end if
 
     end do
@@ -41295,31 +41295,31 @@ subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
 !  Compute the smallest ALPHA that will change one of V2(1:3) by +-0.5.
 !
   if ( 0 < inc ) then
-    alphai = ( real ( v2(1) - v1(1), kind = 8 ) + 0.5_fp ) &
-             / real ( inc, kind = 8 )
+    alphai = ( real ( v2(1) - v1(1), kind = fp ) + 0.5_fp ) &
+             / real ( inc, kind = fp )
   else if ( inc < 0 ) then
-    alphai = ( real ( v2(1) - v1(1), kind = 8 ) - 0.5_fp ) &
-             / real ( inc, kind = 8 )
+    alphai = ( real ( v2(1) - v1(1), kind = fp ) - 0.5_fp ) &
+             / real ( inc, kind = fp )
   else
     alphai = huge ( alphai )
   end if
 
   if ( 0 < jnc ) then
-    alphaj = ( real ( v2(2) - v1(2), kind = 8 ) + 0.5_fp ) &
-             / real ( jnc, kind = 8 )
+    alphaj = ( real ( v2(2) - v1(2), kind = fp ) + 0.5_fp ) &
+             / real ( jnc, kind = fp )
   else if ( jnc < 0 ) then
-    alphaj = ( real ( v2(2) - v1(2), kind = 8 ) - 0.5_fp ) &
-             / real ( jnc, kind = 8 )
+    alphaj = ( real ( v2(2) - v1(2), kind = fp ) - 0.5_fp ) &
+             / real ( jnc, kind = fp )
   else
     alphaj = huge ( alphaj )
   end if
 
   if ( 0 < knc ) then
-    alphak = ( real ( v2(3) - v1(3), kind = 8 ) + 0.5_fp ) &
-             / real ( knc, kind = 8 )
+    alphak = ( real ( v2(3) - v1(3), kind = fp ) + 0.5_fp ) &
+             / real ( knc, kind = fp )
   else if ( knc < 0 ) then
-    alphak = ( real ( v2(3) - v1(3), kind = 8 ) - 0.5_fp ) &
-             / real ( knc, kind = 8 )
+    alphak = ( real ( v2(3) - v1(3), kind = fp ) - 0.5_fp ) &
+             / real ( knc, kind = fp )
   else
     alphaj = huge ( alphaj )
   end if
@@ -41345,15 +41345,15 @@ subroutine voxels_step_3d ( v1, v2, inc, jnc, knc, v3 )
 !
   if ( alpha == alphai ) then
     v3(1) = v2(1) + sign ( 1, inc )
-    v3(2) = v1(2) + nint ( alpha * real ( jnc, kind = 8 ) )
-    v3(3) = v1(3) + nint ( alpha * real ( knc, kind = 8 ) )
+    v3(2) = v1(2) + nint ( alpha * real ( jnc, kind = fp ) )
+    v3(3) = v1(3) + nint ( alpha * real ( knc, kind = fp ) )
   else if ( alpha == alphaj ) then
-    v3(1) = v1(1) + nint ( alpha * real ( inc, kind = 8 ) )
+    v3(1) = v1(1) + nint ( alpha * real ( inc, kind = fp ) )
     v3(2) = v2(2) + sign ( 1, jnc )
-    v3(3) = v1(3) + nint ( alpha * real ( knc, kind = 8 ) )
+    v3(3) = v1(3) + nint ( alpha * real ( knc, kind = fp ) )
   else if ( alpha == alphak ) then
-    v3(1) = v1(1) + nint ( alpha * real ( inc, kind = 8 ) )
-    v3(2) = v1(2) + nint ( alpha * real ( jnc, kind = 8 ) )
+    v3(1) = v1(1) + nint ( alpha * real ( inc, kind = fp ) )
+    v3(2) = v1(2) + nint ( alpha * real ( jnc, kind = fp ) )
     v3(3) = v2(3) + sign ( 1, knc )
   end if
 

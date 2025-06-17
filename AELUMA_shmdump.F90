@@ -1,5 +1,5 @@
 program AELUMA_shmdump
-  use nrtype, only : fp, sp
+  use nrtype, only : fp, sp, dp
   use tandem
   use typedef
   use calc_kernelmatrix, only : calc_slowness_est_matrix_delaunay_shmdump
@@ -25,9 +25,10 @@ program AELUMA_shmdump
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
   real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
   &                               ptime_cor, stime_cor, sum_abslagtime, sum_lagtime, correlation_checkval
-  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), waveform_fft(1 : ntime_fft, 1 : 2), &
-  &                               taper_window(1 : sampling_int_use * nsec_buf), xcorr(-ntime_fft2 + 1 : ntime_fft2), &
+  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), &
+  &                               taper_window(1 : sampling_int_use * nsec_buf), &
   &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : nsec_buf * sampling_int_use)
+  real(kind = dp)              :: waveform_fft(1 : ntime_fft, 1 : 2), xcorr(-ntime_fft2 + 1 : ntime_fft2)
   real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :), &
   &                               arrivaltime(:)
   character(len = 4)           :: winch_char, comp_tmp
@@ -233,22 +234,22 @@ program AELUMA_shmdump
       i = 0
       minval_xcorr(j) = 0.0_fp
       do jj = 1, nsta_count(j) - 1
-        waveform_fft(1 : ntime_fft, 1) = 0.0_fp
+        waveform_fft(1 : ntime_fft, 1) = 0.0_dp
         waveform_fft(1 : nsec_buf * sampling_int_use, 1) &
-        &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(jj, j)) &
-        &  * taper_window(1 : nsec_buf * sampling_int_use) * order
+        &  = real(waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(jj, j)) &
+        &         * taper_window(1 : nsec_buf * sampling_int_use) * order, kind = dp)
         do ii = jj + 1, nsta_count(j)
           i = i + 1
           waveform_fft(1 : ntime_fft, 2) = 0.0_fp
           waveform_fft(1 : nsec_buf * sampling_int_use, 2) &
-          &  = waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(ii, j)) &
-          &  * taper_window(1 : nsec_buf * sampling_int_use) * order
-          xcorr(-ntime_fft2 + 1 : ntime_fft2) = 0.0_fp
+          &  = real(waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(ii, j)) &
+          &       * taper_window(1 : nsec_buf * sampling_int_use) * order, kind = dp)
+          xcorr(-ntime_fft2 + 1 : ntime_fft2) = 0.0_dp
           call correlation_fft(waveform_fft, ntime_fft, xcorr)
           max_xcorr = maxloc(xcorr) - ntime_fft2
 
           !if(xcorr(max_xcorr(1)) .le. minval_xcorr(j)) minval_xcorr(j) = xcorr(max_xcorr(1))
-          minval_xcorr(j) = minval_xcorr(j) + xcorr(max_xcorr(1))
+          minval_xcorr(j) = minval_xcorr(j) + real(xcorr(max_xcorr(1)), kind = fp)
           lagtime(i) = real(max_xcorr(1), kind = fp) * 1.0_fp / real(sampling_int_use, kind = fp)
           xcorr_index(ii, jj) = i
         enddo

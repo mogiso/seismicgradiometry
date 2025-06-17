@@ -98,7 +98,7 @@ contains
         kahan_val2 = sum_likelihood - kahan_val2
         kahan_val1 = kahan_val1 - kahan_val2
       enddo particleloop
-      if(sum_likelihood .le. 1.0e-100_fp) exit particlefilter
+      if(sum_likelihood .le. 1.0e-38_fp) exit particlefilter
       normalize_likelihood = 1.0_fp / sum_likelihood
 
       !!Rule for exit particlefilter loop

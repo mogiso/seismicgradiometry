@@ -266,6 +266,7 @@ program plot_map_vector
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .lt. narray_use_list(i)) cycle
       endif
+      if(epicenter_acceptcount(i) .gt. epicenter_renew_threshold) cycle
 
       !!calculate azimuthal weighting array
       az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) = 0.0_fp
@@ -286,9 +287,9 @@ program plot_map_vector
       endif
 
       call particlefilter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
-      &                           az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
-      &                           appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime, &
-      &                           appvel_median = appvel_median)
+      &                          az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
+      &                          appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime, &
+      &                          appvel_median = appvel_median)
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters

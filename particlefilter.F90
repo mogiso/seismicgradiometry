@@ -73,7 +73,8 @@ contains
             if(.not. result_exist(arrayindex(i))) cycle
             narray_use_tmp = narray_use_tmp + 1
 
-            ot_diff = origintime(j) - ot_est(narray_use_tmp)
+            !ot_diff = origintime(j) - ot_est(narray_use_tmp)
+            ot_diff = 1.0_fp - origintime(j) / ot_est(narray_use_tmp)
             dist_tmp = log(dist(i))
             if(dist_tmp .lt. 1.0_fp) dist_tmp = 1.0_fp
             likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist_tmp)

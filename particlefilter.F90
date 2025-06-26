@@ -55,7 +55,7 @@ contains
           az(i) = az(i) + pi
           if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
           daz = delta_az(az_obs(arrayindex(i)), az(i))
-          az_weight_index = int(az_obs(arrayindex(i)) / daz_weight) + 1
+          az_weight_index = int(az_obs(arrayindex(i)) / sameaz_num) + 1
           likelihood_azweight = likelihood_weight(azweight_coef, sameaz_num2, az_weight(az_weight_index))
           likelihood_tmp = likelihood_modified(daz, daz_weight2, likelihood_azweight)
           likelihood_particle(j) = likelihood_renew(likelihood_particle(j), likelihood_tmp)

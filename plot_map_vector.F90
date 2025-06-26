@@ -37,7 +37,7 @@ program plot_map_vector
   &                       appvel_median_list(1 : nepicenter),                      &
   &                       likelihood_particle_list(1 : nparticle, 1 : nepicenter), &
   &                       lon_particle(1 : nparticle), lat_particle(1 : nparticle), likelihood_particle(1 : nparticle), &
-  &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / daz_weight) + 1), &
+  &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / sameaz_num) + 1), &
   &                       swap_array2(1 : nparticle)
 
   !!initiate random number generator
@@ -269,11 +269,11 @@ program plot_map_vector
       if(epicenter_acceptcount(i) .gt. epicenter_renew_threshold) cycle
 
       !!calculate azimuthal weighting array
-      az_weight(1 : int(2.0_fp * pi / daz_weight) + 1) = 0.0_fp
+      az_weight(1 : int(2.0_fp * pi / sameaz_num) + 1) = 0.0_fp
       do j = 1, narray
         if(result_exist(arrayindex(j), i)) then
-          az_weight(int(az_obs(arrayindex(j)) / daz_weight) + 1) &
-          &  = az_weight(int(az_obs(arrayindex(j)) / daz_weight) + 1) + 1.0_fp
+          az_weight(int(az_obs(arrayindex(j)) / sameaz_num) + 1) &
+          &  = az_weight(int(az_obs(arrayindex(j)) / sameaz_num) + 1) + 1.0_fp
         endif
       enddo
 

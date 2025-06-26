@@ -82,6 +82,7 @@ module aeluma_parameters
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
   real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
   real(kind = fp),    public, parameter :: min_appvelocity = 0.3_fp
+  real(kind = fp),    public, parameter :: max_slowness = 0.5_fp
 
   integer,            public, parameter :: narray_use_min = 6
   integer,            public, parameter :: epicenter_acceptcount_threshold = 90

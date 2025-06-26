@@ -295,6 +295,11 @@ program AELUMA_shmdump
         deallocate(lagtime)
         cycle
       endif
+      if(slowness(1, j) * slowness(1, j) + slowness(2, j) * slowness(2, j) .gt. max_slowness * max_slowness) then
+        xcorr_flag(j) = .false.
+        deallocate(lagtime)
+        cycle
+      endif
       narray_success = narray_success + 1
       waveform_stacked(1 : nsec_buf * sampling_int_use) = 0.0_fp
       do jj = 1, nsta_count(j)

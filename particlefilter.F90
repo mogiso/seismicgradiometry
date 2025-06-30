@@ -26,7 +26,7 @@ contains
     real(kind = fp), intent(in),  optional :: appvel(:), arrivaltime(:)
     real(kind = fp), intent(out), optional :: origintime(1 : nparticle), appvel_median
     integer                                :: i, j, k, narray_use_tmp, az_weight_index, particlefilter_count, iteration_count
-    real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, daz, likelihood_tmp, &
+    real(kind = fp)                        :: rnd, rnd1, rnd2, maxval_likelihood_particle, az_diff, likelihood_tmp, &
     &                                         likelihood_azweight, kahan_val1, kahan_val2, sum_likelihood, &
     &                                         normalize_likelihood, ot_diff, likelihood_distweight, dist_tmp
     real(kind = fp)                        :: particle_probability(1 : nparticle), &
@@ -54,10 +54,11 @@ contains
           &                     lat_particle(j), lon_particle(j), distance = dist(i), azimuth = az(i))
           az(i) = az(i) + pi
           if(az(i) .ge. 2.0_fp * pi) az(i) = az(i) - 2.0_fp * pi
-          daz = delta_az(az_obs(arrayindex(i)), az(i))
+          az_diff = delta_az(az_obs(arrayindex(i)), az(i))
           az_weight_index = int(az_obs(arrayindex(i)) / sameaz_num) + 1
           likelihood_azweight = likelihood_weight(azweight_coef, sameaz_num2, az_weight(az_weight_index))
-          likelihood_tmp = likelihood_modified(daz, daz_weight2, likelihood_azweight)
+          !likelihood_azweight = 0.5_fp
+          likelihood_tmp = likelihood_modified(az_diff, sigma_azdiff2, likelihood_azweight)
           likelihood_particle(j) = likelihood_renew(likelihood_particle(j), likelihood_tmp)
           if(present(arrivaltime) .and. present(appvel) .and. present(origintime)) then
             ot_est(narray_use_tmp) = origintime_cal(arrivaltime(arrayindex(i)), dist(i), appvel(arrayindex(i)))

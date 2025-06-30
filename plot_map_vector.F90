@@ -14,7 +14,7 @@ program plot_map_vector
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
-  real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
+  real(kind = fp) :: slowness_x, slowness_y, az_diff, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
   &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
@@ -84,7 +84,6 @@ program plot_map_vector
     call pc_clear(iwin_eplist)
     call pc_setcolor(iwin_eplist, 0, 0, 0)
     call pc_setline(iwin_eplist, 2)
-    !az_weight(1 : int(2.0_fp * pi / daz_weight)) = 0.0_fp
     read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray, ntriangle
     if(ios .ne. 0) error stop
     read(yr, *) year; year = year + 2000
@@ -147,11 +146,11 @@ program plot_map_vector
             &                     distance = dist_tmp,      azimuth = az_tmp)
             az_tmp = az_tmp + pi
             if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
-            daz = delta_az(az_obs(arrayindex(j)), az_tmp)
+            az_diff = delta_az(az_obs(arrayindex(j)), az_tmp)
             ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
-            likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
+            likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * sigma_azdiff) &
             &                                                * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
-            &                                                              +  (daz     * daz     / daz_weight2)))
+            &                                                              +  (az_diff * az_diff / sigma_azdiff2)))
             kahan_val2 = likelihood_tmp + likelihood_tmp2
             if(abs(likelihood_tmp) .ge. abs(likelihood_tmp2)) then
               kahan_val1 = kahan_val1 + (likelihood_tmp  - kahan_val2) + likelihood_tmp2
@@ -296,25 +295,22 @@ program plot_map_vector
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
-      !if(maxval_likelihood .gt. maxval_likelihood_particle_list(i)) then
-        lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
-        lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
-        origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
-        likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
-        maxval_likelihood_particle_list(i) = maxval_likelihood
-        appvel_median_list(i) = appvel_median
-        narray_use_list(i) = narray_use(i)
-        array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
-        az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
-        appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-      !endif
+      lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
+      lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
+      origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
+      likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
+      maxval_likelihood_particle_list(i) = maxval_likelihood
+      appvel_median_list(i) = appvel_median
+      narray_use_list(i) = narray_use(i)
+      array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
+      az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
+      appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
     enddo
 
     !!sort the order of epicenter list
     do j = 1, nepicenter - 1
       do i = 2, nepicenter - j + 1
         if(epicenter_acceptcount(i) .gt. epicenter_acceptcount(i - 1)) then
-        !if(maxval_likelihood_particle_list(i) .gt. maxval_likelihood_particle_list(i - 1)) then
           swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
           result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
           result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)

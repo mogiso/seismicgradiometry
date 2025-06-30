@@ -158,6 +158,7 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
 
   ntriangle_use = ntriangle
   allocate(slowness_matrix(1 : 2, 1 : npair, 1 : ntriangle_use))
+  kk = 0
   do jj = 1, ntriangle
     if(nsta_count(jj) .eq. 0) cycle
     kk = kk + 1

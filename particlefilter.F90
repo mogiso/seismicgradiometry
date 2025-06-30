@@ -74,11 +74,9 @@ contains
             narray_use_tmp = narray_use_tmp + 1
 
             ot_diff = origintime(j) - ot_est(narray_use_tmp)
-            !ot_diff = 1.0_fp - origintime(j) / ot_est(narray_use_tmp)
             dist_tmp = log(dist(i))
             if(dist_tmp .lt. 1.0_fp) dist_tmp = 1.0_fp
             likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist_tmp)
-            !likelihood_distweight = likelihood_weight(ot_coef, sigma_dist2, dist(i))
             likelihood_tmp = likelihood_modified(ot_diff, sigma_otdiff2, likelihood_distweight)
             likelihood_particle(j) = likelihood_renew(likelihood_particle(j), likelihood_tmp)
             if(likelihood_particle(j) * 0.0_fp .ne. 0.0_fp) then
@@ -93,12 +91,16 @@ contains
           enddo
         endif
 
-        kahan_val1 = kahan_val1 + likelihood_particle(j)
-        kahan_val2 = sum_likelihood
-        sum_likelihood = sum_likelihood + kahan_val1
-        kahan_val2 = sum_likelihood - kahan_val2
-        kahan_val1 = kahan_val1 - kahan_val2
+        kahan_val2 = sum_likelihood + likelihood_particle(j)
+        if(abs(sum_likelihood) .ge. abs(likelihood_particle(j))) then
+          kahan_val1 = kahan_val1 + (sum_likelihood - kahan_val2) + likelihood_particle(j)
+        else
+          kahan_val1 = kahan_val1 + (likelihood_particle(j) - kahan_val2) + sum_likelihood
+        endif
+        sum_likelihood = kahan_val2
+
       enddo particleloop
+      sum_likelihood = sum_likelihood + kahan_val1
       if(sum_likelihood .le. 1.0e-38_fp) exit particlefilter
       normalize_likelihood = 1.0_fp / sum_likelihood
 

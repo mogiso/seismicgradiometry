@@ -15,7 +15,7 @@ program plot_map_vector
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, daz, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
-  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float
+  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:)
@@ -149,15 +149,26 @@ program plot_map_vector
             if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
             daz = delta_az(az_obs(arrayindex(j)), az_tmp)
             ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
-            kahan_val1 = kahan_val1 &
-            &          + likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
-            &          * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
-            &                        +  (daz     * daz     / daz_weight2)))
-            kahan_val2 = likelihood_tmp
-            likelihood_tmp = likelihood_tmp + kahan_val1
-            kahan_val2 = likelihood_tmp - kahan_val2
-            kahan_val1 = kahan_val1 - kahan_val2
+            !kahan_val1 = kahan_val1 &
+            !&          + likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
+            !&          * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
+            !&                        +  (daz     * daz     / daz_weight2)))
+            !kahan_val2 = likelihood_tmp
+            !likelihood_tmp = likelihood_tmp + kahan_val1
+            !kahan_val2 = likelihood_tmp - kahan_val2
+            !kahan_val1 = kahan_val1 - kahan_val2
+            likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
+            &                                                * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
+            &                                                              +  (daz     * daz     / daz_weight2)))
+            kahan_val2 = likelihood_tmp + likelihood_tmp2
+            if(abs(likelihood_tmp) .ge. abs(likelihood_tmp2)) then
+              kahan_val1 = kahan_val1 + (likelihood_tmp  - kahan_val2) + likelihood_tmp2
+            else
+              kahan_val1 = kahan_val1 + (likelihood_tmp2 - kahan_val2) + likelihood_tmp
+            endif
+            likelihood_tmp = kahan_val2
           enddo
+          likelihood_tmp = likelihood_tmp + kahan_val1
           if(likelihood_tmp .lt. min_likelihood_eqobs) then
             result_exist(arrayindex(j), k) = .false.
             narray_use(k) = narray_use(k) - 1
@@ -264,9 +275,8 @@ program plot_map_vector
       !print *, maxval_likelihood_particle_list(i), narray_use(i)
       if(narray_use(i) .lt. narray_use_min) cycle
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
-        if(narray_use(i) .lt. narray_use_list(i)) cycle
+        if(narray_use(i) .le. narray_use_list(i)) cycle
       endif
-      if(epicenter_acceptcount(i) .gt. epicenter_renew_threshold) cycle
 
       !!calculate azimuthal weighting array
       az_weight(1 : int(2.0_fp * pi / sameaz_num) + 1) = 0.0_fp
@@ -293,7 +303,7 @@ program plot_map_vector
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
-      if(maxval_likelihood .gt. maxval_likelihood_particle_list(i)) then
+      !if(maxval_likelihood .gt. maxval_likelihood_particle_list(i)) then
         lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
         lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
@@ -304,7 +314,7 @@ program plot_map_vector
         array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
         az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-      endif
+      !endif
     enddo
 
     !!sort the order of epicenter list

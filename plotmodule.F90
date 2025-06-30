@@ -116,7 +116,7 @@ module plotmodule
       if(.not. result_exist(arrayindex(i))) cycle
       !theta = atan2(slowness_x, slowness_y) * rad2deg
       plot_theta = 90.0_sp - real(az_obs(arrayindex(i)) * rad2deg, kind = sp)
-      vector_len = vector_len_ref * real(appvel_obs(arrayindex(i)) / min_appvelocity, kind = sp)
+      vector_len = vector_len_ref * real(appvel_obs(arrayindex(i)) / ref_appvelocity, kind = sp)
       if(vector_len .gt. 20.0_sp) vector_len = 20.0_sp
       call mercator(center_lon, lon_array(arrayindex(i)), lat_array(arrayindex(i)), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width

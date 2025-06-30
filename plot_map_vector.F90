@@ -149,14 +149,6 @@ program plot_map_vector
             if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
             daz = delta_az(az_obs(arrayindex(j)), az_tmp)
             ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
-            !kahan_val1 = kahan_val1 &
-            !&          + likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
-            !&          * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
-            !&                        +  (daz     * daz     / daz_weight2)))
-            !kahan_val2 = likelihood_tmp
-            !likelihood_tmp = likelihood_tmp + kahan_val1
-            !kahan_val2 = likelihood_tmp - kahan_val2
-            !kahan_val1 = kahan_val1 - kahan_val2
             likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * daz_weight) &
             &                                                * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
             &                                                              +  (daz     * daz     / daz_weight2)))
@@ -169,6 +161,7 @@ program plot_map_vector
             likelihood_tmp = kahan_val2
           enddo
           likelihood_tmp = likelihood_tmp + kahan_val1
+
           if(likelihood_tmp .lt. min_likelihood_eqobs) then
             result_exist(arrayindex(j), k) = .false.
             narray_use(k) = narray_use(k) - 1

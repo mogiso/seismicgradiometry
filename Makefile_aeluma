@@ -18,7 +18,7 @@ endif
 
 ifeq ($(arch),gfortran)
   FC = gfortran
-  FFLAGS = -O2 -frecursive -mcmodel=medium 
+  FFLAGS = -O2 -frecursive -mcmodel=medium -fopenmp-simd -fopenmp -fopt-info
   DEFS = -DDOUBLE 
   LIBS = -llapack95 -llapack -lblas -lixp -lgd -lX11
   LIBDIR = -L/usr/local/lib -L/usr/lib/lapack

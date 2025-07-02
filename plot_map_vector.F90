@@ -5,21 +5,24 @@ program plot_map_vector
   use aeluma_parameters
   use jday
   use particlefilter
+  use xorshift1024star
   use random_number
   use mapprojection
   use plotmodule
   use particlefilter_functions
+  !$ use omp_lib
   implicit none
 
   real(kind = sp) :: plot_x_tmp, plot_y_tmp
-  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer
+  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer, nthread, parallelindex
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, az_diff, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
-  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2
+  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2, &
+  &                  likelihood_sum
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:)
-  integer,         allocatable :: arrayindex(:)
+  integer,         allocatable :: arrayindex(:), parallelindex_start(:), parallelindex_end(:)
   logical,         allocatable :: result_exist(:, :), result_exist_org(:), array_used_list(:, :), swap_logical(:)
 
   real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
@@ -40,10 +43,29 @@ program plot_map_vector
   &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / sameaz_num) + 1), &
   &                       swap_array2(1 : nparticle)
 
+  !!Random number
+  type(xorshift1024star_state), allocatable :: random_status(:)
+  integer                                   :: seed
+
+  nthread = nthread_min
+  !$omp parallel
+  !$ nthread = omp_get_num_threads()
+  !$omp end parallel
+
+  allocate(parallelindex_start(1 : nthread), parallelindex_end(1 : nthread), random_status(1 : nthread))
+  do i = 1, nthread
+    parallelindex_start(i) = nparticle / nthread * (i - 1) + 1
+    if(i .ge. 2) parallelindex_end(i - 1) = parallelindex_start(i) - 1
+  enddo
+  parallelindex_end(nthread) = nparticle
+
   !!initiate random number generator
   call make_seed(seed)
-  call random_generator_init(random_status, seed)
-  print '(a, i0)', "seed = ", seed
+  do i = 1, nthread
+    call random_generator_init(random_status(i), seed)
+    call random_generator_jump(random_status(i), i)
+  enddo
+  print '(2(a, i0))', "seed = ", seed, " nthread = ", nthread
 
   !!Read coastline
   call getarg(1, coastline_txt)
@@ -138,30 +160,39 @@ program plot_map_vector
       if(maxval_likelihood_particle_list(k) .gt. 0.0_fp) then
         do j = 1, narray
           if(.not. result_exist(arrayindex(j), k)) cycle 
-          likelihood_tmp = 0.0_fp
-          kahan_val1 = 0.0_fp
-          do i = 1, nparticle
-            call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
-            &                     lat_particle_list(i, k),  lon_particle_list(i, k),  &
-            &                     distance = dist_tmp,      azimuth = az_tmp)
-            az_tmp = az_tmp + pi
-            if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
-            az_diff = delta_az(az_obs(arrayindex(j)), az_tmp)
-            ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
-            likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * sigma_azdiff) &
-            &                                                * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
-            &                                                              +  (az_diff * az_diff / sigma_azdiff2)))
-            kahan_val2 = likelihood_tmp + likelihood_tmp2
-            if(abs(likelihood_tmp) .ge. abs(likelihood_tmp2)) then
-              kahan_val1 = kahan_val1 + (likelihood_tmp  - kahan_val2) + likelihood_tmp2
-            else
-              kahan_val1 = kahan_val1 + (likelihood_tmp2 - kahan_val2) + likelihood_tmp
-            endif
-            likelihood_tmp = kahan_val2
+          likelihood_sum = 0.0_fp
+ 
+          !$omp parallel
+          !$omp do private(kahan_val1, likelihood_tmp, az_tmp, az_diff, likelihood_tmp2, kahan_val2), &
+          !$omp&   reduction(+:likelihood_sum)
+          do parallelindex = 1, nthread
+            kahan_val1 = 0.0_fp
+            likelihood_tmp = 0.0_fp
+            do i = parallelindex_start(parallelindex), parallelindex_end(parallelindex)
+              call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
+              &                     lat_particle_list(i, k),  lon_particle_list(i, k),  &
+              &                     distance = dist_tmp,      azimuth = az_tmp)
+              az_tmp = az_tmp + pi
+              if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
+              az_diff = delta_az(az_obs(arrayindex(j)), az_tmp)
+              ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
+              likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * sigma_azdiff) &
+              &                                                * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
+              &                                                              +  (az_diff * az_diff / sigma_azdiff2)))
+              kahan_val2 = likelihood_tmp + likelihood_tmp2
+              if(abs(likelihood_tmp) .ge. abs(likelihood_tmp2)) then
+                kahan_val1 = kahan_val1 + (likelihood_tmp  - kahan_val2) + likelihood_tmp2
+              else
+                kahan_val1 = kahan_val1 + (likelihood_tmp2 - kahan_val2) + likelihood_tmp
+              endif
+              likelihood_tmp = kahan_val2
+            enddo
+            likelihood_sum = likelihood_sum + (likelihood_tmp + kahan_val1)
           enddo
-          likelihood_tmp = likelihood_tmp + kahan_val1
+          !$omp end do
+          !$omp end parallel
 
-          if(likelihood_tmp .lt. min_likelihood_eqobs) then
+          if(likelihood_sum .lt. min_likelihood_eqobs) then
             result_exist(arrayindex(j), k) = .false.
             narray_use(k) = narray_use(k) - 1
           else
@@ -380,6 +411,8 @@ program plot_map_vector
 
   call pc_plotend(iwin_map, 1)
   call pc_plotend(iwin_legend, 1)
+
+  deallocate(parallelindex_start, parallelindex_end)
 
   stop
 end program plot_map_vector

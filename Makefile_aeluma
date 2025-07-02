@@ -19,7 +19,7 @@ endif
 ifeq ($(arch),gfortran)
   FC = gfortran
   FFLAGS = -O2 -frecursive -mcmodel=medium -fopenmp-simd -fopenmp -fopt-info
-  DEFS = -DDOUBLE 
+  DEFS = 
   LIBS = -llapack95 -llapack -lblas -lixp -lgd -lX11
   LIBDIR = -L/usr/local/lib -L/usr/lib/lapack
   INCDIR = -I. -I/usr/local/include -I/usr/include

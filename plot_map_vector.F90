@@ -1,5 +1,5 @@
 program plot_map_vector
-  use nrtype, only : sp, fp
+  use nrtype, only : sp, fp, dp
   use constants, only : rad2deg, deg2rad, pi
   use greatcircle, only : greatcircle_dist
   use aeluma_parameters
@@ -46,6 +46,9 @@ program plot_map_vector
   !!Random number
   type(xorshift1024star_state), allocatable :: random_status(:)
   integer                                   :: seed
+
+  !!Time 
+  !$ real(kind = dp) :: t1, t2
 
   nthread = nthread_min
   !$omp parallel
@@ -154,6 +157,7 @@ program plot_map_vector
     enddo
 
     !!associate observation and events
+    !$ t1 = omp_get_wtime()
     do k = 1, nepicenter
        origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
 
@@ -238,6 +242,8 @@ program plot_map_vector
         endif
       endif
     enddo
+    !$ t2 = omp_get_wtime()
+    !$ print '(a, e15.7)', "array association time (s) = ", t2 - t1
 
     !!plot and output epicentral parameters
     do i = 1, nepicenter
@@ -293,6 +299,9 @@ program plot_map_vector
     enddo
     call pc_flush(iwin_eplist)
 
+    !$ t1 = omp_get_wtime()
+    !$ print '(a, e15.7)', "plot particle time (s) = ", t1 - t2
+
     !!estimate event epicenters
     do i = 1, nepicenter
       !print *, maxval_likelihood_particle_list(i), narray_use(i)
@@ -337,6 +346,8 @@ program plot_map_vector
       az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
       appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
     enddo
+    !$ t2 = omp_get_wtime()
+    !$ print '(a, e15.7)', "particlefilter calc time (s) = ", t2 - t1
 
     !!sort the order of epicenter list
     do j = 1, nepicenter - 1
@@ -395,6 +406,8 @@ program plot_map_vector
           array_used_list(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
         endif
       enddo
+      !$ t1 = omp_get_wtime()
+      !$ print '(a, e15.7)', "sort time (s) = ", t1 - t2
     enddo
  
     !!plot slowness vector

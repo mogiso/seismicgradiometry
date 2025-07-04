@@ -311,6 +311,7 @@ program plot_map_vector
       if(narray_use(i) .lt. narray_use_min) cycle
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .le. narray_use_list(i)) cycle
+        if(epicenter_acceptcount(i) .gt. epicenter_acceptcount_threshold) cycle
       endif
 
       !!calculate azimuthal weighting array

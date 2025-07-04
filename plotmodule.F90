@@ -19,6 +19,7 @@ module plotmodule
 
     call pc_setline(iwin_plot, 1)
     do i = 1, nparticle
+      if(mod(nparticle, 4) .ne. 0) cycle
       call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height

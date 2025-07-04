@@ -19,10 +19,12 @@ module plotmodule
 
     call pc_setline(iwin_plot, 1)
     do i = 1, nparticle
-      if(mod(nparticle, 4) .ne. 0) cycle
+      if(mod(i, 2) .ne. 0) cycle
       call mercator(center_lon, lon_particle(i), lat_particle(i), map_x, map_y)
       plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
       plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
+      if(.not. (plot_x .gt. 0.0_sp .and. plot_x .lt. width)) cycle
+      if(.not. (plot_y .gt. 0.0_sp .and. plot_y .lt. height)) cycle
       likelihood_tmp = likelihood_particle(i) * likelihood_legend_normalize
       if(likelihood_tmp .le. 0.1_fp) then
         colorindex = 1
@@ -55,9 +57,11 @@ module plotmodule
     call mercator(center_lon, lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), map_x, map_y)
     plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
     plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
-    call pc_symbol(iwin_map, plot_x, plot_y, 8.0_sp, 1, 0)
-    call pc_setcolor(iwin_map, 255, 255, 255)
-    call pc_symbol(iwin_map, plot_x, plot_y, 3.5_sp, 1, 0)
+    if((plot_x .gt. 0.0_sp .and. plot_x .lt. width) .and. (plot_y .gt. 0.0_sp .and. plot_y .lt. height)) then 
+      call pc_symbol(iwin_map, plot_x, plot_y, 8.0_sp, 1, 0)
+      call pc_setcolor(iwin_map, 255, 255, 255)
+      call pc_symbol(iwin_map, plot_x, plot_y, 3.5_sp, 1, 0)
+    endif
 
     !write(0, '(a, f0.4, a, f0.4, a, e15.7)') " Lon = ", lon_particle(maxloc_likelihood(1)), &
     !&                                        " Lat = ", lat_particle(maxloc_likelihood(1)), &

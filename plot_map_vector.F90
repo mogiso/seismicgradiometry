@@ -276,8 +276,8 @@ program plot_map_vector
         !$ t1 = omp_get_wtime()
         call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                            width_tmp, height_tmp, dwidth, dheight)
-        call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
-        &                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
+        !call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
+        !&                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         !$ t2 = omp_get_wtime()
         !$ print '(a, e15.7)', "plot_perticle time = ", t2 - t1
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &

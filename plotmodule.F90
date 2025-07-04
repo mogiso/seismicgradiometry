@@ -15,7 +15,7 @@ module plotmodule
     &                              width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
     real(kind = fp) :: map_x, map_y, likelihood_tmp
     real(kind = sp) :: plot_x, plot_y
-    integer :: i, colorindex
+    integer :: i, colorindex, maxloc_likelihood(1)
 
     call pc_setline(iwin_plot, 1)
     do i = 1, nparticle
@@ -50,13 +50,13 @@ module plotmodule
       call pc_setcolor(iwin_plot, 0, 0, 0)
       call pc_symbol(iwin_plot, plot_x, plot_y, 3.0_sp, 1, 1)
     enddo
-    !maxloc_likelihood = maxloc(likelihood_particle)
-    !call mercator(center_lon, lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), map_x, map_y)
-    !plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
-    !plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
-    !call pc_symbol(iwin_map, plot_x, plot_y, 9.0_sp, 1, 0)
-    !call pc_setcolor(iwin_map, 255, 255, 255)
-    !call pc_symbol(iwin_map, plot_x, plot_y, 4.0_sp, 1, 0)
+    maxloc_likelihood = maxloc(likelihood_particle)
+    call mercator(center_lon, lon_particle(maxloc_likelihood(1)), lat_particle(maxloc_likelihood(1)), map_x, map_y)
+    plot_x  = real((map_x  - width_tmp(1))  * dwidth,  kind = sp) * width
+    plot_y  = real((map_y  - height_tmp(1)) * dheight, kind = sp) * height
+    call pc_symbol(iwin_map, plot_x, plot_y, 8.0_sp, 1, 0)
+    call pc_setcolor(iwin_map, 255, 255, 255)
+    call pc_symbol(iwin_map, plot_x, plot_y, 3.5_sp, 1, 0)
 
     !write(0, '(a, f0.4, a, f0.4, a, e15.7)') " Lon = ", lon_particle(maxloc_likelihood(1)), &
     !&                                        " Lat = ", lat_particle(maxloc_likelihood(1)), &

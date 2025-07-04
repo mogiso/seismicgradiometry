@@ -281,17 +281,15 @@ program plot_map_vector
         write(text_tmp, '(i0)') narray_use(i)
         epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
         call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
-        if(narray_use(i) .ge. narray_use_min) then
-          write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
-          open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
-          if(ios .ne. 0) then
-            close(11)
-            open(unit = 11, file = trim(outfile), iostat = ios, status = "new")
-          endif
-          write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
+        write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
+        open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
+        if(ios .ne. 0) then
           close(11)
-          epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+          open(unit = 11, file = trim(outfile), iostat = ios, status = "new")
         endif
+        write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
+        close(11)
+        epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
       endif
     enddo
     call pc_flush(iwin_eplist)
@@ -303,7 +301,7 @@ program plot_map_vector
       if(narray_use(i) .lt. narray_use_min) cycle
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .le. narray_use_list(i)) cycle
-        if(epicenter_acceptcount(i) .gt. epicenter_acceptcount_threshold) cycle
+        if(epicenter_acceptcount(i) .gt. epicenter_renew_threshold) cycle
       endif
 
       !!calculate azimuthal weighting array

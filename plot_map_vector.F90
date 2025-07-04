@@ -247,7 +247,6 @@ program plot_map_vector
       if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
         if(narray_use(i) .lt. 1) then
           if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
-            !$ t1 = omp_get_wtime()
             call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
             &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
             &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
@@ -265,21 +264,16 @@ program plot_map_vector
             &                                                   maxval_likelihood, narray_use_list(i), &
             &                                                   epicenter_acceptcount(i), appvel_median_list(i)
             close(12)
-            !$ t2 = omp_get_wtime()
-            !$ print '(a, e15.7)', "epicenter2char time = ", t2 - t1
           endif
           maxval_likelihood_particle_list(i) = 0.0_fp
           epicenter_acceptcount(i) = 0
           cycle
         endif
         !!plot particles
-        !$ t1 = omp_get_wtime()
         call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                            width_tmp, height_tmp, dwidth, dheight)
         !call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
         !&                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
-        !$ t2 = omp_get_wtime()
-        !$ print '(a, e15.7)', "plot_perticle time = ", t2 - t1
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
         write(text_tmp, '(f4.1)') appvel_median_list(i)
@@ -298,8 +292,6 @@ program plot_map_vector
           close(11)
           epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
         endif
-        !$ t1 = omp_get_wtime()
-        !$ print '(a, e15.7)', "plot epicenter2char = ", t1 - t2
       endif
     enddo
     call pc_flush(iwin_eplist)

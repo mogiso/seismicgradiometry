@@ -83,7 +83,7 @@ module aeluma_parameters
 
   integer,            public, parameter :: narray_use_min = 9
   integer,            public, parameter :: epicenter_acceptcount_threshold = 90
-  integer,            public, parameter :: epicenter_renew_threshold = 150
+  integer,            public, parameter :: epicenter_renew_threshold = 120
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * sigma_azdiff * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (2.5_fp ** 2))
 

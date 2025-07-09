@@ -21,7 +21,7 @@ program plot_map_vector
   &                  likelihood_sum
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
-  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:)
+  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:), min_correlation_used(:, :)
   integer,         allocatable :: arrayindex(:), parallelindex_start(:), parallelindex_end(:)
   logical,         allocatable :: result_exist(:, :), result_exist_org(:), array_used_list(:, :), swap_logical(:)
 
@@ -128,7 +128,8 @@ program plot_map_vector
       &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
       &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle), swap_array1(1 : ntriangle))
       allocate(az_obs_used(1 : ntriangle, 1 : nepicenter), appvel_obs_used(1 : ntriangle, 1 : nepicenter), &
-      &        array_used_list(1 : ntriangle, 1 : nepicenter), swap_logical(1 : ntriangle))
+      &        array_used_list(1 : ntriangle, 1 : nepicenter), swap_logical(1 : ntriangle), &
+      &        min_correlation_used(1 : ntriangle, 1 : nepicenter))
     endif
 
     result_exist_org(1 : ntriangle)             = .false.
@@ -253,7 +254,7 @@ program plot_map_vector
             &                   maxval_likelihood = maxval_likelihood, &
             &                   lon_array = lon_array, lat_array = lat_array, &
             &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
-            &                   array_used = array_used_list(:, i))
+            &                   array_used = array_used_list(:, i), min_correlation = min_correlation_used(:, i))
             write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter.txt"
             open(unit = 12, file = trim(outfile), iostat = ios, status = "old", position = "append")
             if(ios .ne. 0) then
@@ -272,8 +273,6 @@ program plot_map_vector
         !!plot particles
         call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
                            width_tmp, height_tmp, dwidth, dheight)
-        !call plot_particle_maxlikelihood(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), &
-        !&                                likelihood_particle_list(:, i), width_tmp, height_tmp, dwidth, dheight)
         call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
         &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
         write(text_tmp, '(f4.1)') appvel_median_list(i)
@@ -339,6 +338,7 @@ program plot_map_vector
       array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
       az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
       appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
+      min_correlation_used(1 : ntriangle, i) = real(min_correlation(1 : ntriangle), kind = sp)
     enddo
 
     !!sort the order of epicenter list
@@ -388,6 +388,14 @@ program plot_map_vector
           swap_array1(1 : ntriangle)        = az_obs_used(1 : ntriangle, i)
           az_obs_used(1 : ntriangle, i)     = az_obs_used(1 : ntriangle, i - 1)
           az_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
+          appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)
+          appvel_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)                 = min_correlation_used(1 : ntriangle, i)
+          min_correlation_used(1 : ntriangle, i)     = min_correlation_used(1 : ntriangle, i - 1)
+          min_correlation_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
 
           swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
           appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)

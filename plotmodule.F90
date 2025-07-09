@@ -119,7 +119,6 @@ module plotmodule
     call pc_setline(iwin_plot, 4)
     do i = 1, narray
       if(.not. result_exist(arrayindex(i))) cycle
-      !theta = atan2(slowness_x, slowness_y) * rad2deg
       plot_theta = 90.0_sp - real(az_obs(arrayindex(i)) * rad2deg, kind = sp)
       vector_len = vector_len_ref * real(appvel_obs(arrayindex(i)) / ref_appvelocity, kind = sp)
       if(vector_len .gt. 20.0_sp) vector_len = 20.0_sp
@@ -364,7 +363,7 @@ module plotmodule
 
   subroutine epicenter2char(year, julianday, sec_from_day, lon_particle, lat_particle, origintime, likelihood_particle, &
   &                         epicenter_info, sigma_lon, sigma_lat, sigma_ot, maxval_likelihood, &
-  &                         lon_array, lat_array, az_obs, appvel_obs, array_used)
+  &                         lon_array, lat_array, az_obs, appvel_obs, array_used, min_correlation)
     use nrtype, only : fp, sp
     use aeluma_parameters
     use jday
@@ -375,7 +374,7 @@ module plotmodule
     character(len = *), intent(out)           :: epicenter_info
     real(kind = fp),    intent(out), optional :: sigma_lon, sigma_lat, sigma_ot, maxval_likelihood
     real(kind = fp),    intent(in),  optional :: lon_array(:), lat_array(:)
-    real(kind = sp),    intent(in),  optional :: az_obs(:), appvel_obs(:)
+    real(kind = sp),    intent(in),  optional :: az_obs(:), appvel_obs(:), min_correlation(:)
     logical,            intent(in),  optional :: array_used(:)
 
     integer         :: i, ios, ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1)
@@ -435,14 +434,15 @@ module plotmodule
       enddo
       close(10)
       if(present(lon_array) .and. present(lat_array) .and. present(az_obs) .and. present(appvel_obs) .and. &
-      &  present(array_used)) then
+      &  present(array_used) .and. present(min_correlation)) then
         write(outfile, '(i4, 5(i2.2), a)') ot_year, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, "_array_obs.dat"
-        open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 4)
+        open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 5)
         ios = 0
         do i = 1, ubound(array_used, 1)
           if(array_used(i)) then
             ios = ios + 1
-            write(10, rec = ios) real(lon_array(i), kind = sp), real(lat_array(i), kind = sp), az_obs(i), appvel_obs(i)
+            write(10, rec = ios) real(lon_array(i), kind = sp), real(lat_array(i), kind = sp), az_obs(i), appvel_obs(i), &
+            &                    min_correlation(i)
           endif
         enddo
         close(10)

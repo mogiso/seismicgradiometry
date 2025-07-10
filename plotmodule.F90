@@ -63,9 +63,9 @@ module plotmodule
       call pc_symbol(iwin_map, plot_x, plot_y, 3.5_sp, 1, 0)
     endif
 
-    !write(0, '(a, f0.4, a, f0.4, a, e15.7)') " Lon = ", lon_particle(maxloc_likelihood(1)), &
-    !&                                        " Lat = ", lat_particle(maxloc_likelihood(1)), &
-    !&                                        " likelihood = ", likelihood_particle(maxloc_likelihood(1))
+    write(0, '(a, f0.4, a, f0.4, a, e15.7)') " Lon = ", lon_particle(maxloc_likelihood(1)), &
+    &                                        " Lat = ", lat_particle(maxloc_likelihood(1)), &
+    &                                        " likelihood = ", likelihood_particle(maxloc_likelihood(1))
 
     return
   end subroutine plot_particle

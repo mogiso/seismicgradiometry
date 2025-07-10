@@ -17,20 +17,18 @@ program AELUMA_shmdump
   character(len = 8)           :: date_c, time_c
 
   type(location)               :: location_sta(1 : nwinch)
-  integer                      :: i, j, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
-  &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index
+  integer                      :: i, j, k, ii, jj, ios, nsample, nch, nstation, winch_tmp, ndecimate, ntriangle, npair_tmp, &
+  &                               recflag, transdelay, mon_order, ad_bit, sensor_amp, narray_success, stack_index, ntimefft
   integer                      :: waveform_tmp (1 : maxval(sampling_int)), max_xcorr(1), maxloc_stack(1), minloc_stack(1)
   integer, allocatable         :: station_winch(:), xcorr_index(:, :)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
   real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
   &                               ptime_cor, stime_cor, sum_abslagtime, sum_lagtime, correlation_checkval
-  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), &
-  &                               taper_window(1 : sampling_int_use * nsec_buf), &
-  &                               station_sensitivity(1 : nwinch), waveform_stacked(1 : nsec_buf * sampling_int_use)
+  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), station_sensitivity(1 : nwinch)
   real(kind = dp)              :: waveform_fft(1 : ntime_fft, 1 : 2), xcorr(-ntime_fft2 + 1 : ntime_fft2)
   real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :), &
-  &                               arrivaltime(:)
+  &                               arrivaltime(:), taper_window(:), waveform_stacked(:)
   character(len = 4)           :: winch_char, comp_tmp
   character(len = 6)           :: stname(1 : nwinch), stname_tmp
   character(len = 255)         :: chtbl, chtbl_line, sensor_unit
@@ -49,6 +47,7 @@ program AELUMA_shmdump
 
   call getarg(1, chtbl)
 
+
   !!filter design
   do i = 1, nsampling_int
     call calc_bpf_order(fl, fh, fs, ap, as, sampling_sec(i), m(i), n(i), c(i))
@@ -58,7 +57,9 @@ program AELUMA_shmdump
     call calc_bpf_coef(fl, fh, sampling_sec(i), m(i), n(i), h(:, i), c(i), gn(i))
   enddo
   !!cosine taper
-  call cosine_taper(cos_taper_ratio, nsec_buf * sampling_int_use, taper_window)
+  ntimefft = min(nsec_for_fft * sampling_int_use, ntime_fft)
+  allocate(taper_window(1 : ntimefft), waveform_stacked(1 : ntimefft))
+  call cosine_taper(cos_taper_ratio, ntimefft, taper_window)
 
   !!read win-formatted channel table
   is_usewinch(1 : nwinch) = .false.
@@ -187,13 +188,13 @@ program AELUMA_shmdump
       if(i .eq. int(nsec_buf / 60) + 1) then
         date_c = yr(nsec_buf) // "/" // mo(nsec_buf) // "/" // dy(nsec_buf)
         time_c = hh(nsec_buf) // ":" // mm(nsec_buf) // ":" // ss(nsec_buf)
-        call pc_text(iwin_wave, plot_x0, plot_y0, 4.2_sp, date_c, 0.0, len(date_c), 5)
-        call pc_text(iwin_wave, plot_x0, plot_y1, 4.2_sp, time_c, 0.0, len(time_c), 5)
+        call pc_text(iwin_wave, plot_x0, plot_y0, 4.0_sp, date_c, 0.0, len(date_c), 5)
+        call pc_text(iwin_wave, plot_x0, plot_y1, 4.0_sp, time_c, 0.0, len(time_c), 5)
       else
         date_c = yr(60 * (i - 1) + 1) // "/" // mo(60 * (i - 1) + 1) // "/" // dy(60 * (i - 1) + 1)
         time_c = hh(60 * (i - 1) + 1) // ":" // mm(60 * (i - 1) + 1) // ":" // ss(60 * (i - 1) + 1)
-        call pc_text(iwin_wave, plot_x0, plot_y0, 4.2_sp, date_c, 0.0, len(date_c), 4)
-        call pc_text(iwin_wave, plot_x0, plot_y1, 4.2_sp, time_c, 0.0, len(time_c), 4)
+        call pc_text(iwin_wave, plot_x0, plot_y0, 4.0_sp, date_c, 0.0, len(date_c), 4)
+        call pc_text(iwin_wave, plot_x0, plot_y1, 4.0_sp, time_c, 0.0, len(time_c), 4)
       endif
     enddo
     do j = 1, nstation
@@ -235,15 +236,17 @@ program AELUMA_shmdump
       minval_xcorr(j) = 0.0_fp
       do jj = 1, nsta_count(j) - 1
         waveform_fft(1 : ntime_fft, 1) = 0.0_dp
-        waveform_fft(1 : nsec_buf * sampling_int_use, 1) &
-        &  = real(waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(jj, j)) &
-        &         * taper_window(1 : nsec_buf * sampling_int_use) * order, kind = dp)
+        do k = 1, ntimefft
+          waveform_fft(k, 1) = real(waveform_buf(nsec_buf * sampling_int_use - ntimefft + k, &
+          &                                      triangle_stationwinch(jj, j)) * taper_window(k) * order, kind = dp)
+        enddo
         do ii = jj + 1, nsta_count(j)
           i = i + 1
           waveform_fft(1 : ntime_fft, 2) = 0.0_fp
-          waveform_fft(1 : nsec_buf * sampling_int_use, 2) &
-          &  = real(waveform_buf(1 : nsec_buf * sampling_int_use, triangle_stationwinch(ii, j)) &
-          &       * taper_window(1 : nsec_buf * sampling_int_use) * order, kind = dp)
+          do k = 1, ntimefft
+            waveform_fft(k, 2) = real(waveform_buf(nsec_buf * sampling_int_use - ntimefft + k, &
+            &                                      triangle_stationwinch(ii, j)) * taper_window(k) * order, kind = dp)
+          enddo
           xcorr(-ntime_fft2 + 1 : ntime_fft2) = 0.0_dp
           call correlation_fft(waveform_fft, ntime_fft, xcorr)
           max_xcorr = maxloc(xcorr) - ntime_fft2
@@ -301,13 +304,13 @@ program AELUMA_shmdump
         cycle
       endif
       narray_success = narray_success + 1
-      waveform_stacked(1 : nsec_buf * sampling_int_use) = 0.0_fp
+      waveform_stacked(1 : ntimefft) = 0.0_fp
       do jj = 1, nsta_count(j)
-        do ii = 1, nsec_buf * sampling_int_use
+        do ii = 1, ntimefft
           stack_index = &
           &  int((slowness(1, j) * location_sta(triangle_stationwinch(jj, j))%x_east &
           &     + slowness(2, j) * location_sta(triangle_stationwinch(jj, j))%y_north) * real(sampling_int_use, kind = fp)) &
-          &     + ii
+          &     + nsec_buf * sampling_int_use - ntimefft + ii
           if(stack_index .lt. 1 .or. stack_index .gt. nsec_buf * sampling_int_use) cycle
           waveform_stacked(ii) = waveform_stacked(ii) + waveform_buf(stack_index, triangle_stationwinch(jj, j))
         enddo
@@ -367,6 +370,7 @@ program AELUMA_shmdump
   enddo time_loop
 
   call pc_plotend(iwin_wave, 1)
+  deallocate(taper_window)
 
   stop
 end program AELUMA_shmdump

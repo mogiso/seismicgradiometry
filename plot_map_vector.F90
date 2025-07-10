@@ -18,7 +18,7 @@ program plot_map_vector
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, az_diff, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
   &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2, &
-  &                  likelihood_sum
+  &                  likelihood_sum, arrivaltime_ref
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:), min_correlation_used(:, :)
@@ -46,10 +46,10 @@ program plot_map_vector
   !!Random number
   type(xorshift1024star_state), allocatable :: random_status(:)
   integer                                   :: seed
-
   !!Time 
   !$ real(kind = dp) :: t1, t2
 
+  arrivaltime_ref = real(min(nsec_for_fft * sampling_int_use, ntime_fft), kind = fp) / real(sampling_int_use, kind = fp)
   nthread = nthread_min
   !$omp parallel
   !$ nthread = omp_get_num_threads()
@@ -151,7 +151,7 @@ program plot_map_vector
       enddo
 
       !!arrival time: relative time in s from current time
-      arrivaltime(arrayindex(i)) = -(real(nsec_buf, kind = fp) - arrivaltime(arrayindex(i)))
+      arrivaltime(arrayindex(i)) = - (arrivaltime_ref - arrivaltime(arrayindex(i)))
       az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
       if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
       appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)

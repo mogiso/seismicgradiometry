@@ -187,13 +187,13 @@ program AELUMA_shmdump
       if(i .eq. int(nsec_buf / 60) + 1) then
         date_c = yr(nsec_buf) // "/" // mo(nsec_buf) // "/" // dy(nsec_buf)
         time_c = hh(nsec_buf) // ":" // mm(nsec_buf) // ":" // ss(nsec_buf)
-        call pc_text(iwin_wave, plot_x0, plot_y0, 6.0_sp, date_c, 0.0, len(date_c), 5)
-        call pc_text(iwin_wave, plot_x0, plot_y1, 6.0_sp, time_c, 0.0, len(time_c), 5)
+        call pc_text(iwin_wave, plot_x0, plot_y0, 4.2_sp, date_c, 0.0, len(date_c), 5)
+        call pc_text(iwin_wave, plot_x0, plot_y1, 4.2_sp, time_c, 0.0, len(time_c), 5)
       else
         date_c = yr(60 * (i - 1) + 1) // "/" // mo(60 * (i - 1) + 1) // "/" // dy(60 * (i - 1) + 1)
         time_c = hh(60 * (i - 1) + 1) // ":" // mm(60 * (i - 1) + 1) // ":" // ss(60 * (i - 1) + 1)
-        call pc_text(iwin_wave, plot_x0, plot_y0, 6.0_sp, date_c, 0.0, len(date_c), 4)
-        call pc_text(iwin_wave, plot_x0, plot_y1, 6.0_sp, time_c, 0.0, len(time_c), 4)
+        call pc_text(iwin_wave, plot_x0, plot_y0, 4.2_sp, date_c, 0.0, len(date_c), 4)
+        call pc_text(iwin_wave, plot_x0, plot_y1, 4.2_sp, time_c, 0.0, len(time_c), 4)
       endif
     enddo
     do j = 1, nstation
@@ -212,7 +212,7 @@ program AELUMA_shmdump
       !!plot stationname
       plot_x0 = wavewidth + 0.8_sp
       stname_tmp = trim(stname(station_winch(j)))
-      call pc_text(iwin_wave, plot_x0, plot_yref, 4.5, stname_tmp, 0.0, len(stname_tmp), 4)
+      call pc_text(iwin_wave, plot_x0, plot_yref, 3.75_sp, stname_tmp, 0.0_sp, len(stname_tmp), 4)
     enddo
     call pc_flush(iwin_wave)
 

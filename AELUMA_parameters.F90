@@ -72,7 +72,7 @@ module aeluma_parameters
 
   !!location estimation
   integer,            public, parameter :: nparticle = 1000, niter = 3, iteration_count_max = 1000, nepicenter = 4
-  real(kind = fp),    public, parameter :: sigma_azdiff = 15.0_fp * deg2rad, sigma_azdiff2 = sigma_azdiff ** 2
+  real(kind = fp),    public, parameter :: sigma_azdiff = 22.5_fp * deg2rad, sigma_azdiff2 = sigma_azdiff ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp * deg2rad, sameaz_num2 = 20.0_fp ** 2, azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &

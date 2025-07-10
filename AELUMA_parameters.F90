@@ -26,7 +26,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: sampling_sec(1 : nsampling_int) &
   &                                        = 1.0_fp / real(sampling_int(1 : nsampling_int), kind = fp)
   integer,            public, parameter :: sampling_int_use = 5
-  integer,            public, parameter :: nsec_buf  = 540
+  integer,            public, parameter :: nsec_buf  = 9 * 60
   integer,            public, parameter :: ntime_fft = 4096, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
   real(kind = fp),    public, parameter :: xcorr_min = 0.02_fp
@@ -77,7 +77,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
-  real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
+  real(kind = fp),    public, parameter :: correlation_threshold = 0.35_fp
   real(kind = fp),    public, parameter :: ref_appvelocity = 0.3_fp
   real(kind = fp),    public, parameter :: max_slowness = 0.4_fp
 

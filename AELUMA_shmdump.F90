@@ -11,7 +11,7 @@ program AELUMA_shmdump
   implicit none
   !!plot using ixp library
   real(kind = sp), parameter   :: wavewindow_width = 350.0_sp, wavewindow_height = 300.0_sp, wavescale = 1.0_sp, &
-  &                               wavewidth = 320.0_sp, waveheight = 280.0_sp, waveplotscale = 3.0_sp
+  &                               wavewidth = 330.0_sp, waveheight = 290.0_sp, waveplotscale = 3.0_sp
   real(kind = sp)              :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
   real(kind = fp)              :: maxamp
   character(len = 8)           :: date_c, time_c

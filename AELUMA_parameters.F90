@@ -12,7 +12,7 @@ module aeluma_parameters
   !!F-net aeluma method, read waveforms from shmdump
   !!temporal origin: land-area centroid
   real(kind = fp),    public, parameter :: center_lon_aeluma = 137.6336_fp, center_lat_aeluma = 37.4581_fp
-  integer,            public, parameter :: nadd_station_aeluma = 0
+  integer,            public, parameter :: nadd_station_aeluma = 1
   
   !!Bandpass filter
   real(kind = fp),    public, parameter :: fl = 1.0_fp / 50.0_fp, fh = 1.0_fp / 20.0_fp, fs = fh * 2.0_fp, &
@@ -43,7 +43,7 @@ module aeluma_parameters
   real(kind = sp),    public, parameter :: plot_x_eplist = 1.0_sp, plot_y_eplist = 27.0_sp
 
   !!location estimation
-  integer,            public, parameter :: nparticle = 1000, niter = 3, iteration_count_max = 1000, nepicenter = 4
+  integer,            public, parameter :: nparticle = 1000, niter = 3, iteration_count_max = 10000, nepicenter = 4
   real(kind = fp),    public, parameter :: sigma_azdiff = 15.0_fp * deg2rad, sigma_azdiff2 = sigma_azdiff ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp * deg2rad, sameaz_num2 = 20.0_fp ** 2, azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
@@ -53,9 +53,9 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: ref_appvelocity = 0.3_fp
   real(kind = fp),    public, parameter :: max_slowness = 0.4_fp
 
-  integer,            public, parameter :: narray_use_min = 6
+  integer,            public, parameter :: narray_use_min = 5
   integer,            public, parameter :: epicenter_acceptcount_threshold = 90
-  integer,            public, parameter :: epicenter_renew_threshold = 150
+  integer,            public, parameter :: epicenter_renew_threshold = 120
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * sigma_azdiff * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (2.5_fp ** 2))
 

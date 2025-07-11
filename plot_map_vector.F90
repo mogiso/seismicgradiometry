@@ -17,7 +17,7 @@ program plot_map_vector
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer, nthread, parallelindex
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, az_diff, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
-  &                  error_lon, error_lat, error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2, &
+  &                  error_lon(1 : 2), error_lat(1 : 2), error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2, &
   &                  likelihood_sum, arrivaltime_ref
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
@@ -262,7 +262,8 @@ program plot_map_vector
               close(12)
               open(unit = 12, file = trim(outfile), iostat = ios, status = "new")
             endif
-            write(12, '(a, 4(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon, error_lat, error_ot, &
+            write(12, '(a, 6(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon(1 : 2), error_lat(1 : 2), &
+            &                                                   error_ot, &
             &                                                   maxval_likelihood, narray_use_list(i), &
             &                                                   epicenter_acceptcount(i), appvel_median_list(i)
             close(12)
@@ -329,7 +330,7 @@ program plot_map_vector
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
-      if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
+      !if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
         lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
         lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
         origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
@@ -341,13 +342,14 @@ program plot_map_vector
         az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
         min_correlation_used(1 : ntriangle, i) = real(min_correlation(1 : ntriangle), kind = sp)
-      endif
+      !endif
     enddo
 
     !!sort the order of epicenter list
     do j = 1, nepicenter - 1
       do i = 2, nepicenter - j + 1
         if(epicenter_acceptcount(i) .ge. epicenter_acceptcount(i - 1)) then
+        !if(maxval_likelihood_particle_list(i) .ge. maxval_likelihood_particle_list(i - 1)) then
           swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
           result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
           result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)

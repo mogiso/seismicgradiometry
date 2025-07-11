@@ -55,9 +55,9 @@ module aeluma_parameters
 
   integer,            public, parameter :: narray_use_min = 5
   integer,            public, parameter :: epicenter_acceptcount_threshold = 90
-  integer,            public, parameter :: epicenter_renew_threshold = 120
+  integer,            public, parameter :: epicenter_renew_threshold = 1200
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * sigma_azdiff * sigma_otdiff) &
-  &                                                             * exp(-0.5_fp * (2.5_fp ** 2))
+  &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 
   !!For plot_map_vector.F90
   real(kind = sp),    public, parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp

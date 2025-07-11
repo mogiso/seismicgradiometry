@@ -200,6 +200,7 @@ program plot_map_vector
             result_exist(arrayindex(j), k) = .false.
             narray_use(k) = narray_use(k) - 1
           else
+            !print *, arrayindex(j), lon_array(arrayindex(j)), lat_array(arrayindex(j)), likelihood_sum, min_likelihood_eqobs
             do i = 0, nepicenter
               if(i .eq. k) cycle
               if(result_exist(arrayindex(j), i)) then
@@ -288,7 +289,7 @@ program plot_map_vector
         endif
         write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
         close(11)
-        epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+        if(narray_use(i) .ge. narray_use_min) epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
       endif
     enddo
     call pc_flush(iwin_eplist)
@@ -328,23 +329,25 @@ program plot_map_vector
       maxval_likelihood = maxval(likelihood_particle)
 
       !!renew epicenter parameters
-      lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
-      lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
-      origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
-      likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
-      maxval_likelihood_particle_list(i) = maxval_likelihood
-      appvel_median_list(i) = appvel_median
-      narray_use_list(i) = narray_use(i)
-      array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
-      az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
-      appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
-      min_correlation_used(1 : ntriangle, i) = real(min_correlation(1 : ntriangle), kind = sp)
+      if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
+        lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
+        lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
+        origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
+        likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
+        maxval_likelihood_particle_list(i) = maxval_likelihood
+        appvel_median_list(i) = appvel_median
+        narray_use_list(i) = narray_use(i)
+        array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
+        az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
+        appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
+        min_correlation_used(1 : ntriangle, i) = real(min_correlation(1 : ntriangle), kind = sp)
+      endif
     enddo
 
     !!sort the order of epicenter list
     do j = 1, nepicenter - 1
       do i = 2, nepicenter - j + 1
-        if(epicenter_acceptcount(i) .gt. epicenter_acceptcount(i - 1)) then
+        if(epicenter_acceptcount(i) .ge. epicenter_acceptcount(i - 1)) then
           swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
           result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
           result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)

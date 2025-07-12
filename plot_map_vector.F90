@@ -17,8 +17,8 @@ program plot_map_vector
   integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer, nthread, parallelindex
   integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
   real(kind = fp) :: slowness_x, slowness_y, az_diff, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
-  &                  error_lon(1 : 2), error_lat(1 : 2), error_ot, maxval_likelihood, appvel_median, swap_float, likelihood_tmp2, &
-  &                  likelihood_sum, arrivaltime_ref
+  &                  error_lon(1 : 2), error_lat(1 : 2), error_ot(1 : 2), maxval_likelihood, appvel_median, swap_float, &
+  &                  likelihood_tmp2, likelihood_sum, arrivaltime_ref
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
   real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:), min_correlation_used(:, :)
@@ -262,8 +262,8 @@ program plot_map_vector
               close(12)
               open(unit = 12, file = trim(outfile), iostat = ios, status = "new")
             endif
-            write(12, '(a, 6(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon(1 : 2), error_lat(1 : 2), &
-            &                                                   error_ot, &
+            write(12, '(a, 7(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon(1 : 2), error_lat(1 : 2), &
+            &                                                   error_ot(1 : 2), &
             &                                                   maxval_likelihood, narray_use_list(i), &
             &                                                   epicenter_acceptcount(i), appvel_median_list(i)
             close(12)

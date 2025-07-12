@@ -372,7 +372,7 @@ module plotmodule
     integer,            intent(in)            :: year, julianday, sec_from_day
     real(kind = fp),    intent(in)            :: lon_particle(:), lat_particle(:), origintime(:), likelihood_particle(:)
     character(len = *), intent(out)           :: epicenter_info
-    real(kind = fp),    intent(out), optional :: sigma_lon(1 : 2), sigma_lat(1 : 2), sigma_ot, maxval_likelihood
+    real(kind = fp),    intent(out), optional :: sigma_lon(1 : 2), sigma_lat(1 : 2), sigma_ot(1 : 2), maxval_likelihood
     real(kind = fp),    intent(in),  optional :: lon_array(:), lat_array(:)
     real(kind = sp),    intent(in),  optional :: az_obs(:), appvel_obs(:), min_correlation(:)
     logical,            intent(in),  optional :: array_used(:)
@@ -380,7 +380,7 @@ module plotmodule
     integer         :: i, ios, ot_year, ot_julianday, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, maxloc_likelihood_particle(1), &
     &                  sigma_index
     real(kind = fp) :: epicenter_lon, epicenter_lat, ot_list, ot_from_day, sigma_diff, &
-    &                  sigma_normalize_lon(1 : 2), sigma_normalize_lat(1 : 2)
+    &                  sigma_normalize_lon(1 : 2), sigma_normalize_lat(1 : 2), sigma_normalize_ot(1 : 2)
     logical         :: leap
     character(len = 255) :: outfile
 
@@ -416,9 +416,10 @@ module plotmodule
     if(present(sigma_lon) .and. present(sigma_lat) .and. present(sigma_ot)) then
       sigma_lon(1 : 2) = 0.0_fp
       sigma_lat(1 : 2) = 0.0_fp
-      sigma_ot = 0.0_fp
+      sigma_ot(1 : 2) = 0.0_fp
       sigma_normalize_lon(1 : 2) = 0.0_fp
       sigma_normalize_lat(1 : 2) = 0.0_fp
+      sigma_normalize_ot(1 : 2) = 0.0_fp
       do i = 1, nparticle
         sigma_diff = epicenter_lon - lon_particle(i)
         if(sigma_diff .ge. 0.0_fp) then
@@ -442,9 +443,21 @@ module plotmodule
           sigma_normalize_lat(sigma_index) = sigma_normalize_lat(sigma_index) + likelihood_particle(i)
         endif
         sigma_ot  = sigma_ot  + likelihood_particle(i) * abs(ot_list - origintime(i))
+
+        sigma_diff = ot_list - origintime(i)
+        if(sigma_diff .ge. 0.0_fp) then
+          sigma_index = 1
+        else
+          sigma_index = 2
+        endif
+        if(sigma_diff .ne. 0.0_fp) then
+          sigma_ot(sigma_index) = sigma_ot(sigma_index) + likelihood_particle(i) * abs(sigma_diff)
+          sigma_normalize_ot(sigma_index) = sigma_normalize_ot(sigma_index) + likelihood_particle(i)
+        endif
       enddo
       sigma_lon(1 : 2) = sigma_lon(1 : 2) / sigma_normalize_lon(1 : 2)
       sigma_lat(1 : 2) = sigma_lat(1 : 2) / sigma_normalize_lat(1 : 2)
+      sigma_ot(1 : 2) = sigma_ot(1 : 2) / sigma_normalize_ot(1 : 2)
 
       write(outfile, '(i4, 5(i2.2), a)') ot_year, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, "_likelihood_particle.dat"
       open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 3)

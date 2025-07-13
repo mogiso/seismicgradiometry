@@ -455,9 +455,11 @@ module plotmodule
           sigma_normalize_ot(sigma_index) = sigma_normalize_ot(sigma_index) + likelihood_particle(i)
         endif
       enddo
-      sigma_lon(1 : 2) = sigma_lon(1 : 2) / sigma_normalize_lon(1 : 2)
-      sigma_lat(1 : 2) = sigma_lat(1 : 2) / sigma_normalize_lat(1 : 2)
-      sigma_ot(1 : 2) = sigma_ot(1 : 2) / sigma_normalize_ot(1 : 2)
+      do i = 1, 2
+        if(sigma_normalize_lon(i) .ne. 0.0_fp) sigma_lon(i) = sigma_lon(i) / sigma_normalize_lon(i)
+        if(sigma_normalize_lat(i) .ne. 0.0_fp) sigma_lat(i) = sigma_lat(i) / sigma_normalize_lat(i)
+        if(sigma_normalize_ot(i)  .ne. 0.0_fp) sigma_ot(i)  = sigma_ot(i)  / sigma_normalize_ot(i)
+      enddo
 
       write(outfile, '(i4, 5(i2.2), a)') ot_year, ot_mo, ot_dy, ot_hour, ot_min, ot_sec, "_likelihood_particle.dat"
       open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 3)

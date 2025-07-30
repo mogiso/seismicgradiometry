@@ -24,8 +24,9 @@ program AELUMA_shmdump
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
   real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
-  &                               ptime_cor, stime_cor, sum_abslagtime, sum_lagtime, correlation_checkval
-  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), station_sensitivity(1 : nwinch)
+  &                               ptime_cor, stime_cor, sum_abslagtime, sum_lagtime, correlation_checkval, station_lta_tmp
+  real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), station_sensitivity(1 : nwinch), &
+  &                               station_lta(1 : nwinch)
   real(kind = dp)              :: waveform_fft(1 : ntime_fft, 1 : 2), xcorr(-ntime_fft2 + 1 : ntime_fft2)
   real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :), &
   &                               arrivaltime(:), taper_window(:), waveform_stacked(:)
@@ -117,6 +118,7 @@ program AELUMA_shmdump
   dwidth  = (2.0_sp * wavewidth  - wavewindow_width)  / real(waveform_buf_index_max, kind = sp)
 
   !!read waveforms from standard input, then conduct analysis
+  station_lta(1 : nwinch) = 0.0_fp
   yr(1 : nsec_buf) = "00"
   mo(1 : nsec_buf) = "00"
   dy(1 : nsec_buf) = "00"
@@ -163,9 +165,14 @@ program AELUMA_shmdump
         call tandem3(waveform_real(1 : nsample), h(:, i), gn(i), filter_mode, past_uv = uv(:, winch_tmp))
       endif
       ndecimate = sampling_int(i) / sampling_int_use
+      station_lta_tmp = 0.0_fp
       do i = 1, nsample / ndecimate
         waveform_buf(waveform_buf_index_max - sampling_int_use + i, winch_tmp) = waveform_real(ndecimate * (i - 1) + 1)
+        station_lta_tmp = station_lta_tmp + (waveform_real(ndecimate * (i - 1) + 1) * order) ** 2
       enddo
+      station_lta_tmp = station_lta_tmp / real(nsample / ndecimate, kind = fp)
+      station_lta(winch_tmp) = lta_coef * station_lta_tmp + (1.0_fp - lta_coef) * station_lta(winch_tmp) 
+      !write(0, *) winch_tmp, station_lta_tmp, station_lta(winch_tmp)
     enddo
 
     call pc_clear(iwin_wave)
@@ -229,6 +236,7 @@ program AELUMA_shmdump
       do i = 1, nsta_count(j) - 1
         npair_tmp = npair_tmp + i
       enddo
+      if(allocated(lagtime)) deallocate(lagtime)
       allocate(lagtime(1 : npair_tmp))
       lagtime(1 : npair_tmp) = 0.0_fp
 
@@ -267,8 +275,8 @@ program AELUMA_shmdump
           sum_lagtime    = lagtime(xcorr_index(ii, jj)) - lagtime(xcorr_index(ii + 1, jj)) + lagtime(xcorr_index(ii + 1, ii))
           correlation_checkval = 1.0_fp - abs(sum_lagtime) / sum_abslagtime
           if(correlation_checkval .le. lagtime_ratio_threshold) then
-            write(0, '(a, i0, 2(a, e15.7))') "cross-correlation consistency error, array num = ", j, &
-            &                                " checkvalue = ", correlation_checkval, " minval_xcorr = ", minval_xcorr(j)
+            !write(0, '(a, i0, 2(a, e15.7))') "cross-correlation consistency error, array num = ", j, &
+            !&                                " checkvalue = ", correlation_checkval, " minval_xcorr = ", minval_xcorr(j)
             minval_xcorr(j) = xcorr_min
             exit correlation_consistency
           endif
@@ -288,22 +296,20 @@ program AELUMA_shmdump
       !endif
 
       slowness(1 : 2, j) = matmul(slowness_matrix(1 : 2, 1 : npair_tmp, j), lagtime(1 : npair_tmp))
+      deallocate(lagtime)
+
       if(minval_xcorr(j) .le. xcorr_min) then
         xcorr_flag(j) = .false.
-        deallocate(lagtime)
         cycle
       endif
       if(slowness(1, j) .eq. 0.0_fp .and. slowness(2, j) .eq. 0.0_fp) then
         xcorr_flag(j) = .false.
-        deallocate(lagtime)
         cycle
       endif
       if(slowness(1, j) * slowness(1, j) + slowness(2, j) * slowness(2, j) .gt. max_slowness * max_slowness) then
         xcorr_flag(j) = .false.
-        deallocate(lagtime)
         cycle
       endif
-      narray_success = narray_success + 1
       waveform_stacked(1 : ntimefft) = 0.0_fp
       do jj = 1, nsta_count(j)
         do ii = 1, ntimefft
@@ -315,16 +321,29 @@ program AELUMA_shmdump
           waveform_stacked(ii) = waveform_stacked(ii) + waveform_buf(stack_index, triangle_stationwinch(jj, j))
         enddo
       enddo
+      waveform_stacked(1 : ntimefft) = waveform_stacked(1 : ntimefft) / real(nsta_count(j), kind = fp)
       maxloc_stack = maxloc(waveform_stacked)
       minloc_stack = minloc(waveform_stacked)
       if(abs(waveform_stacked(minloc_stack(1))) .gt. waveform_stacked(maxloc_stack(1))) then
         arrivaltime(j) = real(minloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
+        maxamp = (waveform_stacked(minloc_stack(1)) * order) ** 2
       else
         arrivaltime(j) = real(maxloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
+        maxamp = (waveform_stacked(maxloc_stack(1)) * order) ** 2
       endif
-      !arrivaltime(j) = (real(maxloc_stack(1), kind = fp) + real(minloc_stack(1), kind = fp)) * 0.5_fp &
-      !&              / real(sampling_int_use, kind = fp)
       if(abs(arrivaltime(j)) .lt. 1.0_fp / real(sampling_int_use, kind = fp)) xcorr_flag(j) = .false.
+      station_lta_tmp = 0.0_fp
+      do jj = 1, nsta_count(j)
+        station_lta_tmp = station_lta_tmp + station_lta(triangle_stationwinch(jj, j))
+      enddo
+      station_lta_tmp = station_lta_tmp / real(nsta_count(j), kind = fp)
+      if(maxamp .lt. sqrt(real(nsta_count(j), kind = fp)) * station_lta_tmp * snratio_threshold) then
+        xcorr_flag(j) = .false.
+        cycle
+      endif
+
+      narray_success = narray_success + 1
+      
       !write(0, '(5(f9.4, 1x))') triangle_center(j)%lon, triangle_center(j)%lat, &
       !&                         slowness(1, j), slowness(2, j), minval_xcorr(j)
 
@@ -351,7 +370,6 @@ program AELUMA_shmdump
       !&         * (location_sta(triangle_stationwinch(3, j))%y_north - location_sta(triangle_stationwinch(2, j))%y_north), &
       !&           lagtime(3)
 
-      deallocate(lagtime)
     enddo
     print '(6(a2, 1x), 2(i0, 1x))', yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), &
     &                               narray_success, ntriangle

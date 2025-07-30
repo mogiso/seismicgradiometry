@@ -34,6 +34,8 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: lagtime_ratio_threshold = 0.7_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
+  real(kind = fp),    public, parameter :: snratio_threshold = 1.0_fp
+  real(kind = fp),    public, parameter :: lta_coef = 1.0_fp - exp(-1.0_fp / 3600.0_fp)
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
   integer,            public, parameter :: nwinch = 65536
 
@@ -49,12 +51,12 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
-  real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
+  real(kind = fp),    public, parameter :: correlation_threshold = 0.4_fp
   real(kind = fp),    public, parameter :: ref_appvelocity = 0.3_fp
   real(kind = fp),    public, parameter :: max_slowness = 0.4_fp
 
   integer,            public, parameter :: narray_use_min = 5
-  integer,            public, parameter :: epicenter_acceptcount_threshold = 90
+  integer,            public, parameter :: epicenter_acceptcount_threshold = 60
   integer,            public, parameter :: epicenter_renew_threshold = 120
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * sigma_azdiff * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))

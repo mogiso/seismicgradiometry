@@ -34,7 +34,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: lagtime_ratio_threshold = 0.7_fp
   real(kind = fp),    public, parameter :: cos_taper_ratio = 0.1_fp
   real(kind = fp),    public, parameter :: lagtime_max = 200.0_fp, lagtime_min = -lagtime_max
-  real(kind = fp),    public, parameter :: snratio_threshold = 1.0_fp
+  real(kind = fp),    public, parameter :: snratio_threshold = 0.5_fp
   real(kind = fp),    public, parameter :: lta_coef = 1.0_fp - exp(-1.0_fp / 3600.0_fp)
   real(kind = fp),    public, parameter :: order = 1.0e+6_fp
   integer,            public, parameter :: nwinch = 65536

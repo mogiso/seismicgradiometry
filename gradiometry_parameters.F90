@@ -127,5 +127,12 @@ module gradiometry_parameters
 
   real(kind = fp), public, parameter :: grav_acc = 980.655_fp !!in cm/s^2
 
+  integer,         public, parameter :: nwinch = 65536
+  integer,         public, parameter :: sampling_int_use = 1, nsec_buf = 3600 * 3, &
+  &                                     waveformbuf_index_max = sampling_int_use * nsec_buf
+  integer,         public, parameter :: nsampling_int = 1, sampling_int(1) = [10], &
+  &                                     ndecimate = sampling_int(1) / sampling_int_use
+  integer,         public, parameter :: sampling_int_calc = 60
+
 end module gradiometry_parameters
   

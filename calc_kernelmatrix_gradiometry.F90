@@ -621,8 +621,8 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
 end subroutine calc_kernelmatrix_delaunay2
 
 subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, location_sta, nadd_station, &
-&                                      grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix, &
-&                                      nsta_correlation, slowness_est_matrix, error_matrix)
+&                                              grid_enough_sta, nsta_count, grid_stationwinch, kernel_matrix, &
+&                                              nsta_correlation, slowness_est_matrix, error_matrix)
   use nrtype, only : fp
   use constants, only : pi
   use typedef
@@ -638,7 +638,7 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
   type(location),  intent(in)  :: location_grid(:, :), location_sta(:)
   integer,         intent(in)  :: station_winch(:), nadd_station
   logical,         intent(out) :: grid_enough_sta(:, :)
-  integer,         intent(out) :: nsta_count(:, :), grid_stationindex(:, :, :)
+  integer,         intent(out) :: nsta_count(:, :), grid_stationwinch(:, :, :)
   real(kind = fp), intent(out) :: kernel_matrix(:, :, :, :)
   integer,         intent(out), optional :: nsta_correlation(:, :)
   real(kind = fp), intent(out), allocatable, optional :: slowness_est_matrix(:, :, :, :)
@@ -682,7 +682,7 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
 
   !!Do delaunay triangulation
   allocate(vertix_index(1 : nsta_use), vertices(1 : 2, 1 : nsta_use), triangle_indices(1 : 3, 1 : 2 * nsta_use), &
-  &        tnbr(1 : 3, 1 : 2 * nsta_use), index_org(1 : nsta), used_station(1 : nsta))
+  &        tnbr(1 : 3, 1 : 2 * nsta_use), index_org(1 : nsta_use), used_station(1 : nsta))
   i = 1
   do j = 1, nsta
     if(is_usestation(j) .eqv. .false.) cycle
@@ -693,12 +693,12 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
     i = i + 1
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
-  allocate(triangle_stationwinch(1 : 3 + nadd_station, 1 : ntriangle))
+  allocate(grid_stationwinch(1 : 3 + nadd_station, 1 : ntriangle))
   open(unit = 10, file = "station_triangle.txt")
   do j = 1, ntriangle
     do i = 1, 3
-      write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
-      &                           location_sta(index_org(triangle_indices(i, j)))%y_north
+      write(10, '(2(e15.7, 1x))') location_sta(station_winch(index_org(triangle_indices(i, j))))%x_east, &
+      &                           location_sta(station_winch(index_org(triangle_indices(i, j))))%y_north
     enddo
     write(10, '(a)') ">"
   enddo
@@ -710,23 +710,23 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
     do jj = 1, ngrid_x
       nsta_count(jj, kk) = 0
       grid_enough_sta(jj, kk) = .false.
-      grid_stationindex(1 : nsta_grid_max, jj, kk) = 0
+      grid_stationwinch(1 : nsta_grid_max, jj, kk) = 0
 
       used_station(1 : nsta) = .false.
       !!find triangle that contains the grid
       point_tmp(1 : 2) = (/location_grid(jj, kk)%x_east, location_grid(jj, kk)%y_north/)
       do j = 1, ntriangle
         do i = 1, 3
-          triangle_vertix_tmp(1 : 2, i) = [location_sta(index_org(triangle_indices(i, j)))%x_east, &
-          &                                location_sta(index_org(triangle_indices(i, j)))%y_north]
+          triangle_vertix_tmp(1 : 2, i) = [location_sta(station_winch(index_org(triangle_indices(i, j))))%x_east, &
+          &                                location_sta(station_winch(index_org(triangle_indices(i, j))))%y_north]
         enddo
         call triangle_contains_point_2d_3(triangle_vertix_tmp, point_tmp, is_inside)
         if(is_inside .eqv. .true.) then
           grid_enough_sta(jj, kk) = .true.
           nsta_count(jj, kk) = 3
           do i = 1, 3
-            grid_stationindex(i, jj, kk) = index_org(triangle_indices(i, j))
-            used_station(grid_stationindex(i, jj, kk)) = .true.
+            grid_stationwinch(i, jj, kk) = station_winch(index_org(triangle_indices(i, j)))
+            used_station(index_org(triangle_indices(i, j))) = .true.
           enddo
           exit
         endif
@@ -741,8 +741,8 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
         do ii = 1, nsta
           if(is_usestation(ii) .eqv. .false.) cycle
           if(used_station(ii) .eqv. .true.) cycle
-          call cartesian_dist(location_sta(ii)%x_east,  location_grid(jj, kk)%x_east, &
-          &                   location_sta(ii)%y_north, location_grid(jj, kk)%y_north, &
+          call cartesian_dist(location_sta(station_winch(ii))%x_east,  location_grid(jj, kk)%x_east, &
+          &                   location_sta(station_winch(ii))%y_north, location_grid(jj, kk)%y_north, &
           &                   distance = dist_tmp)
           do j = 1, nadd_station
             if(dist_tmp .le. add_station_distance(j)) then
@@ -758,7 +758,7 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
         enddo
         do i = 1, nadd_station
           nsta_count(jj, kk) = nsta_count(jj, kk) + 1
-          grid_stationindex(nsta_count(jj, kk), jj, kk) = add_station_index(i)
+          grid_stationwinch(nsta_count(jj, kk), jj, kk) = station_winch(add_station_index(i))
         enddo
         deallocate(add_station_distance, add_station_index)
       endif
@@ -769,8 +769,8 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
       call greatcircle_dist(evlat, evlon, location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
       &                     backazimuth=propagation_direction)
       do i = 1, nsta_count_tmp
-        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
-        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        call cartesian_dist(location_sta(grid_stationwinch(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationwinch(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
         &                   theta = propagation_direction, dist_x = dist_x_tmp, dist_y = dist_y_tmp)
         dist_tmp = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
         if(dist_tmp .lt. exp(-2.0_fp)) then
@@ -780,8 +780,8 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
 #else
       !!check distance between grid and stations (vertices)
       do i = 1, nsta_count_tmp
-        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
-        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        call cartesian_dist(location_sta(grid_stationwinch(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationwinch(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
         &                   distance = dist_tmp)
         if(dist_tmp .gt. cutoff_dist) then
           grid_enough_sta(jj, kk) = .false.
@@ -792,8 +792,8 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
       if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
 
       do i = 1, nsta_count(jj, kk)
-        write(10, '(2(e15.7, 1x))') location_sta(grid_stationindex(i, jj, kk))%x_east, &
-        &                           location_sta(grid_stationindex(i, jj, kk))%y_north
+        write(10, '(2(e15.7, 1x))') location_sta(grid_stationwinch(i, jj, kk))%x_east, &
+        &                           location_sta(grid_stationwinch(i, jj, kk))%y_north
       enddo
       write(10, '(a)') ">"
 
@@ -802,13 +802,13 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
       weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_fp
       do i = 1, nsta_count(jj, kk)
         g(i, 1) = 1.0_fp
-        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
-        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        call cartesian_dist(location_sta(grid_stationwinch(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationwinch(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
         &                   dist_x = g(i, 2), dist_y = g(i, 3))
 
 #ifdef ELLIPSE
-        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
-        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        call cartesian_dist(location_sta(grid_stationwinch(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationwinch(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
         &                   theta = propagation_direction, dist_x = dist_x_tmp, dist_y = dist_y_tmp)
         weight(i, i) = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
 #else
@@ -865,10 +865,10 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
         ii = 1
         do i = 1, nsta_count(jj, kk) - 1
           do j = i + 1, nsta_count(jj, kk)
-            call cartesian_dist(location_sta(grid_stationindex(j, jj, kk))%x_east, &
-            &                   location_sta(grid_stationindex(i, jj, kk))%x_east, &
-            &                   location_sta(grid_stationindex(j, jj, kk))%y_north, &
-            &                   location_sta(grid_stationindex(i, jj, kk))%y_north, &
+            call cartesian_dist(location_sta(grid_stationwinch(j, jj, kk))%x_east, &
+            &                   location_sta(grid_stationwinch(i, jj, kk))%x_east, &
+            &                   location_sta(grid_stationwinch(j, jj, kk))%y_north, &
+            &                   location_sta(grid_stationwinch(i, jj, kk))%y_north, &
             &                   dist_x = g2(ii, 1), dist_y = g2(ii, 2))
             ii = ii + 1
           enddo

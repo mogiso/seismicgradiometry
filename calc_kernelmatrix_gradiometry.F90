@@ -5,7 +5,8 @@
 module calc_kernelmatrix
 
   private
-  public :: calc_kernelmatrix_circle, calc_kernelmatrix_delaunay, calc_kernelmatrix_delaunay2
+  public :: calc_kernelmatrix_circle, calc_kernelmatrix_delaunay, calc_kernelmatrix_delaunay2, &
+  &         calc_kernelmatrix_delaunay2_shmdump
 
 contains
 
@@ -619,6 +620,278 @@ subroutine calc_kernelmatrix_delaunay2(location_grid, location_sta, nadd_station
   return
 end subroutine calc_kernelmatrix_delaunay2
 
+subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, location_sta, nadd_station, &
+&                                      grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix, &
+&                                      nsta_correlation, slowness_est_matrix, error_matrix)
+  use nrtype, only : fp
+  use constants, only : pi
+  use typedef
+  use gradiometry_parameters
+  use greatcircle, only : greatcircle_dist
+#ifdef MKL
+  use lapack95
+#else
+  use f95_lapack
+#endif
+  implicit none
+
+  type(location),  intent(in)  :: location_grid(:, :), location_sta(:)
+  integer,         intent(in)  :: station_winch(:), nadd_station
+  logical,         intent(out) :: grid_enough_sta(:, :)
+  integer,         intent(out) :: nsta_count(:, :), grid_stationindex(:, :, :)
+  real(kind = fp), intent(out) :: kernel_matrix(:, :, :, :)
+  integer,         intent(out), optional :: nsta_correlation(:, :)
+  real(kind = fp), intent(out), allocatable, optional :: slowness_est_matrix(:, :, :, :)
+  real(kind = fp), intent(out), optional :: error_matrix(:, :, :)
+
+  integer         :: i, j, ii, jj, kk, info, nsta, ntriangle, nsta_use, nsta_count_tmp
+  integer         :: ipiv(1 : 3)
+  logical         :: is_inside
+#ifdef ELLIPSE
+  real(kind = fp) :: propagation_direction, dist_x_tmp, dist_y_tmp, az_diff_tmp
+#endif
+  real(kind = fp) :: g(1 : nsta_grid_max, 1 : 3), g_tmp(1 : 3, 1 : 3), weight(1 : nsta_grid_max, 1 : nsta_grid_max), &
+  &                  point_tmp(1 : 2), triangle_vertix_tmp(1 : 2, 1 : 3), dist_tmp
+  real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
+  integer,         allocatable :: vertix_index(:), triangle_indices(:, :), tnbr(:, :), index_org(:), add_station_index(:)
+  logical,         allocatable :: is_usestation(:), used_station(:)
+ 
+  nsta = ubound(station_winch, 1)
+  nsta_use = nsta
+  allocate(is_usestation(1 : nsta))
+  is_usestation(1 : nsta) = .true.
+  if(present(error_matrix)) then
+    error_matrix(1 : 3, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
+  endif
+
+  !!check interstation distance
+  do j = 1, nsta - 1
+    if(is_usestation(j) .eqv. .false.) cycle
+    do i = j + 1, nsta
+      if(is_usestation(i) .eqv. .false.) cycle
+      call cartesian_dist(location_sta(station_winch(i))%x_east,  location_sta(station_winch(j))%x_east, &
+      &                   location_sta(station_winch(i))%y_north, location_sta(station_winch(j))%y_north, &
+      &                   distance = dist_tmp)
+      if(dist_tmp .le. interstationdistance_min) then
+        is_usestation(i) = .false.
+        nsta_use = nsta_use - 1
+      endif
+    enddo
+  enddo
+  
+
+  !!Do delaunay triangulation
+  allocate(vertix_index(1 : nsta_use), vertices(1 : 2, 1 : nsta_use), triangle_indices(1 : 3, 1 : 2 * nsta_use), &
+  &        tnbr(1 : 3, 1 : 2 * nsta_use), index_org(1 : nsta), used_station(1 : nsta))
+  i = 1
+  do j = 1, nsta
+    if(is_usestation(j) .eqv. .false.) cycle
+    vertices(1, i) = location_sta(station_winch(j))%x_east
+    vertices(2, i) = location_sta(station_winch(j))%y_north
+    vertix_index(i) = i
+    index_org(i) = j
+    i = i + 1
+  enddo
+  call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
+  allocate(triangle_stationwinch(1 : 3 + nadd_station, 1 : ntriangle))
+  open(unit = 10, file = "station_triangle.txt")
+  do j = 1, ntriangle
+    do i = 1, 3
+      write(10, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
+      &                           location_sta(index_org(triangle_indices(i, j)))%y_north
+    enddo
+    write(10, '(a)') ">"
+  enddo
+  close(10)
+
+  !!Select stations at each grid
+  open(unit = 10, file = "stationlist_grid.txt")
+  do kk = 1, ngrid_y
+    do jj = 1, ngrid_x
+      nsta_count(jj, kk) = 0
+      grid_enough_sta(jj, kk) = .false.
+      grid_stationindex(1 : nsta_grid_max, jj, kk) = 0
+
+      used_station(1 : nsta) = .false.
+      !!find triangle that contains the grid
+      point_tmp(1 : 2) = (/location_grid(jj, kk)%x_east, location_grid(jj, kk)%y_north/)
+      do j = 1, ntriangle
+        do i = 1, 3
+          triangle_vertix_tmp(1 : 2, i) = [location_sta(index_org(triangle_indices(i, j)))%x_east, &
+          &                                location_sta(index_org(triangle_indices(i, j)))%y_north]
+        enddo
+        call triangle_contains_point_2d_3(triangle_vertix_tmp, point_tmp, is_inside)
+        if(is_inside .eqv. .true.) then
+          grid_enough_sta(jj, kk) = .true.
+          nsta_count(jj, kk) = 3
+          do i = 1, 3
+            grid_stationindex(i, jj, kk) = index_org(triangle_indices(i, j))
+            used_station(grid_stationindex(i, jj, kk)) = .true.
+          enddo
+          exit
+        endif
+      enddo
+      if(grid_enough_sta(jj, kk) .eqv. .false.) cycle 
+
+      !!find nadd_station additional stations based on the distance between grid and station
+      if(nadd_station .ge. 1) then
+        allocate(add_station_distance(1 : nadd_station), add_station_index(1 : nadd_station))
+        add_station_distance(1 : nadd_station) = 1.0e+38
+        add_station_index(1 : nadd_station) = 0
+        do ii = 1, nsta
+          if(is_usestation(ii) .eqv. .false.) cycle
+          if(used_station(ii) .eqv. .true.) cycle
+          call cartesian_dist(location_sta(ii)%x_east,  location_grid(jj, kk)%x_east, &
+          &                   location_sta(ii)%y_north, location_grid(jj, kk)%y_north, &
+          &                   distance = dist_tmp)
+          do j = 1, nadd_station
+            if(dist_tmp .le. add_station_distance(j)) then
+              do i = nadd_station, j + 1, -1
+                add_station_distance(i) = add_station_distance(i - 1)
+                add_station_index(i) = add_station_index(i - 1)
+              enddo
+              add_station_distance(j) = dist_tmp
+              add_station_index(j) = ii
+              exit
+            endif
+          enddo
+        enddo
+        do i = 1, nadd_station
+          nsta_count(jj, kk) = nsta_count(jj, kk) + 1
+          grid_stationindex(nsta_count(jj, kk), jj, kk) = add_station_index(i)
+        enddo
+        deallocate(add_station_distance, add_station_index)
+      endif
+
+      nsta_count_tmp = nsta_count(jj, kk)
+#ifdef ELLIPSE
+      !!Check whether all stations (vertices) are within the ellipse
+      call greatcircle_dist(evlat, evlon, location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
+      &                     backazimuth=propagation_direction)
+      do i = 1, nsta_count_tmp
+        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        &                   theta = propagation_direction, dist_x = dist_x_tmp, dist_y = dist_y_tmp)
+        dist_tmp = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
+        if(dist_tmp .lt. exp(-2.0_fp)) then
+          grid_enough_sta(jj, kk) = .false.
+        endif
+      enddo
+#else
+      !!check distance between grid and stations (vertices)
+      do i = 1, nsta_count_tmp
+        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        &                   distance = dist_tmp)
+        if(dist_tmp .gt. cutoff_dist) then
+          grid_enough_sta(jj, kk) = .false.
+        endif
+      enddo
+#endif
+
+      if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
+
+      do i = 1, nsta_count(jj, kk)
+        write(10, '(2(e15.7, 1x))') location_sta(grid_stationindex(i, jj, kk))%x_east, &
+        &                           location_sta(grid_stationindex(i, jj, kk))%y_north
+      enddo
+      write(10, '(a)') ">"
+
+      !!calculate kernel matrix for interpolation
+      g(1 : nsta_grid_max, 1 : 3) = 0.0_fp
+      weight(1 : nsta_grid_max, 1 : nsta_grid_max) = 0.0_fp
+      do i = 1, nsta_count(jj, kk)
+        g(i, 1) = 1.0_fp
+        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        &                   dist_x = g(i, 2), dist_y = g(i, 3))
+
+#ifdef ELLIPSE
+        call cartesian_dist(location_sta(grid_stationindex(i, jj, kk))%x_east,  location_grid(jj, kk)%x_east, &
+        &                   location_sta(grid_stationindex(i, jj, kk))%y_north, location_grid(jj, kk)%y_north, &
+        &                   theta = propagation_direction, dist_x = dist_x_tmp, dist_y = dist_y_tmp)
+        weight(i, i) = exp(-0.5_fp * ((dist_x_tmp / sigma_x) ** 2 + (dist_y_tmp / sigma_y) ** 2))
+#else
+        weight(i, i) = exp(-(g(i, 2) ** 2 + g(i, 3) ** 2) / (cutoff_dist ** 2))
+#endif
+
+      enddo
+      g_tmp = matmul(transpose(g), matmul(weight, g))
+
+#ifdef MKL
+      call getrf(g_tmp, ipiv = ipiv, info = info)
+      call getri(g_tmp, ipiv, info = info)
+#else
+      call LA_GETRF(g_tmp, ipiv, info = info)
+      call LA_GETRI(g_tmp, ipiv, info = info)
+#endif
+
+      if(info .ne. 0) then
+        grid_enough_sta(jj, kk) = .false.
+        cycle
+      endif
+
+      !kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(g_tmp, matmul(transpose(g), weight))
+      kernel_matrix(1 : 3, 1 : nsta_grid_max, jj, kk) = matmul(matmul(g_tmp, transpose(g)), weight)
+      if(present(error_matrix)) then
+        do i = 1, 3
+           error_matrix(i, jj, kk) = g_tmp(i, i)
+        enddo
+      endif
+
+        
+
+      if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
+        nsta_correlation(jj, kk) = 0
+        do i = 1, nsta_count(jj, kk) - 1
+          do j = i + 1, nsta_count(jj, kk)
+            nsta_correlation(jj, kk) = nsta_correlation(jj, kk) + 1
+          enddo
+        enddo
+      endif
+
+    enddo
+  enddo
+  close(10)
+
+  deallocate(is_usestation, used_station, index_org, vertix_index, vertices, triangle_indices, tnbr)
+
+  if(present(slowness_est_matrix) .and. present(nsta_correlation)) then
+    allocate(slowness_est_matrix(1 : 2, 1 : maxval(nsta_correlation), 1 : ngrid_x, 1 : ngrid_y))
+    do kk = 1, ngrid_y
+      do jj = 1, ngrid_x
+        if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
+        allocate(g2(1 : nsta_correlation(jj, kk), 1 : 2), g_tmp2(1 : 2, 1 : 2))
+        ii = 1
+        do i = 1, nsta_count(jj, kk) - 1
+          do j = i + 1, nsta_count(jj, kk)
+            call cartesian_dist(location_sta(grid_stationindex(j, jj, kk))%x_east, &
+            &                   location_sta(grid_stationindex(i, jj, kk))%x_east, &
+            &                   location_sta(grid_stationindex(j, jj, kk))%y_north, &
+            &                   location_sta(grid_stationindex(i, jj, kk))%y_north, &
+            &                   dist_x = g2(ii, 1), dist_y = g2(ii, 2))
+            ii = ii + 1
+          enddo
+        enddo
+
+        slowness_est_matrix(1 : 2, 1 : nsta_correlation(jj, kk), jj, kk) = 0.0_fp
+        g_tmp2 = matmul(transpose(g2), g2)
+#ifdef MKL
+        call getrf(g_tmp2, ipiv = ipiv(1 : 2), info = info)
+        call getri(g_tmp2, ipiv(1 : 2), info = info)
+#else
+        call LA_GETRF(g_tmp2, ipiv(1 : 2), info = info)
+        call LA_GETRI(g_tmp2, ipiv(1 : 2), info = info)
+#endif
+        slowness_est_matrix(1 : 2, 1 : nsta_correlation(jj, kk), jj, kk) = matmul(g_tmp2, transpose(g2))
+        deallocate(g_tmp2, g2)
+      enddo
+    enddo
+  endif
+
+
+  return
+end subroutine calc_kernelmatrix_delaunay2_shmdump
 
 subroutine cartesian_dist(x_east2, x_east1, y_north2, y_north1, theta, dist_x, dist_y, distance)
   use nrtype, only : fp

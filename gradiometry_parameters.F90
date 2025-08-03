@@ -132,7 +132,6 @@ module gradiometry_parameters
   &                                     waveformbuf_index_max = sampling_int_use * nsec_buf
   integer,         public, parameter :: nsampling_int = 1, sampling_int(1 : nsampling_int) = [10]
   integer,         public, parameter :: sampling_int_calc = 60
-  real(kind = fp), public, parameter :: dt = 1.0_fp / real(sampling_int_use, kind = fp)
   real(kind = fp), public, parameter :: sampling_sec(1 : nsampling_int) = [0.1_fp]
 
 end module gradiometry_parameters

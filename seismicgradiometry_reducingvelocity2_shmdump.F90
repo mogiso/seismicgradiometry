@@ -17,6 +17,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
   implicit none
 
   integer :: nstation, nch, nsample, timeindex_diff_min, i, j, ii, jj, kk, ncount, n, ios, ngrad, ndecimate
+  real(kind = fp)              :: dt = 1.0_fp / real(sampling_int_use, kind = fp)
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
   type(location)               :: location_sta(1 : nwinch)
   real(kind = fp)              :: dx_east, dy_north, denominator, uu, uut, utut, max_innerproduct, &

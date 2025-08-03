@@ -693,7 +693,6 @@ subroutine calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, loc
     i = i + 1
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
-  allocate(grid_stationwinch(1 : 3 + nadd_station, 1 : ntriangle))
   open(unit = 10, file = "station_triangle.txt")
   do j = 1, ntriangle
     do i = 1, 3

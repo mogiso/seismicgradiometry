@@ -16,17 +16,16 @@ program seismicgradiometry_reducingvelocity2_shmdump
 
   implicit none
 
-  integer :: nsta, npts_tmp, timeindex, timeindex_diff_min, i, j, ii, jj, kk, ncount, m, n, ngrad
+  integer :: nstation, nch, nsample, timeindex_diff_min, i, j, ii, jj, kk, ncount, n, ios, ngrad, ndecimate
   type(location) :: location_grid(1 : ngrid_x, 1 : ngrid_y)
-  type(location),              :: location_sta(1 : nwinch)
-  real(kind = fp), allocatable :: waveform_buf(1 : waveformbuf_index_max, 1 : nwinch)
-  real(kind = fp), allocatable :: h(:), uv(:, :)             !!For time-domain recursive filter 
-  real(kind = fp)              :: dt, c, gn, dx_east, dy_north, denominator, uu, uut, utut, max_innerproduct, &
+  type(location)               :: location_sta(1 : nwinch)
+  real(kind = fp)              :: dx_east, dy_north, denominator, uu, uut, utut, max_innerproduct, &
   &                               innerproduct_tmp, relativeerror, &
   &                               uxu(1 : 2), uxut(1 : 2), numerator_slowness(1 : 2), numerator_ampterm(1 : 2), &
   &                               obs_vector(1 : nsta_grid_max), &
   &                               sigma_slowness(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               sigma_ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), & 
+  &                               waveform_real(1 : maxval(sampling_int)), &
   &                               waveform_est_tmp(1 : 4, 1 : ngradient2), &
   &                               waveform_est_tmp2(1 : ngradient2, 1 : 4), &
   &                               waveform_est_plot(1 : ngrid_x, 1 : ngrid_y), &
@@ -34,19 +33,34 @@ program seismicgradiometry_reducingvelocity2_shmdump
   &                               ampterm(1 : 2, 1 : ngrid_x, 1 : ngrid_y), &
   &                               slowness_correction(1 : 2, 1 : ngrid_x, 1 : ngrid_y), slowness_cor_prev(1 : 2), &
   &                               kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), &
-  &                               error_matrix(1 : 3, 1 : ngrid_x, 1 : ngrid_y)
+  &                               error_matrix(1 : 3, 1 : ngrid_x, 1 : ngrid_y), &
+  &                               waveform_buf(1 : waveformbuf_index_max, 1 : nwinch)
   integer                      :: grid_stationwinch(1 : nsta_grid_max, 1 : ngrid_x, 1 : ngrid_y), &
-  &                               nsta_count(1 : ngrid_x, 1 : ngrid_y), timeindex_diff(1 : nsta_grid_max)
+  &                               nsta_count(1 : ngrid_x, 1 : ngrid_y), timeindex_diff(1 : nsta_grid_max), &
+  &                               waveform_tmp(1 : maxval(sampling_int))
   logical                      :: calc_grad, &
-  &                               grid_enough_sta(1 : ngrid_x, 1 : ngrid_y)
-  character(len = 129), allocatable :: sacfile(:)
-  character(len = 129) :: outfile
-  character(len = 14) :: time_char
+  &                               grid_enough_sta(1 : ngrid_x, 1 : ngrid_y), is_usewinch(1 : nwinch)
+  integer,         allocatable :: station_winch(:)
+  character(len = 129)         :: outfile
+  character(len = 14)          :: time_char
+  character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
+  &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
 #ifdef PARTICLEVELOCITY
   real(kind = fp)              :: particlevelocity(1 : 2, 1 : ngrid_x, 1 : ngrid_y)
   integer                      :: ncount1
   character(len = 129)         :: outfile_particle
 #endif
+  character(len = 255)         :: chtbl, chtbl_line
+
+  integer                      :: filter_m(1 : nsampling_int), filter_n(1 : nsampling_int)
+  real(kind = fp)              :: c(1 : nsampling_int), gn(1 : nsampling_int), station_sensitivity(1 : nwinch)
+  real(kind = fp), allocatable :: h(:, :), uv(:, :)             !!For time-domain recursive filter 
+  real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
+  &                               ptime_cor, stime_cor
+  integer                      :: winch_tmp, transdelay, mon_order, recflag, sensor_amp, ad_bit
+  character(len = 4)           :: winch_char, comp_tmp, sensor_unit
+  character(len = 8)           :: stname_tmp, stname(1 : nwinch)
+
 
   !nsta = command_argument_count()
 
@@ -75,7 +89,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
   open(unit = 10, file = trim(chtbl))
   nstation = 0
   do
-    read(10, '(a256)', iostat = ios) chtbl_line
+    read(10, '(a255)', iostat = ios) chtbl_line
     if(ios .ne. 0) exit
     if(chtbl_line(1 : 1) .eq. "#") cycle
     nstation = nstation + 1
@@ -88,7 +102,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
     if(ios .ne. 0) exit
     if(chtbl_line(1 : 1) .eq. "#") cycle
     do i = 1, 255
-      if(chtble_line(j : j) .eq. "/") chtbl_line(j : j) = "-"
+      if(chtbl_line(j : j) .eq. "/") chtbl_line(j : j) = "-"
     enddo
     read(chtbl_line, *) winch_char, recflag, transdelay, stname_tmp, comp_tmp, mon_order, &
     &                   ad_bit, sensor_sens, sensor_unit, naturalfreq, damp, sensor_amp, ad_v_min, &
@@ -105,11 +119,11 @@ program seismicgradiometry_reducingvelocity2_shmdump
 
   !!calculate filter parameter
   do i = 1, nsampling_int
-    call calc_bpf_order(fl, fh, fs, ap, as, sampling_sec(i), m(i), n(i), c(i))
+    call calc_bpf_order(fl, fh, fs, ap, as, sampling_sec(i), filter_m(i), filter_n(i), c(i))
   enddo
-  allocate(h(1 : 4 * maxval(m), 1 : nsampling_int))
+  allocate(h(1 : 4 * maxval(filter_m), 1 : nsampling_int))
   do i = 1, nsampling_int
-    call calc_bpf_coef(fl, fh, sampling_sec(i), m(i), n(i), h(:, i), c(i), gn(i))
+    call calc_bpf_coef(fl, fh, sampling_sec(i), filter_m(i), filter_n(i), h(:, i), c(i), gn(i))
   enddo
 
   !!set grid location
@@ -137,7 +151,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
 
   !!make kernel matrix for each grid
   !call calc_kernelmatrix_circle(location_grid, location_sta, grid_enough_sta, nsta_count, grid_stationindex, kernel_matrix)
-  call calc_kernelmatrix_delaunay2_shmdump(location_grid, location_sta, station_winch, naddstation_array, grid_enough_sta, &
+  call calc_kernelmatrix_delaunay2_shmdump(location_grid, station_winch, location_sta, naddstation_array, grid_enough_sta, &
   &                                        nsta_count, grid_stationwinch, kernel_matrix, error_matrix = error_matrix)
 
 #ifdef PARTICLEVELOCITY
@@ -147,6 +161,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
   !!calculate amplitude and its spatial derivatives at each grid
   !open(unit = 30, file = "log")
   !do kk = 1, int(ntime / ntimestep)
+  waveform_buf(1 : waveformbuf_index_max, 1 : nwinch) = 0.0_fp
   time_loop: do
 
     calc_sampling_loop: do ii = 1, sampling_int_calc
@@ -162,17 +177,13 @@ program seismicgradiometry_reducingvelocity2_shmdump
       write(0, '(a, 6(a2, 1x), a, i0)') "Reading ", &
       &                                 yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf), &
       &                                 " nch = ", nch
-      if(.not. allocated(waveform_buf)) then
-        allocate(waveform_buf(1 : waveform_buf_index_max, 1 : nwinch))
-        waveform_buf(1 : waveform_buf_index_max, 1 : nwinch) = 0.0_fp
-      endif
       if(.not. allocated(uv)) then
-        allocate(uv(1 : 4 * maxval(m), 1 : nwinch))
-        uv(1 : 4 * maxval(m), 1 : nwinch) = 0.0_fp
+        allocate(uv(1 : 4 * maxval(filter_m), 1 : nwinch))
+        uv(1 : 4 * maxval(filter_m), 1 : nwinch) = 0.0_fp
       endif
 
       waveform_buf(1 : waveformbuf_index_max - sampling_int_use, 1 : nwinch) &
-      & = waveform_buf(sampling_int_use + 1 : waveform_buf_index_max, 1 : nwinch)
+      & = waveform_buf(sampling_int_use + 1 : waveformbuf_index_max, 1 : nwinch)
       !!read waveforms from stdin, filtering, decimation
       do j = 1, nch
         read(*, *) winch_char, nsample, (waveform_tmp(i), i = 1, nsample)
@@ -187,7 +198,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
         endif
         ndecimate = sampling_int(i) / sampling_int_use
         do i = 1, nsample / ndecimate
-          waveform_buf(waveoform_buf_index_max - sampling_int_use + i, winch_tmp) = waveform_real(ndecimate * (i - 1) + 1)
+          waveform_buf(waveformbuf_index_max - sampling_int_use + i, winch_tmp) = waveform_real(ndecimate * (i - 1) + 1)
         enddo
       enddo
     enddo calc_sampling_loop
@@ -198,7 +209,7 @@ program seismicgradiometry_reducingvelocity2_shmdump
     !if(timeindex .lt. 1 .or. timeindex - ntimestep .gt. ntime) cycle
 
     !call int_to_char(kk, 4, ctimeindex)
-    write(time_char, '(a, 6(i2.2))' "20", yy(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
+    write(time_char, '(a, 6(i2.2))') "20", yr(nsec_buf), mo(nsec_buf), dy(nsec_buf), hh(nsec_buf), mm(nsec_buf), ss(nsec_buf)
     outfile = "slowness_gradiometry_" // trim(time_char) // ".dat"
     open(unit = 10, file = trim(outfile), form = "unformatted", access = "direct", recl = 4 * 10, status = "replace")
     ncount = 1
@@ -243,14 +254,14 @@ program seismicgradiometry_reducingvelocity2_shmdump
           do j = 1, ngradient2
             obs_vector(1 : nsta_grid_max) = 0.0_fp
             do i = 1, nsta_count(ii, jj)
-              if(timeindex - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min .lt. 1 .or. &
-                 timeindex - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min .gt. waveformbuf_index_max) then
+              if(waveformbuf_index_max - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min .lt. 1 .or. &
+                 waveformbuf_index_max - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min .gt. waveformbuf_index_max) then
                 calc_grad = .false.
                 exit
               endif
               obs_vector(i) &
-              &  = waveform_buf(timeindex - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min, &
-              &                 grid_stationindex(i, ii, jj))
+              &  = waveform_buf(waveformbuf_index_max - ngradient2 + j - timeindex_diff(i) + timeindex_diff_min, &
+              &                 grid_stationwinch(i, ii, jj))
             enddo
             if(calc_grad .eqv. .false.) exit
 

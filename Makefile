@@ -86,6 +86,7 @@ sac_deconvolve = sac_deconvolve.F90
 sac_integrate = sac_integrate.F90
 seismicgradiometry = seismicgradiometry.F90
 seismicgradiometry_reducingvelocity2 = seismicgradiometry_reducingvelocity2.F90
+seismicgradiometry_reducingvelocity2_shmdump = seismicgradiometry_reducingvelocity2_shmdump.F90
 sort = sort.F90
 tandem = tandem.F90
 typedef = typedef.F90
@@ -131,6 +132,7 @@ o_sac_deconvolve = $(sac_deconvolve:.F90=.o)
 o_sac_integrate = $(sac_integrate:.F90=.o)
 o_seismicgradiometry = $(seismicgradiometry:.F90=.o)
 o_seismicgradiometry_reducingvelocity2 = $(seismicgradiometry_reducingvelocity2:.F90=.o)
+o_seismicgradiometry_reducingvelocity2_shmdump = $(seismicgradiometry_reducingvelocity2_shmdump:.F90=.o)
 o_sort = $(sort:.F90=.o)
 o_tandem = $(tandem:.F90=.o)
 o_deconvolution = $(deconvolution:.F90=.o)
@@ -160,7 +162,7 @@ $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constant
 $(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
         $(mod_gradiometry_parameters) \
-	$(o_constants) $(o_gradiometry_parameters) $(o_sort)
+	$(o_constants) $(o_gradiometry_parameters) $(o_sort) $(o_geompack) $(o_geometry)
 $(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_froude_number_grd): $(calc_froude_number_grd) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_calc_kernelmatrix) \
@@ -169,8 +171,8 @@ $(o_constants): $(constants) $(mod_nrtype)
 $(o_correlation): $(correlation) $(mod_nrtype)
 $(o_cosine_taper): $(cosine_taper) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_deconvolution): $(deconvolution) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants) $(o_constants)
-$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants) $(o_constants)
+$(o_geometry): $(geometry) $(mod_nrtype) $(mod_constants)
+$(o_geompack2): $(geompack2) $(mod_nrtype) $(mod_constants)
 $(o_gradiometry_parameters): $(gradiometry_parameters) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_grdfile_io): $(grdfile_io) $(mod_nrtype)
 $(o_greatcircle): $(greatcircle) $(mod_nrtype) $(mod_constants) $(o_constants)
@@ -188,6 +190,9 @@ $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(
 $(o_seismicgradiometry_reducingvelocity2): $(seismicgradiometry_reducingvelocity2) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) $(mod_itoa) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
+$(o_seismicgradiometry_reducingvelocity2_shmdump): $(seismicgradiometry_reducingvelocity2_shmdump) \
+	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) $(mod_itoa) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
 $(o_calc_minmax_waveform_grd): $(calc_minmax_waveform_grd) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix)
@@ -202,6 +207,12 @@ seismicgradiometry: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_
 seismicgradiometry_reducingvelocity2: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) \
 	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2) \
+	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+seismicgradiometry_reducingvelocity2_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
+	$(o_lonlat_xy_conv) $(o_itoa) \
+	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2_shmdump) \
 	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 

@@ -14,8 +14,16 @@ while($file_read <= $filesize){
   $deg = unpack "f", $buf;
   read IN, $buf, 4;
   $appvel = unpack "f", $buf;
-  $file_read = $file_read + 4 * 4;
-  print stdout "$lon $lat $deg $appvel\n";
+  read IN, $buf, 4;
+  $min_correlation = unpack "f", $buf;
+  read IN, $buf, 4;
+  $array_maxamp = unpack "f", $buf;
+  read IN, $buf, 4;
+  $array_lta = unpack "f", $buf;
+
+
+  $file_read = $file_read + 4 * 7;
+  print stdout "$lon $lat $deg $appvel $min_correlation $array_maxamp $array_lta\n";
 }
 close IN;
  

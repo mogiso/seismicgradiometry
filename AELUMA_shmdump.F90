@@ -332,15 +332,11 @@ program AELUMA_shmdump
         maxamp = (waveform_stacked(maxloc_stack(1)) * order) ** 2
       endif
       if(abs(arrivaltime(j)) .lt. 1.0_fp / real(sampling_int_use, kind = fp)) xcorr_flag(j) = .false.
-      station_lta_tmp = 0.0_fp
-      do jj = 1, nsta_count(j)
-        station_lta_tmp = station_lta_tmp + station_lta(triangle_stationwinch(jj, j))
-      enddo
-      station_lta_tmp = station_lta_tmp / real(nsta_count(j), kind = fp)
-      if(maxamp .lt. sqrt(real(nsta_count(j), kind = fp)) * station_lta_tmp * snratio_threshold) then
-        xcorr_flag(j) = .false.
-        cycle
-      endif
+      station_lta_tmp = maxval(station_lta(triangle_stationwinch(:, j)))
+      !if(maxamp .lt. sqrt(real(nsta_count(j), kind = fp)) * station_lta_tmp * snratio_threshold) then
+      !  xcorr_flag(j) = .false.
+      !  cycle
+      !endif
 
       narray_success = narray_success + 1
       
@@ -375,9 +371,9 @@ program AELUMA_shmdump
     &                               narray_success, ntriangle
     do i = 1, ntriangle
       if(xcorr_flag(i) .eqv. .true.) then
-        print '(i0, 6(1x, f9.4))', &
+        print '(i0, 6(1x, f9.4), 2(1x, e15.7))', &
         &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
-        &         minval_xcorr(i), arrivaltime(i)
+        &         minval_xcorr(i), arrivaltime(i), maxamp, station_lta_tmp
         !write(0, '(i0, 6(1x, f9.4))') &
         !&      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
         !&         minval_xcorr(i), arrivaltime(i)

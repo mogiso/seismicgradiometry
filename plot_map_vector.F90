@@ -21,7 +21,8 @@ program plot_map_vector
   &                  likelihood_tmp2, likelihood_sum, arrivaltime_ref
   logical         :: no_associated_arrayuse
   real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
-  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:), min_correlation_used(:, :)
+  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:), min_correlation_used(:, :), &
+  &                               array_maxamp_tmp(:), array_lta_tmp(:), array_maxamp_list(:, :), array_lta_list(:, :)
   integer,         allocatable :: arrayindex(:), parallelindex_start(:), parallelindex_end(:)
   logical,         allocatable :: result_exist(:, :), result_exist_org(:), array_used_list(:, :), swap_logical(:)
 
@@ -126,9 +127,11 @@ program plot_map_vector
       allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 0 : nepicenter), &
       &        result_exist_org(1 : ntriangle), &
       &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
-      &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle), swap_array1(1 : ntriangle))
+      &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle), swap_array1(1 : ntriangle), &
+      &        array_maxamp_tmp(1 : ntriangle), array_lta_tmp(1 : ntriangle))
       allocate(az_obs_used(1 : ntriangle, 1 : nepicenter), appvel_obs_used(1 : ntriangle, 1 : nepicenter), &
       &        array_used_list(1 : ntriangle, 1 : nepicenter), swap_logical(1 : ntriangle), &
+      &        array_maxamp_list(1 : ntriangle, 1 : nepicenter), array_lta_list(1 : ntriangle, 1 : nepicenter), &
       &        min_correlation_used(1 : ntriangle, 1 : nepicenter))
     endif
 
@@ -138,9 +141,12 @@ program plot_map_vector
 
     !!read and plot slowness vector
     narray_use(0 : nepicenter) = narray
+    array_maxamp_tmp(1 : ntriangle) = 0.0_sp
+    array_lta_tmp(1 : ntriangle) = 0.0_sp
     do i = 1, narray
       read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
-      &          slowness_x, slowness_y, min_correlation(arrayindex(i)), arrivaltime(arrayindex(i))
+      &          slowness_x, slowness_y, min_correlation(arrayindex(i)), arrivaltime(arrayindex(i)), &
+      &          array_maxamp_tmp(arrayindex(i)), array_lta_tmp(arrayindex(i))
       result_exist_org(arrayindex(i))  = .true.
       result_exist(arrayindex(i), 0 : nepicenter) = .true.
       do j = 0, nepicenter
@@ -255,7 +261,8 @@ program plot_map_vector
             &                   maxval_likelihood = maxval_likelihood, &
             &                   lon_array = lon_array, lat_array = lat_array, &
             &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
-            &                   array_used = array_used_list(:, i), min_correlation = min_correlation_used(:, i))
+            &                   array_used = array_used_list(:, i), min_correlation = min_correlation_used(:, i), &
+            &                   array_maxamp = array_maxamp_list(:, i), array_lta = array_lta_list(:, i))
             write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter.txt"
             open(unit = 12, file = trim(outfile), iostat = ios, status = "old", position = "append")
             if(ios .ne. 0) then
@@ -342,6 +349,8 @@ program plot_map_vector
         az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
         appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
         min_correlation_used(1 : ntriangle, i) = real(min_correlation(1 : ntriangle), kind = sp)
+        array_maxamp_list(1 : ntriangle, i) = array_maxamp_tmp(1 : ntriangle)
+        array_lta_list(1 : ntriangle, i) = array_lta_tmp(1 : ntriangle)
       !endif
     enddo
 
@@ -409,6 +418,14 @@ program plot_map_vector
           swap_logical(1 : ntriangle)           = array_used_list(1 : ntriangle, i)
           array_used_list(1 : ntriangle, i)     = array_used_list(1 : ntriangle, i - 1)
           array_used_list(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)              = array_maxamp_list(1 : ntriangle, i)
+          array_maxamp_list(1 : ntriangle, i)     = array_maxamp_list(1 : ntriangle, i - 1)
+          array_maxamp_list(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)           = array_lta_list(1 : ntriangle, i)
+          array_lta_list(1 : ntriangle, i)     = array_lta_list(1 : ntriangle, i - 1)
+          array_lta_list(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
         endif
       enddo
     enddo

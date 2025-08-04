@@ -13,7 +13,6 @@ program AELUMA_shmdump
   real(kind = sp), parameter   :: wavewindow_width = 350.0_sp, wavewindow_height = 300.0_sp, wavescale = 1.0_sp, &
   &                               wavewidth = 330.0_sp, waveheight = 290.0_sp, waveplotscale = 3.0_sp
   real(kind = sp)              :: plot_x0, plot_y0, plot_x1, plot_y1, plot_yref, dheight, dwidth
-  real(kind = fp)              :: maxamp
   character(len = 8)           :: date_c, time_c
 
   type(location)               :: location_sta(1 : nwinch)
@@ -23,13 +22,13 @@ program AELUMA_shmdump
   integer, allocatable         :: station_winch(:), xcorr_index(:, :)
   character(len = 2)           :: yr(1 : nsec_buf), mo(1 : nsec_buf), dy(1 : nsec_buf), &
   &                               hh(1 : nsec_buf), mm(1 : nsec_buf), ss(1 : nsec_buf)
-  real(kind = fp)              :: ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
+  real(kind = fp)              :: maxamp, ad_v_min, sensor_sens, naturalfreq, damp, stlat_tmp, stlon_tmp, stelev_tmp, &
   &                               ptime_cor, stime_cor, sum_abslagtime, sum_lagtime, correlation_checkval, station_lta_tmp
   real(kind = fp)              :: waveform_real(1 : maxval(sampling_int)), station_sensitivity(1 : nwinch), &
   &                               station_lta(1 : nwinch)
   real(kind = dp)              :: waveform_fft(1 : ntime_fft, 1 : 2), xcorr(-ntime_fft2 + 1 : ntime_fft2)
   real(kind = fp), allocatable :: slowness_matrix(:, :, :), slowness(:, :), lagtime(:), minval_xcorr(:), waveform_buf(:, :), &
-  &                               arrivaltime(:), taper_window(:), waveform_stacked(:)
+  &                               arrivaltime(:), taper_window(:), waveform_stacked(:), array_maxamp(:), array_lta(:)
   character(len = 4)           :: winch_char, comp_tmp
   character(len = 6)           :: stname(1 : nwinch), stname_tmp
   character(len = 255)         :: chtbl, chtbl_line, sensor_unit
@@ -109,6 +108,7 @@ program AELUMA_shmdump
   &                                              nsta_count, tnbr)
   allocate(minval_xcorr(1 : ntriangle), xcorr_flag(1 : ntriangle), slowness(1 : 2, 1 : ntriangle))
   allocate(arrivaltime(1 : ntriangle), xcorr_index(1 : maxval(nsta_count), 1 : maxval(nsta_count)))
+  allocate(array_maxamp(1 : ntriangle), array_lta(1 : ntriangle))
 
   !!open waveform canvas
   call pc_plotinit(iwin_wave, "Waveform monitor", 0.0, 0.0, wavewindow_width, wavewindow_height, wavescale)
@@ -326,14 +326,18 @@ program AELUMA_shmdump
       minloc_stack = minloc(waveform_stacked)
       if(abs(waveform_stacked(minloc_stack(1))) .gt. waveform_stacked(maxloc_stack(1))) then
         arrivaltime(j) = real(minloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
-        maxamp = (waveform_stacked(minloc_stack(1)) * order) ** 2
+        array_maxamp(j) = (waveform_stacked(minloc_stack(1)) * order) ** 2
       else
         arrivaltime(j) = real(maxloc_stack(1), kind = fp) / real(sampling_int_use, kind = fp)
-        maxamp = (waveform_stacked(maxloc_stack(1)) * order) ** 2
+        array_maxamp(j) = (waveform_stacked(maxloc_stack(1)) * order) ** 2
       endif
       if(abs(arrivaltime(j)) .lt. 1.0_fp / real(sampling_int_use, kind = fp)) xcorr_flag(j) = .false.
-      station_lta_tmp = maxval(station_lta(triangle_stationwinch(:, j)))
-      !if(maxamp .lt. sqrt(real(nsta_count(j), kind = fp)) * station_lta_tmp * snratio_threshold) then
+      array_lta(j) = 0.0_fp
+      do jj = 1, nsta_count(j)
+        array_lta(j) = array_lta(j) + station_lta(triangle_stationwinch(jj, j))
+      enddo
+      array_lta(j) = array_lta(j) / real(nsta_count(j), kind = fp)
+      !if(array_maxamp(j) .lt. sqrt(real(nsta_count(j), kind = fp)) * array_lta(j) * snratio_threshold) then
       !  xcorr_flag(j) = .false.
       !  cycle
       !endif
@@ -373,7 +377,7 @@ program AELUMA_shmdump
       if(xcorr_flag(i) .eqv. .true.) then
         print '(i0, 6(1x, f9.4), 2(1x, e15.7))', &
         &      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
-        &         minval_xcorr(i), arrivaltime(i), maxamp, station_lta_tmp
+        &         minval_xcorr(i), arrivaltime(i), array_maxamp(i), array_lta(i)
         !write(0, '(i0, 6(1x, f9.4))') &
         !&      i, triangle_center(i)%lon, triangle_center(i)%lat, slowness(1, i), slowness(2, i), &
         !&         minval_xcorr(i), arrivaltime(i)

@@ -51,7 +51,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
   real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
-  real(kind = fp),    public, parameter :: correlation_threshold = 0.4_fp
+  real(kind = fp),    public, parameter :: correlation_threshold = 0.5_fp
   real(kind = fp),    public, parameter :: ref_appvelocity = 0.3_fp
   real(kind = fp),    public, parameter :: max_slowness = 0.4_fp
 

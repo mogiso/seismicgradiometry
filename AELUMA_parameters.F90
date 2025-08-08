@@ -27,7 +27,7 @@ module aeluma_parameters
   &                                        = 1.0_fp / real(sampling_int(1 : nsampling_int), kind = fp)
   integer,            public, parameter :: sampling_int_use = 5
   integer,            public, parameter :: nsec_buf  = 10 * 60
-  integer,            public, parameter :: nsec_for_fft = 5 * 60
+  integer,            public, parameter :: nsec_for_fft = 6 * 60
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
   real(kind = fp),    public, parameter :: xcorr_min = 0.02_fp

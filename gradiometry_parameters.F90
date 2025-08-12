@@ -75,17 +75,17 @@ module gradiometry_parameters
   !real(kind = fp), public, parameter :: dgrid_x = 10.0_fp, dgrid_y = 10.0_fp
   !!data order, array configuration
   !!For 15s-sampled data 
-  integer,         public, parameter :: ntime = 2400
-  integer,         public, parameter :: ntimestep = 4 
-  integer,         public, parameter :: ngradient2 = 240
-  integer,         public, parameter :: ntime_slowness = 241
+  !integer,         public, parameter :: ntime = 2400
+  !integer,         public, parameter :: ntimestep = 4 
+  !integer,         public, parameter :: ngradient2 = 240
+  !integer,         public, parameter :: ntime_slowness = 241
   !!For 6s-sampled data
-  !integer,         public, parameter :: ntime = 6000
-  !integer,         public, parameter :: ntimestep = 10
-  !integer,         public, parameter :: ngradient2 = 600
-  !integer,         public, parameter :: ntime_slowness = 601, ntime_slowness2 = (ntime_slowness - 1) / 2
-  !real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hPa
-  real(kind = fp), public, parameter :: order = 1.0_fp 
+  integer,         public, parameter :: ntime = 57600
+  integer,         public, parameter :: ntimestep = 10
+  integer,         public, parameter :: ngradient2 = 300
+  integer,         public, parameter :: ntime_slowness = 301, ntime_slowness2 = (ntime_slowness - 1) / 2
+  real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hPa
+  !real(kind = fp), public, parameter :: order = 1.0_fp 
   integer,         public, parameter :: nsta_grid_min = 4, nsta_grid_max = 4
   integer,         public, parameter :: naddstation_array = 1
   real(kind = fp), public, parameter :: cutoff_dist = 80.0_fp !!S-net

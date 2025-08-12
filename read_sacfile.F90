@@ -10,7 +10,7 @@ module read_sacfile
 
   subroutine read_sachdr(infile, &
   &  header, delta, begin, origin, ptime, t0, t1, t2, t3, stlat, stlon, stdp, eqlat, eqlon, eqdep, npts, &
-  &  user7, user8, user9, stname)
+  &  user7, user8, user9, year, julianday, stname)
     use nrtype, only : fp, sp
     implicit none
     character(len = *), intent(in) :: infile
@@ -33,11 +33,13 @@ module read_sacfile
     real(kind = fp), intent(out), optional :: user7
     real(kind = fp), intent(out), optional :: user8
     real(kind = fp), intent(out), optional :: user9
+    integer,         intent(out), optional :: year
+    integer,         intent(out), optional :: julianday
     character(len = 8), intent(out), optional :: stname
   
     real(kind = fp), parameter :: alt_to_depth = -1.0e-3_fp
     real(kind = sp) :: buf, stel
-    integer :: i
+    integer :: i, nzhour, nzmin, nzsec, nzmsec
     character(len = 4) :: stname1, stname2
   
     open(unit = 10, file = infile, form = "unformatted", access = "direct", recl = 4)
@@ -51,7 +53,13 @@ module read_sacfile
       read(10, rec = 1) buf; delta = real(buf, kind = fp)
     endif
     if(present(begin)) then
-       read(10, rec = 6) buf; begin = real(buf, kind = fp)
+      read(10, rec = 6) buf; begin = real(buf, kind = fp)
+      read(10, rec = 73) nzhour
+      read(10, rec = 74) nzmin
+      read(10, rec = 75) nzsec
+      read(10, rec = 76) nzmsec
+      begin = (3600.0_fp * real(nzhour, kind = fp) + 60.0_fp * real(nzmin, kind = fp) &
+      &     + real(nzsec, kind = fp) + real(nzmsec, kind = fp) / 1000.0_fp + begin
     endif
     if(present(origin)) then
       read(10, rec = 8) buf; origin = real(buf, kind = fp)
@@ -99,6 +107,12 @@ module read_sacfile
     endif
     if(present(user9)) then
       read(10, rec = 50) buf; user9 = real(buf, kind = fp)
+    endif
+    if(present(year)) then
+      read(10, rec = 71) year
+    endif
+    if(present(julianday)) then
+      read(10, rec = 72) julianday
     endif
     if(present(npts)) then
       read(10, rec = 80) npts

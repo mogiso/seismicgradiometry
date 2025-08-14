@@ -82,6 +82,7 @@ make_waveform_from_grd = make_waveform_from_grd.F90
 nrtype = nrtype.F90
 read_sacfile = read_sacfile.F90
 sac_decimation = sac_decimation.F90
+sac_decimation_dump = sac_decimation_dump.F90
 sac_deconvolve = sac_deconvolve.F90
 sac_integrate = sac_integrate.F90
 seismicgradiometry = seismicgradiometry.F90
@@ -90,6 +91,7 @@ seismicgradiometry_reducingvelocity2_shmdump = seismicgradiometry_reducingveloci
 sort = sort.F90
 tandem = tandem.F90
 typedef = typedef.F90
+jday = jday.F90
 
 ##Module
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
@@ -106,6 +108,7 @@ mod_nrtype = $(nrtype:.F90=.mod)
 mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_tandem = $(tandem:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
+mod_jday = $(jday:.F90=.mod)
 
 ##Object
 o_calc_bpf_coef = $(calc_bpf_coef:.F90=.o)
@@ -128,6 +131,7 @@ o_make_waveform_from_grd = $(make_waveform_from_grd:.F90=.o)
 o_nrtype = $(nrtype:.F90=.o)
 o_read_sacfile = $(read_sacfile:.F90=.o)
 o_sac_decimation = $(sac_decimation:.F90=.o)
+o_sac_decimation_dump = $(sac_decimation_dump:.F90=.o)
 o_sac_deconvolve = $(sac_deconvolve:.F90=.o)
 o_sac_integrate = $(sac_integrate:.F90=.o)
 o_seismicgradiometry = $(seismicgradiometry:.F90=.o)
@@ -140,6 +144,7 @@ o_line_fit = $(line_fit:.f90=.o)
 o_typedef = $(typedef:.F90=.o)
 o_geompack2 = $(geompack2:.f90=.o)
 o_geometry = $(geometry:.f90=.o)
+o_jday = $(jday:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -156,6 +161,7 @@ $(mod_deconvolution): $(deconvolution) $(o_deconvolution)
 $(mod_tandem): $(tandem) $(o_tandem)
 $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
+$(mod_jday): $(jday) $(o_jday)
 
 ##Object dependency
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
@@ -182,6 +188,7 @@ $(o_make_waveform_from_grd): $(make_waveform_from_grd) $(mod_nrtype) $(mod_grdfi
 $(o_nrtype): $(nrtype)
 $(o_read_sacfile): $(read_sacfile) $(mod_nrtype)
 $(o_sac_decimation): $(sac_decimation) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_tandem)
+$(o_sac_decimation_dump): $(sac_decimation_dump) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_tandem) $(mod_jday)
 $(o_sac_deconvolve): $(sac_deconvolve) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_deconvolution)
 $(o_sac_integrate): $(sac_integrate) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_tandem)
 $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) \
@@ -224,6 +231,10 @@ calc_minmax_waveform_grd: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_cal
 
 sac_decimation: $(o_nrtype) $(o_constants) $(o_calc_lpf_order) $(o_calc_lpf_coef) $(o_tandem) $(o_read_sacfile) \
 	$(o_sac_decimation)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+sac_decimation_dump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) $(o_read_sacfile) \
+	$(o_jday) $(o_sac_decimation_dump)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 sac_deconvolve: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) $(o_read_sacfile) \

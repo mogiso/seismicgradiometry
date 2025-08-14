@@ -1,5 +1,7 @@
 module jday
 
+public :: leapyear, ymd2jday, jday2ymd
+
 contains
   subroutine leapyear(year, leap)
   !!Return leapyear or not

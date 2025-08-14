@@ -49,7 +49,7 @@ module aeluma_parameters
   real(kind = fp),    public, parameter :: sigma_azdiff = 15.0_fp * deg2rad, sigma_azdiff2 = sigma_azdiff ** 2
   real(kind = fp),    public, parameter :: sameaz_num = 10.0_fp * deg2rad, sameaz_num2 = 20.0_fp ** 2, azweight_coef = 0.7_fp
   real(kind = fp),    public, parameter :: sigma_particle = 0.3_fp
-  real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 60.0_fp, &
+  real(kind = fp),    public, parameter :: sigma_dist = log(100.0_fp), ot_coef = 0.7_fp, sigma_otdiff = 40.0_fp, &
   &                                        sigma_dist2 = sigma_dist ** 2, sigma_otdiff2 = sigma_otdiff ** 2
   real(kind = fp),    public, parameter :: correlation_threshold = 0.6_fp
   real(kind = fp),    public, parameter :: ref_appvelocity = 0.3_fp

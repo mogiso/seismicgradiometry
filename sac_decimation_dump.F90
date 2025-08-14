@@ -3,16 +3,16 @@ program sac_decimation_dump
   use constants, only : pi
   use read_sacfile, only : read_sachdr, read_sacdata
   use tandem, only : tandem3
+  use jday
 
   implicit none
 
-  real(kind = fp), parameter :: ap = 0.1_fp, as = 15.0_fp
+  real(kind = fp), parameter :: ap = 0.1_fp, as = 15.0_fp, order = 1.0e+6_fp
   integer, parameter :: nmean = 100 * 15
   
-  integer :: i, j, nfile, npts, decimate, jday, yr, mo, dy, hh, mm
+  integer :: i, j, nfile, npts, decimate, julianday, yr, mo, dy, hh, mm
   character(len = 4) :: sachdr_char(1 : 158)
-  character(len = 129), allocatable :: sacfile(:)
-  character(len = 129) :: outfile
+  character(len = 129) :: outfile, sacfile
   real(kind = fp), allocatable :: waveform_org(:)
   real(kind = fp) :: mean, sampling, sampling_new, waveform_decimate, ss
 
@@ -29,9 +29,10 @@ program sac_decimation_dump
 
   open(unit = 10, file = trim(sacfile), form = "unformatted", access = "direct", recl = 4)
 
-  call read_sachdr(trim(sacfile), delta = sampling, npts = npts, begin = begintime, year = yr, julianday = jday)
+  call read_sachdr(trim(sacfile), delta = sampling, npts = npts, begin = begintime, year = yr, julianday = julianday)
   allocate(waveform_org(1 : npts))
   call read_sacdata(trim(sacfile), npts, waveform_org)
+  waveform_org(1 : npts) = waveform_org(1 : npts) * order
 
   mean = 0.0_fp
   do i = 1, nmean
@@ -49,22 +50,22 @@ program sac_decimation_dump
   write(0, '(a, 3(e15.7, 1x))') "parameter fl, fh, fs (Hz) = ", fl, fh, fs
   call calc_bpf_order(fl, fh, fs, ap, as, sampling, m, n, c)
   allocate(h(4 * m))
-  call calc_bpf_coef(fl, fpass, sampling, m, n, h, c, gn)
+  call calc_bpf_coef(fl, fh, sampling, m, n, h, c, gn)
   call tandem3(waveform_org, h, gn, 1)
   !call tandem3(waveform_org, h, gn, -1)
 
   do i = 1, npts / decimate
     waveform_decimate = waveform_org(decimate * (i - 1) + 1)
-    sec_from_day = begin + sampling * real(decimate * (i - 1), kind = fp)
+    sec_from_day = begintime + sampling * real(decimate * (i - 1), kind = fp)
     if(sec_from_day >= 86400.0_fp) then
-      jday = jday + 1
+      julianday = julianday + 1
       sec_from_day = sec_from_day - 86400.0_fp
     endif
-    call jday2ymd(jday, yr, mo, dy)
+    call jday2ymd(julianday, yr, mo, dy)
     hh = int(sec_from_day / (60.0_fp * 60.0_fp))
     mm = int((sec_from_day - 60.0_fp * 60.0_fp * real(hh, kind = fp)) / 60.0_fp)
     ss = sec_from_day - 60.0_fp * 60.0_fp * real(hh, kind = fp) - 60.0_fp * real(mm, kind = fp)
-    print *, yr, mo, dy, hh, mm, ss, waveform_decimate
+    print '(i4, 4(a, i2.2), a, f0.2, 1x, e15.7)', yr, "-", mo, "-", dy, "T", hh, ":", mm, ":", ss, waveform_decimate
   enddo
 
 

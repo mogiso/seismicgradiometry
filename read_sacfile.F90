@@ -43,7 +43,7 @@ module read_sacfile
     character(len = 4) :: stname1, stname2
   
     open(unit = 10, file = infile, form = "unformatted", access = "direct", recl = 4)
-    print '(2a)', "reading sacfile, ", trim(infile)
+    write(0, '(2a)') "reading sacfile, ", trim(infile)
     if(present(header)) then
       do i = 1, 158
         read(10, rec = i) header(i)
@@ -59,7 +59,7 @@ module read_sacfile
       read(10, rec = 75) nzsec
       read(10, rec = 76) nzmsec
       begin = (3600.0_fp * real(nzhour, kind = fp) + 60.0_fp * real(nzmin, kind = fp) &
-      &     + real(nzsec, kind = fp) + real(nzmsec, kind = fp) / 1000.0_fp + begin
+      &     + real(nzsec, kind = fp) + real(nzmsec, kind = fp) / 1000.0_fp) + begin
     endif
     if(present(origin)) then
       read(10, rec = 8) buf; origin = real(buf, kind = fp)

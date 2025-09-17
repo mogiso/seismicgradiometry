@@ -10,14 +10,14 @@ program sac_decimation_dump
   real(kind = fp), parameter :: ap = 0.1_fp, as = 15.0_fp, order = 1.0e+6_fp
   integer, parameter :: nmean = 100 * 15
   
-  integer :: i, j, nfile, npts, decimate, julianday, yr, mo, dy, hh, mm
+  integer :: i, j, nfile, npts, decimate, julianday, jday_tmp, yr, mo, dy, hh, mm
   character(len = 4) :: sachdr_char(1 : 158)
   character(len = 129) :: outfile, sacfile
   real(kind = fp), allocatable :: waveform_org(:)
   real(kind = fp) :: mean, sampling, sampling_new, waveform_decimate, ss
 
   real(kind = fp), allocatable :: h(:)
-  real(kind = fp) :: c, gn, fl, fh, fs, begintime, sec_from_day
+  real(kind = fp) :: c, gn, fl, fh, fs, begintime, sec_from_begin
   integer :: m, n 
   character(len = 65) :: decimate_c, fl_c, fh_c, fs_c
 
@@ -56,15 +56,26 @@ program sac_decimation_dump
 
   do i = 1, npts / decimate
     waveform_decimate = waveform_org(decimate * (i - 1) + 1)
-    sec_from_day = begintime + sampling * real(decimate * (i - 1), kind = fp)
-    if(sec_from_day >= 86400.0_fp) then
-      julianday = julianday + 1
-      sec_from_day = sec_from_day - 86400.0_fp
+    sec_from_begin = begintime + sampling * real(decimate * (i - 1), kind = fp)
+    jday_tmp = julianday
+    if(sec_from_begin .lt. 0.0_fp) then
+      do
+        sec_from_begin = sec_from_begin + 86400.0_fp
+        jday_tmp = jday_tmp - 1
+        if(sec_from_begin .ge. 0.0_fp) exit
+      enddo
     endif
-    call jday2ymd(julianday, yr, mo, dy)
-    hh = int(sec_from_day / (60.0_fp * 60.0_fp))
-    mm = int((sec_from_day - 60.0_fp * 60.0_fp * real(hh, kind = fp)) / 60.0_fp)
-    ss = sec_from_day - 60.0_fp * 60.0_fp * real(hh, kind = fp) - 60.0_fp * real(mm, kind = fp)
+    if(sec_from_begin .ge. 86400.0_fp) then
+      do
+        sec_from_begin = sec_from_begin - 86400.0_fp
+        jday_tmp = jday_tmp + 1
+        if(sec_from_begin .lt. 86400.0_fp) exit
+      enddo
+    endif
+    call jday2ymd(jday_tmp, yr, mo, dy)
+    hh = int(sec_from_begin / (60.0_fp * 60.0_fp))
+    mm = int((sec_from_begin - 60.0_fp * 60.0_fp * real(hh, kind = fp)) / 60.0_fp)
+    ss = sec_from_begin - 60.0_fp * 60.0_fp * real(hh, kind = fp) - 60.0_fp * real(mm, kind = fp)
     print '(i4, 4(a, i2.2), a, f0.2, 1x, e15.7)', yr, "-", mo, "-", dy, "T", hh, ":", mm, ":", ss, waveform_decimate
   enddo
 

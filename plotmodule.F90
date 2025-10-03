@@ -443,7 +443,6 @@ module plotmodule
           sigma_lat(sigma_index) = sigma_lat(sigma_index) + likelihood_particle(i) * abs(sigma_diff)
           sigma_normalize_lat(sigma_index) = sigma_normalize_lat(sigma_index) + likelihood_particle(i)
         endif
-        sigma_ot  = sigma_ot  + likelihood_particle(i) * abs(ot_list - origintime(i))
 
         sigma_diff = ot_list - origintime(i)
         if(sigma_diff .ge. 0.0_fp) then

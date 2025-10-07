@@ -30,6 +30,8 @@ while(<IN>){
   $jmalon = substr $_, 32, 4;
   $jmalon_m = substr $_, 36, 4;
   push @jmahypolon, ($jmalon + $jmalon_m / 100.0 / 60.0);
+  $jmamag = substr $_, 52, 2;
+  push @jmahypomag, $jmamag * 0.1;
 } 
 close IN;
 
@@ -44,6 +46,7 @@ for($i = 0; $i <= $#arraydatetime; $i++){
 
 
   $match_flag[$i] = -1;
+  @distance = ();
   for($j = 0; $j <= $#jmahypodatetime; $j++){
     @point1 = ();
     $jmayr = substr $jmahypodatetime[$j], 0, 4;
@@ -61,19 +64,22 @@ for($i = 0; $i <= $#arraydatetime; $i++){
     $sec_diff = $arraysec_from_day - $jmasec_from_day;
     $sec_diff = $sec_diff + $jday_diff * 86400.0;
     next if (abs($sec_diff) > $sec_diff_threshold);
+
+    $lat0 = geograph2geocen($arrayhypolat[$i]);
+    @point0 = NESW($arrayhypolon[$i], $lat0);
+    $lat1 = geograph2geocen($jmahypolat[$j]);
+    @point1 = NESW($jmahypolon[$j], $lat1);
+    $distance[$j] = sprintf "%.3f", (great_circle_distance(@point0, @point1, 6370.291));
+    next if ($distance[$j] > $distance_threshold);
+
     $match_flag[$i] = $j;
     print stderr "$sec_diff $arraydatetime[$i] $jmahypodatetime[$j]\n";
   }
 
   if($match_flag[$i] != -1){
-    $lat0 = geograph2geocen($arrayhypolat[$i]);
-    @point0 = NESW($arrayhypolon[$i], $lat0);
-    $lat1 = geograph2geocen($jmahypolat[$match_flag[$i]]);
-    @point1 = NESW($jmahypolon[$match_flag[$i]], $lat1);
-    $distance = sprintf "%.3f", (great_circle_distance(@point0, @point1, 6370.291));
-    print stdout "$arrayresult[$i] $jmahypodatetime[$match_flag[$i]] $jmahypolon[$match_flag[$i]] $jmahypolat[$match_flag[$i]] $distance\n";
+    print stdout "$arrayresult[$i] $jmahypodatetime[$match_flag[$i]] $jmahypolon[$match_flag[$i]] $jmahypolat[$match_flag[$i]] $jmahypomag[$match_flag[$i]] $distance[$match_flag[$i]]\n";
   }else{
-    #print OUT2 "$arrayresult[$i]\n";
+    print OUT2 "$arrayresult[$i]\n";
   }
 }
 close OUT;

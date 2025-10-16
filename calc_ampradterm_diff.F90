@@ -12,7 +12,7 @@ program calc_ampradterm_diff
   &                  direction(1 : 2), amp_geospread(1 : 2), amp_radterm(1 : 2)
   real(kind = sp) :: x_tmp, y_tmp, sx_tmp, sy_tmp, sigma_sx_tmp, sigma_sy_tmp, ampterm_x_tmp, ampterm_y_tmp, &
   &                  sigma_ampterm_x_tmp, sigma_ampterm_y_tmp
-  character(len = 129) :: infile(1 : 2), geospread_diff_grd, radterm_diff_grd
+  character(len = 129) :: infile(1 : 2), geospread_diff_grd, radterm_diff_grd, georadtermdiff_txt
 
 
 
@@ -20,6 +20,7 @@ program calc_ampradterm_diff
   call getarg(2, infile(2))
   call getarg(3, geospread_diff_grd)
   call getarg(4, radterm_diff_grd)
+  call getarg(5, georadtermdiff_txt)
 
 
   slowness_x(1 : 2, 1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
@@ -46,6 +47,7 @@ program calc_ampradterm_diff
 
   amp_geospread_diff(1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
   amp_radterm_diff(1 : ngrid_x, 1 : ngrid_y) = 0.0_fp
+  open(unit = 10, file = trim(georadtermdiff_txt))
   do j = 1, ngrid_y
     do i = 1, ngrid_x
       if(slowness_x(1, i, j) .ne. 0.0_fp .and. slowness_y(1, i, j) .ne. 0.0_fp .and. &
@@ -63,9 +65,11 @@ program calc_ampradterm_diff
         !amp_geospread_diff(i, j) = amp_geospread_diff(i, j) * 100.0_fp
         !amp_radterm_diff(i, j) = ampterm_x_diff(i, j) * cos(direction(2)) - ampterm_y_diff(i, j) * sin(direction(2))
         !amp_radterm_diff(i, j) = amp_radterm_diff(i, j) * 100.0_fp
+        write(10, '(2(e15.7, 1x))') amp_geospread_diff(i, j), amp_radterm_diff(i, j)
       endif
     enddo
   enddo
+  close(10)
 
   call write_grdfile_fp_2d(x_start, y_start, dgrid_x, dgrid_y, ngrid_x, ngrid_y, amp_geospread_diff, geospread_diff_grd, &
   &                        nanval = 0.0_fp)

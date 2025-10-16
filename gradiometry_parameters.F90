@@ -81,9 +81,10 @@ module gradiometry_parameters
   !integer,         public, parameter :: ntime_slowness = 241
   !!For 6s-sampled data
   integer,         public, parameter :: ntime = 57600
+  !integer,         public, parameter :: ntime = 7200
   integer,         public, parameter :: ntimestep = 10
-  integer,         public, parameter :: ngradient2 = 300
-  integer,         public, parameter :: ntime_slowness = 301, ntime_slowness2 = (ntime_slowness - 1) / 2
+  integer,         public, parameter :: ngradient2 = 600
+  integer,         public, parameter :: ntime_slowness = 601, ntime_slowness2 = (ntime_slowness - 1) / 2
   real(kind = fp), public, parameter :: order = 1.0e-2_fp !!Pa -> hPa
   !real(kind = fp), public, parameter :: order = 1.0_fp 
   integer,         public, parameter :: nsta_grid_min = 4, nsta_grid_max = 4

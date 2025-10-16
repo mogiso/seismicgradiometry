@@ -5,8 +5,10 @@ $arrayresultfile = $ARGV[0];
 $jmahypofile = $ARGV[1];
 $matchresultfile = $ARGV[2];
 $nonmatchresultfile = $ARGV[3];
+$nonmatchjma = $ARGV[4];
 
 $sec_diff_threshold = 150.0;
+$distance_threshold = 200.0;
 
 open IN, "<", $arrayresultfile;
 while(<IN>){
@@ -23,15 +25,16 @@ close IN;
 open IN, "<", $jmahypofile;
 while(<IN>){
   chomp $_;
+  push @jmadeck, $_;
   push @jmahypodatetime, (substr $_, 1, 16);
   $jmalat = substr $_, 21, 3;
   $jmalat_m = substr $_, 24, 4;
-  push @jmahypolat, ($jmalat + $jmalat_m / 100.0 / 60.0);
+  push @jmahypolat, (sprintf "%.4f", ($jmalat + $jmalat_m / 100.0 / 60.0));
   $jmalon = substr $_, 32, 4;
   $jmalon_m = substr $_, 36, 4;
-  push @jmahypolon, ($jmalon + $jmalon_m / 100.0 / 60.0);
+  push @jmahypolon, (sprintf "%.4f", ($jmalon + $jmalon_m / 100.0 / 60.0));
   $jmamag = substr $_, 52, 2;
-  push @jmahypomag, $jmamag * 0.1;
+  push @jmahypomag, (sprintf "%.1f", $jmamag * 0.1);
 } 
 close IN;
 
@@ -39,6 +42,7 @@ close IN;
 open OUT, ">", $matchresultfile;
 open OUT2, ">", $nonmatchresultfile;
 @match_flag = ();
+@match_flag_jma = ();
 for($i = 0; $i <= $#arraydatetime; $i++){
   ($arrayyr, $arraymo, $arraydy, $arrayhr, $arraymi, $arraysc) = split /[-T:]/, $arraydatetime[$i];
   &ymd2jday($arrayyr, $arraymo, $arraydy, $arrayjday);
@@ -46,9 +50,12 @@ for($i = 0; $i <= $#arraydatetime; $i++){
 
 
   $match_flag[$i] = -1;
+  $match_mag[$i] = -10.0;
+  $min_sec_diff[$i] = $sec_diff_threshold;
   @distance = ();
   for($j = 0; $j <= $#jmahypodatetime; $j++){
     @point1 = ();
+    @point0 = ();
     $jmayr = substr $jmahypodatetime[$j], 0, 4;
     next if ($jmayr != $arrayyr);
     $jmamo = substr $jmahypodatetime[$j], 4, 2;
@@ -71,13 +78,25 @@ for($i = 0; $i <= $#arraydatetime; $i++){
     @point1 = NESW($jmahypolon[$j], $lat1);
     $distance[$j] = sprintf "%.3f", (great_circle_distance(@point0, @point1, 6370.291));
     next if ($distance[$j] > $distance_threshold);
+    if($match_mag[$i] <= $jmahypomag[$j]){
+      $match_mag[$i] = $jmahypomag[$j];
+    }else{
+      next;
+    }
+    if($min_sec_diff[$i] >= abs($sec_diff)){
+      $min_sec_diff[$i] = abs($sec_diff);
+    }else{
+      next;
+    }
 
+    
     $match_flag[$i] = $j;
     print stderr "$sec_diff $arraydatetime[$i] $jmahypodatetime[$j]\n";
   }
 
   if($match_flag[$i] != -1){
-    print stdout "$arrayresult[$i] $jmahypodatetime[$match_flag[$i]] $jmahypolon[$match_flag[$i]] $jmahypolat[$match_flag[$i]] $jmahypomag[$match_flag[$i]] $distance[$match_flag[$i]]\n";
+    print OUT "$arrayresult[$i] $jmahypodatetime[$match_flag[$i]] $jmahypolon[$match_flag[$i]] $jmahypolat[$match_flag[$i]] $jmahypomag[$match_flag[$i]] $distance[$match_flag[$i]]\n";
+    $match_flag_jma[$match_flag[$i]] = $i;
   }else{
     print OUT2 "$arrayresult[$i]\n";
   }
@@ -85,6 +104,14 @@ for($i = 0; $i <= $#arraydatetime; $i++){
 close OUT;
 close OUT2;
 
+
+open OUT, ">", $nonmatchjma;
+for($j = 0; $j <= $#jmadeck; $j++){
+  if($match_flag_jma[$j] == undef){
+    print OUT "$jmadeck[$j]\n";
+  }
+}
+close OUT;
 
 
 

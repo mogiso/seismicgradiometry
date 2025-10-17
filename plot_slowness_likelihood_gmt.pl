@@ -83,12 +83,15 @@ while($fileread < $filesize){
   read IN, $lat, 4;
   read IN, $az,  4;
   read IN, $apv, 4;
+  read IN, $buf, 4; #min_correlation
+  read IN, $buf, 4; #array_maxamp
+  read IN, $buf, 4; #array_lta
   $lon = unpack "f", $lon;
   $lat = unpack "f", $lat;
-  $az  = (unpack "f", $az);
+  $az  = unpack "f", $az;
   $apv = unpack "f", $apv;
   print OUT "$lon $lat $apv $az $vector_len\n";
-  $fileread = $fileread + 4 * 4;
+  $fileread = $fileread + 4 * 7;
 }
 close IN;
 close OUT;

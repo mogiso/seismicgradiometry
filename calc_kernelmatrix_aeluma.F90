@@ -17,6 +17,7 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
   use typedef
   use aeluma_parameters
   use lonlat_xy_conv, only : xy2bl
+  use greatcircle
 #ifdef MKL
   use lapack95
 #else
@@ -37,6 +38,7 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
   real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
   integer,         allocatable :: vertix_index(:), triangle_indices(:, :), index_org(:), add_station_index(:)
   logical,         allocatable :: is_usestation(:), used_station(:)
+  type(location),  allocatable :: triangle_center_tmp(:)
  
   nsta = size(location_sta)
   nsta_use = nsta
@@ -88,9 +90,8 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
   enddo
   close(10)
 
-  allocate(triangle_center(1 : ntriangle),                        &
-  &        nsta_count(1 : ntriangle),                             &
-  &        triangle_stationindex(1 : 3 + nadd_station, 1 : ntriangle))
+  allocate(triangle_center(1 : ntriangle), triangle_center_tmp(1 : ntriangle), &
+  &        nsta_count(1 : ntriangle), triangle_stationindex(1 : 3 + nadd_station, 1 : ntriangle))
   do j = 1, ntriangle
     used_station(1 : nsta) = .false.
     triangle_center(j)%x_east  = 0.0_fp
@@ -137,7 +138,26 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
         triangle_stationindex(nsta_count(j), j) = add_station_index(i)
       enddo
       deallocate(add_station_distance, add_station_index)
+
+      triangle_center_tmp(j)%lon = 0.0_fp
+      triangle_center_tmp(j)%lat = 0.0_fp
+      do i = 1, nsta_count(j)
+        triangle_center_tmp(j)%lon = triangle_center_tmp(j)%lon + location_sta(triangle_stationindex(i, j))%lon
+        triangle_center_tmp(j)%lat = triangle_center_tmp(j)%lat + location_sta(triangle_stationindex(i, j))%lat
+      enddo
+      triangle_center_tmp(j)%lon = triangle_center_tmp(j)%lon / real(nsta_count(j), kind = fp)
+      triangle_center_tmp(j)%lat = triangle_center_tmp(j)%lat / real(nsta_count(j), kind = fp)
+      do i = 1, nsta_count(j)
+        call greatcircle_dist(triangle_center_tmp(j)%lat, triangle_center_tmp(j)%lon, &
+        &                     location_sta(triangle_stationindex(i, j))%lat, location_sta(triangle_stationindex(i, j))%lon, &
+        &                     distance = dist_tmp)
+        if(dist_tmp .gt. cutoff_dist) then
+          nsta_count(j) = 3
+          exit
+        endif
+      enddo
     endif
+    if(nsta_count(j) .gt. 3) triangle_center(j) = triangle_center_tmp(j)
 
     !!check distance between the center of triangle and stations (vertices)
     do i = 1, nsta_count(j)
@@ -150,6 +170,22 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
       endif
     enddo
   enddo
+  !!check same array
+  do j = 1, ntriangle - 1
+    if(nsta_count(j) .eq. 0) cycle
+    do i = j + 1, ntriangle
+      if(nsta_count(i) .eq. 0) cycle
+      call greatcircle_dist(triangle_center(j)%lat, triangle_center(j)%lon, &
+      &                     triangle_center(i)%lat, triangle_center(i)%lon, &
+      &                     distance = dist_tmp)
+      if(dist_tmp .le. interstationdistance_min) then
+        nsta_count(i) = 0
+      endif
+    enddo
+  enddo
+
+
+
   npair = 0
   do i = 1, maxval(nsta_count) - 1
     npair = npair + i
@@ -157,12 +193,12 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
 
   allocate(slowness_matrix(1 : 2, 1 : npair, 1 : ntriangle))
   do jj = 1, ntriangle
+    if(nsta_count(jj) .eq. 0) cycle
     npair_tmp = 0
     do ii = 1, nsta_count(jj) - 1
       npair_tmp = npair_tmp + ii
     enddo
     slowness_matrix(1 : 2, 1 : npair_tmp, jj) = 0.0_fp
-    if(nsta_count(jj) .eq. 0) cycle
     allocate(g2(1 : npair_tmp, 1 : 2), g_tmp2(1 : 2, 1 : 2))
     ii = 1
     do j = 1, nsta_count(jj) - 1
@@ -188,7 +224,7 @@ subroutine calc_slowness_est_matrix_delaunay(location_sta, nadd_station, ntriang
     deallocate(g_tmp2, g2)
   enddo
 
-  deallocate(is_usestation, index_org, used_station, vertix_index, vertices, triangle_indices)
+  deallocate(is_usestation, index_org, used_station, vertix_index, vertices, triangle_indices, triangle_center_tmp)
   return
 end subroutine calc_slowness_est_matrix_delaunay
 
@@ -216,10 +252,11 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
   real(kind = fp), intent(out), allocatable :: slowness_matrix(:, :, :)
   integer,         intent(out), allocatable :: triangle_stationwinch(:, :), nsta_count(:), tnbr(:, :)
 
-  integer                      :: i, j, ii, jj, info, nsta, nsta_use, npair, npair_tmp
+  integer                      :: i, j, ii, jj, kk, info, nsta, nsta_use, npair, npair_tmp
   integer                      :: ipiv(1 : 3)
   real(kind = fp)              :: dist_tmp
   real(kind = fp), allocatable :: vertices(:, :), add_station_distance(:), g2(:, :), g_tmp2(:, :)
+  type(location),  allocatable :: triangle_center_tmp(:)
   integer,         allocatable :: vertix_index(:), triangle_indices(:, :), index_org(:), add_station_index(:)
   logical,         allocatable :: is_usestation(:), used_station(:)
  
@@ -233,7 +270,7 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
     do i = j + 1, nsta
       if(is_usestation(i) .eqv. .false.) cycle
       call greatcircle_dist(location_sta(station_winch(j))%lat, location_sta(station_winch(j))%lon, &
-      &                     location_sta(station_winch(i))%lat, location_sta(station_winch(i))%lat, &
+      &                     location_sta(station_winch(i))%lat, location_sta(station_winch(i))%lon, &
       &                     distance = dist_tmp)
       if(dist_tmp .le. interstationdistance_min) then
         is_usestation(i) = .false.
@@ -260,7 +297,7 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
   enddo
   call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
 
-  allocate(triangle_center(1 : ntriangle), nsta_count(1 : ntriangle), &
+  allocate(triangle_center(1 : ntriangle), nsta_count(1 : ntriangle), triangle_center_tmp(1 : ntriangle), &
   &        triangle_stationwinch(1 : 3 + nadd_station, 1 : ntriangle))
   do j = 1, ntriangle
     used_station(1 : nsta) = .false.
@@ -306,15 +343,25 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
       enddo
       deallocate(add_station_distance, add_station_index)
 
-      triangle_center(j)%lon = 0.0_fp
-      triangle_center(j)%lat = 0.0_fp
+      triangle_center_tmp(j)%lon = 0.0_fp
+      triangle_center_tmp(j)%lat = 0.0_fp
       do i = 1, nsta_count(j)
-        triangle_center(j)%lon = triangle_center(j)%lon + location_sta(triangle_stationwinch(i, j))%lon
-        triangle_center(j)%lat = triangle_center(j)%lat + location_sta(triangle_stationwinch(i, j))%lat
+        triangle_center_tmp(j)%lon = triangle_center_tmp(j)%lon + location_sta(triangle_stationwinch(i, j))%lon
+        triangle_center_tmp(j)%lat = triangle_center_tmp(j)%lat + location_sta(triangle_stationwinch(i, j))%lat
       enddo
-      triangle_center(j)%lon = triangle_center(j)%lon / real(nsta_count(j), kind = fp)
-      triangle_center(j)%lat = triangle_center(j)%lat / real(nsta_count(j), kind = fp)
+      triangle_center_tmp(j)%lon = triangle_center_tmp(j)%lon / real(nsta_count(j), kind = fp)
+      triangle_center_tmp(j)%lat = triangle_center_tmp(j)%lat / real(nsta_count(j), kind = fp)
+      do i = 1, nsta_count(j)
+        call greatcircle_dist(triangle_center_tmp(j)%lat, triangle_center_tmp(j)%lon, &
+        &                     location_sta(triangle_stationwinch(i, j))%lat, location_sta(triangle_stationwinch(i, j))%lon, &
+        &                     distance = dist_tmp)
+        if(dist_tmp .gt. cutoff_dist) then
+          nsta_count(j) = 3
+          exit
+        endif
+      enddo
     endif
+    if(nsta_count(j) .gt. 3) triangle_center(j) = triangle_center_tmp(j)
     
     !!check distance between the center of triangle and stations (vertices)
     do i = 1, nsta_count(j)
@@ -327,6 +374,21 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
       endif
     enddo
   enddo
+  !!check same array
+  do j = 1, ntriangle - 1
+    if(nsta_count(j) .eq. 0) cycle
+    do i = j + 1, ntriangle
+      if(nsta_count(i) .eq. 0) cycle
+      call greatcircle_dist(triangle_center(j)%lat, triangle_center(j)%lon, &
+      &                     triangle_center(i)%lat, triangle_center(i)%lon, &
+      &                     distance = dist_tmp)
+      if(dist_tmp .le. interstationdistance_min) then
+        nsta_count(i) = 0
+      endif
+    enddo
+  enddo
+      
+
   npair = 0
   do i = 1, maxval(nsta_count) - 1
     npair = npair + i
@@ -378,20 +440,21 @@ subroutine calc_slowness_est_matrix_delaunay_shmdump(location_sta, station_winch
 
   open(unit = 10, file = "station_aelumaarray.txt")
   do j = 1, ntriangle
-    if(nsta_count(j) .lt. 3 + nadd_station) cycle
+    if(nsta_count(j) .eq. 0) cycle
     do i = 1, nsta_count(j)
       write(10, '(4(e15.7, 1x), z4)') location_sta(triangle_stationwinch(i, j))%lon, &
       &                               location_sta(triangle_stationwinch(i, j))%lat, &
       &                               triangle_center(j)%lon, triangle_center(j)%lat, &
       &                               triangle_stationwinch(i, j)
     enddo
-    write(10, '(2(e15.7, 1x))') location_sta(triangle_stationwinch(1, j))%lon, &
-    &                           location_sta(triangle_stationwinch(1, j))%lat
+    write(10, '(2(e15.7, 1x), i0)') location_sta(triangle_stationwinch(1, j))%lon, &
+    &                               location_sta(triangle_stationwinch(1, j))%lat, &
+    &                               nsta_count(j)
     write(10, '(a)') ">"
   enddo
   close(10)
 
-  deallocate(is_usestation, index_org, used_station, vertix_index, vertices, triangle_indices)
+  deallocate(is_usestation, index_org, used_station, vertix_index, vertices, triangle_indices, triangle_center_tmp)
   return
 end subroutine calc_slowness_est_matrix_delaunay_shmdump
 

@@ -1,137 +1,452 @@
 program plot_map_vector
-  use nrtype, only : sp, fp
-  use constants, only : rad2deg
+  use nrtype, only : sp, fp, dp
+  use constants, only : rad2deg, deg2rad, pi
+  use greatcircle, only : greatcircle_dist
+  use aeluma_parameters
+  use jday
+  use particlefilter
+  use xorshift1024star
+  use random_number
+  use mapprojection
+  use plotmodule
+  use particlefilter_functions
+  !$ use omp_lib
   implicit none
 
-  real(kind = sp), parameter :: width = 300.0_sp, height = 300.0_sp, scale = 1.0_sp
-  real(kind = sp), parameter :: vector_len = 5.0, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
-  real(kind = fp), parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, lat_s = 22.5_fp, lat_n = 48.0_fp, center_lon = 135.0_fp
-  integer, parameter :: iwin = 0
+  real(kind = sp) :: plot_x_tmp, plot_y_tmp
+  integer         :: i, j, k, ios, ncoastline, narray, ntriangle, swap_integer, nthread, parallelindex
+  integer         :: year, month, day, hr, mi, sc, julianday, sec_from_day
+  real(kind = fp) :: slowness_x, slowness_y, az_diff, az_tmp, dist_tmp, likelihood_tmp, ot_diff, kahan_val1, kahan_val2, &
+  &                  error_lon(1 : 2), error_lat(1 : 2), error_ot(1 : 2), maxval_likelihood, appvel_median, swap_float, &
+  &                  likelihood_tmp2, likelihood_sum, arrivaltime_ref
+  logical         :: no_associated_arrayuse
+  real(kind = fp), allocatable :: appvel_obs(:), az_obs(:), lon_array(:), lat_array(:), min_correlation(:), arrivaltime(:)
+  real(kind = sp), allocatable :: az_obs_used(:, :), appvel_obs_used(:, :), swap_array1(:), min_correlation_used(:, :), &
+  &                               array_maxamp_tmp(:), array_lta_tmp(:), array_maxamp_list(:, :), array_lta_list(:, :)
+  integer,         allocatable :: arrayindex(:), parallelindex_start(:), parallelindex_end(:)
+  logical,         allocatable :: result_exist(:, :), result_exist_org(:), array_used_list(:, :), swap_logical(:)
 
-  integer :: i, ios, ncoastline, mapcount, narray, arrayindex, color(1 : 3)
-  real(kind = fp) :: width_min, width_max, height_min, height_max, dwidth, dheight, maplon, maplat, map_x, map_y, &
-  &                  map_x1, map_y1, lon_array, lat_array, slowness_x, slowness_y, min_correlation
-  real(kind = sp) :: plot_x, plot_y, plot_x1, plot_y1, plot_theta
-  character(len = 255) :: coastline_txt, mapbuf_tmp
+  real(kind = fp)                   :: width_tmp(1 : 2), height_tmp(1 : 2), dwidth, dheight
+  character(len = 255)              :: coastline_txt, epicenter_info, outfile
   character(len = 255), allocatable :: mapbuf(:)
-  character(len = 2) :: yr, mo, dy, hh, mm, ss
-  character(len = 19) :: date_txt
+  character(len = 2)                :: yr, mo, dy, hh, mm, ss
+  character(len = 10)               :: text_tmp
   
+  integer              :: narray_use(0 : nepicenter), narray_use_list(1 : nepicenter), &
+  &                       epicenter_acceptcount(1 : nepicenter)
+  real(kind = fp)      :: lon_particle_list(1 : nparticle, 1 : nepicenter),        &
+  &                       lat_particle_list(1 : nparticle, 1 : nepicenter),        &
+  &                       origintime_list(1 : nparticle, 1 : nepicenter),          &
+  &                       maxval_likelihood_particle_list(1 : nepicenter),         &
+  &                       appvel_median_list(1 : nepicenter),                      &
+  &                       likelihood_particle_list(1 : nparticle, 1 : nepicenter), &
+  &                       lon_particle(1 : nparticle), lat_particle(1 : nparticle), likelihood_particle(1 : nparticle), &
+  &                       origintime(1 : nparticle), az_weight(1 : int(2.0_fp * pi / sameaz_num) + 1), &
+  &                       swap_array2(1 : nparticle)
 
+  !!Random number
+  type(xorshift1024star_state), allocatable :: random_status(:)
+  integer                                   :: seed
+  !!Time 
+  !$ real(kind = dp) :: t1, t2
+
+  arrivaltime_ref = real(min(nsec_for_fft * sampling_int_use, ntime_fft), kind = fp) / real(sampling_int_use, kind = fp)
+  nthread = nthread_min
+  !$omp parallel
+  !$ nthread = omp_get_num_threads()
+  !$omp end parallel
+
+  allocate(parallelindex_start(1 : nthread), parallelindex_end(1 : nthread), random_status(1 : nthread))
+  do i = 1, nthread
+    parallelindex_start(i) = nparticle / nthread * (i - 1) + 1
+    if(i .ge. 2) parallelindex_end(i - 1) = parallelindex_start(i) - 1
+  enddo
+  parallelindex_end(nthread) = nparticle
+
+  !!initiate random number generator
+  call make_seed(seed)
+  do i = 1, nthread
+    call random_generator_init(random_status(i), seed)
+    call random_generator_jump(random_status(i), i)
+  enddo
+  print '(2(a, i0))', "seed = ", seed, " nthread = ", nthread
+
+  !!Read coastline
   call getarg(1, coastline_txt)
-  ncoastline = 0
-  open(unit = 10, file = trim(coastline_txt))
-  do
-    read(10, '(a255)', iostat = ios) mapbuf_tmp
-    if(ios .ne. 0) exit
-    if(mapbuf_tmp(1 : 1) .eq. "#") cycle
-    ncoastline = ncoastline + 1
-  enddo
-  rewind(10)
-  allocate(mapbuf(1 : ncoastline))
-  i = 1
-  do
-    read(10, '(a255)', iostat = ios) mapbuf_tmp
-    if(ios .ne. 0) exit
-    if(mapbuf_tmp(1 : 1) .eq. "#") cycle
-    mapbuf(i) = mapbuf_tmp
-    i = i + 1
-  enddo
-  close(10)    
+  call read_coastline(coastline_txt, mapbuf)
+  ncoastline = ubound(mapbuf, 1)
+
+  !!initiaalize event list
+  lon_particle_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  lat_particle_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  origintime_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  likelihood_particle_list(1 : nparticle, 1 : nepicenter) = 0.0_fp
+  maxval_likelihood_particle_list(1 : nepicenter) = 0.0_fp
+  appvel_median_list(1 : nepicenter) = 0.0_fp
+  
  
+  !!Plot legend
+  call pc_plotinit(iwin_legend, "Legend", 0.0_sp, -300.0_sp, width / 2, 27.0_sp, scale)
+  call plot_legend(iwin_legend)
 
-  call pc_plotinit(iwin, "AELUMA results", 0.0, 0.0, width, height, scale)
-  call pc_setbkcolor(iwin, 255, 255, 255)
-  call mercator(center_lon, lon_w, lat_s, width_min, height_min)
-  call mercator(center_lon, lon_e, lat_n, width_max, height_max)
-  dwidth = 1.0_fp / (width_max - width_min)
-  dheight = 1.0_fp / (height_max - height_min)
+  !!Open epicenter window
+  call pc_plotinit(iwin_eplist, "Epicenter list", 0.0_sp, -300.0_sp, width / 2 + 60.0_sp, 27.0_sp, scale)
 
+  !!Read and plot AELUMA results
+  call pc_plotinit(iwin_map, "AELUMA results", 0.0_sp, 0.0_sp, width, height, scale)
+  call pc_setbkcolor(iwin_map, 255, 255, 255)
+  call mercator(center_lon, lon_w, lat_s, width_tmp(1), height_tmp(1))
+  call mercator(center_lon, lon_e, lat_n, width_tmp(2), height_tmp(2))
+  dwidth = 1.0_fp / (width_tmp(2) - width_tmp(1))
+  dheight = 1.0_fp / (height_tmp(2) - height_tmp(1))
 
+  epicenter_acceptcount(1 : nepicenter) = 0
   !!read AELUMA results from stdin
   do 
-    call pc_clear(iwin)
-    call pc_setcolor(iwin, 0, 0, 0)
-    call pc_setline(iwin, 1)
-    read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray
-    if(ios .ne. 0) stop
-    date_txt = "20" // yr // "/" // mo // "/" // dy // " " // hh // ":" // mm // ":" // ss
-    call mercator(center_lon, lon_w, lat_n, map_x, map_y)
-    plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
-    plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-    call pc_text(iwin, plot_x, plot_y, 7.0, date_txt, 0.0, len(date_txt), 7)
-    print *, date_txt, plot_x, plot_y
-    !!writing map
-    mapcount = 0
-    do i = 1, ncoastline
-      if(mapbuf(i)(1 : 1) .eq. ">") then
-        mapcount = 0
-        cycle
-      endif
-      read(mapbuf(i), *) maplon, maplat
-      call mercator(center_lon, maplon, maplat, map_x, map_y)
-    
-      if(mapcount .eq. 0) then
-        mapcount = 1
-        map_x1 = map_x
-        map_y1 = map_y
-        cycle
-      endif
-      plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
-      plot_x1 = real((map_x1 - width_min)  * dwidth,  kind = sp) * width
-      plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-      plot_y1 = real((map_y1 - height_min) * dheight, kind = sp) * height
-      map_x1 = map_x
-      map_y1 = map_y
-      call pc_line(iwin, plot_x, plot_y, plot_x1, plot_y1)
-    enddo
-    !call pc_flush(iwin)
+    plot_x_tmp = plot_x_eplist
+    plot_y_tmp = plot_y_eplist
+    call pc_clear(iwin_map)
+    call pc_setcolor(iwin_map, 0, 0, 0)
+    call pc_clear(iwin_eplist)
+    call pc_setcolor(iwin_eplist, 0, 0, 0)
+    call pc_setline(iwin_eplist, 2)
+    read(*, *, iostat = ios) yr, mo, dy, hh, mm, ss, narray, ntriangle
+    if(ios .ne. 0) error stop
+    read(yr, *) year; year = year + 2000
+    read(mo, *) month
+    read(dy, *) day
+    read(hh, *) hr
+    read(mm, *) mi
+    read(ss, *) sc
+    call ymd2jday(year, month, day, julianday)
+    sec_from_day = hr * 60 * 60 + mi * 60 + sc
+    write(0, '(8(i0, 1x))') year, month, day, hr, mi, sc, narray, ntriangle
+    !print '(5(i0, 1x))', year, julianday, sec_from_day, narray, ntriangle
 
-    if(narray .ge. 1) then
-      call pc_setline(iwin, 4)
-      do i = 1, narray
-        read(*, *) arrayindex, lon_array, lat_array, slowness_x, slowness_y, min_correlation
-        !theta = atan2(slowness_x, slowness_y) * rad2deg
-        plot_theta = real(atan2(slowness_y, slowness_x) * rad2deg, kind = sp)
-        call mercator(center_lon, lon_array, lat_array, map_x, map_y)
-        plot_x  = real((map_x  - width_min)  * dwidth,  kind = sp) * width
-        plot_y  = real((map_y  - height_min) * dheight, kind = sp) * height
-        if(min_correlation .lt. 0.2_fp) then
-          color(1 : 3) = [220, 204, 222]
-        elseif(min_correlation .ge. 0.2_fp .and. min_correlation .lt. 0.4_fp) then
-          color(1 : 3) = [212, 156, 189]
-        elseif(min_correlation .ge. 0.4_fp .and. min_correlation .lt. 0.6_fp) then
-          color(1 : 3) = [196, 110, 155]
-        elseif(min_correlation .ge. 0.6_fp .and. min_correlation .lt. 0.8_fp) then
-          color(1 : 3) = [136, 97, 141]
-        elseif(min_correlation .ge. 0.8_fp) then
-          color(1 : 3) = [73, 57, 100]
-        endif
-        call pc_setcolor(iwin, color(1), color(2), color(3))
-        call pc_vector(iwin, plot_x, plot_y, plot_theta, vector_len, vector_width, vector_head1, vector_head2, 1)
-        !call pc_flush(iwin)
-      enddo
+    if(.not. allocated(arrayindex)) then
+      allocate(az_obs(1 : ntriangle), appvel_obs(1 : ntriangle), result_exist(1 : ntriangle, 0 : nepicenter), &
+      &        result_exist_org(1 : ntriangle), &
+      &        arrayindex(1 : ntriangle), lon_array(1 : ntriangle), lat_array(1 : ntriangle), &
+      &        min_correlation(1 : ntriangle), arrivaltime(1 : ntriangle), swap_array1(1 : ntriangle), &
+      &        array_maxamp_tmp(1 : ntriangle), array_lta_tmp(1 : ntriangle))
+      allocate(az_obs_used(1 : ntriangle, 1 : nepicenter), appvel_obs_used(1 : ntriangle, 1 : nepicenter), &
+      &        array_used_list(1 : ntriangle, 1 : nepicenter), swap_logical(1 : ntriangle), &
+      &        array_maxamp_list(1 : ntriangle, 1 : nepicenter), array_lta_list(1 : ntriangle, 1 : nepicenter), &
+      &        min_correlation_used(1 : ntriangle, 1 : nepicenter))
     endif
-    call pc_flush(iwin)
 
+    result_exist_org(1 : ntriangle)             = .false.
+    result_exist(1 : ntriangle, 0 : nepicenter) = .false.
+    call pc_setline(iwin_map, 4)
+
+    !!read and plot slowness vector
+    narray_use(0 : nepicenter) = narray
+    array_maxamp_tmp(1 : ntriangle) = 0.0_sp
+    array_lta_tmp(1 : ntriangle) = 0.0_sp
+    do i = 1, narray
+      read(*, *) arrayindex(i), lon_array(arrayindex(i)), lat_array(arrayindex(i)), &
+      &          slowness_x, slowness_y, min_correlation(arrayindex(i)), arrivaltime(arrayindex(i)), &
+      &          array_maxamp_tmp(arrayindex(i)), array_lta_tmp(arrayindex(i))
+      result_exist_org(arrayindex(i))  = .true.
+      result_exist(arrayindex(i), 0 : nepicenter) = .true.
+      do j = 0, nepicenter
+        if(min_correlation(arrayindex(i)) .le. correlation_threshold) then
+          result_exist(arrayindex(i), j) = .false.
+          narray_use(j) = narray_use(j) - 1
+        endif
+      enddo
+
+      !!arrival time: relative time in s from current time
+      arrivaltime(arrayindex(i)) = - (arrivaltime_ref - arrivaltime(arrayindex(i)))
+      az_obs(arrayindex(i)) = atan2(slowness_x, slowness_y)
+      if(az_obs(arrayindex(i)) .lt. 0.0_fp) az_obs(arrayindex(i)) = az_obs(arrayindex(i)) + 2.0_fp * pi
+      appvel_obs(arrayindex(i)) = 1.0_fp / sqrt(slowness_x ** 2 + slowness_y ** 2)
+    enddo
+
+    !!associate observation and events
+    do k = 1, nepicenter
+       origintime_list(1 : nparticle, k) = origintime_list(1 : nparticle, k) - dtimestep
+
+      if(maxval_likelihood_particle_list(k) .gt. 0.0_fp) then
+        do j = 1, narray
+          if(.not. result_exist(arrayindex(j), k)) cycle 
+          likelihood_sum = 0.0_fp
+ 
+          !$omp parallel
+          !$omp do private(kahan_val1, likelihood_tmp, az_tmp, az_diff, likelihood_tmp2, kahan_val2), &
+          !$omp&   reduction(+:likelihood_sum)
+          do parallelindex = 1, nthread
+            kahan_val1 = 0.0_fp
+            likelihood_tmp = 0.0_fp
+            do i = parallelindex_start(parallelindex), parallelindex_end(parallelindex)
+              call greatcircle_dist(lat_array(arrayindex(j)), lon_array(arrayindex(j)), &
+              &                     lat_particle_list(i, k),  lon_particle_list(i, k),  &
+              &                     distance = dist_tmp,      azimuth = az_tmp)
+              az_tmp = az_tmp + pi
+              if(az_tmp .ge. 2.0_fp * pi) az_tmp = az_tmp - 2.0_fp * pi
+              az_diff = delta_az(az_obs(arrayindex(j)), az_tmp)
+              ot_diff = origintime_list(i, k) - origintime_cal(arrivaltime(arrayindex(j)), dist_tmp, appvel_obs(arrayindex(j)))
+              likelihood_tmp2 = likelihood_particle_list(i, k) * 0.5_fp / (pi * sigma_otdiff * sigma_azdiff) &
+              &                                                * exp(-0.5_fp * ((ot_diff * ot_diff / sigma_otdiff2) &
+              &                                                              +  (az_diff * az_diff / sigma_azdiff2)))
+              kahan_val2 = likelihood_tmp + likelihood_tmp2
+              if(abs(likelihood_tmp) .ge. abs(likelihood_tmp2)) then
+                kahan_val1 = kahan_val1 + (likelihood_tmp  - kahan_val2) + likelihood_tmp2
+              else
+                kahan_val1 = kahan_val1 + (likelihood_tmp2 - kahan_val2) + likelihood_tmp
+              endif
+              likelihood_tmp = kahan_val2
+            enddo
+            likelihood_sum = likelihood_sum + (likelihood_tmp + kahan_val1)
+          enddo
+          !$omp end do
+          !$omp end parallel
+
+          if(likelihood_sum .lt. min_likelihood_eqobs) then
+            result_exist(arrayindex(j), k) = .false.
+            narray_use(k) = narray_use(k) - 1
+          else
+            !print *, arrayindex(j), lon_array(arrayindex(j)), lat_array(arrayindex(j)), likelihood_sum, min_likelihood_eqobs
+            do i = 0, nepicenter
+              if(i .eq. k) cycle
+              if(result_exist(arrayindex(j), i)) then
+                result_exist(arrayindex(j), i) = .false.
+                narray_use(i) = narray_use(i) - 1
+              endif
+            enddo
+          endif
+        enddo
+      endif
+    enddo
+
+    !!reject the candidate if it does not satisfy the condition just after estimation
+    do j = 1, nepicenter
+      if(maxval_likelihood_particle_list(j) .gt. 0.0_fp) then
+        if(epicenter_acceptcount(j) .eq. 0) then
+          if(narray_use(j) .lt. narray_use_min) then
+            maxval_likelihood_particle_list(j) = 0.0_fp
+            do i = 1, narray
+              if(result_exist(arrayindex(i), j)) then
+                result_exist(arrayindex(i), 0) = .true.
+                narray_use(0) = narray_use(0) + 1
+              endif
+            enddo
+          endif
+        endif
+      endif
+    enddo
+
+    no_associated_arrayuse = .false.
+    do i = 1, nepicenter
+      if(maxval_likelihood_particle_list(i) .eq. 0.0_fp) then
+        epicenter_acceptcount(i) = 0
+        if(.not. no_associated_arrayuse) then
+          no_associated_arrayuse = .true.
+          narray_use(i) = narray_use(0)
+          result_exist(1 : ntriangle, i) = result_exist(1 : ntriangle, 0)
+        else
+          narray_use(i) = 0
+        endif
+      endif
+    enddo
+
+    !!plot and output epicentral parameters
+    do i = 1, nepicenter
+      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
+        if(narray_use(i) .lt. 1) then
+          if(epicenter_acceptcount(i) .ge. epicenter_acceptcount_threshold) then
+            call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+            &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info, &
+            &                   sigma_lon = error_lon, sigma_lat = error_lat, sigma_ot = error_ot, &
+            &                   maxval_likelihood = maxval_likelihood, &
+            &                   lon_array = lon_array, lat_array = lat_array, &
+            &                   az_obs = az_obs_used(:, i), appvel_obs = appvel_obs_used(:, i), &
+            &                   array_used = array_used_list(:, i), min_correlation = min_correlation_used(:, i), &
+            &                   array_maxamp = array_maxamp_list(:, i), array_lta = array_lta_list(:, i))
+            write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter.txt"
+            open(unit = 12, file = trim(outfile), iostat = ios, status = "old", position = "append")
+            if(ios .ne. 0) then
+              close(12)
+              open(unit = 12, file = trim(outfile), iostat = ios, status = "new")
+            endif
+            write(12, '(a, 7(1x, e15.7), 2(1x, i0), 1x, f0.3)') trim(epicenter_info), error_lon(1 : 2), error_lat(1 : 2), &
+            &                                                   error_ot(1 : 2), &
+            &                                                   maxval_likelihood, narray_use_list(i), &
+            &                                                   epicenter_acceptcount(i), appvel_median_list(i)
+            close(12)
+          endif
+          maxval_likelihood_particle_list(i) = 0.0_fp
+          epicenter_acceptcount(i) = 0
+          cycle
+        endif
+        !!plot particles
+        call plot_particle(iwin_map, lon_particle_list(:, i), lat_particle_list(:, i), likelihood_particle_list(:, i), &
+                           width_tmp, height_tmp, dwidth, dheight)
+        call epicenter2char(year, julianday, sec_from_day, lon_particle_list(:, i), lat_particle_list(:, i), &
+        &                   origintime_list(:, i), likelihood_particle_list(:, i), epicenter_info)
+        write(text_tmp, '(f4.1)') appvel_median_list(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp) // "km/s"
+        write(text_tmp, '(i0)') narray_use(i)
+        epicenter_info = trim(epicenter_info) // " " // trim(text_tmp)
+        call plot_eplist(iwin_eplist, epicenter_info, plot_x_tmp, plot_y_tmp)
+        write(outfile, '(i4, 2(i2.2), a)') year, month, day, "_epicenter_listed.txt"
+        open(unit = 11, file = trim(outfile), iostat = ios, status = "old", position = "append")
+        if(ios .ne. 0) then
+          close(11)
+          open(unit = 11, file = trim(outfile), iostat = ios, status = "new")
+        endif
+        write(11, '(i4.4, 5(a, i2.2), 2a)') year, "-", month, "-", day, "T", hr, ":", mi, ":", sc, " ", trim(epicenter_info)
+        close(11)
+        if(narray_use(i) .ge. narray_use_min) epicenter_acceptcount(i) = epicenter_acceptcount(i) + 1
+      endif
+    enddo
+    call pc_flush(iwin_eplist)
+
+
+    !!estimate event epicenters
+    do i = 1, nepicenter
+      !print *, maxval_likelihood_particle_list(i), narray_use(i)
+      if(narray_use(i) .lt. narray_use_min) cycle
+      if(maxval_likelihood_particle_list(i) .gt. 0.0_fp) then
+        if(narray_use(i) .le. narray_use_list(i)) cycle
+        if(epicenter_acceptcount(i) .gt. epicenter_renew_threshold) cycle
+      endif
+
+      !!calculate azimuthal weighting array
+      az_weight(1 : int(2.0_fp * pi / sameaz_num) + 1) = 0.0_fp
+      do j = 1, narray
+        if(result_exist(arrayindex(j), i)) then
+          az_weight(int(az_obs(arrayindex(j)) / sameaz_num) + 1) &
+          &  = az_weight(int(az_obs(arrayindex(j)) / sameaz_num) + 1) + 1.0_fp
+        endif
+      enddo
+
+      !!do particle filter
+      !!initialize location of each particle
+      if(maxval_likelihood_particle_list(i) .eq. 0.0_fp) then
+        call particlefilter_init(random_status, lon_particle, lat_particle)
+      else
+        lon_particle(1 : nparticle) = lon_particle_list(1 : nparticle, i)
+        lat_particle(1 : nparticle) = lat_particle_list(1 : nparticle, i)
+      endif
+
+      call particlefilter_search(narray, arrayindex, result_exist(:, i), lon_array, lat_array, az_obs, &
+      &                          az_weight, random_status, lon_particle, lat_particle, likelihood_particle, &
+      &                          appvel = appvel_obs, arrivaltime = arrivaltime, origintime = origintime, &
+      &                          appvel_median = appvel_median)
+      maxval_likelihood = maxval(likelihood_particle)
+
+      !!renew epicenter parameters
+      !if(maxval_likelihood .ge. maxval_likelihood_particle_list(i)) then
+        lon_particle_list       (1 : nparticle, i) = lon_particle       (1 : nparticle)
+        lat_particle_list       (1 : nparticle, i) = lat_particle       (1 : nparticle)
+        origintime_list         (1 : nparticle, i) = origintime         (1 : nparticle)
+        likelihood_particle_list(1 : nparticle, i) = likelihood_particle(1 : nparticle)
+        maxval_likelihood_particle_list(i) = maxval_likelihood
+        appvel_median_list(i) = appvel_median
+        narray_use_list(i) = narray_use(i)
+        array_used_list(1 : ntriangle, i) = result_exist(1 : ntriangle, i)
+        az_obs_used(1 : ntriangle, i) = real(az_obs(1 : ntriangle) * rad2deg, kind = sp)
+        appvel_obs_used(1 : ntriangle, i) = real(appvel_obs(1 : ntriangle), kind = sp)
+        min_correlation_used(1 : ntriangle, i) = real(min_correlation(1 : ntriangle), kind = sp)
+        array_maxamp_list(1 : ntriangle, i) = array_maxamp_tmp(1 : ntriangle)
+        array_lta_list(1 : ntriangle, i) = array_lta_tmp(1 : ntriangle)
+      !endif
+    enddo
+
+    !!sort the order of epicenter list
+    do j = 1, nepicenter - 1
+      do i = 2, nepicenter - j + 1
+        if(epicenter_acceptcount(i) .ge. epicenter_acceptcount(i - 1)) then
+        !if(maxval_likelihood_particle_list(i) .ge. maxval_likelihood_particle_list(i - 1)) then
+          swap_logical(1 : ntriangle)        = result_exist(1 : ntriangle, i)
+          result_exist(1 : ntriangle, i)     = result_exist(1 : ntriangle, i - 1)
+          result_exist(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
+
+          swap_array2(1 : nparticle)              = lon_particle_list(1 : nparticle, i)
+          lon_particle_list(1 : nparticle, i)     = lon_particle_list(1 : nparticle, i - 1)
+          lon_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)              = lat_particle_list(1 : nparticle, i)
+          lat_particle_list(1 : nparticle, i)     = lat_particle_list(1 : nparticle, i - 1)
+          lat_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)                     = likelihood_particle_list(1 : nparticle, i)
+          likelihood_particle_list(1 : nparticle, i)     = likelihood_particle_list(1 : nparticle, i - 1)
+          likelihood_particle_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_array2(1 : nparticle)            = origintime_list(1 : nparticle, i)
+          origintime_list(1 : nparticle, i)     = origintime_list(1 : nparticle, i - 1)
+          origintime_list(1 : nparticle, i - 1) = swap_array2(1 : nparticle)
+
+          swap_float                             = maxval_likelihood_particle_list(i)
+          maxval_likelihood_particle_list(i)     = maxval_likelihood_particle_list(i - 1)
+          maxval_likelihood_particle_list(i - 1) = swap_float
+
+          swap_float                = appvel_median_list(i)
+          appvel_median_list(i)     = appvel_median_list(i - 1)
+          appvel_median_list(i - 1) = swap_float
+
+          swap_integer           = narray_use_list(i)
+          narray_use_list(i)     = narray_use_list(i - 1)
+          narray_use_list(i - 1) = swap_integer
+
+          swap_integer      = narray_use(i)
+          narray_use(i)     = narray_use(i - 1)
+          narray_use(i - 1) = swap_integer
+
+          swap_integer                 = epicenter_acceptcount(i)
+          epicenter_acceptcount(i)     = epicenter_acceptcount(i - 1)
+          epicenter_acceptcount(i - 1) = swap_integer
+
+          swap_array1(1 : ntriangle)        = az_obs_used(1 : ntriangle, i)
+          az_obs_used(1 : ntriangle, i)     = az_obs_used(1 : ntriangle, i - 1)
+          az_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
+          appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)
+          appvel_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)                 = min_correlation_used(1 : ntriangle, i)
+          min_correlation_used(1 : ntriangle, i)     = min_correlation_used(1 : ntriangle, i - 1)
+          min_correlation_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)            = appvel_obs_used(1 : ntriangle, i)
+          appvel_obs_used(1 : ntriangle, i)     = appvel_obs_used(1 : ntriangle, i - 1)
+          appvel_obs_used(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_logical(1 : ntriangle)           = array_used_list(1 : ntriangle, i)
+          array_used_list(1 : ntriangle, i)     = array_used_list(1 : ntriangle, i - 1)
+          array_used_list(1 : ntriangle, i - 1) = swap_logical(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)              = array_maxamp_list(1 : ntriangle, i)
+          array_maxamp_list(1 : ntriangle, i)     = array_maxamp_list(1 : ntriangle, i - 1)
+          array_maxamp_list(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+
+          swap_array1(1 : ntriangle)           = array_lta_list(1 : ntriangle, i)
+          array_lta_list(1 : ntriangle, i)     = array_lta_list(1 : ntriangle, i - 1)
+          array_lta_list(1 : ntriangle, i - 1) = swap_array1(1 : ntriangle)
+        endif
+      enddo
+    enddo
+ 
+    !!plot slowness vector
+    call plot_slowness_vector(iwin_map, narray, arrayindex, result_exist_org, lon_array, lat_array, az_obs, appvel_obs, &
+    &                         min_correlation, width_tmp, height_tmp, dwidth, dheight)
+    !!plot map
+    call pc_setline(iwin_map, 1)
+    call pc_setcolor(iwin_map, 0, 0, 0)
+    call plot_currentdate(iwin_map, yr, mo, dy, hh, mm, ss, width_tmp, height_tmp, dwidth, dheight)
+    call plot_coastline(iwin_map, ncoastline, mapbuf, width_tmp, height_tmp, dwidth, dheight)
+
+    call pc_flush(iwin_map)
   enddo
 
+  call pc_plotend(iwin_map, 1)
+  call pc_plotend(iwin_legend, 1)
 
-  call pc_plotend(iwin, 1)
+  deallocate(parallelindex_start, parallelindex_end)
 
   stop
 end program plot_map_vector
 
-subroutine mercator(center_lon, lon, lat, x_east, y_north)
-  use nrtype, only : fp
-  use constants, only : r_earth, deg2rad, pi
-  implicit none
-  real(kind = fp), intent(in)  :: center_lon, lon, lat
-  real(kind = fp), intent(out) :: x_east, y_north
-
-  x_east  = r_earth * deg2rad * (lon - center_lon)
-  y_north = r_earth * log(tan(pi * 0.25_fp + lat * deg2rad * 0.5_fp))
-
-  return
-end subroutine mercator
-   

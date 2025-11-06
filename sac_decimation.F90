@@ -58,13 +58,13 @@ program sac_decimation
     write(0, '(a, 2(f6.3, 1x))') "old and new sampling period = ", sampling, sampling_new
     write(0, '(a, e15.7)') "new nyquist frequency (Hz) = ", 1.0_fp / (sampling_new * 2.0_fp)
     write(0, '(a, 2(e15.7, 1x))') "parameter fpass and fstop (Hz) = ", fpass, fstop
-    !call calc_lpf_order(fpass, fstop, ap, as, sampling, m, n, c)
-    call calc_bpf_order(fl, fpass, fstop, ap, as, sampling, m, n, c)
+    call calc_lpf_order(fpass, fstop, ap, as, sampling, m, n, c)
+    !call calc_bpf_order(fl, fpass, fstop, ap, as, sampling, m, n, c)
     allocate(h(4 * m))
-    !call calc_lpf_coef(m, n, h, c, gn)
-    call calc_bpf_coef(fl, fpass, sampling, m, n, h, c, gn)
+    call calc_lpf_coef(m, n, h, c, gn)
+    !call calc_bpf_coef(fl, fpass, sampling, m, n, h, c, gn)
     call tandem3(waveform_org, h, gn, 1)
-    call tandem3(waveform_org, h, gn, -1)
+    !call tandem3(waveform_org, h, gn, -1)
 
     allocate(waveform_decimate(npts / decimate))
     do i = 1, npts / decimate

@@ -27,7 +27,7 @@ module aeluma_parameters
   &                                        = 1.0_fp / real(sampling_int(1 : nsampling_int), kind = fp)
   integer,            public, parameter :: sampling_int_use = 5
   integer,            public, parameter :: nsec_buf  = 10 * 60
-  integer,            public, parameter :: nsec_for_fft = 6 * 60
+  integer,            public, parameter :: nsec_for_fft = 5 * 60
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
   real(kind = fp),    public, parameter :: xcorr_min = 0.02_fp
@@ -57,8 +57,8 @@ module aeluma_parameters
 
   integer,            public, parameter :: narray_use_min = 6
   integer,            public, parameter :: epicenter_acceptcount_threshold = 90
-  integer,            public, parameter :: epicenter_renew_threshold = 60
-  integer,            public, parameter :: epicenter_deletecount_threshold = 30
+  integer,            public, parameter :: epicenter_renew_threshold = 90
+  integer,            public, parameter :: epicenter_deletecount_threshold = 90
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * sigma_azdiff * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 

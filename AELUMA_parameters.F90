@@ -27,7 +27,7 @@ module aeluma_parameters
   &                                        = 1.0_fp / real(sampling_int(1 : nsampling_int), kind = fp)
   integer,            public, parameter :: sampling_int_use = 5
   integer,            public, parameter :: nsec_buf  = 10 * 60
-  integer,            public, parameter :: nsec_for_fft = 5 * 60
+  integer,            public, parameter :: nsec_for_fft = 6 * 60
   integer,            public, parameter :: ntime_fft = 2048, ntime_fft2 = ntime_fft / 2
   integer,            public, parameter :: waveform_buf_index_max = nsec_buf * sampling_int_use
   real(kind = fp),    public, parameter :: xcorr_min = 0.02_fp
@@ -57,8 +57,8 @@ module aeluma_parameters
 
   integer,            public, parameter :: narray_use_min = 6
   integer,            public, parameter :: epicenter_acceptcount_threshold = 90
-  integer,            public, parameter :: epicenter_renew_threshold = 90
-  integer,            public, parameter :: epicenter_deletecount_threshold = 90
+  integer,            public, parameter :: epicenter_renew_threshold = 60
+  integer,            public, parameter :: epicenter_deletecount_threshold = 60
   real(kind = fp),    public, parameter :: min_likelihood_eqobs = 0.5_fp / (pi * sigma_azdiff * sigma_otdiff) &
   &                                                             * exp(-0.5_fp * (3.0_fp ** 2))
 
@@ -67,7 +67,7 @@ module aeluma_parameters
   real(kind = sp),    public, parameter :: vector_len_ref = 0.5, vector_width = 1.5, vector_head1 = 2.5, vector_head2 = 4.0
   real(kind = fp),    public, parameter :: lon_w = 120.0_fp, lon_e = 149.0_fp, &
   &                                        lat_s = 22.5_fp,  lat_n = 48.0_fp, center_lon = 135.0_fp
-  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 2.0e+3
+  real(kind = sp),    public, parameter :: likelihood_legend_normalize   = 1.0 / 5.0e-4
   character(len = 5), public, parameter :: likelihood_legend_normalize_c = "x5e-4"
 
   !!Color palette

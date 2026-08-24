@@ -54,12 +54,12 @@ module read_sacfile
     endif
     if(present(begin)) then
       read(10, rec = 6) buf; begin = real(buf, kind = fp)
-      read(10, rec = 73) nzhour
-      read(10, rec = 74) nzmin
-      read(10, rec = 75) nzsec
-      read(10, rec = 76) nzmsec
-      begin = (3600.0_fp * real(nzhour, kind = fp) + 60.0_fp * real(nzmin, kind = fp) &
-      &     + real(nzsec, kind = fp) + real(nzmsec, kind = fp) / 1000.0_fp) + begin
+      !read(10, rec = 73) nzhour
+      !read(10, rec = 74) nzmin
+      !read(10, rec = 75) nzsec
+      !read(10, rec = 76) nzmsec
+      !begin = (3600.0_fp * real(nzhour, kind = fp) + 60.0_fp * real(nzmin, kind = fp) &
+      !&     + real(nzsec, kind = fp) + real(nzmsec, kind = fp) / 1000.0_fp) + begin
     endif
     if(present(origin)) then
       read(10, rec = 8) buf; origin = real(buf, kind = fp)

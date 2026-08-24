@@ -11,7 +11,7 @@ program sac_decimation_dump
   integer, parameter :: nmean = 100 * 15
   
   integer :: i, j, nfile, npts, decimate, julianday, jday_tmp, yr, mo, dy, hh, mm
-  character(len = 4) :: sachdr_char(1 : 158)
+  character(len = 4) :: sachdr_char(1 : 158), beginswitch
   character(len = 129) :: outfile, sacfile
   real(kind = fp), allocatable :: waveform_org(:)
   real(kind = fp) :: mean, sampling, sampling_new, waveform_decimate, ss
@@ -26,13 +26,14 @@ program sac_decimation_dump
   call getarg(3, fh_c); read(fh_c, *) fh
   call getarg(4, fs_c); read(fs_c, *) fs
   call getarg(5, sacfile)
+  call getarg(6, beginswitch)
 
   open(unit = 10, file = trim(sacfile), form = "unformatted", access = "direct", recl = 4)
 
   call read_sachdr(trim(sacfile), delta = sampling, npts = npts, begin = begintime, year = yr, julianday = julianday)
   allocate(waveform_org(1 : npts))
   call read_sacdata(trim(sacfile), npts, waveform_org)
-  waveform_org(1 : npts) = waveform_org(1 : npts) * order
+  !waveform_org(1 : npts) = waveform_org(1 : npts) * order
 
   mean = 0.0_fp
   do i = 1, nmean
@@ -57,26 +58,30 @@ program sac_decimation_dump
   do i = 1, npts / decimate
     waveform_decimate = waveform_org(decimate * (i - 1) + 1)
     sec_from_begin = begintime + sampling * real(decimate * (i - 1), kind = fp)
-    jday_tmp = julianday
-    if(sec_from_begin .lt. 0.0_fp) then
-      do
-        sec_from_begin = sec_from_begin + 86400.0_fp
-        jday_tmp = jday_tmp - 1
-        if(sec_from_begin .ge. 0.0_fp) exit
-      enddo
+    if(trim(beginswitch) .eq. "1") then
+      print '(2(e15.7, 1x))', sec_from_begin, waveform_decimate
+    else
+      jday_tmp = julianday
+      if(sec_from_begin .lt. 0.0_fp) then
+        do
+          sec_from_begin = sec_from_begin + 86400.0_fp
+          jday_tmp = jday_tmp - 1
+          if(sec_from_begin .ge. 0.0_fp) exit
+        enddo
+      endif
+      if(sec_from_begin .ge. 86400.0_fp) then
+        do
+          sec_from_begin = sec_from_begin - 86400.0_fp
+          jday_tmp = jday_tmp + 1
+          if(sec_from_begin .lt. 86400.0_fp) exit
+        enddo
+      endif
+      call jday2ymd(jday_tmp, yr, mo, dy)
+      hh = int(sec_from_begin / (60.0_fp * 60.0_fp))
+      mm = int((sec_from_begin - 60.0_fp * 60.0_fp * real(hh, kind = fp)) / 60.0_fp)
+      ss = sec_from_begin - 60.0_fp * 60.0_fp * real(hh, kind = fp) - 60.0_fp * real(mm, kind = fp)
+      print '(i4, 4(a, i2.2), a, f0.2, 1x, e15.7)', yr, "-", mo, "-", dy, "T", hh, ":", mm, ":", ss, waveform_decimate
     endif
-    if(sec_from_begin .ge. 86400.0_fp) then
-      do
-        sec_from_begin = sec_from_begin - 86400.0_fp
-        jday_tmp = jday_tmp + 1
-        if(sec_from_begin .lt. 86400.0_fp) exit
-      enddo
-    endif
-    call jday2ymd(jday_tmp, yr, mo, dy)
-    hh = int(sec_from_begin / (60.0_fp * 60.0_fp))
-    mm = int((sec_from_begin - 60.0_fp * 60.0_fp * real(hh, kind = fp)) / 60.0_fp)
-    ss = sec_from_begin - 60.0_fp * 60.0_fp * real(hh, kind = fp) - 60.0_fp * real(mm, kind = fp)
-    print '(i4, 4(a, i2.2), a, f0.2, 1x, e15.7)', yr, "-", mo, "-", dy, "T", hh, ":", mm, ":", ss, waveform_decimate
   enddo
 
 

@@ -84,10 +84,10 @@ program seismicgradiometry_reducingvelocity2
     call tandem3(waveform_obs(:, i), h, gn, 1, past_uv = uv(:, i))
   enddo
   !!inverse filtering
-  uv(1 : 4 * m, 1 : nsta) = 0.0_fp
-  do i = 1, nsta
-    call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
-  enddo
+  !uv(1 : 4 * m, 1 : nsta) = 0.0_fp
+  !do i = 1, nsta
+  !  call tandem3(waveform_obs(:, i), h, gn, -1, past_uv = uv(:, i))
+  !enddo
   deallocate(h, uv)
 #endif
 
@@ -223,7 +223,7 @@ program seismicgradiometry_reducingvelocity2
           enddo
           if(calc_grad .eqv. .false.) exit
           !if(n .eq. 1) waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngradient2)
-          waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngrad)
+          if(n .eq. 1) waveform_est_plot(ii, jj) = waveform_est_tmp(1, ngrad)
 
 
           !!estimate slowness term

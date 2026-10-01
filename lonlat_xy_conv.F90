@@ -19,7 +19,7 @@ contains
   end function atanh
 
   subroutine bl2xy(lon, lat, lon0, lat0, x_north, y_east)
-    use constants, only : deg2rad
+    use constants, only : deg2rad, pi
     implicit none
 
     real(kind = fp), parameter :: alpha(1 : 5) = [ &
@@ -44,12 +44,13 @@ contains
     real(kind = fp), intent(out) :: x_north, y_east !!output location in xy-coordinate (meters)
    
     integer :: i
-    real(kind = fp) :: phi, lambda_c, lambda_s, t, tbar, zeta, eta, abar, sigma, tau, s_phi0, ncount
+    real(kind = fp) :: phi, lambda_c, lambda_s, t, tbar, zeta, eta, abar, sigma, tau, s_phi0, ncount, dlambda
 
     phi = lat * deg2rad
+    dlambda = modulo(((lon - lon0) * deg2rad + pi), 2.0_fp * pi) - pi
 
-    lambda_c = cos((lon - lon0) * deg2rad)
-    lambda_s = sin((lon - lon0) * deg2rad)
+    lambda_c = cos(dlambda)
+    lambda_s = sin(dlambda)
     t = sinh(atanh(sin(phi)) - 2.0_fp * sqrt(n) / (1.0_fp + n) * atanh(2.0_fp * sqrt(n) / (1.0_fp + n) * sin(phi)))
     tbar = sqrt(1.0_fp + t * t)
     zeta = atan2(t, lambda_c)
@@ -147,6 +148,7 @@ contains
     enddo
     lat = rad2deg * (kai + lat)
     lon = lon0 + rad2deg * atan2(sinh(eta_d), cos(zeta_d))
+    lon = modulo(lon + 180.0_fp, 360.0_fp) - 180.0_fp
 
     return
   end subroutine xy2bl

@@ -158,7 +158,7 @@ foreach $index (@index_array){
   print stderr "$out\n";
 
   
-  system "cat /dev/null | gmt psxy -JX1c -R0/1/0/1 -Sc0.1 -K -X2c -Y20c -P > $out";
+  system "cat /dev/null | gmt psxy -JX1c -R0/1/0/1 -Sc0.1 -K -X2c -Y19c -P > $out";
 
   system "gmt grdimage $in -JM$size_x -R$lon_w/$lon_e/$lat_s/$lat_n -C$cpt -O -K >> $out";
   system "gmt psbasemap -JM$size_x -R$lon_w/$lon_e/$lat_s/$lat_n -Bpx${annot}+l\"Longitude\" \\

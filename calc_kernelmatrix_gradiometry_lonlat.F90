@@ -7,11 +7,11 @@ module calc_kernelmatrix_lonlat
   subroutine cartesian_dist(x_east2, x_east1, y_north2, y_north1, dist_x, dist_y, distance)
     use nrtype, only : fp
     implicit none
-    real(kind = fp), intent(in) :: x_east2, x_east1, y_north2, y_north1
+    real(kind = fp), intent(in)            :: x_east2, x_east1, y_north2, y_north1
     real(kind = fp), intent(out), optional :: dist_x, dist_y, distance
     real(kind = fp) :: dist_x_tmp, dist_y_tmp
   
-    dist_x_tmp = x_east2 - x_east1
+    dist_x_tmp = x_east2  - x_east1
     dist_y_tmp = y_north2 - y_north1
   
     if(present(dist_x)) dist_x = dist_x_tmp 
@@ -65,17 +65,15 @@ module calc_kernelmatrix_lonlat
     nsta_use = nsta
     allocate(is_usestation(1 : nsta), index_org(1 : nsta), used_station(1 : nsta))
     is_usestation(1 : nsta) = .true.
-    if(present(error_matrix)) then
-      error_matrix(1 : 3, 1 : ngrid_lon, 1 : ngrid_lat) = 0.0_fp
-    endif
+    if(present(error_matrix)) error_matrix(1 : 3, 1 : ngrid_lon, 1 : ngrid_lat) = 0.0_fp
   
     !!check interstation distance
     do j = 1, nsta - 1
       if(is_usestation(j) .eqv. .false.) cycle
       do i = j + 1, nsta
         if(is_usestation(i) .eqv. .false.) cycle
-        call greatcircle_dist(location_sta(i)%lat, location_sta(i)%lon, location_sta(j)%lat, location_sta(j)%lon, &
-        &                     distance = dist_tmp)
+         call greatcircle_dist(location_sta(i)%lat, location_sta(i)%lon, &
+         &                     location_sta(j)%lat, location_sta(j)%lon, distance = dist_tmp)
         if(dist_tmp .le. interstationdistance_min) then
           is_usestation(i) = .false.
           nsta_use = nsta_use - 1
@@ -96,15 +94,15 @@ module calc_kernelmatrix_lonlat
       j = j + 1
     enddo
     call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
-    open(newunit = unitnum, file = "station_triangle.txt")
-    do j = 1, ntriangle
-      do i = 1, 3
-        write(unitnum, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
-        &                                location_sta(index_org(triangle_indices(i, j)))%y_north
-      enddo
-      write(unitnum, '(a)') ">"
-    enddo
-    close(unitnum)
+    !open(newunit = unitnum, file = "station_triangle.txt")
+    !do j = 1, ntriangle
+    !  do i = 1, 3
+    !    write(unitnum, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
+    !    &                                location_sta(index_org(triangle_indices(i, j)))%y_north
+    !  enddo
+    !  write(unitnum, '(a)') ">"
+    !enddo
+    !close(unitnum)
   
     !!Select stations at each grid
     !open(newunit = unitnum, file = "stationlist_grid.txt")
@@ -138,14 +136,15 @@ module calc_kernelmatrix_lonlat
         !!find nadd_station additional stations based on the distance between grid and station
         if(naddstation_array .ge. 1) then
           allocate(add_station_distance(1 : naddstation_array), add_station_index(1 : naddstation_array))
-          add_station_distance(1 : naddstation_array) = 1.0e+38
+          add_station_distance(1 : naddstation_array) = huge(1.0_fp)
           add_station_index(1 : naddstation_array) = 0
           do ii = 1, nsta
             if(is_usestation(ii) .eqv. .false.) cycle
-            if(used_station(ii) .eqv. .true.) cycle
+            if(used_station(ii)  .eqv. .true.) cycle
             call greatcircle_dist(location_sta(ii)%lat, location_sta(ii)%lon, &
             &                     location_grid(jj, kk)%lat, location_grid(jj, kk)%lon, &
             &                     distance = dist_tmp)
+            if(dist_tmp .gt. cutoff_dist) cycle
             do j = 1, naddstation_array
               if(dist_tmp .le. add_station_distance(j)) then
                 do i = naddstation_array, j + 1, -1
@@ -204,8 +203,8 @@ module calc_kernelmatrix_lonlat
 #endif
     implicit none
   
-    integer, intent(in)          :: nsta_count
-    type(location), intent(in)   :: location_sta(1 : nsta_count), location_grid
+    integer,         intent(in)  :: nsta_count
+    type(location),  intent(in)  :: location_sta(1 : nsta_count), location_grid
     real(kind = fp), intent(in)  :: cutoff_dist
     integer,         intent(out) :: info
     real(kind = fp), intent(out) :: kernel_matrix(1 : 3, 1 : nsta_count)

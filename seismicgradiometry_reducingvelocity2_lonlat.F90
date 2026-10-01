@@ -95,6 +95,11 @@ program seismicgradiometry_reducingvelocity2_lonlat
   close(unitnum)
   error_omega = 2.0_fp * pi * 1.0_fp / ((1.0_fp / fl + 1.0_fp / fh) * 0.5_fp)
 
+  write(0, '(a, 3(e15.7, 1x))') "fl, fh, fs (Hz) = ", fl, fh, fs
+  write(0, '(a, 3(e15.7, 1x))') "fl, fh, fs (s) = ", 1.0_fp / fl, 1.0_fp / fh, 1.0_fp / fs
+  write(0, '(a, 4(e15.7, 1x))') "lon_w, lon_e, lat_s, lat_n = ", lon_w, lon_e, lat_s, lat_n
+  write(0, '(a, 2(f4.2, 1x))')  "dgrid_lon, dgrid_lat = ", dgrid_lon, dgrid_lat
+
   nsta = command_argument_count() - 1
   allocate(location_sta(1 : nsta), sacfile(1 : nsta), begin(1 : nsta))
   do i = 1, nsta

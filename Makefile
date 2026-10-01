@@ -1,5 +1,5 @@
 # Makefile for seismicgradiometry
-# Copyright 2022 Masashi Ogiso (masashi.ogiso@gmail.com)
+# Copyright 2026 Masashi Ogiso (masashi.ogiso@gmail.com)
 # Released under the MIT license.
 # see https://opensource.org/licenses/MIT
 
@@ -63,6 +63,7 @@ calc_minmax_waveform_grd = calc_minmax_waveform_grd.F90
 calc_bpf_coef = calc_bpf_coef.F90
 calc_bpf_order = calc_bpf_order.F90
 calc_kernelmatrix = calc_kernelmatrix_gradiometry.F90
+calc_kernelmatrix_lonlat = calc_kernelmatrix_gradiometry_lonlat.F90
 calc_lpf_coef = calc_lpf_coef.F90
 calc_lpf_order = calc_lpf_order.F90
 calc_froude_number_grd = calc_froude_number_grd.F90
@@ -79,6 +80,7 @@ itoa = itoa.F90
 line_fit = line_fit.f90
 lonlat_xy_conv = lonlat_xy_conv.F90
 make_waveform_from_grd = make_waveform_from_grd.F90
+readini = m_readini.F90
 nrtype = nrtype.F90
 read_sacfile = read_sacfile.F90
 sac_decimation = sac_decimation.F90
@@ -88,6 +90,7 @@ sac_integrate = sac_integrate.F90
 seismicgradiometry = seismicgradiometry.F90
 seismicgradiometry_reducingvelocity2 = seismicgradiometry_reducingvelocity2.F90
 seismicgradiometry_reducingvelocity2_shmdump = seismicgradiometry_reducingvelocity2_shmdump.F90
+seismicgradiometry_reducingvelocity2_lonlat = seismicgradiometry_reducingvelocity2_lonlat.F90
 sort = sort.F90
 tandem = tandem.F90
 typedef = typedef.F90
@@ -95,6 +98,7 @@ jday = jday.F90
 
 ##Module
 mod_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.mod)
+mod_calc_kernelmatrix_lonlat = $(calc_kernelmatrix_lonlat:.F90=.mod)
 mod_constants = $(constants:.F90=.mod)
 mod_correlation = $(correlation:.F90=.mod)
 mod_cosine_taper = $(cosine_taper:.F90=.mod)
@@ -109,6 +113,7 @@ mod_read_sacfile = $(read_sacfile:.F90=.mod)
 mod_tandem = $(tandem:.F90=.mod)
 mod_typedef = $(typedef:.F90=.mod)
 mod_jday = $(jday:.F90=.mod)
+mod_readini = $(readini:.F90=.mod)
 
 ##Object
 o_calc_bpf_coef = $(calc_bpf_coef:.F90=.o)
@@ -118,6 +123,7 @@ o_calc_lpf_order = $(calc_lpf_order:.F90=.o)
 o_calc_minmax_waveform_grd = $(calc_minmax_waveform_grd:.F90=.o)
 o_calc_froude_number_grd = $(calc_froude_number_grd:.F90=.o)
 o_calc_kernelmatrix = $(calc_kernelmatrix:.F90=.o)
+o_calc_kernelmatrix_lonlat = $(calc_kernelmatrix_lonlat:.F90=.o)
 o_constants = $(constants:.F90=.o)
 o_correlation = $(correlation:.F90=.o)
 o_cosine_taper = $(cosine_taper:.F90=.o)
@@ -137,6 +143,7 @@ o_sac_integrate = $(sac_integrate:.F90=.o)
 o_seismicgradiometry = $(seismicgradiometry:.F90=.o)
 o_seismicgradiometry_reducingvelocity2 = $(seismicgradiometry_reducingvelocity2:.F90=.o)
 o_seismicgradiometry_reducingvelocity2_shmdump = $(seismicgradiometry_reducingvelocity2_shmdump:.F90=.o)
+o_seismicgradiometry_reducingvelocity2_lonlat = $(seismicgradiometry_reducingvelocity2_lonlat:.F90=.o)
 o_sort = $(sort:.F90=.o)
 o_tandem = $(tandem:.F90=.o)
 o_deconvolution = $(deconvolution:.F90=.o)
@@ -145,6 +152,7 @@ o_typedef = $(typedef:.F90=.o)
 o_geompack2 = $(geompack2:.f90=.o)
 o_geometry = $(geometry:.f90=.o)
 o_jday = $(jday:.F90=.o)
+o_readini = $(readini:.F90=.o)
 
 ##Module dependency
 $(mod_constants): $(constants) $(o_constants)
@@ -161,14 +169,18 @@ $(mod_deconvolution): $(deconvolution) $(o_deconvolution)
 $(mod_tandem): $(tandem) $(o_tandem)
 $(mod_typedef): $(typedef) $(o_typedef)
 $(mod_calc_kernelmatrix): $(calc_kernelmatrix) $(o_calc_kernelmatrix)
+$(mod_calc_kernelmatrix_lonlat): $(calc_kernelmatrix_lonlat) $(o_calc_kernelmatrix_lonlat)
 $(mod_jday): $(jday) $(o_jday)
+$(mod_readini): $(readini) $(o_readini)
 
 ##Object dependency
 $(o_calc_bpf_coef): $(calc_bpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_bpf_order): $(calc_bpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_kernelmatrix): $(calc_kernelmatrix) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) $(mod_sort) \
-        $(mod_gradiometry_parameters) \
-	$(o_constants) $(o_gradiometry_parameters) $(o_sort) $(o_geompack) $(o_geometry)
+        $(mod_gradiometry_parameters) $(o_constants) $(o_gradiometry_parameters) $(o_sort) $(o_geompack) $(o_geometry) \
+        $(o_greatcircle)
+$(o_calc_kernelmatrix_lonlat): $(calc_kernelmatrix_lonlat) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_greatcircle) \
+        $(mod_readini) $(mod_sort) $(o_constants) $(o_sort) $(o_geompack) $(o_geometry) $(o_greatcircle)
 $(o_calc_lpf_coef): $(calc_lpf_coef) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_lpf_order): $(calc_lpf_order) $(mod_nrtype) $(mod_constants) $(o_constants)
 $(o_calc_froude_number_grd): $(calc_froude_number_grd) $(mod_nrtype) $(mod_constants) $(mod_typedef) $(mod_calc_kernelmatrix) \
@@ -197,6 +209,9 @@ $(o_seismicgradiometry): $(seismicgradiometry) $(mod_nrtype) $(mod_constants) $(
 $(o_seismicgradiometry_reducingvelocity2): $(seismicgradiometry_reducingvelocity2) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) $(mod_itoa) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
+$(o_seismicgradiometry_reducingvelocity2_lonlat): $(seismicgradiometry_reducingvelocity2_lonlat) \
+	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) $(mod_itoa) \
+	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_readini) $(mod_calc_kernelmatrix)
 $(o_seismicgradiometry_reducingvelocity2_shmdump): $(seismicgradiometry_reducingvelocity2_shmdump) \
 	$(mod_nrtype) $(mod_constants) $(mod_read_sacfile) $(mod_grdfile_io) $(mod_tandem) $(mod_itoa) \
 	$(mod_lonlat_xy_conv) $(mod_typedef) $(mod_gradiometry_parameters) $(mod_calc_kernelmatrix) $(o_gradiometry_parameters)
@@ -218,9 +233,14 @@ seismicgradiometry_reducingvelocity2: $(o_nrtype) $(o_constants) $(o_calc_bpf_or
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 seismicgradiometry_reducingvelocity2_shmdump: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
-	$(o_lonlat_xy_conv) $(o_itoa) \
-	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2_shmdump) \
-	$(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) $(o_geometry)
+	$(o_lonlat_xy_conv) $(o_itoa) $(o_gradiometry_parameters) $(o_typedef) $(o_calc_kernelmatrix) $(o_geompack2) \
+        $(o_geometry)
+	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2_shmdump)
+	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
+
+seismicgradiometry_reducingvelocity2_lonlat: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
+	$(o_lonlat_xy_conv) $(o_itoa) $(o_readini) $(o_typedef) $(o_calc_kernelmatrix_lonlat) $(o_geompack2) $(o_geometry) \
+	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2_lonlat)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 calc_minmax_waveform_grd: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \

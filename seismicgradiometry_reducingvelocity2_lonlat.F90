@@ -39,9 +39,7 @@ program seismicgradiometry_reducingvelocity2_lonlat
   &                               waveform_est_plot(:, :), &
   &                               geospread(:, :), &
   &                               radpattern(:, :), &
-  &                               kernel_matrix(:, :, :, :), &
   &                               kernel_matrix_local(:, :, :), &
-  &                               error_matrix(:, :, :), &
   &                               error_matrix_local(:, :)
   integer, allocatable         :: grid_stationindex(:, :, :), &
   &                               grid_stationindex_local(:, :), &
@@ -139,9 +137,7 @@ program seismicgradiometry_reducingvelocity2_lonlat
   allocate(location_grid(1 : ngrid_lon, 1 : ngrid_lat), &
   &        nsta_count(1 : ngrid_lon, 1 : ngrid_lat), &
   &        grid_stationindex(1 : 3 + naddstation_array, 1 : ngrid_lon, 1 : ngrid_lat), &
-  &        grid_enough_sta(1 : ngrid_lon, 1 : ngrid_lat), &
-  &        kernel_matrix(1 : 3, 1 : nsta_grid_max, 1 : ngrid_lon, 1 : ngrid_lat), &
-  &        error_matrix(1 : 3, 1 : ngrid_lon, 1 : ngrid_lat))
+  &        grid_enough_sta(1 : ngrid_lon, 1 : ngrid_lat))
   do j = 1, ngrid_lat
     do i = 1, ngrid_lon
       location_grid(i, j)%lon = lon_w + dgrid_lon * real(i - 1, kind = fp)
@@ -168,7 +164,7 @@ program seismicgradiometry_reducingvelocity2_lonlat
 
   !!make kernel matrix for each grid
   call calc_kernelmatrix_delaunay2(paramfile, location_grid, location_sta, grid_enough_sta, &
-  &                                nsta_count, grid_stationindex, kernel_matrix = kernel_matrix, error_matrix = error_matrix)
+  &                                nsta_count, grid_stationindex)
 
   !!count grids where the wave gradiometry is applicable
   ngrid_calc = 0
@@ -229,7 +225,7 @@ program seismicgradiometry_reducingvelocity2_lonlat
       endif
     enddo
   enddo
-  deallocate(grid_enough_sta, nsta_count, grid_stationindex, location_grid, location_sta, kernel_matrix, error_matrix)
+  deallocate(grid_enough_sta, nsta_count, grid_stationindex, location_grid, location_sta)
 
   open(newunit = unitnum, file = "station_grid.txt")
   do j = 1, ngrid_calc

@@ -33,26 +33,19 @@ $grdlon_w = 131.0;
 $grdlon_e = 147.0;
 $grdlat_s = 30.0;
 $grdlat_n = 44.0;
+#$lon_w = 131.0;
+#$lon_e = 147.0;
+#$lat_s = 30.0;
+#$lat_n = 44.0;
 $lon_w = 131.0;
-$lon_e = 147.0;
+$lon_e = 139.0;
 $lat_s = 30.0;
-$lat_n = 44.0;
+$lat_n = 36.0;
 $size_x = 8.0;
 $size_y = `echo $lon_e $lat_n | gmt mapproject -JM$size_x -R$lon_w/$lon_e/$lat_s/$lat_n`;
 @tmp = split /\s+/, $size_y;
 $size_y = $tmp[1];
 $annot = "a5f1";
-
-#DONET ref: 135.75E, 33.2N
-#$dgrid_x = 10;
-#$dgrid_y = 10;
-#$min_x = -150;
-#$max_x = 150;
-#$min_y = -100;
-#$max_y = 100;
-#$size_x = 4.8;
-#$size_y = 3.2;
-#$annot = "a100f50";
 
 $dx = $size_x + 1.0;
 $dy = $size_y + 3.5;
@@ -65,9 +58,13 @@ $ngrid_lat = int(($grdlat_n - $grdlat_s) / $dgrid_lat + 0.5) + 1;
 $cpt = "amplitude_gradiometry_OBP.cpt";
 if($simulation == 0){
   $cpt = "amplitude_gradiometry_OBP.cpt";
+  $decimate = 2;
 }
 if($simulation == 1){
-  $cpt = "amplitude_gradiometry_OBP_simulation.cpt";
+  #$cpt = "amplitude_gradiometry_OBP_simulation.cpt";
+  #$decimate = 2;
+  $cpt = "amplitude_gradiometry_OBP_simulation2.cpt";
+  $decimate = 1;
 }
 #$cpt = "amplitude_gradiometry_OBP_simulation_240116.cpt";
 #$cpt = "amplitude_gradiometry_OBP_simulation.cpt";
@@ -99,7 +96,6 @@ $cpt_y = -1.0;
 $cpt_len = $size_x;
 $cpt_width = "0.25ch";
 $slowness_length = 0.35;
-$decimate = 2;
 
 $txt_x2 = -0.7;
 $txt_x3 = -0.2;

@@ -226,7 +226,7 @@ seismicgradiometry_reducingvelocity2_shmdump: $(o_nrtype) $(o_constants) $(o_cal
 
 seismicgradiometry_reducingvelocity2_lonlat: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \
 	$(o_lonlat_xy_conv) $(o_itoa) $(o_readini) $(o_typedef) $(o_calc_kernelmatrix_lonlat) $(o_geompack2) $(o_geometry) \
-	$(o_grdfile_io) $(o_read_sacfile) $(o_sort) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2_lonlat)
+	$(o_grdfile_io) $(o_read_sacfile) $(o_greatcircle) $(o_seismicgradiometry_reducingvelocity2_lonlat)
 	$(FC) $^ -o $@ $(FFLAGS) $(INCDIR) $(LIBDIR) $(LIBS) $(DEFS)
 
 calc_minmax_waveform_grd: $(o_nrtype) $(o_constants) $(o_calc_bpf_order) $(o_calc_bpf_coef) $(o_tandem) \

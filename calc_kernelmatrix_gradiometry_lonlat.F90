@@ -94,15 +94,6 @@ module calc_kernelmatrix_lonlat
       j = j + 1
     enddo
     call dtris2(nsta_use, vertices, vertix_index, ntriangle, triangle_indices, tnbr, info)
-    !open(newunit = unitnum, file = "station_triangle.txt")
-    !do j = 1, ntriangle
-    !  do i = 1, 3
-    !    write(unitnum, '(2(e15.7, 1x))') location_sta(index_org(triangle_indices(i, j)))%x_east, &
-    !    &                                location_sta(index_org(triangle_indices(i, j)))%y_north
-    !  enddo
-    !  write(unitnum, '(a)') ">"
-    !enddo
-    !close(unitnum)
   
     !!Select stations at each grid
     !open(newunit = unitnum, file = "stationlist_grid.txt")
@@ -177,7 +168,6 @@ module calc_kernelmatrix_lonlat
         if(grid_enough_sta(jj, kk) .eqv. .false.) cycle
   
         if(present(kernel_matrix) .and. present(error_matrix)) then
-          allocate(location_sta_tmp(1 : nsta_count(jj, kk)))
           location_sta_tmp(1 : nsta_count(jj, kk)) = location_sta(grid_stationindex(1 : nsta_count(jj, kk), jj, kk))
           call calculate_kernelmatrix(nsta_count(jj, kk), location_sta_tmp(1 : nsta_count(jj, kk)), location_grid(ii, jj), &
           &                           cutoff_dist, info, kernel_matrix(:, :, jj, kk), error_matrix(:, jj, kk))

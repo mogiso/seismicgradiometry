@@ -9,6 +9,7 @@ $index_end = $ARGV[2];
 $coastline = $ARGV[3];
 $simulation = $ARGV[4];
 $tidestation = $ARGV[5];
+$period = $ARGV[6];
 
 $ref_yr = "2025";
 $ref_mo = "7";
@@ -68,7 +69,7 @@ if($simulation == 1){
 #$cpt = "amplitude_gradiometry_OBP_231202.cpt";
 $app_vel_cpt = "app_vel_gradiometry_OBP.cpt";
 #$ampterm_cpt = "ampterm_OBP.cpt";
-$ampterm_cpt = "ampterm_OBP_simulation2.cpt";
+$ampterm_cpt = "ampterm_OBP_simulation.cpt";
 $tsunami_vel_grd = "tsunami_velocity_etopo.grd";
 
 if (-f $tidestation){
@@ -88,22 +89,25 @@ if (-f $tidestation){
 $txt_x = 0.1;
 $txt_y = $size_y - 0.1;
 $cpt_x = $size_x / 2.0;
-$cpt_y = -1.4;
+$cpt_y = -1.2;
 $cpt_len = $size_x;
-$cpt_width = "0.3ch";
+$cpt_width = "0.25ch";
 $slowness_length = 0.35;
 $decimate = 2;
 
 $txt_x2 = -1.4;
 $txt_x3 = -0.2;
 $txt_y2 = $size_y + 0.3;
+$txt_x_period = $size_x - 0.1;
+$txt_y_period = 0.125;
 
 system "gmt set PS_LINE_JOIN round";
 system "gmt set FONT_LABEL 9p,Helvetica";
-system "gmt set FONT_ANNOT_PRIMARY 9p,Helvetica";
+system "gmt set FONT_ANNOT 9p,Helvetica";
 system "gmt set MAP_LABEL_OFFSET 5p";
 system "gmt set GMT_AUTO_DOWNLOAD off";
 system "gmt set GMT_HISTORY false";
+system "gmt set MAP_FRAME_PEN thick,black";
 
 for($index = $index_begin; $index <= $index_end; $index++){
   push @index_array, $index;
@@ -165,17 +169,22 @@ foreach $index (@index_array){
   }
     if($simulation == 1){
       open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -M -N -F+f+a+j -Gwhite -O -K >> $out";
-        print OUT "> $txt_x $txt_y 9p,Helvetica,black 0 LT 10p 2.23c l\nTime: ${current_hh}hr ${current_mm}m\nSynthetic\n";
+        print OUT "> $txt_x $txt_y 9p,Helvetica,black 0 LT 9p 2.23c l\nTime: ${current_hh}hr ${current_mm}m\nSynthetic\n";
       close OUT;
     }elsif($simulation == 0){
       open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -M -N -F+f+a+j -Gwhite -O -K >> $out";
-        print OUT "> $txt_x $txt_y 9p,Helvetica,black 0 LT 10p 2.46c l\nTime: ${current_hh}hr ${current_mm}m\nObservation\n";
+        print OUT "> $txt_x $txt_y 9p,Helvetica,black 0 LT 9p 2.44c l\nTime: ${current_hh}hr ${current_mm}m\nObservation\n";
       close OUT;
     }else{
       open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -Gwhite -O -K >> $out";
         print OUT "$txt_x $txt_y 9p,Helvetica,black 0 LT $current_yr/$current_mo/$current_dy $current_hh:$current_mm\n";
       close OUT;
     } 
+  if($period){
+    open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -Gwhite -O -K >> $out";
+      print OUT "$txt_x_period $txt_y_period 9p,Helvetica,black 0 RB Period: $period\n";
+    close OUT;
+  }
   open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -Gwhite -O -K >> $out";
     print OUT "$txt_x2 $txt_y2 12p,Helvetica,black 0 LB (a)\n";
   close OUT;
@@ -185,7 +194,8 @@ foreach $index (@index_array){
   }
 
   if($simulation == 0){
-    system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -B+l\"Amplitude (hPa)\" -C$cpt -O -K >> $out";
+    system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -B+l\"Amplitude (hPa)\" -C$cpt -O -K \\
+                        >> $out";
   }elsif($simulation == 1){
     system "gmt psscale -Dx$cpt_x/$cpt_y/$cpt_len/$cpt_width -B+l\"Amplitude (m)\" -C$cpt -O -K >> $out";
   }else{
@@ -365,6 +375,13 @@ foreach $index (@index_array){
     }
     close OUT;
   }
+  system "gmt psxy raypath.dat -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W1.2p,black,- -O -K -P >> $out";
+  open OUT, " | gmt psxy -JX$size_x/$size_y -R$min_x/$max_x/$min_y/$max_y -W1p,black -G0 -O -K -P >> $out";
+    print OUT "13.0 230.0\n";
+    print OUT "-10.0 210.0\n";
+    print OUT "13.0 195.0\n";
+  close OUT;
+
   open OUT, " | gmt pstext -JX$size_x/$size_y -R0/$size_x/0/$size_y -N -F+f+a+j -Gwhite -O -K >> $out";
     print OUT "$txt_x3 $txt_y2 14p,Helvetica,black 0 LB (d)\n";
   close OUT;

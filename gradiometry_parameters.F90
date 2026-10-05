@@ -98,8 +98,10 @@ module gradiometry_parameters
   real(kind = fp), public, parameter :: az_diff_max = 150.0_fp * deg2rad
   !real(kind = fp), public, parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (20.0_fp * 60.0_fp), &
   !&                                     fs = 1.0_fp / (10.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
-  real(kind = fp), public, parameter :: fl = 1.0_fp / (60.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
-  &                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
+  !real(kind = fp), public, parameter :: fl = 1.0_fp / (30.0_fp * 60.0_fp), fh = 1.0_fp / (10.0_fp * 60.0_fp), &
+  !&                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
+  real(kind = fp), public, parameter :: fl = 1.0_fp / (90.0_fp * 60.0_fp), fh = 1.0_fp / (40.0_fp * 60.0_fp), &
+  &                                     fs = 1.0_fp / (30.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
   !real(kind = fp), public, parameter :: fl = 1.0_fp / (180.0_fp * 60.0_fp), fh = 1.0_fp / (30.0_fp * 60.0_fp), &
   !&                                     fs = 1.0_fp / (5.0_fp * 60.0_fp), ap = 0.5_fp, as = 5.0_fp
 

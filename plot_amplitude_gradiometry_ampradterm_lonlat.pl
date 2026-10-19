@@ -33,14 +33,14 @@ $grdlon_w = 131.0;
 $grdlon_e = 147.0;
 $grdlat_s = 30.0;
 $grdlat_n = 44.0;
-#$lon_w = 131.0;
-#$lon_e = 147.0;
-#$lat_s = 30.0;
-#$lat_n = 44.0;
 $lon_w = 131.0;
-$lon_e = 139.0;
+$lon_e = 147.0;
 $lat_s = 30.0;
-$lat_n = 36.0;
+$lat_n = 44.0;
+#$lon_w = 131.0;
+#$lon_e = 139.0;
+#$lat_s = 30.0;
+#$lat_n = 36.0;
 $size_x = 8.0;
 $size_y = `echo $lon_e $lat_n | gmt mapproject -JM$size_x -R$lon_w/$lon_e/$lat_s/$lat_n`;
 @tmp = split /\s+/, $size_y;
@@ -64,7 +64,7 @@ if($simulation == 1){
   #$cpt = "amplitude_gradiometry_OBP_simulation.cpt";
   #$decimate = 2;
   $cpt = "amplitude_gradiometry_OBP_simulation2.cpt";
-  $decimate = 1;
+  $decimate = 2;
 }
 #$cpt = "amplitude_gradiometry_OBP_simulation_240116.cpt";
 #$cpt = "amplitude_gradiometry_OBP_simulation.cpt";
@@ -274,8 +274,8 @@ foreach $index (@index_array){
         #  push @amp_radiation, $amp_radiation_tmp;
         #  push @theta_radiation, $theta_radiation_tmp;
         #}
-        next if (int(($lon - $lon_w) / $dgrid_lon + 0.5) % $decimate != 0);
-        next if (int(($lat - $lat_s) / $dgrid_lat + 0.5) % $decimate != 0);
+        next if (int(($lon - $grdlon_w) / $dgrid_lon + 0.5) % $decimate != 0);
+        next if (int(($lat - $grdlat_s) / $dgrid_lat + 0.5) % $decimate != 0);
         $direction = rad2deg($direction);
         print OUT "$lon $lat $app_vel $direction $slowness_length\n";
       }
